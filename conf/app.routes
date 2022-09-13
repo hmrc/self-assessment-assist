@@ -2,5 +2,5 @@
 
 GET        /hello                                                                       uk.gov.hmrc.transactionalrisking.controllers.HelloWorldController.hello
 
-POST       /individuals/self-assessment/assist/reports/:nino/:calculationId             uk.gov.hmrc.transactionalrisking.controllers.GenerateReportController.generateReportInternal(nino:String, calculationId:String)
-POST       /individuals/self-assessment/assist/reports/acknowledge/:nino/:reportId      uk.gov.hmrc.transactionalrisking.controllers.AcknowledgeReportController.acknowledgeReportForSelfAssessment(nino:String, reportId:String)
+POST       /reports/:nino/:calculationId             uk.gov.hmrc.transactionalrisking.controllers.GenerateReportController.generateReportInternal(nino:String, calculationId:String)
+POST       /reports/acknowledge/:nino/:reportId      uk.gov.hmrc.transactionalrisking.controllers.AcknowledgeReportController.acknowledgeReportForSelfAssessment(nino:String, reportId:String)
