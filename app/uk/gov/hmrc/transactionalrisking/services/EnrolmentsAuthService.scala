@@ -1,0 +1,140 @@
+/*
+ * Copyright 2022 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.transactionalrisking.services
+
+import play.api.libs.json.JsResultException
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.models.auth.{AuthOutcome, UserDetails}
+import uk.gov.hmrc.transactionalrisking.models.errors.ForbiddenDownstreamError
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ForbiddenDownstreamError, LegacyUnauthorisedError, MtdError}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.IdentityData
+import uk.gov.hmrc.transactionalrisking.utils.Logging
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
+@Singleton
+class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logging {
+
+  private val authFunction: AuthorisedFunctions = new AuthorisedFunctions {
+    override def authConnector: AuthConnector = connector
+  }
+
+  def authorised(predicate: Predicate, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
+    if(!nrsRequired){
+      logger.info(s" property names are ${allEnrolments.propertyNames}")
+      //TODO revisit below as this doesn't look right based on below doc
+      //https://confluence.tools.tax.service.gov.uk/display/GG/Predicate+Reference#PredicateReference-EnrolmentwithagentauthorisationbasedonNINO
+      //affinityGroup = "Individual" or "Organisation" is not reliable
+      authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
+        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = "Individual", enrolments)
+        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = "Organisation", enrolments)
+        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = "Agent", enrolments)
+        case _ =>
+          logger.warn(s"[AuthorisationService] [authoriseAsClient] Authorisation failed due to unsupported affinity group.")
+          Future.successful(Left(LegacyUnauthorisedError))
+      }recoverWith unauthorisedError
+    } else {
+      logger.info(s" else part")
+      authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
+        and internalId and externalId and agentCode and credentials
+        and confidenceLevel and nino and saUtr and name and dateOfBirth
+        and email and agentInformation and groupIdentifier and credentialRole
+        and mdtpInformation and credentialStrength and loginTimes
+        and itmpName and itmpAddress
+      ) {
+        case affGroup ~ enrolments ~ inId ~ exId ~ agCode ~ creds
+          ~ confLevel ~ ni ~ saRef ~ nme ~ dob
+          ~ eml ~ agInfo ~ groupId ~ credRole
+          ~ mdtpInfo ~ credStrength ~ logins
+          ~ itmpName ~ itmpAddress
+          if affGroup.contains(AffinityGroup.Organisation) || affGroup.contains(AffinityGroup.Individual) || affGroup.contains(AffinityGroup.Agent) =>
+
+          val emptyItmpName: ItmpName = ItmpName(None, None, None)
+          val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
+
+          val identityData =
+            IdentityData(
+              inId, exId, agCode, creds,
+              confLevel, ni, saRef, nme, dob,
+              eml, agInfo, groupId,
+              credRole, mdtpInfo, itmpName.getOrElse(emptyItmpName), itmpDateOfBirth=None,
+              itmpAddress.getOrElse(emptyItmpAddress), affGroup, credStrength, logins
+            )
+
+          createUserDetailsWithLogging(affinityGroup = affGroup.get.toString, enrolments, Some(identityData))
+        case _ =>
+          logger.warn(s"[EnrolmentsAuthService] [authorised with nrsRequired = true] Authorisation failed due to unsupported affinity group.")
+          Future.successful(Left(LegacyUnauthorisedError))
+
+      }recoverWith unauthorisedError
+    }
+
+  }
+
+  private def createUserDetailsWithLogging(affinityGroup: String,
+                                           enrolments: Enrolments,
+                                           identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
+    //TODO Fixme clientReference is coming as none in logs
+    val clientReference = getClientReferenceFromEnrolments(enrolments)
+    logger.info(s"[EnrolmentsAuthService] [authoriseAsClient] Authorisation succeeded as" +
+      s"fully-authorised organisation with reference $clientReference.")
+
+    val userDetails = UserDetails(
+      userType = affinityGroup,
+      agentReferenceNumber = None,
+      clientId = "",
+      identityData
+    )
+
+    if (affinityGroup != "Agent") {
+      Future.successful(Right(userDetails))
+    } else {
+      Future.successful(Right(userDetails.copy(agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments))))
+    }
+  }
+//TODO Fix me this was VRN
+  def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
+    .getEnrolment("IR-SA")
+    .flatMap(_.getIdentifier("Nino"))
+    .map(_.value)
+
+  def getAgentReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
+    .getEnrolment("IR-SA")
+    .flatMap(_.getIdentifier("AgentReferenceNumber"))
+    .map(_.value)
+
+  private def unauthorisedError: PartialFunction[Throwable, Future[AuthOutcome]] = {
+    case _: InsufficientEnrolments =>
+      logger.warn(s"[AuthorisationService] [unauthorisedError] Client authorisation failed due to unsupported insufficient enrolments.")
+      Future.successful(Left(LegacyUnauthorisedError))
+    case _: InsufficientConfidenceLevel =>
+      logger.warn(s"[AuthorisationService] [unauthorisedError] Client authorisation failed due to unsupported insufficient confidenceLevels.")
+      Future.successful(Left(LegacyUnauthorisedError))
+    case _: JsResultException =>
+      logger.warn(s"[AuthorisationService] [unauthorisedError] - Did not receive minimum data from Auth required for NRS Submission")
+      Future.successful(Left(ForbiddenDownstreamError))
+    case exception@_ =>
+      logger.warn(s"[AuthorisationService] [unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
+      Future.successful(Left(DownstreamError))
+  }
+}

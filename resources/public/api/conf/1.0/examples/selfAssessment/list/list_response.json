@@ -1,0 +1,20 @@
+{
+  "reportId": "f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c",
+  "messages": [
+    {
+      "title": "Turnover and Cost of Sales",
+      "body": "Your cost of sales (12000) is greater than your actual income (4000). This may be an error.",
+      "action": "Please read our guidance and consider amending Box 10 of your submission.",
+      "links": [
+        {
+          "title": "Our guidance on Turnover and Expenses can be read here.",
+          "url": "https://www.gov.uk/expenses-if-youre-self-employed"
+        }
+      ],
+      "path": "general/total_declared_turnover"
+    }
+  ],
+  "nino": "TC663795B",
+  "taxYear": "2017-18",
+  "calculationId": "f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c"
+}

@@ -1,0 +1,27 @@
+is:
+  - headersLocal.acceptJson
+#  - headersLocal.authorization
+#  - headersLocal.testScenarioHeader
+  - errors.formatNino  # QUESTION::Tempted to use  reportNotFound
+  - errors.formatCalcId
+  - errors.ninoNotFound
+  - errors.calcIdNotFound # QUESTION:: Use reportNotFound?
+  - errors.invalidCredentials
+  - errors.clientOrAgentNotAuthorised
+
+displayName: Produce a HMRC Assist Report
+description: This endpoint allows a developer to generate and return a HMRC Assist report for a tax calculation and taxpayer.
+#(annotations.sandboxData): !include ../../scenarios/selfAssessment/retrieveIncomeTaxAndNics.md
+(annotations.scope): "read:self-assessment-assist"
+securedBy: [ sec.oauth_2_0: { scopes: [ "read:self-assessment-assist" ] } ]
+responses:
+  200:
+    body:
+      application/json:
+        type: !include ../../schemas/selfAssessment/list/list_response.json
+        example: !include ../../examples/selfAssessment/list/list_response.json
+    headers:
+      X-CorrelationId:
+        example: c75f40a6-a3df-4429-a697-471eeec46435
+        description: Unique ID for operation tracking <br> String, 36 characters.
+
