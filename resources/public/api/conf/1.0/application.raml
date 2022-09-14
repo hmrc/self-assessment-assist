@@ -1,0 +1,58 @@
+#%RAML 1.0
+---
+title: Self Assessment Assist (MTD)
+description: Allows a customer report to be triggered by a customer or agency. The resulting self assessment report will contain a list containing errors, and warnings. The report is safely recorded before being sent to the client. The report if required may have a confirmation recorded against it.
+version: 1.0
+
+protocols: [ HTTPS ]
+baseUri: https://api.development.service.hmrc.gov.uk/
+
+documentation:
+  - title: Overview
+    content: !include docs/overview.md
+  - title: Send fraud prevention data
+    content: !include https://developer.service.hmrc.gov.uk/api-documentation/assets/common/docs/fraud-prevention.md
+  - title: Versioning
+    content: !include https://developer.service.hmrc.gov.uk/api-documentation/assets/common/docs/versioning.md
+  - title: Errors
+    content: !include https://developer.service.hmrc.gov.uk/api-documentation/assets/common/docs/errors.md
+  - title: Changelog
+    content: !include docs/changelog.md
+  - title: Support
+    content: !include docs/support.md
+  - title: Testing
+    content: !include docs/testing.md
+
+mediaType: application/hal+json
+
+uses:
+  sec: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/securitySchemes.raml
+  headers: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/headers.raml
+  annotations: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/annotations.raml
+  types: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/types.raml
+  errors: errors.raml
+  headersLocal: headersLocal.raml
+
+/individuals/self-assessment/assist:
+  (annotations.group):
+    name: Self Assessment Assist
+    description: !include docs/group_selfAssessment_RDS.md
+  /reports:
+    /{nino}:
+      uriParameters:
+        nino: !include pathParameters/nino.raml
+      /{calculationId} :
+        post: !include endpoints/generateReport/generateReport.raml
+        uriParameters:
+          calculationId: !include pathParameters/calculationId.raml
+    # End of Produce a Self Assessment Assist Report.
+    /acknowledge:
+      /{nino}:
+        uriParameters:
+          nino: !include pathParameters/nino.raml
+        /{reportId}:
+          post: !include endpoints/acknowledge/confirmReport.raml
+          uriParameters:
+            reportId: !include pathParameters/reportId.raml
+    #End of Acknowledge a Self Assessment Assist Report.
+

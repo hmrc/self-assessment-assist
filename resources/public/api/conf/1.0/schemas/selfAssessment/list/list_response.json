@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "List of Self Assessment Calculations",
+  "description": "This endpoint allows a developer to generate and return a HMRC Assist report for a tax calculation and taxpayer",
+  "type": "object",
+  "properties": {
+    "reportId": {
+      "description": "The unique ID (UUID) of the report.",
+      "type": "string",
+      "pattern": "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "example": "f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c"
+    },
+    "messages": {
+      "description": "A list of HMRC Assist 'messages' for the customer.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "The body contains the message for the customer.",
+        "example":
+            "[ { \",Turnover and Cost of Sales\", \"Your cost of sales (12000) is greater than your actual income (4000). This may be an error.\" }, .. etc]]",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of message",
+            "example": "Turnover and Cost of Sales"
+          },
+          "body": {
+            "type": "string",
+            "description": "The body contains the message for the customer.",
+            "example": "Your cost of sales (12000) is greater than your actual income (4000). This may be an error."
+          },
+          "action": {
+            "type": "string",
+            "description": "The recommend action the customer should take.",
+            "example": "Please read our guidance and consider amending Box 10 of your submission."
+          },
+          "links" : {
+            "description": "A list of help or support 'links' associated with the message body.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "A list of help or support 'links' associated with the message body.",
+              "example": "[ { \",Turnover and Cost of Sales\", \"Your cost of sales (12000) is greater than your actual income (4000). This may be an error.\" }, .. etc]]",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "The title text that appears before the links..",
+                  "example": "Our guidance on Turnover and Expenses can be read here."
+                },
+                "url": {
+                  "type": "string",
+                  "description": "The URL of support or help link.",
+                  "example": "https://www.gov.uk/expenses-if-youre-self-employed"
+                }
+              }
+            }
+          },
+          "path": {
+            "type": "string",
+            "description": "The risk based feedback path for the vendor guidance.",
+            "example": "general/total_declared_turnover"
+          }
+        },
+        "required": [
+          "title",
+          "body",
+          "path"
+
+        ]
+      }
+    },
+    "nino" : {
+      "type": "string",
+      "description": "National Insurance number, in the format AA999999A.",
+      "example": "TC663795B"
+    },
+    "taxYear" : {
+      "type": "string",
+      "description": "The tax year the data applies to, for example, 2021-22. The start year and end year must not span two tax years. No gaps are allowed, for example, 2020-22 is not valid.",
+      "example": "2017-18"
+    },
+    "calculationId" : {
+      "type": "string",
+      "description": "The unique identifier for the calculation. Must conform the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`",
+      "example": "f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c"
+    }
+
+  },
+  "required": [
+    "reportId",
+    "nino",
+    "taxYear",
+    "calculationId"
+
+  ]
+}
