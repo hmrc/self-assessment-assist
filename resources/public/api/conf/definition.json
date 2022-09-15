@@ -11,15 +11,15 @@
   }
   ],
   "api": {
-    "name": "Self Assessment Assist",
+    "name": "HMRC Self Assessment Assist",
     "description": "Allows you to read your self assessment report and acknowledge it.",
     "context": "individuals/self-assessment/assist",
     "categories": ["INCOME_TAX_MTD"],
     "versions": [
       {
         "version": "1.0",
-        "status": "ALPHA",
-        "endpointsEnabled": false,
+        "status": "BETA",
+        "endpointsEnabled": true,
         "access" : {
           "type" : "PUBLIC"
         }
