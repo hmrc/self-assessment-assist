@@ -23,9 +23,20 @@ traits:
             type: types.errorResponse
             examples:
               formatNino:
-                description: The format of the supplied NINO is not valid
+                description: The format of the supplied NINO field is not valid
                 value:
                   code: FORMAT_NINO
+  formatReportId:
+    responses:
+      400:
+        body:
+          application/json:
+            type: types.errorResponse
+            examples:
+              formatReportId:
+                description: The format of the supplied reportID is not valid.
+                value:
+                  code: FORMAT_REPORT_ID
   formatTaxYear:
     responses:
       400:
@@ -45,7 +56,7 @@ traits:
             type: types.errorResponse
             examples:
               formatCalcId:
-                description: The format of the supplied Calculation ID is not valid
+                description: The format of the supplied CalculationID is not valid
                 value:
                   code: FORMAT_CALC_ID
   formatType:
@@ -100,7 +111,7 @@ traits:
             type: types.errorResponse
             examples:
               invalidCredentials:
-                description: Invalid Authentication information provided.
+                description: Invalid Authentication information provided
                 value:
                   code: INVALID_CREDENTIALS
   clientOrAgentNotAuthorised:
@@ -111,7 +122,7 @@ traits:
             type: types.errorResponse
             examples:
               clientOrAgentNotAuthorised:
-                description: 'The client and/or agent is not authorised. This is normally because: the client is not subscribed to MTD, or the agent is not subscribed to Agent Services, or the client has not authorised the agent to act on their behalf, or the agent does not have access to the specific nino, or there is a nino mismatch.'
+                description: 'The client and/or agent is not authorised. This is normally because: the client is not subscribed to MTD, the agent is not subscribed to Agent Services, or the client has not authorised the agent to act on their behalf'
                 value:
                   code: CLIENT_OR_AGENT_NOT_AUTHORISED
   clientOrAgentNotAuthorisedAcknowledge:
@@ -122,7 +133,7 @@ traits:
             type: types.errorResponse
             examples:
               clientOrAgentNotAuthorised:
-                description: 'The client and/or agent is not authorised. This is normally because: the client is not subscribed to MTD, or the agent is not subscribed to Agent Services, or the client has not authorised the agent to act on their behalf, or the agent does not have access to the specific nino, or there is a nino mismatch or the client or agent who is trying to acknowledge did not request acknowledgement.'
+                description: 'The client and/or agent is not authorised. This is normally because: the client is not subscribed to MTD, the agent is not subscribed to Agent Services, or the client has not authorised the agent to act on their behalf'
                 value:
                   code: CLIENT_OR_AGENT_NOT_AUTHORISED
 
@@ -225,15 +236,26 @@ traits:
                 description: 'The submission cannot be completed due to validation failures.'
                 value:
                   code: RULE_SUBMISSION_FAILED
-  notFoundListCalculations:
+  resourceNotFound:
     responses:
       404:
         body:
           application/json:
             type: types.errorResponse
             examples:
-              notFoundListCalculations:
-                description: No tax calculations can be found for the supplied NINO and tax year.
+              resourceNotFound:
+                description: Matching resource not found.
+                value:
+                  code: RESOURCE_NOT_FOUND
+  matchingResourcesNotFound:
+    responses:
+      404:
+        body:
+          application/json:
+            type: types.errorResponse
+            examples:
+              matchingResourcesNotFound:
+                description: Calculation ID was not found
                 value:
                   code: MATCHING_RESOURCE_NOT_FOUND
   ninoNotFound:

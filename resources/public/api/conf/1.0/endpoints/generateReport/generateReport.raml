@@ -4,12 +4,13 @@ is:
 #  - headersLocal.testScenarioHeader
   - errors.formatNino  # QUESTION::Tempted to use  reportNotFound
   - errors.formatCalcId
-  - errors.ninoNotFound
-  - errors.calcIdNotFound # QUESTION:: Use reportNotFound?
-  - errors.invalidCredentials
+#  - errors.ninoNotFound
+#  - errors.calcIdNotFound # QUESTION:: Use reportNotFound?
+  - errors.matchingResourcesNotFound
   - errors.clientOrAgentNotAuthorised
+  - errors.invalidCredentials
 
-displayName: Produce a HMRC Assist Report
+displayName: Produce a HMRC Self Assessment Assist Report
 description: This endpoint allows a developer to generate and return a HMRC Assist report for a tax calculation and taxpayer.
 #(annotations.sandboxData): !include ../../scenarios/selfAssessment/retrieveIncomeTaxAndNics.md
 (annotations.scope): "read:self-assessment-assist"
