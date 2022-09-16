@@ -19,6 +19,7 @@ package uk.gov.hmrc.transactionalrisking.controllers
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.models.domain._
+import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
@@ -69,7 +70,8 @@ class GenerateReportController @Inject()(
           rdsReport
         }.map(Json.toJson[AssessmentReport])
           .map(js => Ok(js))).flatten
-      }.getOrElse(Future(BadRequest(asError("Please provide valid ID of an Assessment Report."))))//TODO Error desc maybe fix me
+      }.getOrElse(Future.successful(BadRequest(Json.toJson(CalculationIdFormatError))))
+
 
 
 /*     val assessmentRequestForSelfAssessment =  for{
