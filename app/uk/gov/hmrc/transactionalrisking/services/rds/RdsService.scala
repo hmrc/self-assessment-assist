@@ -21,6 +21,8 @@ import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
@@ -41,14 +43,20 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                              ec: ExecutionContext,
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
-                             correlationId: String): Future[AssessmentReport] =
+                             correlationId: String): Future[ServiceOutcome[AssessmentReport]] = {
     connector.submit(generateRdsAssessmentRequest(request, fraudRiskReport))
-      .map(toAssessmentReport(_, request))
-      .map(assessmentReport => {
-        logger.info("... returning it.")
-        // TODO: Should we also audit an explicit event for actually generating the assessment?
-        assessmentReport
-      })
+      .map { x =>
+        x match {
+          case Right(ResponseWrapper(newRdsRequest)) =>
+            val tar = toAssessmentReport(newRdsRequest, request)
+            logger.info("... returning it.")
+            // TODO: Should we also audit an explicit event for actually generating the assessment?
+            Right(ResponseWrapper(tar)): ServiceOutcome[AssessmentReport]
+           //TODO:DE deal with Errors.
+          case Left(errorWrapper) => Left(errorWrapper): ServiceOutcome[AssessmentReport]
+        }
+      }
+  }
 
   private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment) = {
     //TODO check should this be calculationId or feedbackId?
@@ -59,14 +67,14 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
 
   private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
     report.outputs.collect {
-      case elm:  NewRdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
+      case elm: NewRdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
     }.flatMap(_.value).collect {
       case value: NewRdsAssessmentReport.DataWrapper => value
     }.flatMap(_.data)
       .map(toRisk)
   }
 
-  private def isPreferredLanguage(language:String, preferredLanguage: PreferredLanguage) = preferredLanguage match {
+  private def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage) = preferredLanguage match {
     case PreferredLanguage.English if language == "englishActions" => true
     case PreferredLanguage.Welsh if language == "welshActions" => true
     case _ => false
@@ -78,38 +86,42 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
-                                           fraudRiskReport: FraudRiskReport): RdsRequest
-  = RdsRequest(
-    Seq(
-      RdsRequest.InputWithString("calculationId", request.calculationId.toString),
-      RdsRequest.InputWithString("nino", request.nino),
-      RdsRequest.InputWithString("taxYear", request.taxYear),
-      RdsRequest.InputWithString("customerType", request.customerType.toString),
-      RdsRequest.InputWithString("agentRef", request.agentRef.getOrElse("")),
-      RdsRequest.InputWithString("preferredLanguage", request.preferredLanguage.toString),
-      RdsRequest.InputWithString("fraudRiskReportDecision", fraudRiskReport.decision.toString),
-      RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
-      RdsRequest.InputWithObject("fraudRiskReportHeaders",
-        Seq(
-          MetadataWrapper(
-            Seq(
-              Map("KEY" -> "string"),
-              Map("VALUE" -> "string")
-            )),
-          DataWrapper(fraudRiskReport.headers.map(header => Seq(header.key, header.value)).toSeq)
-        )
-      ),
-      RdsRequest.InputWithObject("fraudRiskReportWatchlistFlags",
-        Seq(
-          MetadataWrapper(
-            Seq(
-              Map("NAME" -> "string")
-            )),
-          DataWrapper(fraudRiskReport.watchlistFlags.map(flag => Seq(flag.name)).toSeq)
+                                           fraudRiskReport: FraudRiskReport): ServiceOutcome[RdsRequest]
+  = {
+    Right(ResponseWrapper(RdsRequest(
+      Seq(
+        RdsRequest.InputWithString("calculationId", request.calculationId.toString),
+        RdsRequest.InputWithString("nino", request.nino),
+        RdsRequest.InputWithString("taxYear", request.taxYear),
+        RdsRequest.InputWithString("customerType", request.customerType.toString),
+        RdsRequest.InputWithString("agentRef", request.agentRef.getOrElse("")),
+        RdsRequest.InputWithString("preferredLanguage", request.preferredLanguage.toString),
+        RdsRequest.InputWithString("fraudRiskReportDecision", fraudRiskReport.decision.toString),
+        RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
+        RdsRequest.InputWithObject("fraudRiskReportHeaders",
+          Seq(
+            MetadataWrapper(
+              Seq(
+                Map("KEY" -> "string"),
+                Map("VALUE" -> "string")
+              )),
+            DataWrapper(fraudRiskReport.headers.map(header => Seq(header.key, header.value)).toSeq)
+          )
+        ),
+        RdsRequest.InputWithObject("fraudRiskReportWatchlistFlags",
+          Seq(
+            MetadataWrapper(
+              Seq(
+                Map("NAME" -> "string")
+              )),
+            DataWrapper(fraudRiskReport.watchlistFlags.map(flag => Seq(flag.name)).toSeq)
+          )
         )
       )
     )
-  )
+    )
+    ): ServiceOutcome[RdsRequest]
+  }
 
   def acknowlege(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
                                                     ec: ExecutionContext,

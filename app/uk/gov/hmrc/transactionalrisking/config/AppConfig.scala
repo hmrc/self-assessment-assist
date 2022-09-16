@@ -23,8 +23,22 @@ import uk.gov.hmrc.transactionalrisking.utils.Retrying
 
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
+trait AppConfig {
+
+  // RDS
+  def rdsBaseUrlForSubmit: String
+  def rdsBaseUrlForAcknowledge: String
+
+
+  // NRS config items
+  def nrsApiKey: String
+  def nrsRetries: List[FiniteDuration]
+  def appName: String
+  def nrsBaseUrl: String
+}
+
 @Singleton
-class AppConfig @Inject()(config: ServicesConfig,configuration: Configuration) {
+class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuration) extends AppConfig {
 
   val appName: String = config.getString("appName")
 
@@ -40,7 +54,7 @@ class AppConfig @Inject()(config: ServicesConfig,configuration: Configuration) {
   private val cipConfig = configuration.get[Configuration]("microservice.services.cip-fraud-service")
   val cipFraudServiceBaseUrl:String = config.baseUrl("cip-fraud-service")+cipConfig.get[String]("submit-url")
 
-  lazy val nrsRetries: List[FiniteDuration] =
+  def nrsRetries: List[FiniteDuration] =
     Retrying.fibonacciDelays(getFiniteDuration(nrsConfig, "initialDelay"), nrsConfig.get[Int]("numberOfRetries"))
 
   private final def getFiniteDuration(config: Configuration, path: String): FiniteDuration = {

@@ -19,12 +19,13 @@ package uk.gov.hmrc.transactionalrisking.controllers
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.models.domain._
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, GenerarteReportRequestBody, GenerateReportRequest}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
+import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging}
 
 import java.util.UUID
@@ -33,15 +34,15 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class GenerateReportController @Inject()(
-                                                val cc: ControllerComponents,
-                                                val integrationFrameworkService: IntegrationFrameworkService,
-                                                val authService: EnrolmentsAuthService,
-                                                nonRepudiationService: NrsService,
-                                                insightService: InsightService,
-                                                rdsService:RdsService,
-                                                currentDateTime: CurrentDateTime,
-                                              )(implicit ec: ExecutionContext,
-                                                correlationId: String) extends AuthorisedController(cc) with BaseController with Logging {
+                                          val cc: ControllerComponents,
+                                          val integrationFrameworkService: IntegrationFrameworkService,
+                                          val authService: EnrolmentsAuthService,
+                                          nonRepudiationService: NrsService,
+                                          insightService: InsightService,
+                                          rdsService: RdsService,
+                                          currentDateTime: CurrentDateTime,
+                                        )(implicit ec: ExecutionContext,
+                                          correlationId: String) extends AuthorisedController(cc) with BaseController with Logging {
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
@@ -57,35 +58,46 @@ class GenerateReportController @Inject()(
           customerType,
           None,
           calculationInfo.taxYear)
-        //TODO Fix me put in for comprehension
+
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
         //    val fraudRiskReportStub = accessFraudRiskReport(generateFraudRiskRequest(request))
-        val rdsAssessmentReportResponse: Future[AssessmentReport] = rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
+        val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] = rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
 
-         Future(rdsAssessmentReportResponse.map { rdsReport =>
-          val submitRequest = GenerateReportRequest(nino=nino, GenerarteReportRequestBody(rdsReport.toString, calculationId))
-           //TODO below generate NRSId as per the spec
-          nonRepudiationService.submit(submitRequest, generatedNrsId = nino, currentDateTime.getDateTime, AssistReportGenerated)
-          rdsReport
-        }.map(Json.toJson[AssessmentReport])
-          .map(js => Ok(js))).flatten
-      }.getOrElse(Future(BadRequest(asError("Please provide valid ID of an Assessment Report."))))//TODO Error desc maybe fix me
+        Future {
+          def assementReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
+            assementReportserviceOutcome =>
+              assementReportserviceOutcome match {
+                case Right(ResponseWrapper(newRdsAssessmentReportResponse)) =>
+                  val generateReportRequest = GenerateReportRequest(nino = nino, GenerarteReportRequestBody(newRdsAssessmentReportResponse.toString, calculationId))
+                  //TODO below generate NRSId as per the spec
+                  nonRepudiationService.submit(generateReportRequest = generateReportRequest, generatedNrsId = nino, submissionTimestamp = currentDateTime.getDateTime, notableEventType = AssistReportGenerated)
+                  //TODO:DE Need   to deal with post NRS errors here.
+                  //TODO:DE match case saved nrs no problems(Pretend no errors for moment)
+                  Right(ResponseWrapper(newRdsAssessmentReportResponse)): ServiceOutcome[AssessmentReport]
+                case Left(errorWrapper) =>
+                  Left(errorWrapper): ServiceOutcome[AssessmentReport]
+              }
+          }
 
+          def ret: Future[Result] = assementReportFuture.flatMap {
+            serviceOutcome =>
+              serviceOutcome match {
+                case Right(ResponseWrapper(assessmentReport)) =>
+                  serviceOutcome.right.get.flatMap {
+                    assessmentReport =>
+                      val jsValue = Json.toJson[AssessmentReport](assessmentReport)
+                      Future(Ok(jsValue))
 
-/*     val assessmentRequestForSelfAssessment =  for{
-        calculationIdUuid <- toId(calculationId)
-        calculationInfo <- getCalculationInfo2(calculationIdUuid, nino)
+                  }
+                case Left(errorWrapper) =>
+                  Future(BadRequest(asError("Please provide valid ID of an Assessment Report.")))
+              }
+          }
 
+          ret
 
-        //fraudRiskReport <- insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
-      } yield { calculationInfo =>
-         AssessmentRequestForSelfAssessment(calculationIdUuid,
-          nino,
-          PreferredLanguage.English,
-          customerType,
-          None,
-          taxYear = calculationInfo.taxYear)
-      }*/
+        }.flatten
+      }.getOrElse(Future(BadRequest(asError("Please provide valid ID of an Assessment Report.")))) //TODO Error desc maybe fix me
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {

@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.services.cip
+package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
-import play.api.Logger
-import uk.gov.hmrc.transactionalrisking.models.domain.{FraudDecision, FraudRiskReport, FraudRiskRequest}
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.transactionalrisking.utils.HashUtil
 
-import javax.inject.{Inject, Singleton}
+trait MockHashUtil extends MockFactory {
 
+  val mockHashUtil: HashUtil = mock[HashUtil]
 
-@Singleton
-class InsightService @Inject()() {
+  object MockedHashUtil {
 
-  val logger: Logger = Logger("InsightService")
+    def encode(string: String): CallHandler[String] = {
+      (mockHashUtil
+        .encode(_: String))
+        .expects(string)
+    }
 
-  def assess(fraudRiskRequest: FraudRiskRequest): FraudRiskReport = {
-    logger.info(s"Received request for a fraud risk report ...")
-    val fraudRiskReport = FraudRiskReport(FraudDecision.Accept, 1, Set.empty, Set.empty)
-    logger.info("... returning it.")
-    fraudRiskReport
+    def getHash(string: String): CallHandler[String] = {
+      (mockHashUtil
+        .getHash(_: String))
+        .expects(string)
+    }
+
   }
 
 }
-

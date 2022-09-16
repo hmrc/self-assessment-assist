@@ -14,25 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.services.cip
+package uk.gov.hmrc.transactionalrisking
 
-import play.api.Logger
-import uk.gov.hmrc.transactionalrisking.models.domain.{FraudDecision, FraudRiskReport, FraudRiskRequest}
+import uk.gov.hmrc.transactionalrisking.models.errors.ErrorWrapper
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 
-import javax.inject.{Inject, Singleton}
-
-
-@Singleton
-class InsightService @Inject()() {
-
-  val logger: Logger = Logger("InsightService")
-
-  def assess(fraudRiskRequest: FraudRiskRequest): FraudRiskReport = {
-    logger.info(s"Received request for a fraud risk report ...")
-    val fraudRiskReport = FraudRiskReport(FraudDecision.Accept, 1, Set.empty, Set.empty)
-    logger.info("... returning it.")
-    fraudRiskReport
-  }
-
+package object services {
+  type ServiceOutcome[Resp] = Either[ErrorWrapper, ResponseWrapper[Resp]]
 }
-
