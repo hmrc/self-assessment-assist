@@ -20,6 +20,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
@@ -97,7 +98,7 @@ class GenerateReportController @Inject()(
           ret
 
         }.flatten
-      }.getOrElse(Future(BadRequest(asError("Please provide valid ID of an Assessment Report.")))) //TODO Error desc maybe fix me
+      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)))) //TODO Error desc maybe fix me
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {
