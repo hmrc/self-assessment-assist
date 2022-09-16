@@ -22,6 +22,8 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.utils.Logging
@@ -38,18 +40,24 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
 
   //TODO move this to RDS connector
-  def submit(request: RdsRequest)(implicit ec: ExecutionContext): Future[NewRdsAssessmentReport] =
-    wsClient
-      .url(baseUrlForRdsAssessmentsSubmit)
-      .post(Json.toJson(request))
-      .map(response =>
-        response.status match {
-          case Status.OK => response.json.validate[NewRdsAssessmentReport].get
-          case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
-        }
-      )
+  def submit( requestSO: ServiceOutcome[RdsRequest])(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+    requestSO match {
+      case Right(ResponseWrapper(request)) =>
+        wsClient
+          .url(baseUrlForRdsAssessmentsSubmit)
+          .post(Json.toJson(request))
+          .map(response =>
+            response.status match {
+              case Status.OK => Right(ResponseWrapper(response.json.validate[NewRdsAssessmentReport].get))
+              case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
+              //TODO:DE Must get rid of throw and convert tp new error system
+            }
+          )
+      case Left(er) => Future(Left(er):ServiceOutcome[NewRdsAssessmentReport])
+    }
+  }
 
-   def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
+  def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
                                                   ec: ExecutionContext): Future[Int] =
     wsClient
       .url(baseUrlToAcknowledgeRdsAssessments)

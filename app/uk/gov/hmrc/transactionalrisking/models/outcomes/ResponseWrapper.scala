@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.utils
+package uk.gov.hmrc.transactionalrisking.models.outcomes
 
-import java.time.OffsetDateTime
-import javax.inject.{Inject, Singleton}
-
-@Singleton
-class CurrentDateTime @Inject()() {
-  def   getDateTime(): OffsetDateTime = OffsetDateTime.now()
-  def dateString(currentDatetime: OffsetDateTime): OffsetDateTime = {
-    val formatted = currentDatetime.format(DateUtils.dateTimePattern)
-//    val formatter = DateUtils.dateTimePattern.format(OffsetDateTime.parse(currentDatetime.toString))
-    OffsetDateTime.parse(formatted)
-  }
+//TODO:DE Check why we need the correlationID.
+case class ResponseWrapper[+A]( /* correlationId: String,*/  responseData: A) {
+  def map[B](f: A => B): ResponseWrapper[B] = ResponseWrapper( /*correlationId,*/ f(responseData))
+  def flatMap[B](f: A => B):B = f(responseData)
 }

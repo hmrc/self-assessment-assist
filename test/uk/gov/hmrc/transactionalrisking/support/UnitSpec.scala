@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.transactionalrisking.support
 //import uk.gov.hmrc.transactionalrisking.config.FeatureSwitch
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
@@ -43,6 +45,8 @@ trait UnitSpec extends AnyWordSpecLike
 
   // Convenience to avoid having to wrap andThen() parameters in Future.successful
   implicit def liftFuture[A](v: A): Future[A] = Future.successful(v)
+
+  implicit val wireMockServer: WireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 
   //  def createFeatureSwitch(config: String): FeatureSwitch =
   //    FeatureSwitch(Some(Configuration(ConfigFactory.parseString(config))))

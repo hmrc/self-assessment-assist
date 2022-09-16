@@ -75,13 +75,14 @@ object CalculationIdFormatError
   extends MtdError(code = "FORMAT_CALC_ID",
   message = "The provided Calculation ID is invalid"
   )
+object FormatReportIdError extends MtdError("FORMAT_REPORT_ID", "The format of the supplied reportID is not valid")
 
 // Rule Errors
 //object RuleIncorrectOrEmptyBodyError extends TRError("RULE_INCORRECT_OR_EMPTY_BODY_SUBMITTED", "An empty or non-matching body was submitted")
 //object RuleInsolventTraderError extends TRError("RULE_INSOLVENT_TRADER", "The remote endpoint has indicated that the Trader is insolvent")
 
 // Standard Errors
-object NotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "Matching resource not found")
+object ResourceNotFoundError extends MtdError("RESOURCE_NOT_FOUND", "Matching resource not found")
 object DownstreamError extends MtdError("INTERNAL_SERVER_ERROR", "An internal server error occurred")
 object BadRequestError extends MtdError("INVALID_REQUEST", "Invalid request")
 //object BVRError extends TRError("BUSINESS_ERROR", "Business validation error")
@@ -118,6 +119,8 @@ object ForbiddenDownstreamError extends MtdError(
 object InvalidAcceptHeaderError extends MtdError("ACCEPT_HEADER_INVALID", "The accept header is missing or invalid")
 object UnsupportedVersionError extends MtdError("NOT_FOUND", "The requested resource could not be found")
 object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body")
+
+object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later")
 
 // Custom VAT errors
 //object LegacyNotFoundError extends TRError("NOT_FOUND", "The remote endpoint has indicated that no data can be found")

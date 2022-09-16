@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.mocks.services
+package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
@@ -33,13 +33,13 @@ trait MockEnrolmentsAuthService extends MockFactory {
 
     def authoriseUser(): Unit = {
       (mockEnrolmentsAuthService.authorised(_: Predicate, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *, *)
+        .expects(*, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(UserDetails("Individual", None, "client-Id"))))
     }
 
     def authorised(predicate: Predicate): CallHandler[Future[AuthOutcome]] = {
       (mockEnrolmentsAuthService.authorised(_: Predicate, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(predicate, *, *, *)
+        .expects(predicate, *, *, *).anyNumberOfTimes()
     }
   }
 

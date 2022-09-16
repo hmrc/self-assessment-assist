@@ -23,7 +23,7 @@ class Module extends AbstractModule {
 
   override def configure(): Unit = {
 
-    bind(classOf[AppConfig]).asEagerSingleton()
+    bind(classOf[AppConfig]).to(classOf[AppConfigImpl]).asEagerSingleton()
   }
 
   @Provides

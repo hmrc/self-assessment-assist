@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.services.cip
+package uk.gov.hmrc.transactionalrisking.support
 
-import play.api.Logger
-import uk.gov.hmrc.transactionalrisking.models.domain.{FraudDecision, FraudRiskReport, FraudRiskRequest}
+import play.api.http.{HeaderNames, MimeTypes, Status}
+import uk.gov.hmrc.http.HeaderCarrier
 
-import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
 
+trait ServiceSpec extends UnitSpec
+  with Status
+  with MimeTypes
+  with HeaderNames {
 
-@Singleton
-class InsightService @Inject()() {
-
-  val logger: Logger = Logger("InsightService")
-
-  def assess(fraudRiskRequest: FraudRiskRequest): FraudRiskReport = {
-    logger.info(s"Received request for a fraud risk report ...")
-    val fraudRiskReport = FraudRiskReport(FraudDecision.Accept, 1, Set.empty, Set.empty)
-    logger.info("... returning it.")
-    fraudRiskReport
-  }
-
+  implicit val correlationId: String = "a1e8057e-fbbc-47a8-a8b4-78d9f015c253"
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 }
-

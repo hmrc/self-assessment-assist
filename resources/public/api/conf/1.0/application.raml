@@ -51,8 +51,11 @@ uses:
         uriParameters:
           nino: !include pathParameters/nino.raml
         /{reportId}:
-          post: !include endpoints/acknowledge/confirmReport.raml
           uriParameters:
             reportId: !include pathParameters/reportId.raml
+          /{correlationId}:
+            post: !include endpoints/acknowledge/confirmReport.raml
+            uriParameters:
+              correlationId: !include pathParameters/correlationId.raml
     #End of Acknowledge a Self Assessment Assist Report.
 

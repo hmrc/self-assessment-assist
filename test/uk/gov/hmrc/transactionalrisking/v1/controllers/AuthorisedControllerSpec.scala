@@ -23,7 +23,7 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.mocks.services.MockEnrolmentsAuthService
+import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.models.errors._
 import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
 

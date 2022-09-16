@@ -20,6 +20,8 @@ import play.api.Logger
 import uk.gov.hmrc.transactionalrisking.models.domain.CalculationInfo
 
 import java.util.UUID
+import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
 
 /**
@@ -33,7 +35,11 @@ import java.util.UUID
  * https://confluence.tools.tax.service.gov.uk/display/DDCWLS/Integration+Framework+Stubs
  *
  */
-class IntegrationFrameworkService {
+
+//TODO DE : Make IntegrationFramework = AuditService al VAT?
+
+@Singleton
+class IntegrationFrameworkService @Inject()(){
 
   val logger: Logger = Logger("IntegrationFrameworkService")
 //TODO fix me actual integration and stub pending

@@ -38,13 +38,13 @@ class NrsService @Inject()(
                            hashUtil: HashUtil) extends Logging {
 //                           override val metrics: Metrics) extends Timer with Logging { TODO include metrics later
 
-  def buildNrsSubmission(selfAssessmentSubmission: GenerateReportRequest,
+  def buildNrsSubmission(assessmentSubmission: GenerateReportRequest,
                          submissionTimestamp: OffsetDateTime,
                          request: UserRequest[_], notableEventType:NotableEventType): NrsSubmission = {
 
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
     // val payloadString = Json.toJson(body).toString()
-    val payloadString = Json.toJson(selfAssessmentSubmission.body).toString()
+    val payloadString = Json.toJson(assessmentSubmission.body).toString()
     val encodedPayload = hashUtil.encode(payloadString)
     val sha256Checksum = hashUtil.getHash(payloadString)
     val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)
@@ -68,24 +68,24 @@ class NrsService @Inject()(
             //            companyName = None,
             nino = "NINO",
             taxPeriodEndDate = LocalDate.now(), //TODO fix me taxPeriodEndDate
-            reportId = selfAssessmentSubmission.body.reportId,
+            reportId = assessmentSubmission.body.reportId,
           )
       )
     )
   }
 
-  def submit(selfAssessmentSubmission: GenerateReportRequest, generatedNrsId: String, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType)(
+  def submit(generateReportRequest: GenerateReportRequest, generatedNrsId: String, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType)(
     implicit request: UserRequest[_],
     hc: HeaderCarrier,
     ec: ExecutionContext,
     correlationId: String
    ): Future[Option[NrsResponse]] = {
 
-    val nrsSubmission = buildNrsSubmission(selfAssessmentSubmission, submissionTimestamp, request,notableEventType)
+    val nrsSubmission = buildNrsSubmission(generateReportRequest, submissionTimestamp, request,notableEventType)
     //TODO delete me, kept it for debugging purpose
     logger.info(s"NRS request submitted as below")
     logger.info(s"${Json.toJson(nrsSubmission)}")
-          connector.submit(nrsSubmission,selfAssessmentSubmission.body.reportId).map { response =>
+          connector.submit(nrsSubmission,generateReportRequest.body.reportId).map { response =>
             response.toOption
           }
   }
