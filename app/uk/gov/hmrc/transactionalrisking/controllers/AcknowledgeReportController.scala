@@ -46,7 +46,7 @@ class AcknowledgeReportController @Inject()(
                                              currentDateTime: CurrentDateTime,
                                            )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
   //TODO revisit if reportId needs to be UUID instead of string? as regex validation is done anyway
-  def acknowledgeReportForSelfAssessment(nino: String, reportId: String, correlationId:String): Action[AnyContent] =
+  def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsReportReferencesId:String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request => {
       implicit val correlationId: String = UUID.randomUUID().toString
       logger.info(s"Received request to acknowledge assessment report: [$reportId]")
