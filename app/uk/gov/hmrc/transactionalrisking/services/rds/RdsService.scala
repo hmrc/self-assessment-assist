@@ -45,13 +45,12 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                              userRequest: UserRequest[_],
                              correlationId: String): Future[ServiceOutcome[AssessmentReport]] = {
     connector.submit(generateRdsAssessmentRequest(request, fraudRiskReport))
-      .map { x =>
-        x match {
-          case Right(ResponseWrapper(newRdsRequest)) =>
-            val tar = toAssessmentReport(newRdsRequest, request)
+      .map { _ match {
+          case Right(ResponseWrapper(rdsResponse)) =>
+            val assessmentReport = toAssessmentReport(rdsResponse, request)
             logger.info("... returning it.")
             // TODO: Should we also audit an explicit event for actually generating the assessment?
-            Right(ResponseWrapper(tar)): ServiceOutcome[AssessmentReport]
+            Right(ResponseWrapper(assessmentReport)): ServiceOutcome[AssessmentReport]
            //TODO:DE deal with Errors.
           case Left(errorWrapper) => Left(errorWrapper): ServiceOutcome[AssessmentReport]
         }
@@ -62,7 +61,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
     //TODO check should this be calculationId or feedbackId?
     AssessmentReport(reportId = report.calculationId,
       risks = risks(report, request.preferredLanguage), nino = request.nino, taxYear = request.taxYear,
-      calculationId = request.calculationId)
+      calculationId = request.calculationId,report.rdsCorrelationID.toString)
   }
 
   private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {

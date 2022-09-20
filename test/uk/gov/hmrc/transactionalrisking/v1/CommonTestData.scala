@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.transactionalrisking.v1
 
 import play.api.libs.json.{JsValue, Json}
@@ -15,6 +31,7 @@ object CommonTestData {
 
   val simpleNino: String = "AA000000B"
   val simpleCalculationId: UUID = new UUID(0, 1)
+  val simpleCorrelationId: String = "5fht738957jfjf845jgjf855"
   val simpleReportId = new UUID(0, 2)
   val simpleRiskTitle = "title"
   val simpleRiskBody = "body"
@@ -40,7 +57,7 @@ object CommonTestData {
       , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simpePath))
     , nino = simpleNino
     , taxYear = simpeTaxYear
-    , calculationId = simpleCalculationId)
+    , calculationId = simpleCalculationId,correlationID = simpleCorrelationId)
 
   val simpleMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssementReport)
 

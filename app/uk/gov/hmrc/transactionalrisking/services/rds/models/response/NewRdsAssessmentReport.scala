@@ -38,16 +38,24 @@ case class NewRdsAssessmentReport(links: Seq[String],
       .map(_.identifiers.find(_.name == "calculationID").head)
       .map(_.value)
       .map(UUID.fromString)
-      .getOrElse(throw new RuntimeException("No 'calculationId' present."))
+      .getOrElse(throw new RuntimeException("No 'calculationID' present."))
 
-//  def feedbackId: UUID =
-//    outputs
-//      .find(_.isInstanceOf[IdentifiersWrapper])
-//      .map(_.asInstanceOf[IdentifiersWrapper])
-//      .map(_.identifiers.find(_.name == "feedbackID").head)
-//      .map(_.value)
-//      .map(UUID.fromString)
-//      .getOrElse(throw new RuntimeException("No 'feedbackID' present."))
+  def rdsCorrelationID: String =
+    outputs
+      .find(_.isInstanceOf[IdentifiersWrapper])
+      .map(_.asInstanceOf[IdentifiersWrapper])
+      .map(_.identifiers.find(_.name == "correlationID").head)
+      .map(_.value)
+      .getOrElse(throw new RuntimeException("No 'correlationID' present."))
+
+  def feedbackId: UUID =
+    outputs
+      .find(_.isInstanceOf[IdentifiersWrapper])
+      .map(_.asInstanceOf[IdentifiersWrapper])
+      .map(_.identifiers.find(_.name == "feedbackID").head)
+      .map(_.value)
+      .map(UUID.fromString)
+      .getOrElse(throw new RuntimeException("No 'feedbackID' present."))
 
 }
 
