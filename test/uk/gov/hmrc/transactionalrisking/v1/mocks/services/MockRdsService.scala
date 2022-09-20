@@ -27,6 +27,7 @@ import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
 import uk.gov.hmrc.transactionalrisking.v1.CommonTestData._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,7 +43,7 @@ trait MockRdsService extends MockFactory {
                fraudRiskReport: FraudRiskReport,
                origin: Origin): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
       (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(simpleAssementReport) )))
+        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(CommonTestData.correlationId,simpleAssementReport) )))
     }
 
 //

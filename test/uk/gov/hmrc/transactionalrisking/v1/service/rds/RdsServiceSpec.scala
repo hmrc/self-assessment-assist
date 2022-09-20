@@ -27,6 +27,7 @@ import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 
@@ -58,19 +59,19 @@ class RdsServiceSpec extends ServiceSpec with RdsTestData {
     "the submit method is called" must {
       "return the expected result" in new Test {
 
-        val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(rdsAssessmentReport))
+        val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(CommonTestData.correlationId,rdsAssessmentReport))
         MockRdsConnector.submit(requestSO) returns Future.successful(rdsAssessmentReportSO)
 
-        await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)) shouldBe Right(ResponseWrapper(assessmentReport))
+        await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)) shouldBe Right(ResponseWrapper(CommonTestData.correlationId,assessmentReport))
       }
     }
 
     "return the expected result in Welsh if it's selected as preferred Language" in new Test {
 
-      val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(rdsAssessmentReport))
+      val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(CommonTestData.correlationId,rdsAssessmentReport))
       MockRdsConnector.submit(requestSO) returns Future.successful(rdsAssessmentReportSO)
 
-      await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)) shouldBe Right(ResponseWrapper(assessmentReport))
+      await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)) shouldBe Right(ResponseWrapper(CommonTestData.correlationId, assessmentReport))
     }
 
     "the acknowledged method is called" must {
