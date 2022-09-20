@@ -42,14 +42,13 @@ class GenerateReportController @Inject()(
                                           insightService: InsightService,
                                           rdsService: RdsService,
                                           currentDateTime: CurrentDateTime,
-                                        )(implicit ec: ExecutionContext,
-                                          correlationId: String) extends AuthorisedController(cc) with BaseController with Logging {
+                                        )(implicit ec: ExecutionContext,correlationId: String) extends AuthorisedController(cc) with BaseController with Logging {
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       //    doImplicitAuditing() // TODO: Fix me.
       //    doExplicitAuditingForGenerationRequest()
-      implicit val correlationId: String = UUID.randomUUID().toString
+//      implicit val correlationId: String = UUID.randomUUID().toString
       val customerType = deriveCustomerType(request)
       toId(calculationId).map { calculationIdUuid =>
         val calculationInfo = getCalculationInfo(calculationIdUuid, nino)
@@ -68,13 +67,13 @@ class GenerateReportController @Inject()(
           def assementReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
             assementReportserviceOutcome =>
               assementReportserviceOutcome match {
-                case Right(ResponseWrapper(newRdsAssessmentReportResponse)) =>
+                case Right(ResponseWrapper(correlationIdRes,newRdsAssessmentReportResponse)) =>
                   val generateReportRequest = GenerateReportRequest(nino = nino, GenerarteReportRequestBody(newRdsAssessmentReportResponse.toString, calculationId))
                   //TODO below generate NRSId as per the spec
                   nonRepudiationService.submit(generateReportRequest = generateReportRequest, generatedNrsId = nino, submissionTimestamp = currentDateTime.getDateTime, notableEventType = AssistReportGenerated)
                   //TODO:DE Need   to deal with post NRS errors here.
                   //TODO:DE match case saved nrs no problems(Pretend no errors for moment)
-                  Right(ResponseWrapper(newRdsAssessmentReportResponse)): ServiceOutcome[AssessmentReport]
+                  Right(ResponseWrapper(correlationId,newRdsAssessmentReportResponse)): ServiceOutcome[AssessmentReport]
                 case Left(errorWrapper) =>
                   Left(errorWrapper): ServiceOutcome[AssessmentReport]
               }
@@ -83,7 +82,7 @@ class GenerateReportController @Inject()(
           def ret: Future[Result] = assementReportFuture.flatMap {
             serviceOutcome =>
               serviceOutcome match {
-                case Right(ResponseWrapper(assessmentReport)) =>
+                case Right(ResponseWrapper(correlationId,assessmentReport)) =>
                   serviceOutcome.right.get.flatMap {
                     assessmentReport =>
                       val jsValue = Json.toJson[AssessmentReport](assessmentReport)

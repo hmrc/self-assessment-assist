@@ -34,7 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client is recommended by HMRC
                               //val httpClient: HttpClient,
-                             appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging{
+                             appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationId:String) extends Logging{
 
   private def baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
@@ -42,13 +42,13 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
   //TODO move this to RDS connector
   def submit( requestSO: ServiceOutcome[RdsRequest])(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     requestSO match {
-      case Right(ResponseWrapper(request)) =>
+      case Right(ResponseWrapper(correlationId,request)) =>
         wsClient
           .url(baseUrlForRdsAssessmentsSubmit)
           .post(Json.toJson(request))
           .map(response =>
             response.status match {
-              case Status.OK => Right(ResponseWrapper(response.json.validate[NewRdsAssessmentReport].get))
+              case Status.OK => Right(ResponseWrapper(correlationId,response.json.validate[NewRdsAssessmentReport].get))
               case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
               //TODO:DE Must get rid of throw and convert tp new error system
             }
