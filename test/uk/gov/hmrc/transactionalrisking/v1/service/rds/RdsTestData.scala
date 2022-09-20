@@ -244,6 +244,10 @@ trait RdsTestData {
        |        {
        |            "name": "calculationID",
        |            "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
+       |        },
+       |        {
+       |            "name": "correlationID",
+       |            "value": "5fht738957jfjf845jgjf855"
        |        }
        |        ]
        |       }
@@ -329,6 +333,7 @@ trait RdsTestData {
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
     taxYear = assessmentRequestForSelfAssessment.taxYear,
-    calculationId = assessmentRequestForSelfAssessment.calculationId
+    calculationId = assessmentRequestForSelfAssessment.calculationId,
+    correlationID = "5fht738957jfjf845jgjf855"
   )
 }

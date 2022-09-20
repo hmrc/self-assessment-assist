@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.services.nrs.models.request
+package uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations
 
-case class AcknowledgeReportRequest(nino: String, feedbackId: String,correlationId:String)
+import uk.gov.hmrc.transactionalrisking.models.errors.{MtdError, RDSCorrelationIdError}
+
+object RDSCorrelationIDValidation {
+
+  def validate(correlationId: String): List[MtdError] = {
+    if (correlationId != null && correlationId.trim.length!=0) NoValidationErrors else List(RDSCorrelationIdError)
+  }
+}

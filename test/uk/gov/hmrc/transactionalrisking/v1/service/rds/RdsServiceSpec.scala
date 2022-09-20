@@ -77,6 +77,8 @@ class RdsServiceSpec extends ServiceSpec with RdsTestData {
       "return the expected result" in new Test {
         val nino = "AA00000B"
         val feedbackId = "1234"
+        implicit val correlationId = "12348888889"
+        val rdsCorrelationId = "5fht738957jfjf845jgjf855"
 
         val request: RdsRequest = RdsRequest(
           Seq(
@@ -88,7 +90,7 @@ class RdsServiceSpec extends ServiceSpec with RdsTestData {
         val expectedResult = 123
         MockRdsConnector.acknowledgeRds(request) returns Future.successful(expectedResult)
 
-        val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(nino, feedbackId)
+        val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(nino, feedbackId,correlationId)
 
         await(service.acknowlege(acknowledgeReportRequest)) shouldBe expectedResult
       }
