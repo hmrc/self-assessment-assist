@@ -24,6 +24,7 @@ import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 import java.util.UUID
@@ -31,7 +32,7 @@ import java.util.UUID
 trait RdsTestData {
 
   val rdsRequest: ServiceOutcome[RdsRequest] = Right(
-    ResponseWrapper(
+    ResponseWrapper(CommonTestData.correlationId,
       RdsRequest(
         Seq()
       )
@@ -40,7 +41,7 @@ trait RdsTestData {
 
   val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq())
 
-  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(MtdError(code = "", message = "")))
+  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(CommonTestData.correlationId,MtdError(code = "", message = "")))
 
   var rdsRequestBody: String = """
                                  |{
@@ -276,7 +277,7 @@ trait RdsTestData {
   )
 
   val requestSO: ServiceOutcome[RdsRequest] = Right(
-    ResponseWrapper(
+    ResponseWrapper(CommonTestData.correlationId,
       RdsRequest(
         Seq(
           RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
