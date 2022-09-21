@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators
 
-import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations.{NinoValidation, RDSCorrelationIDValidation, ReportIDValidation}
+import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations.{NinoValidation,  ReportIDValidation}
 import uk.gov.hmrc.transactionalrisking.models.errors.MtdError
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 
@@ -24,7 +24,7 @@ class AcknowledgeReportValidator extends Validator[AcknowledgeReportRawData] {
 
   private val validationSet = List(parameterFormatValidation)
   private def parameterFormatValidation: AcknowledgeReportRawData => List[List[MtdError]] = { data =>
-    List(NinoValidation.validate(data.nino), ReportIDValidation.validate(data.reportId),RDSCorrelationIDValidation.validate(data.rdsCorrelationID))
+    List(NinoValidation.validate(data.nino), ReportIDValidation.validate(data.reportId))
   }
 
   override def validate(data: AcknowledgeReportRawData): List[MtdError] = {

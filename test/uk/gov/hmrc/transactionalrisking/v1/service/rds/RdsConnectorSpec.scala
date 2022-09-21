@@ -23,6 +23,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
 
 
 class RdsConnectorSpec extends ConnectorSpec
@@ -53,7 +54,7 @@ class RdsConnectorSpec extends ConnectorSpec
     "submit method is called" must {
       "return the response if successful" in new Test {
         MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
-        await(connector.submit(rdsRequest)) shouldBe Right(ResponseWrapper(rdsAssessmentReport))
+        await(connector.submit(rdsRequest)) shouldBe Right(ResponseWrapper(CommonTestData.correlationId, rdsAssessmentReport))
       }
     }
 

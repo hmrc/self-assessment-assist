@@ -76,11 +76,6 @@ object CalculationIdFormatError
   extends MtdError(code = "FORMAT_CALC_ID",
   message = "The provided Calculation ID is invalid"
   )
-object FormatReportIdError extends MtdError("FORMAT_REPORT_ID", "The format of the supplied reportID is not valid")
-
-// Rule Errors
-//object RuleIncorrectOrEmptyBodyError extends TRError("RULE_INCORRECT_OR_EMPTY_BODY_SUBMITTED", "An empty or non-matching body was submitted")
-//object RuleInsolventTraderError extends TRError("RULE_INSOLVENT_TRADER", "The remote endpoint has indicated that the Trader is insolvent")
 
 // Standard Errors
 object ResourceNotFoundError extends MtdError("RESOURCE_NOT_FOUND", "Matching resource not found")
@@ -122,51 +117,3 @@ object UnsupportedVersionError extends MtdError("NOT_FOUND", "The requested reso
 object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body")
 
 object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later")
-
-// Custom VAT errors
-//object LegacyNotFoundError extends TRError("NOT_FOUND", "The remote endpoint has indicated that no data can be found")
-
-//object RuleDateRangeTooLargeError extends TRError(
-//  code = "DATE_RANGE_TOO_LARGE",
-//  message = "The date of the requested return cannot be further than four years from the current date.",
-//  customJson = Some(
-//    Json.parse(
-//      """
-//        |{
-//        |  "code": "BUSINESS_ERROR",
-//        |  "message": "Business validation error",
-//        |  "errors": [
-//        |      {
-//        |        "code": "DATE_RANGE_TOO_LARGE",
-//        |        "message": "The date of the requested return cannot be further than four years from the current date."
-//        |      }
-//        |  ]
-//        |}
-//      """.stripMargin
-//    )
-//  )
-//)
-
-//object InvalidDateToErrorDes extends TRError("DATE_TO_INVALID", "The provided to date is invalid")
-//object InvalidDateFromErrorDes extends TRError("DATE_FROM_INVALID", "The provided from date is invalid")
-//object TaxPeriodNotEnded extends TRError("TAX_PERIOD_NOT_ENDED", "The remote endpoint has indicated that the submission is for a tax period that has not ended")
-//
-//object DuplicateVatSubmission extends TRError(
-//  code = "DUPLICATE_SUBMISSION",
-//  message = "The VAT return was already submitted for the given period.",
-//  customJson = Some(
-//    Json.parse(
-//      """
-//        |{
-//        |  "code": "BUSINESS_ERROR",
-//        |  "message": "Business validation error",
-//        |  "errors": [
-//        |      {
-//        |        "code": "DUPLICATE_SUBMISSION",
-//        |        "message": "The VAT return was already submitted for the given period."
-//        |      }
-//        |  ]
-//        |}
-//      """.stripMargin
-//    )
-//  ))

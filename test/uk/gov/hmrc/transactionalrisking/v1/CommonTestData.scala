@@ -43,6 +43,7 @@ object CommonTestData {
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
+  implicit val correlationId: String = UUID.randomUUID().toString
 
   val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
     calculationId = simpleCalculationId,
