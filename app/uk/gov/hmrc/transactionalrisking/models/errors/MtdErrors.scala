@@ -65,7 +65,7 @@ object MtdErrorWrapper {
 //NRS error
 object NrsError extends MtdError("NRS_SUBMISSION_FAILURE", "The submission to NRS from MDTP failed")
 
-object ReportIdFormatError extends MtdError("REPORT_ID_INVALID", "The provided REPORT_ID format is invalid")
+object ReportIdFormatError extends MtdError("REPORT_ID_INVALID", "The provided Report ID is invalid")
 object RDSCorrelationIdError extends MtdError("CORRELATION_ID_INVALID", "CORRELATION_ID is invalid")
 
 // Format Errors
