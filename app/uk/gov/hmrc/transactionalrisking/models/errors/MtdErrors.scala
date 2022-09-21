@@ -65,7 +65,7 @@ object MtdErrorWrapper {
 //NRS error
 object NrsError extends MtdError("NRS_SUBMISSION_FAILURE", "The submission to NRS from MDTP failed")
 
-object ReportIdFormatError extends MtdError("REPORT_ID_INVALID", "The provided REPORT_ID format is invalid")
+object ReportIdFormatError extends MtdError("FORMAT_REPORT_ID", "The provided Report ID is invalid")
 
 // Format Errors
 object NinoFormatError extends MtdError("FORMAT_NINO", "The provided NINO is invalid")
@@ -75,7 +75,6 @@ object CalculationIdFormatError
   extends MtdError(code = "FORMAT_CALC_ID",
   message = "The provided Calculation ID is invalid"
   )
-object FormatReportIdError extends MtdError("FORMAT_REPORT_ID", "The format of the supplied reportID is not valid")
 
 // Standard Errors
 object ResourceNotFoundError extends MtdError("RESOURCE_NOT_FOUND", "Matching resource not found")
