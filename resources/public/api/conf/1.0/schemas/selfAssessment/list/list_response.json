@@ -44,7 +44,7 @@
               "properties": {
                 "title": {
                   "type": "string",
-                  "description": "The title text that appears before the links..",
+                  "description": "The title text that appears before the links.",
                   "example": "Our guidance on Turnover and Expenses can be read here."
                 },
                 "url": {
@@ -57,7 +57,7 @@
           },
           "path": {
             "type": "string",
-            "description": "The risk based feedback path for the vendor guidance.",
+            "description": "The HTTP path to guidance provided by HMRC.",
             "example": "general/total_declared_turnover"
           }
         },
