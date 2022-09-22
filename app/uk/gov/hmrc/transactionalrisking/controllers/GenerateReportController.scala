@@ -42,13 +42,13 @@ class GenerateReportController @Inject()(
                                           insightService: InsightService,
                                           rdsService: RdsService,
                                           currentDateTime: CurrentDateTime,
-                                        )(implicit ec: ExecutionContext,correlationId: String) extends AuthorisedController(cc) with BaseController with Logging {
+                                        )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       //    doImplicitAuditing() // TODO: Fix me.
       //    doExplicitAuditingForGenerationRequest()
-//      implicit val correlationId: String = UUID.randomUUID().toString
+      implicit val correlationId: String = UUID.randomUUID().toString
       val customerType = deriveCustomerType(request)
       toId(calculationId).map { calculationIdUuid =>
         val calculationInfo = getCalculationInfo(calculationIdUuid, nino)
@@ -86,18 +86,18 @@ class GenerateReportController @Inject()(
                   serviceOutcome.right.get.flatMap {
                     assessmentReport =>
                       val jsValue = Json.toJson[AssessmentReport](assessmentReport)
-                      Future(Ok(jsValue))
+                      Future(Ok(jsValue).withApiHeaders(correlationId))
 
                   }
                 case Left(errorWrapper) =>
-                  Future(BadRequest(asError("Please provide valid ID of an Assessment Report.")))
+                  Future(BadRequest(asError("Please provide valid ID of an Assessment Report.")).withApiHeaders(correlationId))
               }
           }
 
           ret
 
         }.flatten
-      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)))) //TODO Error desc maybe fix me
+      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))) //TODO Error desc maybe fix me
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {

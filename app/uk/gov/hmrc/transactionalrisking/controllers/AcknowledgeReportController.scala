@@ -59,9 +59,9 @@ class AcknowledgeReportController @Inject()(
         case Right(value) => {
           value.map(r => logger.info(s"RDS success response $r"))
 
-          Future(NoContent)
+          Future(NoContent.withApiHeaders(correlationId))
         }
-        case Left(value) => Future(BadRequest(Json.toJson(value)))
+        case Left(value) => Future(BadRequest(Json.toJson(value)).withApiHeaders(correlationId))
       }
       //
       //        for{
