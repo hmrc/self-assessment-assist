@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations
 
-import uk.gov.hmrc.transactionalrisking.models.errors.ReportIdFormatError
-import uk.gov.hmrc.transactionalrisking.models.errors.{MtdError, ReportIdFormatError}
+import uk.gov.hmrc.transactionalrisking.models.errors.{FormatReportIdError, MtdError}
 
 object ReportIDValidation {
   private val reportIdRegex =
     "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
 
   def validate(reportId: String): List[MtdError] = {
-    if (reportId != null && reportId.matches(reportIdRegex)) NoValidationErrors else List(ReportIdFormatError)
+    if (reportId != null && reportId.matches(reportIdRegex)) NoValidationErrors else List(FormatReportIdError)
   }
 }
