@@ -44,7 +44,7 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
 
     //TODO fix predicate
     def predicate(nino: String): Predicate =
-      Nino(hasNino = true, nino = Some(nino)) or Enrolment("IR-SA").withIdentifier("Nino", nino)
+      Nino(hasNino = true, nino = Some(nino)) or Enrolment("IR-SA").withIdentifier(AuthorisedController.ninoKey, nino)
         //.withDelegatedAuthRule("afi-auth")
 
     override def invokeBlock[A](request: Request[A], block: UserRequest[A] => Future[Result]): Future[Result] = {
@@ -70,4 +70,8 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
       }
     }
   }
+}
+
+object AuthorisedController {
+  val ninoKey: String = "NINO"
 }
