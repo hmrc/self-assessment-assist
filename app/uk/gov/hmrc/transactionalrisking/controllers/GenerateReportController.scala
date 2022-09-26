@@ -115,8 +115,9 @@ class GenerateReportController @Inject()(
     )
   }
 
-  private def toId(rawId: String): Option[UUID] =
+  private def toId(rawId: String): Option[UUID] = {
     Try(UUID.fromString(rawId)).toOption
+  }
 
   private def asError(message: String): JsObject = Json.obj("message" -> message)
 

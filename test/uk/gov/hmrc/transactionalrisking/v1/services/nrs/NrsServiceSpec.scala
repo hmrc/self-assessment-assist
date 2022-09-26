@@ -19,6 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
+import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
@@ -65,7 +66,7 @@ class NrsServiceSpec extends ServiceSpec {
         )),
         searchKeys =
           SearchKeys(
-            nino = "NINO",
+            nino = ninoKey,
             taxPeriodEndDate = LocalDate.now(),
             reportId = "12345"
           )

@@ -19,6 +19,7 @@ package uk.gov.hmrc.transactionalrisking.services.nrs
 //import com.kenshoo.play.metrics.Metrics
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
 //import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{Metadata, NotableEventType, NrsSubmission, SearchKeys, GenerateReportRequest}
@@ -66,7 +67,7 @@ class NrsService @Inject()(
           SearchKeys(
             //            vrn = Some(trReportSubmission.vrn.vrn),
             //            companyName = None,
-            nino = "NINO",
+            nino = ninoKey,
             taxPeriodEndDate = LocalDate.now(), //TODO fix me taxPeriodEndDate
             reportId = assessmentSubmission.body.reportId,
           )
