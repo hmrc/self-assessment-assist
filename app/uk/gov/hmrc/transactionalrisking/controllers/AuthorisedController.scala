@@ -22,10 +22,11 @@ import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
 import uk.gov.hmrc.transactionalrisking.models.errors.ForbiddenDownstreamError
 import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.models.domain.NinoChecker
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ForbiddenDownstreamError, ClientOrAgentNotAuthorisedError, NinoFormatError}
+import uk.gov.hmrc.transactionalrisking.models.errors.{ClientOrAgentNotAuthorisedError, DownstreamError, ForbiddenDownstreamError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,7 +45,7 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
 
     //TODO fix predicate
     def predicate(nino: String): Predicate =
-      Nino(hasNino = true, nino = Some(nino)) or Enrolment("IR-SA").withIdentifier("Nino", nino)
+      Nino(hasNino = true, nino = Some(nino)) or Enrolment("IR-SA").withIdentifier(AuthorisedController.ninoKey, nino)
         //.withDelegatedAuthRule("afi-auth")
 
     override def invokeBlock[A](request: Request[A], block: UserRequest[A] => Future[Result]): Future[Result] = {
@@ -70,4 +71,8 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
       }
     }
   }
+}
+
+object AuthorisedController {
+  val ninoKey: String = "NINO"
 }

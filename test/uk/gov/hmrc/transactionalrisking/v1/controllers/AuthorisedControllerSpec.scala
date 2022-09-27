@@ -73,26 +73,24 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         (result.header.status) shouldBe BAD_REQUEST
 
         val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
-
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
         val returnedError: String = returnedErrorJSon.utf8String
-
 
         val ninoErrorJSon: JsValue = Json.toJson(NinoFormatError)
         val ninoError = ninoErrorJSon.toString()
 
         returnedError shouldBe ninoError
-
       }
     }
   }
 
-//TODO uncomment me and fix me, issue might be because itmp_birthdate was removed from enrollmentauthservice
-/*  "the enrolments auth service returns an error" must {
+  //TODO uncomment me and fix me, issue might be because itmp_birthdate was removed from enrollmenta
+  // revisit if still broken.
+  "the enrolments auth service returns an error" must {
     "map to the correct result" when {
 
       val predicate: Predicate =
-        Nino(hasNino = true, nino = Some(ninoIsCorrect)) or Enrolment("IR-SA").withIdentifier("Nino", ninoIsCorrect).withDelegatedAuthRule("afi-auth")
+        Nino(hasNino = true, nino = Some(ninoIsCorrect)) or Enrolment("IR-SA").withIdentifier(AuthorisedController.ninoKey, ninoIsCorrect)//.withDelegatedAuthRule("afi-auth")
 
       def serviceErrors(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"a ${mtdError.code} error is returned from the enrolments auth service" in new Test {
@@ -117,7 +115,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
 
       authServiceErrors.foreach(args => (serviceErrors _).tupled(args))
     }
-  }*/
+  }
 
 }
 
