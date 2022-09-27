@@ -73,21 +73,19 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         (result.header.status) shouldBe BAD_REQUEST
 
         val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
-
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
         val returnedError: String = returnedErrorJSon.utf8String
-
 
         val ninoErrorJSon: JsValue = Json.toJson(NinoFormatError)
         val ninoError = ninoErrorJSon.toString()
 
         returnedError shouldBe ninoError
-
-
       }
     }
   }
 
+  //TODO uncomment me and fix me, issue might be because itmp_birthdate was removed from enrollmenta
+  // revisit if still broken.
   "the enrolments auth service returns an error" must {
     "map to the correct result" when {
 
