@@ -24,7 +24,7 @@ import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, GenerarteReportRequestBody, GenerateReportRequest}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging}
@@ -46,8 +46,6 @@ class GenerateReportController @Inject()(
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      //    doImplicitAuditing() // TODO: Fix me.
-      //    doExplicitAuditingForGenerationRequest()
       implicit val correlationId: String = UUID.randomUUID().toString
       val customerType = deriveCustomerType(request)
       toId(calculationId).map { calculationIdUuid =>
@@ -57,23 +55,26 @@ class GenerateReportController @Inject()(
           PreferredLanguage.English,
           customerType,
           None,
-          calculationInfo.taxYear)
+          DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
 
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
-        //    val fraudRiskReportStub = accessFraudRiskReport(generateFraudRiskRequest(request))
         val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] = rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
 
         Future {
           def assementReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
             assementReportserviceOutcome =>
               assementReportserviceOutcome match {
-                case Right(ResponseWrapper(correlationIdRes,newRdsAssessmentReportResponse)) =>
-                  val generateReportRequest = GenerateReportRequest(nino = nino, GenerarteReportRequestBody(newRdsAssessmentReportResponse.toString, calculationId))
-                  //TODO below generate NRSId as per the spec
-                  nonRepudiationService.submit(generateReportRequest = generateReportRequest, generatedNrsId = nino, submissionTimestamp = currentDateTime.getDateTime, notableEventType = AssistReportGenerated)
+                case Right(ResponseWrapper(correlationIdRes,assessmentReportResponse)) =>
+                  //TODO why do we pass calculationID here in RequestBody?
+                  val rdsReportContent = RequestData(nino = nino,
+                    RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportId.toString))
+
+                  nonRepudiationService.submit(requestData = rdsReportContent,
+                    submissionTimestamp = currentDateTime.getDateTime,
+                    notableEventType = AssistReportGenerated,calculationInfo.taxYear)
                   //TODO:DE Need   to deal with post NRS errors here.
                   //TODO:DE match case saved nrs no problems(Pretend no errors for moment)
-                  Right(ResponseWrapper(correlationId,newRdsAssessmentReportResponse)): ServiceOutcome[AssessmentReport]
+                  Right(ResponseWrapper(correlationId,assessmentReportResponse)): ServiceOutcome[AssessmentReport]
                 case Left(errorWrapper) =>
                   Left(errorWrapper): ServiceOutcome[AssessmentReport]
               }

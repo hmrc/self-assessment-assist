@@ -42,7 +42,7 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
   private lazy val url: String    = appConfig.nrsBaseUrl
   private lazy val apiKey: String = appConfig.nrsApiKey
 
-  def submit(nrsSubmission: NrsSubmission, reportId:String)(
+  def submit(nrsSubmission: NrsSubmission)(
     implicit hc: HeaderCarrier, correlationId: String): Future[NrsOutcome] = {
 
     val retryCondition: Try[NrsOutcome] => Boolean = {

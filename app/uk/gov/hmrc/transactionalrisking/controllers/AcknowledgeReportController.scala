@@ -21,13 +21,13 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.transactionalrisking.models.domain.{Internal, Origin}
+import uk.gov.hmrc.transactionalrisking.models.domain.{DesTaxYear, Internal, Origin}
 import uk.gov.hmrc.transactionalrisking.models.errors.{BadRequestError, DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AcknowledgeReportRequest, AssistReportAcknowledged, GenerarteReportRequestBody, GenerateReportRequest}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AcknowledgeReportRequest, AssistReportAcknowledged, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.RdsAcknowledgementResponse
 import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
@@ -89,14 +89,14 @@ class AcknowledgeReportController @Inject()(
       //TODO This status code doesn't look right, need to check the reponse code from RDS it might be 2xx
       case a if (a == 204) =>
         logger.info(s"rds ack response is ${a}")
+        //TODO submissionTimestamp should this be current time?
         val submissionTimestamp = currentDateTime.getDateTime
-        val nrsId = request.nino //TODO generate nrs id as per the spec
         val body = s"""{"reportId":"${request.feedbackId}"}"""
-
-        val reportAcknowledgementContent = GenerateReportRequest(nrsId, GenerarteReportRequestBody(body, reportId = request.feedbackId))
+        val taxYear = "2024"//TODO read this from response,
+        val reportAcknowledgementContent = RequestData(request.nino, RequestBody(body, reportId = request.feedbackId))
         logger.info(s"... submitting acknowledgement to NRS with body $reportAcknowledgementContent")
         //Submit asynchronously to NRS
-        nonRepudiationService.submit(reportAcknowledgementContent, nrsId, submissionTimestamp, AssistReportAcknowledged)
+        nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged,taxYear)
         //TODO confirm documentation if nrs failure needs to handled/audited?
         logger.info("... report submitted to NRS returning.")
         Future(OK)

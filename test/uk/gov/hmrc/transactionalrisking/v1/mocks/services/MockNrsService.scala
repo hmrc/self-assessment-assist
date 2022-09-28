@@ -22,7 +22,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{GenerateReportRequest, NotableEventType, NrsSubmission}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{RequestData, NotableEventType, NrsSubmission}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
 
 import java.time.{Month, OffsetDateTime, ZoneOffset}
@@ -37,20 +37,20 @@ trait MockNrsService extends MockFactory {
 
   object MockNrsService {
 
-    def buildNrsSubmission(selfAssessmentSubmission: GenerateReportRequest,
+    def buildNrsSubmission(selfAssessmentSubmission: RequestData,
                            submissionTimestamp: OffsetDateTime,
                            request: UserRequest[_], notableEventType: NotableEventType): CallHandler[NrsSubmission] = {
-      (mockNrsService.buildNrsSubmission(_: GenerateReportRequest,
+      (mockNrsService.buildNrsSubmission(_: RequestData,
         _: OffsetDateTime,
-        _: UserRequest[_], _: NotableEventType))
-        .expects(*, *, *, *)
+        _: UserRequest[_], _: NotableEventType,_:String))
+        .expects(*, *, *, *,*)
     }
 
-    def submit(generateReportRequest: GenerateReportRequest, generatedNrsId: String, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType):
+    def submit(generateReportRequest: RequestData, generatedNrsId: String, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType):
     CallHandler[Future[Option[NrsResponse]]] = {
-      (mockNrsService.submit(_: GenerateReportRequest, _: String, _: OffsetDateTime, _: NotableEventType)
+      (mockNrsService.submit(_: RequestData, _: OffsetDateTime, _: NotableEventType,_:String)
       (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
-        .expects( *, *, *, simpeNotableEventType, *, *, *, *)
+        .expects( *, *, simpeNotableEventType, *, *, *, *,*)
         .returns( Future(Some(simpleNRSResponse) ))
     }
 
