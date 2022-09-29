@@ -82,9 +82,7 @@ class NrsService @Inject()(
    ): Future[Option[NrsResponse]] = {
 
     val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request,notableEventType,taxYear)
-    //TODO delete me, kept it for debugging purpose
-    logger.info(s"NRS request submitted as below")
-    logger.info(s"${Json.toJson(nrsSubmission)}")
+    logger.info(s"Request initiated to store report content to NRS")
           connector.submit(nrsSubmission).map { response =>
             response.toOption
           }

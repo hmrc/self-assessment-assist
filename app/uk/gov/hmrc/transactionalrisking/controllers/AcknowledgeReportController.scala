@@ -56,11 +56,10 @@ class AcknowledgeReportController @Inject()(
       val response = parsedRequest.map(req => acknowledgeReport(req, Internal))
 
       response match {
-        case Right(value) => {
-          value.map(r => logger.info(s"RDS success response $r"))
-
+        case Right(value) =>
+          logger.info(s"Acknowledge request processed successfully in RDS")
           Future(NoContent.withApiHeaders(correlationId))
-        }
+
         case Left(value) => Future(BadRequest(Json.toJson(value)).withApiHeaders(correlationId))
       }
       //
@@ -94,7 +93,7 @@ class AcknowledgeReportController @Inject()(
         val body = s"""{"reportId":"${request.feedbackId}"}"""
         val taxYear = "2024"//TODO read this from response,
         val reportAcknowledgementContent = RequestData(request.nino, RequestBody(body, reportId = request.feedbackId))
-        logger.info(s"... submitting acknowledgement to NRS with body $reportAcknowledgementContent")
+        logger.info(s"... submitting acknowledgement to NRS")
         //Submit asynchronously to NRS
         nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged,taxYear)
         //TODO confirm documentation if nrs failure needs to handled/audited?
