@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import play.api.libs.json._
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, FraudDecision, FraudRiskHeader, FraudRiskReport, Link, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, DesTaxYear, FraudDecision, FraudRiskHeader, FraudRiskReport, Link, PreferredLanguage, Risk}
 import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
@@ -334,7 +334,7 @@ trait RdsTestData {
     reportId = assessmentRequestForSelfAssessment.calculationId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
-    taxYear = assessmentRequestForSelfAssessment.taxYear,
+    taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
     calculationId = assessmentRequestForSelfAssessment.calculationId,
     correlationID = "5fht738957jfjf845jgjf855"
   )
