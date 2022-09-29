@@ -20,7 +20,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
@@ -36,7 +36,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class RdsService @Inject()(connector: RdsConnector) extends Logging {
 
 
-  //TODO Pending
   def submit(request: AssessmentRequestForSelfAssessment,
              fraudRiskReport: FraudRiskReport,
              origin: Origin)(implicit hc: HeaderCarrier,
@@ -48,20 +47,19 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
       .map { _ match {
           case Right(ResponseWrapper(correlationId,rdsResponse)) =>
             val assessmentReport = toAssessmentReport(rdsResponse, request)
-            logger.info("... returning it.")
-            // TODO: Should we also audit an explicit event for actually generating the assessment?
-            Right(ResponseWrapper(correlationId, assessmentReport)): ServiceOutcome[AssessmentReport]
+            logger.info("... RDS request successful, returning it.")
+            Right(ResponseWrapper(correlationId, assessmentReport))
            //TODO:DE deal with Errors.
-          case Left(errorWrapper) => Left(errorWrapper): ServiceOutcome[AssessmentReport]
+          case Left(errorWrapper) => Left(errorWrapper)
         }
       }
   }
 
   private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment) = {
-    //TODO check should this be calculationId or feedbackId?
-    AssessmentReport(reportId = report.calculationId,
-      risks = risks(report, request.preferredLanguage), nino = request.nino, taxYear = request.taxYear,
-      calculationId = request.calculationId,report.rdsCorrelationID.toString)
+    AssessmentReport(reportId = report.feedbackId,
+      risks = risks(report, request.preferredLanguage), nino = request.nino,
+      taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
+      calculationId = request.calculationId,report.rdsCorrelationID)
   }
 
   private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
@@ -84,6 +82,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
       body = riskParts(1), action = riskParts(2),
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
+//TODO Fix me, request dont need to be ServiceOutcome
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {

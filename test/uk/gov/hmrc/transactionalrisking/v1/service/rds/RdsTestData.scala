@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import play.api.libs.json._
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, FraudDecision, FraudRiskHeader, FraudRiskReport, Link, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, DesTaxYear, FraudDecision, FraudRiskHeader, FraudRiskReport, Link, PreferredLanguage, Risk}
 import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
@@ -26,6 +26,7 @@ import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.{simpeTaxYear, simpleReportId}
 
 import java.util.UUID
 
@@ -240,7 +241,7 @@ trait RdsTestData {
        |      "identifiers": [
        |        {
        |            "name": "feedbackID",
-       |            "value": "a365cc12c845c057eb548febfa8048ba"
+       |            "value": "a365c0b4-06e3-4fef-a555-6fd0877dc7c"
        |        },
        |        {
        |            "name": "calculationID",
@@ -261,7 +262,7 @@ trait RdsTestData {
   val rdsAssessmentReport: NewRdsAssessmentReport = rdsAssessmentReportJson.as[NewRdsAssessmentReport]
 
   val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationId = UUID.fromString("537490b4-06e3-4fef-a555-6fd0877dc7ca"),
+    calculationId = UUID.fromString("a365c0b4-06e3-4fef-a555-06fd0877dc7c"),
     nino = "AA00000B",
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
@@ -333,7 +334,7 @@ trait RdsTestData {
     reportId = assessmentRequestForSelfAssessment.calculationId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
-    taxYear = assessmentRequestForSelfAssessment.taxYear,
+    taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
     calculationId = assessmentRequestForSelfAssessment.calculationId,
     correlationID = "5fht738957jfjf845jgjf855"
   )

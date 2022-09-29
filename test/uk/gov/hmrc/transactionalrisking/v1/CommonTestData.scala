@@ -18,8 +18,8 @@ package uk.gov.hmrc.transactionalrisking.v1
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.nino
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, External, FraudDecision, FraudRiskHeader, FraudRiskReport, FraudRiskRequest, Internal, Link, Origin, PreferredLanguage, Risk}
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, GenerarteReportRequestBody, GenerateReportRequest, Metadata, NotableEventType}
+import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, DesTaxYear, External, FraudDecision, FraudRiskHeader, FraudRiskReport, FraudRiskRequest, Internal, Link, Origin, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, Metadata, NotableEventType, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
@@ -39,7 +39,7 @@ object CommonTestData {
   val simpleLinkTitle = "title"
   val simpleLinkUrl = "url"
   val simpePath = "path"
-  val simpeTaxYear = "2020-21"
+  val simpeTaxYear = "2021-22"
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
@@ -51,13 +51,13 @@ object CommonTestData {
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
     agentRef = None,
-    taxYear = simpeTaxYear)
+    taxYear = DesTaxYear.fromMtd(simpeTaxYear).toString)
 
   val simpleAssementReport = AssessmentReport(reportId = simpleReportId
     , risks = Seq(Risk(title = simpleRiskTitle, body = simpleRiskBody, action = simpeRiskAction
       , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simpePath))
     , nino = simpleNino
-    , taxYear = simpeTaxYear
+    , taxYear = DesTaxYear.fromMtd(simpeTaxYear).toString
     , calculationId = simpleCalculationId,correlationID = simpleCorrelationId)
 
   val simpleMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssementReport)
@@ -68,8 +68,8 @@ object CommonTestData {
   val simpleMetadata: Metadata = null
   val simplePayload: String = ""
 
-  val simpleBody: GenerarteReportRequestBody = null
-  val simpleGenerateReportRequest = GenerateReportRequest(nino = simpleNino, body = simpleBody)
+  val simpleBody: RequestBody = null
+  val simpleGenerateReportRequest = RequestData(nino = simpleNino, body = simpleBody)
   val simpleGeneratedNrsId: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
   val simpeNotableEventType: NotableEventType = AssistReportGenerated

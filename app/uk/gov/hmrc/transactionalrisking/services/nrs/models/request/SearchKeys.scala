@@ -27,7 +27,7 @@ import java.time.LocalDate
 //                      periodKey: Option[String] = None
 //                     )
 case class SearchKeys(nino: String,
-                      taxPeriodEndDate: LocalDate,//TODO is taxPeriodEndDate optional??
+                      taxYear: String, //TODO is taxPeriodEndDate optional??
                       reportId: String
                      )
 

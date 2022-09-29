@@ -89,7 +89,7 @@ class NrsConnectorSpec extends ConnectorSpec
               .withBody(successResponseJson.toString)
               .withStatus(ACCEPTED)))
 
-        await(connector.submit(nrsSubmission, reportId)) shouldBe Right(NrsResponse("submissionId"))
+        await(connector.submit(nrsSubmission)) shouldBe Right(NrsResponse("submissionId"))
       }
     }
 
@@ -115,7 +115,7 @@ class NrsConnectorSpec extends ConnectorSpec
               .withBody(successResponseJson.toString)
               .withStatus(ACCEPTED)))
 
-        await(connector.submit(nrsSubmission, reportId)) shouldBe Right(NrsResponse("submissionId"))
+        await(connector.submit(nrsSubmission)) shouldBe Right(NrsResponse("submissionId"))
       }
 
       "give up after all retries" in new Test {
@@ -126,7 +126,7 @@ class NrsConnectorSpec extends ConnectorSpec
             .willReturn(aResponse()
               .withStatus(GATEWAY_TIMEOUT)))
 
-        await(connector.submit(nrsSubmission, reportId)) shouldBe Left(NrsFailure.ErrorResponse(GATEWAY_TIMEOUT))
+        await(connector.submit(nrsSubmission)) shouldBe Left(NrsFailure.ErrorResponse(GATEWAY_TIMEOUT))
       }
     }
 
@@ -139,7 +139,7 @@ class NrsConnectorSpec extends ConnectorSpec
             .willReturn(aResponse()
               .withStatus(BAD_REQUEST)))
 
-        await(connector.submit(nrsSubmission, reportId)) shouldBe Left(NrsFailure.ErrorResponse(BAD_REQUEST))
+        await(connector.submit(nrsSubmission)) shouldBe Left(NrsFailure.ErrorResponse(BAD_REQUEST))
       }
     }
 
@@ -152,7 +152,7 @@ class NrsConnectorSpec extends ConnectorSpec
             .withHeader("X-API-Key", equalTo(apiKeyValue))
             .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)))
 
-        await(connector.submit(nrsSubmission, reportId)) shouldBe Left(ExceptionThrown)
+        await(connector.submit(nrsSubmission)) shouldBe Left(ExceptionThrown)
       }
     }
 
@@ -169,7 +169,7 @@ class NrsConnectorSpec extends ConnectorSpec
                   |}""".stripMargin)
               .withStatus(ACCEPTED)))
 
-        await(connector.submit(nrsSubmission, reportId)) shouldBe Left(ExceptionThrown)
+        await(connector.submit(nrsSubmission)) shouldBe Left(ExceptionThrown)
       }
     }
   }

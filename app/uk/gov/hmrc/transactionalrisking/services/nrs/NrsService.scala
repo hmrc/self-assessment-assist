@@ -20,11 +20,12 @@ package uk.gov.hmrc.transactionalrisking.services.nrs
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
+import uk.gov.hmrc.transactionalrisking.models.domain.DesTaxYear
 //import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{Metadata, NotableEventType, NrsSubmission, SearchKeys, GenerateReportRequest}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{Metadata, NotableEventType, NrsSubmission, SearchKeys, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{NotableEventType, NrsSubmission, GenerateReportRequest}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil, Logging}
 
@@ -39,13 +40,13 @@ class NrsService @Inject()(
                            hashUtil: HashUtil) extends Logging {
 //                           override val metrics: Metrics) extends Timer with Logging { TODO include metrics later
 
-  def buildNrsSubmission(assessmentSubmission: GenerateReportRequest,
+  def buildNrsSubmission(requestData: RequestData,
                          submissionTimestamp: OffsetDateTime,
-                         request: UserRequest[_], notableEventType:NotableEventType): NrsSubmission = {
-
+                         request: UserRequest[_], notableEventType:NotableEventType,taxYear: String): NrsSubmission = {
+    //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationId))
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
     // val payloadString = Json.toJson(body).toString()
-    val payloadString = Json.toJson(assessmentSubmission.body).toString()
+    val payloadString = Json.toJson(requestData.body).toString()
     val encodedPayload = hashUtil.encode(payloadString)
     val sha256Checksum = hashUtil.getHash(payloadString)
     val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)
@@ -65,28 +66,24 @@ class NrsService @Inject()(
         headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }),
         searchKeys =
           SearchKeys(
-            //            vrn = Some(trReportSubmission.vrn.vrn),
-            //            companyName = None,
             nino = ninoKey,
-            taxPeriodEndDate = LocalDate.now(), //TODO fix me taxPeriodEndDate
-            reportId = assessmentSubmission.body.reportId,
+            taxYear = taxYear, //TODO fix me taxPeriodEndDate
+            reportId = requestData.body.reportId,
           )
       )
     )
   }
 
-  def submit(generateReportRequest: GenerateReportRequest, generatedNrsId: String, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType)(
+  def submit(requestData: RequestData, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType,taxYear:String)(
     implicit request: UserRequest[_],
     hc: HeaderCarrier,
     ec: ExecutionContext,
     correlationId: String
    ): Future[Option[NrsResponse]] = {
 
-    val nrsSubmission = buildNrsSubmission(generateReportRequest, submissionTimestamp, request,notableEventType)
-    //TODO delete me, kept it for debugging purpose
-    logger.info(s"NRS request submitted as below")
-    logger.info(s"${Json.toJson(nrsSubmission)}")
-          connector.submit(nrsSubmission,generateReportRequest.body.reportId).map { response =>
+    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request,notableEventType,taxYear)
+    logger.info(s"Request initiated to store report content to NRS")
+          connector.submit(nrsSubmission).map { response =>
             response.toOption
           }
   }
