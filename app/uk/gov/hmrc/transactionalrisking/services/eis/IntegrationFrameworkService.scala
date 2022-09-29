@@ -44,9 +44,9 @@ class IntegrationFrameworkService @Inject()(){
   val logger: Logger = Logger("IntegrationFrameworkService")
 //TODO fix me actual integration and stub pending
   def getCalculationInfo(id: UUID, nino: String): Option[CalculationInfo] = {
-    logger.info(s"Attempting to get the calculation info for id [$id] and nino [$nino] ... ")
+    logger.info(s"Attempting to get the calculation info ... ")
     val calculationInfo = Some(CalculationInfo(id, nino, "2021-22"))
-    logger.info("... returning.")
+    logger.info("... recevied calculation info.")
     calculationInfo
   }
 

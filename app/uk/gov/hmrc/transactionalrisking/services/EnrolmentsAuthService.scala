@@ -41,7 +41,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
   def authorised(predicate: Predicate, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
     if(!nrsRequired){
-      logger.info(s" property names are ${allEnrolments.propertyNames}")
+      logger.info(s" Performing authorisation check ")
       //TODO revisit below as this doesn't look right based on below doc
       //https://confluence.tools.tax.service.gov.uk/display/GG/Predicate+Reference#PredicateReference-EnrolmentwithagentauthorisationbasedonNINO
       //affinityGroup = "Individual" or "Organisation" is not reliable
@@ -54,7 +54,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
           Future.successful(Left(LegacyUnauthorisedError))
       }recoverWith unauthorisedError
     } else {
-      logger.info(s" else part")
+      logger.info(s" authorisation NRS required else part")
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
         and internalId and externalId and agentCode and credentials
         and confidenceLevel and nino and saUtr and name and dateOfBirth
@@ -96,7 +96,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
                                            identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
     //TODO Fixme clientReference is coming as none in logs
     val clientReference = getClientReferenceFromEnrolments(enrolments)
-    logger.info(s"[EnrolmentsAuthService] [authoriseAsClient] Authorisation succeeded as" +
+    logger.info(s"[EnrolmentsAuthService] [authoriseAsClient] Authorisation succeeded as " +
       s"fully-authorised organisation with reference $clientReference.")
 
     val userDetails = UserDetails(

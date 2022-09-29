@@ -47,7 +47,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
       .map { _ match {
           case Right(ResponseWrapper(correlationId,rdsResponse)) =>
             val assessmentReport = toAssessmentReport(rdsResponse, request)
-            logger.info("... returning it.")
+            logger.info("... RDS request successful, returning it.")
             Right(ResponseWrapper(correlationId, assessmentReport))
            //TODO:DE deal with Errors.
           case Left(errorWrapper) => Left(errorWrapper)

@@ -49,7 +49,7 @@ class AcknowledgeReportController @Inject()(
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationID:String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request => {
       implicit val correlationId: String = UUID.randomUUID().toString
-      logger.info(s"Received request to acknowledge assessment report: [$reportId]")
+      logger.info(s"Received request to acknowledge assessment report")
 
 
       val parsedRequest: Either[ErrorWrapper, AcknowledgeReportRequest] = requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId,rdsCorrelationID))
