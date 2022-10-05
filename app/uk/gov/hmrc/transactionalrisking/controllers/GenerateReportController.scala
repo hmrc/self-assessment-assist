@@ -58,7 +58,8 @@ class GenerateReportController @Inject()(
           DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
 
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
-        val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] = rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
+        val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] =
+          rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
 
         Future {
           def assementReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
@@ -88,7 +89,6 @@ class GenerateReportController @Inject()(
                     assessmentReport =>
                       val jsValue = Json.toJson[AssessmentReport](assessmentReport)
                       Future(Ok(jsValue).withApiHeaders(correlationId))
-
                   }
                 case Left(errorWrapper) =>
                   Future(BadRequest(asError("Please provide valid ID of an Assessment Report.")).withApiHeaders(correlationId))

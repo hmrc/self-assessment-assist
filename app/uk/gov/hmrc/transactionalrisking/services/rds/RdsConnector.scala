@@ -40,21 +40,17 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
 
   //TODO move this to RDS connector
-  def submit( requestSO: ServiceOutcome[RdsRequest])(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-    requestSO match {
-      case Right(ResponseWrapper(correlationId,request)) =>
-        wsClient
-          .url(baseUrlForRdsAssessmentsSubmit)
-          .post(Json.toJson(request))
-          .map(response =>
-            response.status match {
-              case Status.OK => Right(ResponseWrapper(correlationId,response.json.validate[NewRdsAssessmentReport].get))
-              case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
-              //TODO:DE Must get rid of throw and convert tp new error system
-            }
-          )
-      case Left(er) => Future(Left(er):ServiceOutcome[NewRdsAssessmentReport])
-    }
+  def submit( request: RdsRequest)(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+      wsClient
+        .url(baseUrlForRdsAssessmentsSubmit)
+        .post(Json.toJson(request))
+        .map(response =>
+          response.status match {
+            case Status.OK => Right(ResponseWrapper(correlationId,response.json.validate[NewRdsAssessmentReport].get))
+            case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
+            //TODO:DE Must get rid of throw and convert tp new error system
+          }
+        )
   }
 
   def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
