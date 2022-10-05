@@ -58,17 +58,17 @@ class GenerateReportController @Inject()(
           DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
 
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
+        logger.info(s"Received response for fraudRiskReport")
         val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] = rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
-
+        logger.info(s"Received RDS assessment response")
         Future {
           def assementReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
             assementReportserviceOutcome =>
               assementReportserviceOutcome match {
                 case Right(ResponseWrapper(correlationIdRes,assessmentReportResponse)) =>
-                  //TODO why do we pass calculationID here in RequestBody?
                   val rdsReportContent = RequestData(nino = nino,
                     RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportId.toString))
-
+                  logger.debug(s"RDS request content $rdsReportContent")
                   nonRepudiationService.submit(requestData = rdsReportContent,
                     submissionTimestamp = currentDateTime.getDateTime,
                     notableEventType = AssistReportGenerated,calculationInfo.taxYear)
