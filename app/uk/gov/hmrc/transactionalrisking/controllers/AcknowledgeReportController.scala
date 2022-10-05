@@ -57,6 +57,7 @@ class AcknowledgeReportController @Inject()(
 
       response match {
         case Right(value) =>
+
           logger.info(s"Acknowledge request processed successfully in RDS")
           Future(NoContent.withApiHeaders(correlationId))
 
@@ -99,7 +100,7 @@ class AcknowledgeReportController @Inject()(
         //TODO confirm documentation if nrs failure needs to handled/audited?
         logger.info("... report submitted to NRS returning.")
         Future(OK)
-
+      case a if (a==400) => Future(BadRequest)
       case _ => Future(INTERNAL_SERVER_ERROR)
     }
     ).flatten
