@@ -19,13 +19,10 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.connectors
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, FraudRiskReport, Origin}
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
+import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
-import uk.gov.hmrc.transactionalrisking.services.rds.{RdsConnector, RdsService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,11 +33,11 @@ trait MockRdsConnector extends MockFactory {
   object MockRdsConnector {
 
     def submit(requestSO: ServiceOutcome[RdsRequest]  ): CallHandler[Future[ServiceOutcome[NewRdsAssessmentReport]]] = {
-      (mockRdsConnector.submit( _: ServiceOutcome[RdsRequest])( _: ExecutionContext))
+      (mockRdsConnector.submit( _: RdsRequest)( _: ExecutionContext))
         .expects(*, *)
     }
 
-    def acknowledgeRds(request: RdsRequest): CallHandler[Future[Int]] = {
+    def acknowledgeRds(request: RdsRequest): CallHandler[Future[ (Int, String) ]] = {
       (mockRdsConnector.acknowledgeRds(_: RdsRequest)(_: HeaderCarrier, _: ExecutionContext))
         .expects(*, *, *)
     }

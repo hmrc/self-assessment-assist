@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import play.api.http.Status.NO_CONTENT
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
@@ -53,9 +54,9 @@ trait MockRdsService extends MockFactory {
 //    }
 //
 
-    def acknowlege(request: AcknowledgeReportRequest): CallHandler[Future[Int]] = {
+    def acknowlege(request: AcknowledgeReportRequest): CallHandler[Future[ (Int, String) ]] = {
       (mockRdsService.acknowlege(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, *, *, *)
+        .expects(*, *, *, *, *).returns( Future( (NO_CONTENT, simpeTaxYear) ) )
     }
 
   }

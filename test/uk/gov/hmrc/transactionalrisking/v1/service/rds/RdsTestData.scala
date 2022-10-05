@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import play.api.libs.json._
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, DesTaxYear, FraudDecision, FraudRiskHeader, FraudRiskReport, Link, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
@@ -26,19 +26,15 @@ import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.{simpeTaxYear, simpleReportId}
 
 import java.util.UUID
 
 trait RdsTestData {
 
-  val rdsRequest: ServiceOutcome[RdsRequest] = Right(
-    ResponseWrapper(CommonTestData.correlationId,
+  val rdsRequest: RdsRequest =
       RdsRequest(
         Seq()
       )
-    )
-  )
 
   val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq())
 

@@ -19,7 +19,6 @@ package uk.gov.hmrc.transactionalrisking.controllers
 
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
-import uk.gov.hmrc.transactionalrisking.models.domain.FraudRiskRequest
 import uk.gov.hmrc.transactionalrisking.v1.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 
@@ -77,7 +76,7 @@ class GenerateReportControllerSpec
 
         val result = controller.generateReportInternal( simpleNino, simpleCalculationId.toString)(fakeGetRequest)
         status(result) shouldBe OK
-        contentAsJson(result) shouldBe simpleMtdJson
+        contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
 //        header("X-CorrelationId", result) shouldBe Some(correlationId)
 

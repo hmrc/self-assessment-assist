@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.service.rds
 import play.api.test.FakeRequest
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentRequestForSelfAssessment, FraudRiskReport, Internal, Origin}
+import uk.gov.hmrc.transactionalrisking.models.domain.Internal
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
@@ -88,7 +88,7 @@ class RdsServiceSpec extends ServiceSpec with RdsTestData {
           )
         )
 
-        val expectedResult = 123
+        val expectedResult = (123, "2023")
         MockRdsConnector.acknowledgeRds(request) returns Future.successful(expectedResult)
 
         val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(nino, feedbackId,correlationId)

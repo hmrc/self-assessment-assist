@@ -17,9 +17,9 @@
 package uk.gov.hmrc.transactionalrisking.v1
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.nino
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, DesTaxYear, External, FraudDecision, FraudRiskHeader, FraudRiskReport, FraudRiskRequest, Internal, Link, Origin, PreferredLanguage, Risk}
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, Metadata, NotableEventType, RequestBody, RequestData}
+import uk.gov.hmrc.transactionalrisking.models.domain._
+import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
@@ -27,7 +27,6 @@ import java.time.{Month, OffsetDateTime, ZoneOffset}
 import java.util.UUID
 
 object CommonTestData {
-
 
   val simpleNino: String = "AA000000B"
   val simpleCalculationId: UUID = new UUID(0, 1)
@@ -60,7 +59,7 @@ object CommonTestData {
     , taxYear = DesTaxYear.fromMtd(simpeTaxYear).toString
     , calculationId = simpleCalculationId,correlationID = simpleCorrelationId)
 
-  val simpleMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssementReport)
+  val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssementReport)
 
   val simpleFraudRiskRequest: FraudRiskRequest = new FraudRiskRequest(nino = simpleNino, taxYear = simpeTaxYear, fraudRiskHeaders = Map.empty[String, String])
   val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(decision = FraudDecision.Accept, 0, Set.empty[FraudRiskHeader], Set.empty[WatchlistFlag].empty)
@@ -76,5 +75,15 @@ object CommonTestData {
 
   val reportSubmissionId = (new UUID(0,3)).toString
   val simpleNRSResponse = new NrsResponse(reportSubmissionId)
+
+
+//  val simpleFeedbackId:String = "a365cc12c845c057eb548febfa8048ba"
+  val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleCorrelationId)
+  val simpeAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleCorrelationId:String)
+    //TODO: ask if rportId and simplefeedbcakId not the same. Do we get a diff reponse from ack to that in gen report
+
+//  val simpleAcknowledgementReturn:JsValue = JsString("")
+//  val simpleAcknowledgementMtdJson: JsValue = Json.toJson[JsValue](simpleAcknowledgementReturn)
+
 
 }

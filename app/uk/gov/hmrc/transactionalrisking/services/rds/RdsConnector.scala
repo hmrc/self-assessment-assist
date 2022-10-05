@@ -40,25 +40,21 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
 
   //TODO move this to RDS connector
-  def submit( requestSO: ServiceOutcome[RdsRequest])(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-    requestSO match {
-      case Right(ResponseWrapper(correlationId,request)) =>
-        wsClient
-          .url(baseUrlForRdsAssessmentsSubmit)
-          .post(Json.toJson(request))
-          .map(response =>
-            response.status match {
-              case Status.OK => Right(ResponseWrapper(correlationId,response.json.validate[NewRdsAssessmentReport].get))
-              case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
-              //TODO:DE Must get rid of throw and convert tp new error system
-            }
-          )
-      case Left(er) => Future(Left(er):ServiceOutcome[NewRdsAssessmentReport])
-    }
+  def submit( request: RdsRequest)(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+      wsClient
+        .url(baseUrlForRdsAssessmentsSubmit)
+        .post(Json.toJson(request))
+        .map(response =>
+          response.status match {
+            case Status.OK => Right(ResponseWrapper(correlationId,response.json.validate[NewRdsAssessmentReport].get))
+            case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
+            //TODO:DE Must get rid of throw and convert tp new error system
+          }
+        )
   }
 
   def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
-                                                  ec: ExecutionContext): Future[Int] =
+                                                  ec: ExecutionContext): Future[ (Int, String) ] =
     wsClient
       .url(baseUrlToAcknowledgeRdsAssessments)
       .post(Json.toJson(request))
@@ -69,12 +65,12 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
             //no need to validate as we are interested only in OK response.if validation is required then
             // we need separate class, as the structure is different, ignore response as only report id needs to go into the body of nrs
             //            response.json.validate[RdsAcknowledgementResponse].getOrElse(throw new RuntimeException("failed to validate "))
-            NO_CONTENT
+            ( NO_CONTENT, "2022" )
           }
 
           case unexpectedStatus => {
             logger.error(s"... error during rds acknowledgement ")
-            INTERNAL_SERVER_ERROR
+            (INTERNAL_SERVER_ERROR, "" )
             //            throw new RuntimeException(s"Unexpected status when attempting to mark the report as acknowledged with RDS: [$unexpectedStatus]")}
           }
         }

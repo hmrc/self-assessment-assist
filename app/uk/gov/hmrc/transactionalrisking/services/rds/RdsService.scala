@@ -43,16 +43,24 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
                              correlationId: String): Future[ServiceOutcome[AssessmentReport]] = {
-    connector.submit(generateRdsAssessmentRequest(request, fraudRiskReport))
-      .map { _ match {
-          case Right(ResponseWrapper(correlationId,rdsResponse)) =>
-            val assessmentReport = toAssessmentReport(rdsResponse, request)
-            logger.info("... RDS request successful, returning it.")
-            Right(ResponseWrapper(correlationId, assessmentReport))
-           //TODO:DE deal with Errors.
-          case Left(errorWrapper) => Left(errorWrapper)
-        }
-      }
+    val rdsRequestSO:ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
+    rdsRequestSO match {
+      case Right(ResponseWrapper(correlationId, rdsRequest)) =>
+        val submit = connector.submit( rdsRequest )
+        val ret = submit.map {
+            _ match {
+              case Right(ResponseWrapper(correlationId, rdsResponse)) =>
+                val assessmentReport = toAssessmentReport(rdsResponse, request)
+                logger.info("... RDS request successful, returning it.")
+                Right(ResponseWrapper(correlationId, assessmentReport))
+              //TODO:DE deal with Errors.
+              case Left(errorWrapper) => Left(errorWrapper)
+            }
+          }
+        ret
+      case Left(er) =>
+        Future(Left(er):ServiceOutcome[AssessmentReport])
+    }
   }
 
   private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment) = {
@@ -125,7 +133,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                                                     ec: ExecutionContext,
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],
-                                                    correlationId: String): Future[Int] =
+                                                    correlationId: String): Future[ (Int, String) ] =
     connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
 
   private def generateRdsAcknowledgementRequest(request: AcknowledgeReportRequest): RdsRequest
