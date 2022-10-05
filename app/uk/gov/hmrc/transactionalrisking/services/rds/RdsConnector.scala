@@ -43,6 +43,7 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
   def submit( requestSO: ServiceOutcome[RdsRequest])(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     requestSO match {
       case Right(ResponseWrapper(correlationId,request)) =>
+        logger.debug(s"$correlationId :: RDS request content ${request}")
         wsClient
           .url(baseUrlForRdsAssessmentsSubmit)
           .post(Json.toJson(request))
