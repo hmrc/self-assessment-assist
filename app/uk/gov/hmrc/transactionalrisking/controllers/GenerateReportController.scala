@@ -20,7 +20,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
+import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MatchingResourcesNotFoundError}
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class GenerateReportController @Inject()(
-                                          val cc: ControllerComponents,
+                                          val cc: ControllerComponents,//TODO add request parser
                                           val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
                                           nonRepudiationService: NrsService,
@@ -91,14 +91,17 @@ class GenerateReportController @Inject()(
 
                   }
                 case Left(errorWrapper) =>
-                  Future(BadRequest(asError("Please provide valid ID of an Assessment Report.")).withApiHeaders(correlationId))
+                  errorWrapper.error match {
+                    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+                    case _ => Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+                  }
               }
           }
 
           ret
 
         }.flatten
-      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))) //TODO Error desc maybe fix me
+      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))) //TODO Add RequestParser
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {
