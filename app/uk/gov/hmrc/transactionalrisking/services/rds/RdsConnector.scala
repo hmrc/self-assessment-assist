@@ -20,8 +20,9 @@ import play.api.http.Status
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
+import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, MatchingResourcesNotFoundError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
@@ -50,7 +51,8 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
           .map(response =>
             response.status match {
               case Status.OK => Right(ResponseWrapper(correlationId,response.json.validate[NewRdsAssessmentReport].get))
-              case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
+              case Status.NOT_FOUND => Left(ErrorWrapper(correlationId,MatchingResourcesNotFoundError))
+              case unexpectedStatus => Left(ErrorWrapper(correlationId,ServiceUnavailableError))
               //TODO:DE Must get rid of throw and convert tp new error system
             }
           )
