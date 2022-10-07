@@ -20,7 +20,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.transactionalrisking.models.domain.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.{simpleFraudRiskReport, simpleFraudRiskRequest}
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.simpleFraudRiskReport
 
 trait MockInsightService extends MockFactory {
 

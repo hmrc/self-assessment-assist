@@ -54,7 +54,7 @@ class RdsConnectorSpec extends ConnectorSpec
     "submit method is called" must {
       "return the response if successful" in new Test {
         MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
-        await(connector.submit(rdsRequest)) shouldBe Right(ResponseWrapper(CommonTestData.correlationId, rdsAssessmentReport))
+        await(connector.submit(rdsRequest)) shouldBe Right(ResponseWrapper(CommonTestData.internalCorrelationId, rdsAssessmentReport))
       }
     }
 

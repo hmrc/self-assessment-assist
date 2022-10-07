@@ -23,12 +23,12 @@ import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated,  Metadata, NrsSubmission, RequestBody, RequestData, SearchKeys}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.{NrsFailure, NrsResponse}
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 
-import java.time.{LocalDate, OffsetDateTime}
+import java.time.OffsetDateTime
 import scala.concurrent.Future
 
 class NrsServiceSpec extends ServiceSpec {

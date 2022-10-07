@@ -18,17 +18,13 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import play.api.http.Status.NO_CONTENT
-import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, FraudRiskReport, Origin}
+import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
-import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
 import uk.gov.hmrc.transactionalrisking.v1.CommonTestData._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,7 +40,7 @@ trait MockRdsService extends MockFactory {
                fraudRiskReport: FraudRiskReport,
                origin: Origin): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
       (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(CommonTestData.correlationId,simpleAssementReport) )))
+        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(internalCorrelationId, simpleAssementReport) )))
     }
 
 //
@@ -54,9 +50,9 @@ trait MockRdsService extends MockFactory {
 //    }
 //
 
-    def acknowlege(request: AcknowledgeReportRequest): CallHandler[Future[ (Int, String) ]] = {
+    def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[AcknowledgeReport]]] = {
       (mockRdsService.acknowlege(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, *, *, *).returns( Future( (NO_CONTENT, simpeTaxYear) ) )
+        .expects(*, *, *, *, *).returns( Future( Right(ResponseWrapper( simpleCorrelationId, simpleAcknowledgeReport ) ) ) )
     }
 
   }

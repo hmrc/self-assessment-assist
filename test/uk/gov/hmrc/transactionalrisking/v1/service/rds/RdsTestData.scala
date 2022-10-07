@@ -38,7 +38,7 @@ trait RdsTestData {
 
   val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq())
 
-  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(CommonTestData.correlationId,MtdError(code = "", message = "")))
+  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(CommonTestData.internalCorrelationId,MtdError(code = "", message = "")))
 
   var rdsRequestBody: String = """
                                  |{
@@ -274,7 +274,7 @@ trait RdsTestData {
   )
 
   val requestSO: ServiceOutcome[RdsRequest] = Right(
-    ResponseWrapper(CommonTestData.correlationId,
+    ResponseWrapper(CommonTestData.internalCorrelationId,
       RdsRequest(
         Seq(
           RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),

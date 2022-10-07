@@ -20,16 +20,13 @@ package uk.gov.hmrc.transactionalrisking.services.nrs
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
-import uk.gov.hmrc.transactionalrisking.models.domain.DesTaxYear
 //import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{Metadata, NotableEventType, NrsSubmission, SearchKeys, RequestData}
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil, Logging}
 
-import java.time.{LocalDate, OffsetDateTime}
+import java.time.OffsetDateTime
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -87,10 +84,5 @@ class NrsService @Inject()(
             response.toOption
           }
   }
-
-
-
-
-
 
 }

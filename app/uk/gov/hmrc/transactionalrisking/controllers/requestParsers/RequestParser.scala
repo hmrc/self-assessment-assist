@@ -18,7 +18,9 @@ package uk.gov.hmrc.transactionalrisking.controllers.requestParsers
 
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.Validator
 import uk.gov.hmrc.transactionalrisking.models.errors.{BadRequestError, ErrorWrapper}
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.RawData
+import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 
 trait RequestParser[Raw <: RawData, Request] extends Logging {
@@ -26,12 +28,12 @@ trait RequestParser[Raw <: RawData, Request] extends Logging {
 
   protected def requestFor(data: Raw): Request
 
-  def parseRequest(data: Raw)(implicit correlationId: String): Either[ErrorWrapper, Request] = {
+  def parseRequest(data: Raw)(implicit correlationId: String): ServiceOutcome[ Request] = {
     validator.validate(data) match {
       case Nil =>
         logger.info(message = "[RequestParser][parseRequest] " +
           s"Validation successful for the request with correlationId : $correlationId")
-        Right(requestFor(data))
+        Right( ResponseWrapper( correlationId, requestFor(data)))
       case err :: Nil =>
         logger.info(message = "[RequestParser][parseRequest] " +
           s"Validation failed with ${err.code} error for the request with correlationId : $correlationId")

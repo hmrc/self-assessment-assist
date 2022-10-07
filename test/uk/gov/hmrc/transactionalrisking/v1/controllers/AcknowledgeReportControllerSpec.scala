@@ -66,19 +66,19 @@ class AcknowledgeReportControllerSpec
 
         MockEnrolmentsAuthService.authoriseUser()
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
-        MockInsightService.assess(simpleFraudRiskRequest)
-        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
-        MockRdsService.acknowlege(simpeAcknowledgeReportRequest)
+        //MockInsightService.assess(simpleFraudRiskRequest)
+        //MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
+        MockRdsService.acknowlegeRds(simpeAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit(generateReportRequest = simpleGenerateReportRequest, generatedNrsId=simpleGeneratedNrsId,
+        MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequest, generatedNrsId=simpleAcknowledgeNrsId,
           submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
-        MockCurrentDateTime.getDateTime()
 
 
-        val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationId.toString, simpleCorrelationId.toString)(fakeGetRequest)
+        val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationId.toString, simpleCorrelationId)(fakeGetRequest)
         status(result) shouldBe NO_CONTENT
 //        contentAsJson(result) shouldBe None
-        contentType(result) shouldBe None
+        val ct = contentType(result)
+        ct shouldBe None
 //        header("X-CorrelationId", result) shouldBe Some(correlationId)
 
       }

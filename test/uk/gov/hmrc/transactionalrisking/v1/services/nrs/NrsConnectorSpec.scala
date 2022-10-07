@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.services.nrs
 
 import akka.actor.{ActorSystem, Scheduler}
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, equalToJson, post, urlPathEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
 import org.scalatest.BeforeAndAfterAll
@@ -25,9 +25,9 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.NrsSubmission
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsFailure.{ExceptionThrown}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsFailure.ExceptionThrown
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.{NrsFailure, NrsResponse}
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.FullRequestTestData
@@ -39,21 +39,22 @@ class NrsConnectorSpec extends ConnectorSpec
   with BeforeAndAfterAll
   with GuiceOneAppPerSuite
   with Injecting
-  with MockAppConfig  {
+  with MockAppConfig {
 
-  val actorSystem: ActorSystem              = inject[ActorSystem]
-  implicit val scheduler: Scheduler         = actorSystem.scheduler
+  val actorSystem: ActorSystem = inject[ActorSystem]
+  implicit val scheduler: Scheduler = actorSystem.scheduler
 
   var port: Int = _
   val reportId = "12345"
   val apiKeyValue = "api-key"
-  val url         = "/"
+  val url = "/"
   val longDelays: List[FiniteDuration] = List(10.minutes)
 
   val successResponseJson: JsValue =
-    Json.parse("""{
-                 |   "reportSubmissionId": "submissionId"
-                 |}""".stripMargin)
+    Json.parse(
+      """{
+        |   "reportSubmissionId": "submissionId"
+        |}""".stripMargin)
 
   private val nrsSubmission: NrsSubmission = FullRequestTestData.correctModel
   private val nrsSubmissionJsonString: String = FullRequestTestData.correctJsonString
@@ -61,7 +62,7 @@ class NrsConnectorSpec extends ConnectorSpec
   val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
 
   class Test(retryDelays: List[FiniteDuration] = List(100.millis)) {
-    MockedAppConfig.nrsBaseUrl returns(s"http://localhost:$port")
+    MockedAppConfig.nrsBaseUrl returns (s"http://localhost:$port")
     MockedAppConfig.nrsRetries returns retryDelays
     MockedAppConfig.nrsApiKey returns apiKeyValue
 
