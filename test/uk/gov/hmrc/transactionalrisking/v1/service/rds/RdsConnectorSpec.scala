@@ -18,12 +18,15 @@ package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import mockws.{MockWS, MockWSHelpers}
 import org.scalatest.BeforeAndAfterAll
+import play.api.http.Status.NO_CONTENT
 import play.api.mvc.Results.Ok
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.models.domain.AcknowledgeReport
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.{simpleCorrelationId, simpleTaxYearEndInt}
 
 
 class RdsConnectorSpec extends ConnectorSpec
@@ -54,14 +57,22 @@ class RdsConnectorSpec extends ConnectorSpec
     "submit method is called" must {
       "return the response if successful" in new Test {
         MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
-        await(connector.submit(rdsRequest)) shouldBe Right(ResponseWrapper(CommonTestData.internalCorrelationId, rdsAssessmentReport))
+        await(connector.submit(rdsRequest)) shouldBe Right(ResponseWrapper(simpleCorrelationId, rdsAssessmentReport))
       }
     }
 
     "acknowledge method is called" must {
       "return the response if successful" in new Test {
         MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
-        await(connector.acknowledgeRds(acknowledgeReportRequest)) shouldBe NO_CONTENT
+        val ret = await(connector.acknowledgeRds(acknowledgeReportRequest))
+        val Right( ResponseWrapper( correlationIdRet, AcknowledgeReport( returnCode, year ) ) ) = ret
+
+        correlationIdRet shouldBe simpleCorrelationId
+        returnCode shouldBe NO_CONTENT
+        year shouldBe simpleTaxYearEndInt
+
+
+
       }
     }
   }
