@@ -20,7 +20,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
+import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MatchingResourcesNotFoundError}
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class GenerateReportController @Inject()(
-                                          val cc: ControllerComponents,
+                                          val cc: ControllerComponents,//TODO add request parser
                                           val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
                                           nonRepudiationService: NrsService,
@@ -58,18 +58,19 @@ class GenerateReportController @Inject()(
           DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
 
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
+        logger.info(s"Received response for fraudRiskReport")
         val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] =
           rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
+        logger.info(s"Received RDS assessment response")
 
         Future {
           def assementReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
             assementReportserviceOutcome =>
               assementReportserviceOutcome match {
                 case Right(ResponseWrapper(correlationIdRes,assessmentReportResponse)) =>
-                  //TODO why do we pass calculationID here in RequestBody?
                   val rdsReportContent = RequestData(nino = nino,
                     RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportId.toString))
-
+                  logger.debug(s"RDS request content $rdsReportContent")
                   nonRepudiationService.submit(requestData = rdsReportContent,
                     submissionTimestamp = currentDateTime.getDateTime,
                     notableEventType = AssistReportGenerated,calculationInfo.taxYear)
@@ -89,16 +90,20 @@ class GenerateReportController @Inject()(
                     assessmentReport =>
                       val jsValue = Json.toJson[AssessmentReport](assessmentReport)
                       Future(Ok(jsValue).withApiHeaders(correlationId))
+
                   }
                 case Left(errorWrapper) =>
-                  Future(BadRequest(asError("Please provide valid ID of an Assessment Report.")).withApiHeaders(correlationId))
+                  errorWrapper.error match {
+                    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+                    case _ => Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+                  }
               }
           }
 
           ret
 
         }.flatten
-      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))) //TODO Error desc maybe fix me
+      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))) //TODO Add RequestParser
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {

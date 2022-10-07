@@ -66,8 +66,6 @@ class AcknowledgeReportControllerSpec
 
         MockEnrolmentsAuthService.authoriseUser()
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
-        //MockInsightService.assess(simpleFraudRiskRequest)
-        //MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
         MockRdsService.acknowlegeRds(simpeAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
         MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequest, generatedNrsId=simpleAcknowledgeNrsId,

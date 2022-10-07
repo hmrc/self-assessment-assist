@@ -21,20 +21,19 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.transactionalrisking.models.domain.{AcknowledgeReport, AssessmentReport, DesTaxYear, Internal, Origin}
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, MtdError}
+import uk.gov.hmrc.transactionalrisking.models.domain.{AcknowledgeReport, DesTaxYear, Internal, Origin}
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, ShouldNotOccurError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AcknowledgeReportRequest, AssistReportAcknowledged, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
+import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging}
 
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 
 class AcknowledgeReportController @Inject()(
                                              val cc: ControllerComponents,
@@ -60,19 +59,22 @@ class AcknowledgeReportController @Inject()(
               val retAcknowledgeReport = acknowledgeReport(acknowledgeReportRequest, Internal).map {
                 acknowledgeReport:ServiceOutcome[Int] =>
                   acknowledgeReport match {
-                    case Right(ResponseWrapper(responseCcorrelationId, returnCode)) =>
+                    case Right(ResponseWrapper(responseCorrelationId, returnCode)) =>
                       val retFuture: Future[Result] = returnCode match {
                         case NO_CONTENT =>
-                          val retFutureOk: Future[Result] = Future(NoContent.withApiHeaders(correlationId))
+                          val retFutureOk: Future[Result] = Future(NoContent.withApiHeaders(rdsCorrelationID))
                           retFutureOk
                         case _ =>
-                          val retError: Future[Result] = Future(BadRequest(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+                          val retError: Future[Result] = Future(BadRequest(Json.toJson(DownstreamError)).withApiHeaders(rdsCorrelationID))
                           retError
                       }
                       retFuture
                     case Left(errorWrapper) =>
-                      val ret: Future[Result] = Future(BadRequest(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+                      val ret: Future[Result] = Future(BadRequest(Json.toJson(errorWrapper.error)).withApiHeaders(rdsCorrelationID))
                       ret
+                    case _ =>
+                      val retError: Future[Result] = Future(BadRequest(Json.toJson( ShouldNotOccurError )).withApiHeaders(rdsCorrelationID))
+                      retError
                   }
 
               }
@@ -116,17 +118,19 @@ class AcknowledgeReportController @Inject()(
 
                   //Submit asynchronously to NRS
                   nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged, taxYearFromResponse)
-                  //TODO confirm documentation if nrs failure needs to handled/audited?
+                  //TODO confirm documentation if nrs failure needsAAAAAAAAA to handled/audited?
                   logger.info("... report submitted to NRS returning.")
                   Future(Right(ResponseWrapper(correlationId, NO_CONTENT)))
                 }
+                case a if (a==BAD_REQUEST) =>
+              	  Future(Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[Int])
                 case _ =>
-                  Future(Right(ResponseWrapper(correlationId, INTERNAL_SERVER_ERROR)): ServiceOutcome[Int])
+                  Future(Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[Int])
               }
               ret
             }
             case Left(errorWrapper) =>
-              Future(Left(errorWrapper): ServiceOutcome[Int])
+              Future(Left( errorWrapper): ServiceOutcome[Int])
           }
           ret
       }

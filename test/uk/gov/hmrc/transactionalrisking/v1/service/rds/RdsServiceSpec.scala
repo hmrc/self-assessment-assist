@@ -28,7 +28,7 @@ import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.{simpleAcknowledgeReport, simpleCorrelationId, simpleTaxYearEndInt}
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.{simpleAcknowledgeReport, simpleCorrelationId}
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 

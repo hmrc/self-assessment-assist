@@ -17,13 +17,13 @@
 package uk.gov.hmrc.transactionalrisking.services.rds
 
 import play.api.http.Status
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT}
+import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.models.domain.AcknowledgeReport
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, MatchingResourcesNotFoundError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
@@ -41,19 +41,21 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
   private def baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
 
-  //TODO move this to RDS connector
-  def submit( request: RdsRequest)(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-      wsClient
-        .url(baseUrlForRdsAssessmentsSubmit)
-        .post(Json.toJson(request))
-        .map(response =>
-          response.status match {
-            case Status.OK => Right(ResponseWrapper(correlationId,response.json.validate[NewRdsAssessmentReport].get))
-            case unexpectedStatus => throw new RuntimeException(s"Unexpected status when attempting to get the assessment report from RDS: [$unexpectedStatus]")
-            //TODO:DE Must get rid of throw and convert tp new error system
-          }
-        )
+
+  def submit(request: RdsRequest)(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+    logger.debug(s"$correlationId :: RDS request content ${request}")
+    wsClient
+      .url(baseUrlForRdsAssessmentsSubmit)
+      .post(Json.toJson(request))
+      .map(response =>
+        response.status match {
+          case Status.OK => Right(ResponseWrapper(correlationId, response.json.validate[NewRdsAssessmentReport].get))
+          case Status.NOT_FOUND => Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError))
+          case unexpectedStatus => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+        }
+      )
   }
+
 
   def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
                                                   ec: ExecutionContext,
