@@ -40,7 +40,6 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
   private def baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
 
-  //TODO move this to RDS connector
   def submit( requestSO: ServiceOutcome[RdsRequest])(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     requestSO match {
       case Right(ResponseWrapper(correlationId,request)) =>
@@ -52,8 +51,7 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
             response.status match {
               case Status.OK => Right(ResponseWrapper(correlationId,response.json.validate[NewRdsAssessmentReport].get))
               case Status.NOT_FOUND => Left(ErrorWrapper(correlationId,MatchingResourcesNotFoundError))
-              case unexpectedStatus => Left(ErrorWrapper(correlationId,ServiceUnavailableError))
-              //TODO:DE Must get rid of throw and convert tp new error system
+              case _ => Left(ErrorWrapper(correlationId,ServiceUnavailableError))
             }
           )
       case Left(er) => Future(Left(er):ServiceOutcome[NewRdsAssessmentReport])
@@ -75,7 +73,7 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
             NO_CONTENT
           }
 
-          case unexpectedStatus => {
+          case _ => {
             logger.error(s"... error during rds acknowledgement ")
             INTERNAL_SERVER_ERROR
             //            throw new RuntimeException(s"Unexpected status when attempting to mark the report as acknowledged with RDS: [$unexpectedStatus]")}

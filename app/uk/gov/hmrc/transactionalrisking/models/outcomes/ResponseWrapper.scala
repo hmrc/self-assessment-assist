@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.transactionalrisking.models.outcomes
 
-//TODO:DE Check why we need the correlationID.
 case class ResponseWrapper[+A]( correlationId: String,  responseData: A) {
   def map[B](f: A => B): ResponseWrapper[B] = ResponseWrapper( correlationId, f(responseData))
   def flatMap[B](f: A => B):B = f(responseData)

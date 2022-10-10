@@ -23,6 +23,7 @@ import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController
 import uk.gov.hmrc.transactionalrisking.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.transactionalrisking.models.errors.ForbiddenDownstreamError
 import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ForbiddenDownstreamError, LegacyUnauthorisedError, MtdError}
@@ -112,10 +113,11 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
       Future.successful(Right(userDetails.copy(agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments))))
     }
   }
-//TODO Fix me this was VRN
+
   def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
     .getEnrolment("IR-SA")
-    .flatMap(_.getIdentifier("Nino"))
+    //TODO vat had specifc attribute(VRN) to fetch this value, what value should be used in our case?
+    .flatMap(_.getIdentifier(AuthorisedController.ninoKey))
     .map(_.value)
 
   def getAgentReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments

@@ -67,7 +67,7 @@ class NrsService @Inject()(
         searchKeys =
           SearchKeys(
             nino = ninoKey,
-            taxYear = taxYear, //TODO fix me taxPeriodEndDate
+            taxYear = taxYear, //TODO fix me taxPeriodEndDate, check format
             reportId = requestData.body.reportId,
           )
       )

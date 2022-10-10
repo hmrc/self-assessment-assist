@@ -19,7 +19,6 @@ package uk.gov.hmrc.transactionalrisking.models.errors
 import play.api.libs.json.{JsObject, JsValue, Json, Writes}
 import uk.gov.hmrc.transactionalrisking.models.audit.AuditError
 
-//TODO:DE why do we need the correlationId
 case class ErrorWrapper( correlationId: String, error: MtdError, errors: Option[Seq[MtdError]] = None) {
 
   private def allErrors: Seq[MtdError] = errors match {

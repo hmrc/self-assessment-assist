@@ -58,7 +58,7 @@ class GenerateReportController @Inject()(
           DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
 
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
-        logger.info(s"Received response for fraudRiskReport")
+        logger.info(s"$correlationId :: Received response for fraudRiskReport")
         val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] = rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
         logger.info(s"Received RDS assessment response")
         Future {
@@ -73,7 +73,6 @@ class GenerateReportController @Inject()(
                     submissionTimestamp = currentDateTime.getDateTime,
                     notableEventType = AssistReportGenerated,calculationInfo.taxYear)
                   //TODO:DE Need   to deal with post NRS errors here.
-                  //TODO:DE match case saved nrs no problems(Pretend no errors for moment)
                   Right(ResponseWrapper(correlationId,assessmentReportResponse)): ServiceOutcome[AssessmentReport]
                 case Left(errorWrapper) =>
                   Left(errorWrapper): ServiceOutcome[AssessmentReport]

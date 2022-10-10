@@ -82,7 +82,6 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
       body = riskParts(1), action = riskParts(2),
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
-//TODO Fix me, request dont need to be ServiceOutcome
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {

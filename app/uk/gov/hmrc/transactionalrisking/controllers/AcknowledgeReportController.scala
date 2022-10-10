@@ -21,15 +21,12 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.transactionalrisking.models.domain.{DesTaxYear, Internal, Origin}
-import uk.gov.hmrc.transactionalrisking.models.errors.{BadRequestError, DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.transactionalrisking.models.domain.{Internal, Origin}
+import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper}
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
-import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AcknowledgeReportRequest, AssistReportAcknowledged, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.services.rds.models.response.RdsAcknowledgementResponse
 import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging}
 
@@ -45,22 +42,17 @@ class AcknowledgeReportController @Inject()(
                                              rdsService: RdsService,
                                              currentDateTime: CurrentDateTime,
                                            )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
-  //TODO revisit if reportId needs to be UUID instead of string? as regex validation is done anyway
+
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationID:String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request => {
       implicit val correlationId: String = UUID.randomUUID().toString
       logger.info(s"Received request to acknowledge assessment report")
-
-
       val parsedRequest: Either[ErrorWrapper, AcknowledgeReportRequest] = requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId,rdsCorrelationID))
       val response = parsedRequest.map(req => acknowledgeReport(req, Internal))
-
       response match {
         case Right(value) =>
-
           logger.info(s"Acknowledge request processed successfully in RDS")
           Future(NoContent.withApiHeaders(correlationId))
-
         case Left(value) => Future(BadRequest(Json.toJson(value)).withApiHeaders(correlationId))
       }
       //
@@ -82,9 +74,8 @@ class AcknowledgeReportController @Inject()(
                                                                                    userRequest: UserRequest[_],
                                                                                    correlationId: String) = {
     logger.info(s"${correlationId} Received request to acknowledge assessment report for Self Assessment [${request.feedbackId}]")
-    //    doImplicitAuditing() // TODO: This should be at the controller level.
+    //    doImplicitAuditing()
     //    auditRequestToAcknowledge(request)
-    //TODO Fix me dont need to retun status code at this level
     rdsService.acknowlege(request).map(_ match {
       //TODO This status code doesn't look right, need to check the reponse code from RDS it might be 2xx
       case a if (a == 204) =>
