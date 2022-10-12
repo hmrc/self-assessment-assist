@@ -24,7 +24,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController
-import uk.gov.hmrc.transactionalrisking.models.auth.{AuthOutcome, UserDetails}
+import uk.gov.hmrc.transactionalrisking.models.auth.{AffinityGroupType, AuthOutcome, UserDetails}
 import uk.gov.hmrc.transactionalrisking.models.errors.ForbiddenDownstreamError
 import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ForbiddenDownstreamError, LegacyUnauthorisedError, MtdError}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.IdentityData
@@ -47,9 +47,9 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
       //https://confluence.tools.tax.service.gov.uk/display/GG/Predicate+Reference#PredicateReference-EnrolmentwithagentauthorisationbasedonNINO
       //affinityGroup = "Individual" or "Organisation" is not reliable
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
-        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = "Individual", enrolments)
-        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = "Organisation", enrolments)
-        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = "Agent", enrolments)
+        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.individual, enrolments)
+        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.organisation, enrolments)
+        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.agent, enrolments)
         case _ =>
           logger.warn(s"[AuthorisationService] [authoriseAsClient] Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
@@ -107,7 +107,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
       identityData
     )
 
-    if (affinityGroup != "Agent") {
+    if (affinityGroup != AffinityGroupType.agent) {
       Future.successful(Right(userDetails))
     } else {
       Future.successful(Right(userDetails.copy(agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments))))

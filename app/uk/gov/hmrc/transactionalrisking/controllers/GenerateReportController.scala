@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.controllers
 
 import play.api.libs.json._
 import play.api.mvc._
+import uk.gov.hmrc.transactionalrisking.models.auth.AffinityGroupType
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MatchingResourcesNotFoundError}
@@ -104,8 +105,11 @@ class GenerateReportController @Inject()(
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {
-    //TODO fix me, write logic to derive customer type
-    CustomerType.TaxPayer
+    request.asInstanceOf[UserRequest[_]].userDetails.userType match {
+      case AffinityGroupType.individual => CustomerType.TaxPayer
+      case AffinityGroupType.organisation => CustomerType.Agent
+      case AffinityGroupType.agent => CustomerType.Agent
+    }
   }
 
   //TODO Revisit Check headers as pending
@@ -121,7 +125,7 @@ class GenerateReportController @Inject()(
   private def toId(rawId: String): Option[UUID] =
     Try(UUID.fromString(rawId)).toOption
 
-  private def asError(message: String): JsObject = Json.obj("message" -> message)
+  //private def asError(message: String): JsObject = Json.obj("message" -> message)
 
 
   private def getCalculationInfo(id: UUID, nino: String): CalculationInfo =

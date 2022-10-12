@@ -97,7 +97,7 @@ class AcknowledgeReportController @Inject()(
     ).flatten
   }
 
-  private def asError(message: String): JsObject = Json.obj("message" -> message)
+  //private def asError(message: String): JsObject = Json.obj("message" -> message)
 
 
 }

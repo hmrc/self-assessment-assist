@@ -17,7 +17,6 @@
 package uk.gov.hmrc.transactionalrisking.services.nrs.models.request
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.transactionalrisking.models.domain.AssessmentReport
 
 //TODO newRdsAssessmentReport will be populated using NewRdsAssessmentReport class, as of now String because common
 // class is used for generate report and acknowledge

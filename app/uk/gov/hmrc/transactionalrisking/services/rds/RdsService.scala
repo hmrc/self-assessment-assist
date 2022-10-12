@@ -17,7 +17,6 @@
 package uk.gov.hmrc.transactionalrisking.services.rds
 
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
@@ -85,6 +84,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
+    logger.info(s"$correlationId :: rdsservice processing generateRdsAssessmentRequest")
     Right(ResponseWrapper(correlationId,RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationId", request.calculationId.toString),
@@ -124,8 +124,10 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                                                     ec: ExecutionContext,
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],
-                                                    correlationId: String): Future[Int] =
+                                                    correlationId: String): Future[Int] = {
+    logger.info(s"$correlationId :: rdsservice processing acknowledge")
     connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
+  }
 
   private def generateRdsAcknowledgementRequest(request: AcknowledgeReportRequest): RdsRequest
   = RdsRequest(
