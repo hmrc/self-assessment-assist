@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.services.rds
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.transactionalrisking.models.domain._
+import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
@@ -89,10 +89,10 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
       body = riskParts(1), action = riskParts(2),
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
-//TODO Fix me, request dont need to be ServiceOutcome
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
+    logger.info(s"$correlationId :: rdsservice processing generateRdsAssessmentRequest")
     Right(ResponseWrapper(correlationId,RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationId", request.calculationId.toString),
@@ -133,7 +133,9 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],
                                                     correlationId: String): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] =
+    logger.info(s"$correlationId :: rdsservice processing acknowledge")
     connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
+  }
 
   private def generateRdsAcknowledgementRequest(request: AcknowledgeReportRequest): RdsRequest
   = RdsRequest(

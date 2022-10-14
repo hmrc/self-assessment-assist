@@ -50,6 +50,7 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
           case Status.OK => Right(ResponseWrapper(correlationId, response.json.validate[NewRdsAssessmentReport].get))
           case Status.NOT_FOUND => Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError))
           case unexpectedStatus => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+          case _ => Left(ErrorWrapper(correlationId,ServiceUnavailableError))
         }
       )
   }
@@ -80,7 +81,7 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
             ret
           }
 
-          case unexpectedStatus => {
+          case _ => {
             logger.error(s"... error during rds acknowledgement ")
             Left(ErrorWrapper(correlationId, DownstreamError ))
           }

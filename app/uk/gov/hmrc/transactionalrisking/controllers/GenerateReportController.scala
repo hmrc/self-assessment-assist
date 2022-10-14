@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.controllers
 
 import play.api.libs.json._
 import play.api.mvc._
+import uk.gov.hmrc.transactionalrisking.models.auth.AffinityGroupType
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MatchingResourcesNotFoundError}
@@ -59,7 +60,7 @@ class GenerateReportController @Inject()(
           DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
 
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
-        logger.info(s"Received response for fraudRiskReport")
+        logger.info(s"$correlationId :: Received response for fraudRiskReport")
         val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] =
           rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
         logger.info(s"Received RDS assessment response")
@@ -76,7 +77,6 @@ class GenerateReportController @Inject()(
                     submissionTimestamp = currentDateTime.getDateTime,
                     notableEventType = AssistReportGenerated,calculationInfo.taxYear)
                   //TODO:DE Need   to deal with post NRS errors here.
-                  //TODO:DE match case saved nrs no problems(Pretend no errors for moment)
                   Right(ResponseWrapper(correlationId,assessmentReportResponse)): ServiceOutcome[AssessmentReport]
                 case Left(errorWrapper) =>
                   Left(errorWrapper): ServiceOutcome[AssessmentReport]
@@ -108,8 +108,11 @@ class GenerateReportController @Inject()(
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {
-    //TODO fix me, write logic to derive customer type
-    CustomerType.TaxPayer
+    request.asInstanceOf[UserRequest[_]].userDetails.userType match {
+      case AffinityGroupType.individual => CustomerType.TaxPayer
+      case AffinityGroupType.organisation => CustomerType.Agent
+      case AffinityGroupType.agent => CustomerType.Agent
+    }
   }
 
   //TODO Revisit Check headers as pending
@@ -125,7 +128,7 @@ class GenerateReportController @Inject()(
   private def toId(rawId: String): Option[UUID] =
     Try(UUID.fromString(rawId)).toOption
 
-  private def asError(message: String): JsObject = Json.obj("message" -> message)
+  //private def asError(message: String): JsObject = Json.obj("message" -> message)
 
 
   private def getCalculationInfo(id: UUID, nino: String): CalculationInfo =

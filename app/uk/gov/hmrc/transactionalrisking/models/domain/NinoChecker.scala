@@ -15,8 +15,6 @@
  */
 
 package uk.gov.hmrc.transactionalrisking.models.domain
-//TODO This class was named as Nino, there is another Nino class with one of the dependency, Hence renamed it to
-// NinoChecker. Need to revisit
 
 case class NinoChecker(nino: String) {
   require(NinoChecker.isValid(nino), s"$nino is not a valid nino.")

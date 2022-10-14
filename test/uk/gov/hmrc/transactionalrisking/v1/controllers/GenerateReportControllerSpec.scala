@@ -57,7 +57,6 @@ class GenerateReportControllerSpec
       provideRandomCorrelationId = mockProvideRandomCorrelationId
     )
       //override authorisedAction(nino: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent]
-      //TODO:DE Make this abstarct abstract override.
 
   }
 

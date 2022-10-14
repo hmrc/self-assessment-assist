@@ -99,7 +99,7 @@ class AcknowledgeReportController @Inject()(
                                                                                    userRequest: UserRequest[_],
                                                                                    correlationId: String): Future[ServiceOutcome[Int]] = {
     logger.info(s"${correlationId} Received request to acknowledge assessment report for Self Assessment [${request.feedbackId}]")
-    //    doImplicitAuditing() // TODO: This should be at the controller level.
+    //    doImplicitAuditing()
     //    auditRequestToAcknowledge(request)
     //TODO Fix me dont need to return status code at this level
 
@@ -146,7 +146,7 @@ class AcknowledgeReportController @Inject()(
 
   }
 
-  private def asError(message: String): JsObject = Json.obj("message" -> message)
+  //private def asError(message: String): JsObject = Json.obj("message" -> message)
 
 
 }

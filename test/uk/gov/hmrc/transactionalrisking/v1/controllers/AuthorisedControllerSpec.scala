@@ -90,7 +90,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "map to the correct result" when {
 
       val predicate: Predicate =
-        Nino(hasNino = true, nino = Some(ninoIsCorrect)) or Enrolment("IR-SA").withIdentifier(AuthorisedController.ninoKey, ninoIsCorrect)//.withDelegatedAuthRule("afi-auth")
+        Nino(hasNino = true, nino = Some(ninoIsCorrect)) or Enrolment("IR-SA").withIdentifier(AuthorisedController.ninoKey, ninoIsCorrect).withDelegatedAuthRule("sa-auth")
 
       def serviceErrors(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"a ${mtdError.code} error is returned from the enrolments auth service" in new Test {

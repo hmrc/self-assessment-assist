@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.transactionalrisking.services.rds.models.response
 
-import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsObject, JsPath, JsString, Reads, Writes}
 import NewRdsAssessmentReport.{KeyValueWrapper, Output}
 
 import java.util.UUID
 
-//TODO Revisit this taken from Simulator
 case class NewRdsAssessmentReport(links: Seq[String],
                                   version: Int,
                                   moduleId: String,
@@ -84,12 +83,12 @@ object NewRdsAssessmentReport {
   trait Output
 
   object Output {
-    val temp = List("correlationID","feedbackID","calculationID","nino","taxYear","responseCode","response")
+    val specialKeys = List("correlationID","feedbackID","calculationID","nino","taxYear","responseCode","response")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {
-          case Seq("name", "value") if (temp.contains(json("name").asInstanceOf[JsString].value)) =>
-            KeyValueWrapper.reads.reads(json)
+          case Seq("name", "value") if (specialKeys.contains(json("name").asInstanceOf[JsString].value)) =>
+              KeyValueWrapper.reads.reads(json)
           case _ =>
               MainOutputWrapper.reads.reads(json)
         }

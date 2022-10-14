@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.models.domain
+package uk.gov.hmrc.transactionalrisking.models.auth
 
-import play.api.libs.json.{Format, Json}
-//TODO revisit me later: This class might not be neeeded as RDS doesn't return decision
-object FraudDecision extends Enumeration {
-
-  type FraudRiskDecision = Value
-
-  val Accept: FraudDecision.Value = Value("A")
-  val Check: FraudDecision.Value = Value("C")
-  val Reject: FraudDecision.Value = Value("R")
-
-  implicit val format: Format[FraudRiskDecision] = Json.formatEnum(FraudDecision)
-
+object AffinityGroupType {
+  val individual = "Individual"
+  val organisation ="Organisation"
+  val agent ="Agent"
 }
-

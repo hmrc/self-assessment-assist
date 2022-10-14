@@ -43,10 +43,12 @@ object RdsAcknowledgementResponse {
         fields.keys.toSeq match {
           case Seq("name", "value") => AcknowledgementMainOutputWrapper.reads.reads(json)
         }
+      case _ => throw new Exception("Invalid json value")
     }
 
     implicit val writes: Writes[AcknowledgementOutput] = {
       case o@AcknowledgementMainOutputWrapper(_, _) => AcknowledgementMainOutputWrapper.writes.writes(o)
+      case _ => throw new Exception("Invalid json value")
     }
 
   }

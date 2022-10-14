@@ -22,11 +22,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
 //import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{Metadata, NotableEventType, NrsSubmission, SearchKeys, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil, Logging}
 
-import java.time.OffsetDateTime
+import java.time.{OffsetDateTime}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,7 +47,7 @@ class NrsService @Inject()(
     val encodedPayload = hashUtil.encode(payloadString)
     val sha256Checksum = hashUtil.getHash(payloadString)
     val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)
-
+    logger.info(s"request data before encryption $payloadString")//TODO remove me
     //TODO refer https://confluence.tools.tax.service.gov.uk/display/NR/Transactional+Risking+Service+-+API+-+NRS+Assessment
 
     NrsSubmission(
@@ -64,7 +64,7 @@ class NrsService @Inject()(
         searchKeys =
           SearchKeys(
             nino = ninoKey,
-            taxYear = taxYear, //TODO fix me taxPeriodEndDate
+            taxYear = taxYear, //TODO fix me taxPeriodEndDate, check format
             reportId = requestData.body.reportId,
           )
       )
