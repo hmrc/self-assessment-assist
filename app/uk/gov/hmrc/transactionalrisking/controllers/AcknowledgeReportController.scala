@@ -21,19 +21,20 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.transactionalrisking.models.domain.{AcknowledgeReport, DesTaxYear, Internal, Origin}
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, ShouldNotOccurError}
+import uk.gov.hmrc.transactionalrisking.models.domain.{DesTaxYear, Internal, Origin}
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AcknowledgeReportRequest, AssistReportAcknowledged, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
+import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
-import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging}
+import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging, ProvideRandomCorrelationId}
 
-import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class AcknowledgeReportController @Inject()(
                                              val cc: ControllerComponents,
@@ -42,18 +43,19 @@ class AcknowledgeReportController @Inject()(
                                              nonRepudiationService: NrsService,
                                              rdsService: RdsService,
                                              currentDateTime: CurrentDateTime,
+                                             provideRandomCorrelationId:ProvideRandomCorrelationId
                                            )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
   //TODO revisit if reportId needs to be UUID instead of string? as regex validation is done anyway
-  def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationID: String): Action[AnyContent] =
+  def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      implicit val correlationId: String = UUID.randomUUID().toString
+      implicit val correlationId: String = provideRandomCorrelationId.getRandomCorrelationId()
       logger.info(s"Received request to acknowledge assessment report")
 
-      val parsedRequest: ServiceOutcome[AcknowledgeReportRequest] = requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationID))
+      val parsedRequest: ServiceOutcome[AcknowledgeReportRequest] = requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId))
 
       def response: Future[Result] =
         parsedRequest match {
-          case Right( ResponseWrapper( responseCcorrelationId, acknowledgeReportRequest: AcknowledgeReportRequest)) =>
+          case Right( ResponseWrapper( responseCorrelationId, acknowledgeReportRequest: AcknowledgeReportRequest)) =>
 
             def acknowledge: Future[Result] = {
               val retAcknowledgeReport = acknowledgeReport(acknowledgeReportRequest, Internal).map {
@@ -62,18 +64,18 @@ class AcknowledgeReportController @Inject()(
                     case Right(ResponseWrapper(responseCorrelationId, returnCode)) =>
                       val retFuture: Future[Result] = returnCode match {
                         case NO_CONTENT =>
-                          val retFutureOk: Future[Result] = Future(NoContent.withApiHeaders(rdsCorrelationID))
+                          val retFutureOk: Future[Result] = Future(NoContent.withApiHeaders(correlationId))
                           retFutureOk
                         case _ =>
-                          val retError: Future[Result] = Future(BadRequest(Json.toJson(DownstreamError)).withApiHeaders(rdsCorrelationID))
+                          val retError: Future[Result] = Future(BadRequest(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
                           retError
                       }
                       retFuture
                     case Left(errorWrapper) =>
-                      val ret: Future[Result] = Future(BadRequest(Json.toJson(errorWrapper.error)).withApiHeaders(rdsCorrelationID))
+                      val ret: Future[Result] = Future(BadRequest(Json.toJson(errorWrapper.error)).withApiHeaders(correlationId))
                       ret
                     case _ =>
-                      val retError: Future[Result] = Future(BadRequest(Json.toJson( ShouldNotOccurError )).withApiHeaders(rdsCorrelationID))
+                      val retError: Future[Result] = Future(BadRequest(Json.toJson( ServiceUnavailableError )).withApiHeaders(correlationId))
                       retError
                   }
 
@@ -82,6 +84,9 @@ class AcknowledgeReportController @Inject()(
             }.flatten
 
             acknowledge
+
+          case Left(errorWrapper) =>  Future(BadRequest(Json.toJson(errorWrapper.error)).withApiHeaders(correlationId))
+          case _ =>  Future(BadRequest(Json.toJson(ServiceUnavailableError)).withApiHeaders(correlationId))
         }
 
       response
@@ -96,15 +101,17 @@ class AcknowledgeReportController @Inject()(
     logger.info(s"${correlationId} Received request to acknowledge assessment report for Self Assessment [${request.feedbackId}]")
     //    doImplicitAuditing() // TODO: This should be at the controller level.
     //    auditRequestToAcknowledge(request)
-    //TODO Fix me dont need to retun status code at this level
+    //TODO Fix me dont need to return status code at this level
 
     Future {
       val ret: Future[ServiceOutcome[Int]] = rdsService.acknowlege(request).flatMap {
-        acknowledgeReportSO: ServiceOutcome[AcknowledgeReport] =>
+        acknowledgeReportSO: ServiceOutcome[NewRdsAssessmentReport] =>
           val ret: Future[ServiceOutcome[Int]] = acknowledgeReportSO match {
-            case Right(ResponseWrapper(correlationIDResponse, acknowledgeReport)) => {
-              val ret: Future[ServiceOutcome[Int]] = acknowledgeReport.returnCode match {
-                //TODO This status caode doesn't look right, need to check the repsonse code from RDS it might be 2xx
+            case Right(ResponseWrapper(correlationIdResponse, acknowledgeReport)) => {
+              val reponseCode:Int = Try(acknowledgeReport.responseCode.toInt)
+                .getOrElse(BAD_REQUEST)
+              val ret: Future[ServiceOutcome[Int]] = reponseCode match {
+                //TODO This status code doesn't look right, need to check the response code from RDS it might be 2xx
                 case a if (a == NO_CONTENT) => {
                   logger.info(s"rds ack response is ${a}")
 
@@ -118,7 +125,7 @@ class AcknowledgeReportController @Inject()(
 
                   //Submit asynchronously to NRS
                   nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged, taxYearFromResponse)
-                  //TODO confirm documentation if nrs failure needsAAAAAAAAA to handled/audited?
+                  //TODO confirm documentation if nrs failure needs to handled/audited?
                   logger.info("... report submitted to NRS returning.")
                   Future(Right(ResponseWrapper(correlationId, NO_CONTENT)))
                 }

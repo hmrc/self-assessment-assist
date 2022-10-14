@@ -22,7 +22,6 @@ import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
 import uk.gov.hmrc.transactionalrisking.models.errors.ForbiddenDownstreamError
 import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.models.domain.NinoChecker

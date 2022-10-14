@@ -25,7 +25,8 @@ import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,9 +51,9 @@ trait MockRdsService extends MockFactory {
 //    }
 //
 
-    def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[AcknowledgeReport]]] = {
+    def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[NewRdsAssessmentReport]]] = {
       (mockRdsService.acknowlege(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, *, *, *).returns( Future( Right(ResponseWrapper( simpleCorrelationId, simpleAcknowledgeReport ) ) ) )
+        .expects(*, *, *, *, *).returns( Future( Right(ResponseWrapper( simpleRDSCorrelationId, simpleAcknowledgeNewRdsAssessmentReport ) ) ) )
     }
 
   }

@@ -14,6 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.models.domain
+package uk.gov.hmrc.transactionalrisking.utils
 
-case class AcknowledgeReport(returnCode:Int, taxYear:Int)
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+//object ProvideRandomCorrelationIdCont {
+//
+//  trait ProvideRandomCorrelationIdBase {
+//    def getRandomCorrelationId(): String =
+//      UUID.randomUUID().toString
+//  }
+
+
+@Singleton
+class ProvideRandomCorrelationId  @Inject()() {
+  def getRandomCorrelationId(): String =
+    UUID.randomUUID().toString
+}
+
+    //val provideRandomCorrelationId = new ProvideRandomCorrelationId
+
+//}
+

@@ -21,11 +21,13 @@ import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AcknowledgeReportRequest}
 
 import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 
+@Singleton
 class AcknowledgeRequestParser @Inject()(val validator: AcknowledgeReportValidator)
   extends RequestParser[AcknowledgeReportRawData, AcknowledgeReportRequest] {
 
   override protected def requestFor(data: AcknowledgeReportRawData): AcknowledgeReportRequest = {
-    AcknowledgeReportRequest(data.nino, data.reportId, correlationId=data.rdsCorrelationID)
+    AcknowledgeReportRequest(data.nino, data.reportId, rdsCorrelationId=data.rdsCorrelationId)
   }
 }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.v
 
 import uk.gov.hmrc.transactionalrisking.models.errors.{FormatReportIdError, MtdError}
 
-object ReportIDValidation {
+object ReportIdValidation {
   private val reportIdRegex =
     "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
 

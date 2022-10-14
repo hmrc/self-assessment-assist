@@ -1,0 +1,33 @@
+{
+  "links": [],
+  "version": 2,
+  "moduleId": "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK",
+  "stepId": "execute",
+  "executionState": "completed",
+  "metadata": {
+    "module_id": "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK",
+    "step_id": "execute"
+  },
+  "outputs": [
+    {
+      "name": "feedbackID",
+      "value": "replaceFeedbackID"
+    },
+    {
+      "name": "nino",
+      "value": "replaceNino"
+    },
+    {
+      "name": "taxYear",
+      "value": 2022
+    },
+    {
+      "name": "responseCode",
+      "value": 204
+    },
+    {
+      "name": "response",
+      "value": "String"
+    }
+  ]
+}

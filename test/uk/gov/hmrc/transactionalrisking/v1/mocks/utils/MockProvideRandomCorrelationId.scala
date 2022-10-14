@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.mocks.services
+package uk.gov.hmrc.transactionalrisking.v1.mocks.utils
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.transactionalrisking.models.domain.{FraudRiskReport, FraudRiskRequest}
-import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.simpleFraudRiskReport
+import uk.gov.hmrc.transactionalrisking.utils.ProvideRandomCorrelationId
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
 
-trait MockInsightService extends MockFactory {
+trait MockProvideRandomCorrelationId extends MockFactory {
+  val mockProvideRandomCorrelationId = mock[ProvideRandomCorrelationId ]
 
-  val mockInsightService: InsightService = mock[InsightService]
+  object MockProvideRandomCorrelationId {
 
-  object MockInsightService {
-
-    def assess(fraudRiskRequest: FraudRiskRequest): CallHandler[FraudRiskReport] = {
-      (mockInsightService.assess(_: FraudRiskRequest))
-        .expects(*).returns(simpleFraudRiskReport)
+    def getRandomCorrelationId(): CallHandler[String] = {
+      (mockProvideRandomCorrelationId.getRandomCorrelationId _)
+        .expects
+        .returns( internalCorrelationIdString )
     }
-
   }
-
 }

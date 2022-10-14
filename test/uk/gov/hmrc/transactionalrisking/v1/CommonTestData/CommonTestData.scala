@@ -16,23 +16,24 @@
 
 package uk.gov.hmrc.transactionalrisking.v1
 
-import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.transactionalrisking.common.StubResource.loadAckResponseTemplate
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
+import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 import java.time.{Month, OffsetDateTime, ZoneOffset}
 import java.util.UUID
 
-object CommonTestData {
+class CommonTestData  {
 
   val simpleNino: String = "AA000000B"
-  val simpleCalculationId: UUID = new UUID(0, 1)
-  val simpleCorrelationId: String = "5fht738957jfjf845jgjf855"
-  val simpleReportId = new UUID(0, 2)
+  val simpleCalculationId: UUID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000001")
+  val simpleRDSCorrelationId: String = "5fht738957jfjf845jgjf855"
+  val simpleReportId = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000101")
   val simpleRiskTitle = "title"
   val simpleRiskBody = "body"
   val simpeRiskAction = "action"
@@ -44,7 +45,8 @@ object CommonTestData {
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
-  implicit val internalCorrelationId: String = UUID.randomUUID().toString
+  val internalCorrelationIdString: String = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000201").toString
+  implicit val internalCorrelationId: String = internalCorrelationIdString
 
   val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
     calculationId = simpleCalculationId,
@@ -59,7 +61,7 @@ object CommonTestData {
       , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simpePath))
     , nino = simpleNino
     , taxYear = DesTaxYear.fromMtd(simpeTaxYear).toString
-    , calculationId = simpleCalculationId,correlationID = simpleCorrelationId)
+    , calculationId = simpleCalculationId,rdsCorrelationId = simpleRDSCorrelationId)
 
   val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssementReport)
 
@@ -71,6 +73,7 @@ object CommonTestData {
 
   val simpleBody: RequestBody = null
   val simpleGenerateReportRequest = RequestData(nino = simpleNino, body = simpleBody)
+
   val simpleGeneratedNrsId: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
   val simpeNotableEventType: NotableEventType = AssistReportGenerated
@@ -88,14 +91,33 @@ object CommonTestData {
   val simpleNRSResponseAcknowledgeSubmission = new NrsResponse(acknowledgeSubmissionId)
 
 
-//  val simpleFeedbackId:String = "a365cc12c845c057eb548febfa8048ba"
-  val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleCorrelationId)
-  val simpeAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleCorrelationId:String)
-    //TODO: ask if rportId and simplefeedbcakId not the same. Do we get a diff reponse from ack to that in gen report
-  val simpleAcknowledgeReport = AcknowledgeReport(NO_CONTENT, simpleTaxYearEndInt)
+  //  val simpleFeedbackId:String = "a365cc12c845c057eb548febfa8048ba"
+  val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
+  val simpeAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId:String)
+  //TODO: ask if zaarportId and simplefeedbcakId not the same. Do we get a diff reponse from ack to that in gen report
 
-//  val simpleAcknowledgementReturn:JsValue = JsString("")
-//  val simpleAcknowledgementMtdJson: JsValue = Json.toJson[JsValue](simpleAcknowledgementReturn)
+  //val simpleAcknowledgeReport = AcknowledgeReport(NO_CONTENT, simpleTaxYearEndInt)
+  //TODO:delete me.
 
+  val rdsAssessmentReportJson = loadAckResponseTemplate(simpleReportId.toString, simpleNino)
+  val rdsAssessmentReport: NewRdsAssessmentReport = rdsAssessmentReportJson.as[NewRdsAssessmentReport]
 
+  val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentReport
+
+  //  val simpleAcknowledgementReturn:JsValue = JsString("")
+  //  val simpleAcknowledgementMtdJson: JsValue = Json.toJson[JsValue](simpleAcknowledgementReturn)
+
+  val invalidUUID: UUID = new UUID(0, 1)
+  val invalidUUIDString: String = invalidUUID.toString
+  // Actually invalid type is not determined.
+
+  val simpleCalculationIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
+  val simpleReportaIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
+
+  val simpleNinoInvalid: String = "AA000000Z"
+
+}
+
+object CommonTestData {
+  val commonTestData = new CommonTestData
 }

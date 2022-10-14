@@ -27,7 +27,7 @@ import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
-import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging}
+import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging, ProvideRandomCorrelationId}
 
 import java.util.UUID
 import javax.inject.Inject
@@ -42,11 +42,12 @@ class GenerateReportController @Inject()(
                                           insightService: InsightService,
                                           rdsService: RdsService,
                                           currentDateTime: CurrentDateTime,
+                                          provideRandomCorrelationId: ProvideRandomCorrelationId
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      implicit val correlationId: String = UUID.randomUUID().toString
+      implicit val correlationId: String = provideRandomCorrelationId.getRandomCorrelationId()
       val customerType = deriveCustomerType(request)
       toId(calculationId).map { calculationIdUuid =>
         val calculationInfo = getCalculationInfo(calculationIdUuid, nino)

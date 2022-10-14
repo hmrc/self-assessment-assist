@@ -20,12 +20,13 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.{AcknowledgeReportController, ControllerBaseSpec}
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.utils.ProvideRandomCorrelationId
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
+import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockProvideRandomCorrelationId
 
 class AcknowledgeReportControllerSpec
   extends ControllerBaseSpec
@@ -35,6 +36,7 @@ class AcknowledgeReportControllerSpec
   with MockRdsService
   with MockAcknowledgeRequestParser
   with MockCurrentDateTime
+  with MockProvideRandomCorrelationId
    {
 
 
@@ -51,8 +53,9 @@ class AcknowledgeReportControllerSpec
       authService = mockEnrolmentsAuthService,
       nonRepudiationService = mockNrsService,
       rdsService = mockRdsService,
-      currentDateTime = mockCurrentDateTime
-      )
+      currentDateTime = mockCurrentDateTime,
+      provideRandomCorrelationId = mockProvideRandomCorrelationId
+    )
       //override authorisedAction(nino: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent]
       //TODO:DE Make this abstarct abstract override.
 
@@ -62,7 +65,7 @@ class AcknowledgeReportControllerSpec
     "a valid request is supplied" should {
       "return 204 to indicate that the data has been accepted and saved and that there is nothing else needed to return." in new Test {
 
-        val acknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleCorrelationId)
+        val acknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
         MockEnrolmentsAuthService.authoriseUser()
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
@@ -71,8 +74,9 @@ class AcknowledgeReportControllerSpec
         MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequest, generatedNrsId=simpleAcknowledgeNrsId,
           submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
 
+        MockProvideRandomCorrelationId.getRandomCorrelationId()
 
-        val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationId.toString, simpleCorrelationId)(fakeGetRequest)
+        val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationId.toString, simpleRDSCorrelationId)(fakeGetRequest)
         status(result) shouldBe NO_CONTENT
 //        contentAsJson(result) shouldBe None
         val ct = contentType(result)

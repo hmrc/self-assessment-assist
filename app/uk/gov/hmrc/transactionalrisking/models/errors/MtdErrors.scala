@@ -86,7 +86,6 @@ object InvalidJson extends MtdError("INVALID_JSON", "Invalid JSON received")
 object UnexpectedFailure {
   def trError(status: Int, body: String): MtdError = MtdError("UNEXPECTED_FAILURE", s"Unexpected failure. Status $status, body $body")
 }
-object ShouldNotOccurError extends MtdError("SHOULD_NOT_OCCUR_ERROR", "Should not occur error")
 
 // Authorisation Errors
 object UnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised")

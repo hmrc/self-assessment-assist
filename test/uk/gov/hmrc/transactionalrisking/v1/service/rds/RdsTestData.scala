@@ -24,27 +24,27 @@ import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 import java.util.UUID
 
-trait RdsTestData {
+object RdsTestData {
 
   val rdsRequest: RdsRequest =
       RdsRequest(
         Seq()
       )
 
-  val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq())
+  val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq( ))
 
-  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(CommonTestData.internalCorrelationId,MtdError(code = "", message = "")))
+  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationId,MtdError(code = "", message = "")))
 
   var rdsRequestBody: String = """
                                  |{
                                  |  "inputs": [
                                  |    {
-                                 |      "name": "calculationId",
+               a                  |      "name": "calculationId",
                                  |      "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
                                  |    },
                                  |    {
@@ -415,7 +415,7 @@ trait RdsTestData {
   )
 
   val requestSO: ServiceOutcome[RdsRequest] = Right(
-    ResponseWrapper(CommonTestData.internalCorrelationId,
+    ResponseWrapper(internalCorrelationId,
       RdsRequest(
         Seq(
           RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
@@ -473,6 +473,6 @@ trait RdsTestData {
     nino = assessmentRequestForSelfAssessment.nino,
     taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
     calculationId = assessmentRequestForSelfAssessment.calculationId,
-    correlationID = "5fht738957jfjf845jgjf855"
+    rdsCorrelationId = "5fht738957jfjf845jgjf855"
   )
 }

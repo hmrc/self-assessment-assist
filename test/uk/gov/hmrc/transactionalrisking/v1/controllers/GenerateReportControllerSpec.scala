@@ -19,8 +19,9 @@ package uk.gov.hmrc.transactionalrisking.controllers
 
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
+import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockProvideRandomCorrelationId
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -33,6 +34,7 @@ class GenerateReportControllerSpec
   with MockInsightService
   with MockRdsService
   with MockCurrentDateTime
+    with MockProvideRandomCorrelationId
    {
 
 
@@ -51,8 +53,9 @@ class GenerateReportControllerSpec
       nonRepudiationService = mockNrsService,
       insightService = mockInsightService,
       rdsService = mockRdsService,
-      currentDateTime = mockCurrentDateTime
-      )
+      currentDateTime = mockCurrentDateTime,
+      provideRandomCorrelationId = mockProvideRandomCorrelationId
+    )
       //override authorisedAction(nino: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent]
       //TODO:DE Make this abstarct abstract override.
 
@@ -69,10 +72,9 @@ class GenerateReportControllerSpec
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()
         MockNrsService.submit(simpleGenerateReportRequest,simpleGeneratedNrsId,simpleSubmissionTimestamp,simpeNotableEventType)
-//        MockNrsService.submit(generateReportRequest = simpleGenerateReportRequest, generatedNrsId=simpleGeneratedNrsId,
-//          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
-//        MockCurrentDateTime.getDateTime().returns( OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC))
-
+        MockNrsService.submit(generateReportRequest = simpleGenerateReportRequest, generatedNrsId=simpleGeneratedNrsId,
+          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
+         MockProvideRandomCorrelationId.getRandomCorrelationId()
 
         val result = controller.generateReportInternal( simpleNino, simpleCalculationId.toString)(fakeGetRequest)
         status(result) shouldBe OK

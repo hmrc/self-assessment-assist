@@ -66,7 +66,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
     AssessmentReport(reportId = report.feedbackId,
       risks = risks(report, request.preferredLanguage), nino = request.nino,
       taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
-      calculationId = request.calculationId,report.rdsCorrelationID)
+      calculationId = request.calculationId,report.rdsCorrelationId)
   }
 
   private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
@@ -132,14 +132,15 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                                                     ec: ExecutionContext,
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],
-                                                    correlationId: String): Future[ ServiceOutcome[ AcknowledgeReport]  ] =
+                                                    correlationId: String): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] =
     connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
 
   private def generateRdsAcknowledgementRequest(request: AcknowledgeReportRequest): RdsRequest
   = RdsRequest(
     Seq(
       RdsRequest.InputWithString("feedbackId", request.feedbackId),
-      RdsRequest.InputWithString("nino", request.nino)
+      RdsRequest.InputWithString("nino", request.nino),
+      RdsRequest.InputWithString("correlationId", request.rdsCorrelationId)
     )
   )
 }
