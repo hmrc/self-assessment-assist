@@ -132,7 +132,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                                                     ec: ExecutionContext,
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],
-                                                    correlationId: String): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] =
+                                                    correlationId: String): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] = {
     logger.info(s"$correlationId :: rdsservice processing acknowledge")
     connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
   }

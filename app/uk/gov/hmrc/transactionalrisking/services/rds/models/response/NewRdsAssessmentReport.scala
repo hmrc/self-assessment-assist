@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.transactionalrisking.services.rds.models.response
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsObject, JsPath, JsString, Reads, Writes}
 import NewRdsAssessmentReport.{KeyValueWrapper, Output}
 
