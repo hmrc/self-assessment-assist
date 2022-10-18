@@ -115,8 +115,8 @@ class AcknowledgeReportController @Inject()(
               val reponseCode:Int = Try(acknowledgeReport.responseCode.toInt)
                 .getOrElse(BAD_REQUEST)
               val ret: Future[ServiceOutcome[Int]] = reponseCode match {
-                //TODO This status code doesn't look right, need to check the response code from RDS it might be 2xx
-                case a if (a == OK) => {
+                //TODO This status code doesn't look right, need to check the response code from RDS it might be 202 (ACCEPTED)
+                case a if (a == ACCEPTED) => {
                   logger.info(s"rds ack response is ${a}")
 
                   //TODO submissionTimestamp should this be current time?
@@ -131,8 +131,9 @@ class AcknowledgeReportController @Inject()(
                   nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged, taxYearFromResponse)
                   //TODO confirm documentation if nrs failure needs to handled/audited?
                   logger.info("... report submitted to NRS returning.")
-                  Future(Right(ResponseWrapper(correlationId, OK)))
+                  Future(Right(ResponseWrapper(correlationId, NO_CONTENT)))
                 }
+                //TODO : Place holder for any errors via response when we get them.
                 case a if (a == NO_CONTENT) => {
                   Future(Right(ResponseWrapper(correlationId, NO_CONTENT)))
                 }

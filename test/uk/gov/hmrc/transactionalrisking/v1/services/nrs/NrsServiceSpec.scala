@@ -82,7 +82,7 @@ class NrsServiceSpec extends ServiceSpec {
           UserDetails(
             userType = "Individual",
             agentReferenceNumber = None,
-            clientId = "aClientId",
+            clientID = "aClientID",
             identityData = Some(IdentityDataTestData.correctModel)
           ),
         request = FakeRequest().withHeaders(

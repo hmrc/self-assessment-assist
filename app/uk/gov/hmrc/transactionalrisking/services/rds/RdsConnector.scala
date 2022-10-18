@@ -64,7 +64,7 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
       .post(Json.toJson(request))
       .map(response =>
         response.status match {
-          case Status.OK => {
+          case Status.CREATED => {
             logger.info(s"... submitting acknowledgement to RDS success")
             //no need to validate as we are interested only in OK response.if validation is required then
             // we need separate class, as the structure is different, ignore response as only report id needs to go into the body of nrs

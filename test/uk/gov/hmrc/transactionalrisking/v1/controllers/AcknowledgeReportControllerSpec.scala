@@ -20,7 +20,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.{AcknowledgeReportController, ControllerBaseSpec}
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{ _ }
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockProvideRandomCorrelationId
@@ -76,11 +76,14 @@ class AcknowledgeReportControllerSpec
         MockProvideRandomCorrelationId.getRandomCorrelationId()
 
         val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationID.toString, simpleRDSCorrelationID)(fakeGetRequest)
-        status(result) shouldBe NO_CONTENT
-//        contentAsJson(result) shouldBe None
+        val retHttpResult = status( result )
+        retHttpResult shouldBe NO_CONTENT
+
         val ct = contentType(result)
         ct shouldBe None
-//        header("X-CorrelationId", result) shouldBe Some(correlationID)
+
+        val xcorrelationId = header("X-CorrelationId", result)
+        xcorrelationId shouldBe Some(internalCorrelationIdString)
 
       }
 
