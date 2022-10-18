@@ -31,9 +31,9 @@ import java.util.UUID
 class CommonTestData  {
 
   val simpleNino: String = "AA000000B"
-  val simpleCalculationId: UUID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000001")
-  val simpleRDSCorrelationId: String = "5fht738957jfjf845jgjf855"
-  val simpleReportId = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000101")
+  val simpleCalculationID: UUID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000001")
+  val simpleRDSCorrelationID: String = "5fht738957jfjf845jgjf855"
+  val simpleReportID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000101")
   val simpleRiskTitle = "title"
   val simpleRiskBody = "body"
   val simpeRiskAction = "action"
@@ -49,19 +49,19 @@ class CommonTestData  {
   implicit val internalCorrelationId: String = internalCorrelationIdString
 
   val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationId = simpleCalculationId,
+    calculationID = simpleCalculationID,
     nino = simpleNino,
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
     agentRef = None,
     taxYear = DesTaxYear.fromMtd(simpeTaxYear).toString)
 
-  val simpleAssementReport = AssessmentReport(reportId = simpleReportId
+  val simpleAssementReport = AssessmentReport(reportID = simpleReportID
     , risks = Seq(Risk(title = simpleRiskTitle, body = simpleRiskBody, action = simpeRiskAction
       , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simpePath))
     , nino = simpleNino
     , taxYear = DesTaxYear.fromMtd(simpeTaxYear).toString
-    , calculationId = simpleCalculationId,rdsCorrelationId = simpleRDSCorrelationId)
+    , calculationID = simpleCalculationID,rdsCorrelationId = simpleRDSCorrelationID)
 
   val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssementReport)
 
@@ -74,32 +74,34 @@ class CommonTestData  {
   val simpleBody: RequestBody = null
   val simpleGenerateReportRequest = RequestData(nino = simpleNino, body = simpleBody)
 
-  val simpleGeneratedNrsId: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
+  val simpleGeneratedNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
   val simpeNotableEventType: NotableEventType = AssistReportGenerated
 
-  val reportSubmissionId = (new UUID(0,10)).toString
-  val simpleNRSResponseReportSubmission = new NrsResponse(reportSubmissionId)
+  val reportSubmissionID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000010").toString
+  val simpleNRSResponseReportSubmission = new NrsResponse(reportSubmissionID)
 
-  val simpleAcknowledgeNrsId: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
+  val simpleAcknowledgeNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleAcknowledgedSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue, 1, 12, 0, 0, 0, ZoneOffset.UTC)
   val simpeAcknowledgedNotableEventType: NotableEventType = AssistReportAcknowledged
 
   val simpleBodyAcknowledge: RequestBody = null
   val simpleAcknowledgeReportRequest = RequestData(nino = simpleNino, body = simpleBody)
-  val acknowledgeSubmissionId = (new UUID(0,11)).toString
-  val simpleNRSResponseAcknowledgeSubmission = new NrsResponse(acknowledgeSubmissionId)
+
+  val acknowledgeSubmissionIdString = ""
+  val acknowledgeSubmissionID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
+  val simpleNRSResponseAcknowledgeSubmission = new NrsResponse(acknowledgeSubmissionID)
 
 
-  //  val simpleFeedbackId:String = "a365cc12c845c057eb548febfa8048ba"
-  val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
-  val simpeAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId:String)
+  //  val simpleFeedbackID:String = "a365cc12c845c057eb548febfa8048ba"
+  val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
+  val simpeAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID:String)
   //TODO: ask if zaarportId and simplefeedbcakId not the same. Do we get a diff reponse from ack to that in gen report
 
   //val simpleAcknowledgeReport = AcknowledgeReport(NO_CONTENT, simpleTaxYearEndInt)
   //TODO:delete me.
 
-  val rdsAssessmentReportJson = loadAckResponseTemplate(simpleReportId.toString, simpleNino)
+  val rdsAssessmentReportJson = loadAckResponseTemplate(simpleReportID.toString, simpleNino)
   val rdsAssessmentReport: NewRdsAssessmentReport = rdsAssessmentReportJson.as[NewRdsAssessmentReport]
 
   val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentReport
@@ -111,8 +113,8 @@ class CommonTestData  {
   val invalidUUIDString: String = invalidUUID.toString
   // Actually invalid type is not determined.
 
-  val simpleCalculationIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
-  val simpleReportaIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
+  val simpleCalculationIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
+  val simpleReportaIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"
 

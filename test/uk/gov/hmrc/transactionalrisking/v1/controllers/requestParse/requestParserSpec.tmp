@@ -67,7 +67,7 @@ class requestParserSpec
     "a valid request is supplied" should {
       "return 204 to indicate that the data has been accepted and saved and that there is nothing else needed to return." in new Test {
 
-//        GenerateReportRawData(nino: String, calculationId: String) extends RawData
+//        GenerateReportRawData(nino: String, calculationID: String) extends RawData
 //        val acknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
 

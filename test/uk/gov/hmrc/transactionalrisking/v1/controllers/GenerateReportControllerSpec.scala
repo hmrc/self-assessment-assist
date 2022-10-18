@@ -66,20 +66,20 @@ class GenerateReportControllerSpec
 
 
         MockEnrolmentsAuthService.authoriseUser()
-        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId,simpleNino)
+        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID,simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit(simpleGenerateReportRequest,simpleGeneratedNrsId,simpleSubmissionTimestamp,simpeNotableEventType)
-        MockNrsService.submit(generateReportRequest = simpleGenerateReportRequest, generatedNrsId=simpleGeneratedNrsId,
+        MockNrsService.submit(simpleGenerateReportRequest,simpleGeneratedNrsID,simpleSubmissionTimestamp,simpeNotableEventType)
+        MockNrsService.submit(generateReportRequest = simpleGenerateReportRequest, generatedNrsId=simpleGeneratedNrsID,
           submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
          MockProvideRandomCorrelationId.getRandomCorrelationId()
 
-        val result = controller.generateReportInternal( simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+        val result = controller.generateReportInternal( simpleNino, simpleCalculationID.toString)(fakeGetRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
-//        header("X-CorrelationId", result) shouldBe Some(correlationId)
+//        header("X-CorrelationId", result) shouldBe Some(correlationID)
 
         // Put the nrs save to test here.
 
@@ -96,7 +96,7 @@ class GenerateReportControllerSpec
 //          .assess(request, origin)
 //          .returns( Future.successful(Left(ErrorWrapper( /*correlationId,*/ mtdError))))
 //
-//        val result: Future[Result] = controller.generateReportInternal( nino, calculationId.toString)(fakeGetRequest)
+//        val result: Future[Result] = controller.generateReportInternal( nino, calculationID.toString)(fakeGetRequest)
 //
 //        status(result) shouldBe expectedStatus
 //        contentAsJson(result) shouldBe Json.toJson(mtdError)
@@ -130,7 +130,7 @@ class GenerateReportControllerSpec
 ////
 ////      status(result) shouldBe NOT_FOUND
 ////      contentAsString(result) shouldBe ""
-////      header("X-CorrelationId", result) shouldBe Some(correlationId)
+////      header("X-CorrelationId", result) shouldBe Some(correlationID)
 ////
 ////      val auditResponse: AuditResponse = AuditResponse(NOT_FOUND, Some(Seq(AuditError(EmptyNotFoundError.code))), None)
 ////      MockedAuditService.verifyAuditEvent(AuditEvents.auditReturns(correlationId,

@@ -53,7 +53,7 @@ trait MockRdsService extends MockFactory {
 
     def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[NewRdsAssessmentReport]]] = {
       (mockRdsService.acknowlege(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, *, *, *).returns( Future( Right(ResponseWrapper( simpleRDSCorrelationId, simpleAcknowledgeNewRdsAssessmentReport ) ) ) )
+        .expects(*, *, *, *, *).returns( Future( Right(ResponseWrapper( simpleRDSCorrelationID, simpleAcknowledgeNewRdsAssessmentReport ) ) ) )
     }
 
   }

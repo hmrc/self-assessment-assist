@@ -103,7 +103,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     val userDetails = UserDetails(
       userType = affinityGroup,
       agentReferenceNumber = None,
-      clientId = "",
+      clientID = "",
       identityData
     )
 

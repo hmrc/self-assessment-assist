@@ -22,12 +22,12 @@ import play.api.libs.json.{JsPath, Writes}
 import java.util.UUID
 
 // At this point, we don't expect that the report will differ according to the context.
-case class AssessmentReport(reportId: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationId:UUID, rdsCorrelationId:String)
+case class AssessmentReport(reportID: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationID:UUID, rdsCorrelationId:String)
 
 object AssessmentReport {
 
   implicit val writes: Writes[AssessmentReport] =
-    (JsPath \ "reportId").write[UUID]
+    (JsPath \ "reportID").write[UUID]
       .and((JsPath \ "messages").write[Seq[Risk]])
       .and((JsPath \ "nino").write[String])
       .and((JsPath \ "taxyear").write[String])

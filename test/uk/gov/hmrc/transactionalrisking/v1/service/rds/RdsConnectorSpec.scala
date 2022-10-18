@@ -25,7 +25,7 @@ import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{simpleRDSCorrelationId, simpleTaxYearEndInt}
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{simpleRDSCorrelationID, simpleTaxYearEndInt}
 import RdsTestData.{acknowledgeReportRequest, rdsAssessmentReport, rdsRequest, rdsSubmissionResponse}
 import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData
 
@@ -63,7 +63,7 @@ class RdsConnectorSpec extends ConnectorSpec
         MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
 
         val rhs = await(connector.submit(rdsRequest))
-        val lhs =  Right(ResponseWrapper(simpleRDSCorrelationId, rdsAssessmentReport))
+        val lhs =  Right(ResponseWrapper(simpleRDSCorrelationID, rdsAssessmentReport))
 
         lhs shouldBe rhs
 

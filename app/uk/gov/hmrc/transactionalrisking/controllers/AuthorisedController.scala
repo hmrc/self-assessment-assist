@@ -57,12 +57,12 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
 
     override def invokeBlock[A](request: Request[A], block: UserRequest[A] => Future[Result]): Future[Result] = {
       implicit val headerCarrier: HeaderCarrier = hc(request)
-      val clientId = request.headers.get("X-Client-Id").getOrElse("N/A")
+      val clientID = request.headers.get("X-Client-Id").getOrElse("N/A")
 
       if (NinoChecker.isValid(nino)) {
         authService.authorised(predicate(nino), nrsRequired).flatMap[Result] {
           case Right(userDetails) =>
-            block(UserRequest(userDetails.copy(clientId = clientId), request))
+            block(UserRequest(userDetails.copy(clientID = clientID), request))
           case Left(ClientOrAgentNotAuthorisedError) =>
             Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
           case Left(ForbiddenDownstreamError) =>

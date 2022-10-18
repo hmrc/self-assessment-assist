@@ -79,7 +79,7 @@
       "description": "The tax year the data applies to, for example, 2021-22. The start year and end year must not span two tax years. No gaps are allowed, for example, 2020-22 is not valid.",
       "example": "2017-18"
     },
-    "calculationId" : {
+    "calculationID" : {
       "type": "string",
       "description": "The unique identifier for the calculation. Must conform the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`",
       "example": "f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c"
@@ -95,7 +95,7 @@
     "reportId",
     "nino",
     "taxYear",
-    "calculationId",
+    "calculationID",
     "correlationId"
 
   ]

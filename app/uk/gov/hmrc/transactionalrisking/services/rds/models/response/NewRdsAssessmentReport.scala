@@ -30,7 +30,7 @@ case class NewRdsAssessmentReport(links: Seq[String],
                                   outputs: Seq[Output]
                                  ) {
 
-  def calculationId: UUID =
+  def calculationID: UUID =
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])

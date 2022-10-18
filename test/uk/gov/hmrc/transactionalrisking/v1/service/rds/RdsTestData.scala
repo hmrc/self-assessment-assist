@@ -44,7 +44,7 @@ object RdsTestData {
                                  |{
                                  |  "inputs": [
                                  |    {
-               a                  |      "name": "calculationId",
+               a                  |      "name": "calculationID",
                                  |      "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
                                  |    },
                                  |    {
@@ -399,7 +399,7 @@ object RdsTestData {
   val rdsAssessmentReport: NewRdsAssessmentReport = rdsAssessmentReportJson.as[NewRdsAssessmentReport]
 
   val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationId = UUID.fromString("a365c0b4-06e3-4fef-a555-06fd0877dc7c"),
+    calculationID = UUID.fromString("a365c0b4-06e3-4fef-a555-06fd0877dc7c"),
     nino = "AA00000B",
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
@@ -418,7 +418,7 @@ object RdsTestData {
     ResponseWrapper(internalCorrelationId,
       RdsRequest(
         Seq(
-          RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
+          RdsRequest.InputWithString("calculationID", assessmentRequestForSelfAssessment.calculationID.toString),
           RdsRequest.InputWithString("nino", assessmentRequestForSelfAssessment.nino),
           RdsRequest.InputWithString("taxYear", assessmentRequestForSelfAssessment.taxYear),
           RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
@@ -468,11 +468,11 @@ object RdsTestData {
   )
 
   val assessmentReport = AssessmentReport(
-    reportId = assessmentRequestForSelfAssessment.calculationId,
+    reportID = assessmentRequestForSelfAssessment.calculationID,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
     taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
-    calculationId = assessmentRequestForSelfAssessment.calculationId,
+    calculationID = assessmentRequestForSelfAssessment.calculationID,
     rdsCorrelationId = "5fht738957jfjf845jgjf855"
   )
 }

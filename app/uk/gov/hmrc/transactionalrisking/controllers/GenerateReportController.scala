@@ -46,13 +46,13 @@ class GenerateReportController @Inject()(
                                           provideRandomCorrelationId: ProvideRandomCorrelationId
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
-  def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
+  def generateReportInternal(nino: String, calculationID: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       implicit val correlationId: String = provideRandomCorrelationId.getRandomCorrelationId()
       val customerType = deriveCustomerType(request)
-      toId(calculationId).map { calculationIdUuid =>
-        val calculationInfo = getCalculationInfo(calculationIdUuid, nino)
-        val assessmentRequestForSelfAssessment = new AssessmentRequestForSelfAssessment(calculationIdUuid,
+      toId(calculationID).map { calculationIDUuid =>
+        val calculationInfo = getCalculationInfo(calculationIDUuid, nino)
+        val assessmentRequestForSelfAssessment = new AssessmentRequestForSelfAssessment(calculationIDUuid,
           nino,
           PreferredLanguage.English,
           customerType,
@@ -71,7 +71,7 @@ class GenerateReportController @Inject()(
               assementReportserviceOutcome match {
                 case Right(ResponseWrapper(correlationIdRes,assessmentReportResponse)) =>
                   val rdsReportContent = RequestData(nino = nino,
-                    RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportId.toString))
+                    RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportID.toString))
                   logger.debug(s"RDS request content $rdsReportContent")
                   nonRepudiationService.submit(requestData = rdsReportContent,
                     submissionTimestamp = currentDateTime.getDateTime,

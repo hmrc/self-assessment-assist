@@ -64,23 +64,23 @@ class AcknowledgeReportControllerSpec
     "a valid request is supplied" should {
       "return 204 to indicate that the data has been accepted and saved and that there is nothing else needed to return." in new Test {
 
-        val acknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
+        val acknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
 
         MockEnrolmentsAuthService.authoriseUser()
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpeAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequest, generatedNrsId=simpleAcknowledgeNrsId,
+        MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequest, generatedNrsId=simpleAcknowledgeNrsID,
           submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
 
         MockProvideRandomCorrelationId.getRandomCorrelationId()
 
-        val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationId.toString, simpleRDSCorrelationId)(fakeGetRequest)
+        val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationID.toString, simpleRDSCorrelationID)(fakeGetRequest)
         status(result) shouldBe NO_CONTENT
 //        contentAsJson(result) shouldBe None
         val ct = contentType(result)
         ct shouldBe None
-//        header("X-CorrelationId", result) shouldBe Some(correlationId)
+//        header("X-CorrelationId", result) shouldBe Some(correlationID)
 
       }
 

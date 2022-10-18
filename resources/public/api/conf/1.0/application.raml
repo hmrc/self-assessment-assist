@@ -41,10 +41,10 @@ uses:
     /{nino}:
       uriParameters:
         nino: !include pathParameters/nino.raml
-      /{calculationId} :
+      /{calculationID} :
         post: !include endpoints/generateReport/generateReport.raml
         uriParameters:
-          calculationId: !include pathParameters/calculationId.raml
+          calculationID: !include pathParameters/calculationID.raml
     # End of Produce a Self Assessment Assist Report.
     /acknowledge:
       /{nino}:

@@ -20,5 +20,5 @@ import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.IdentityData
 
 case class UserDetails(userType: String,
                        agentReferenceNumber: Option[String],
-                       clientId: String,
+                       clientID: String,
                        identityData: Option[IdentityData] = None)

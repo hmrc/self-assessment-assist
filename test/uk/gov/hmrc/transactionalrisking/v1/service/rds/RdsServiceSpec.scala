@@ -27,7 +27,7 @@ import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{simpleAcknowledgeNewRdsAssessmentReport, simpleRDSCorrelationId}
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{simpleAcknowledgeNewRdsAssessmentReport, simpleRDSCorrelationID}
 import RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, rdsAssessmentReport, requestSO}
 import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
@@ -44,7 +44,7 @@ class RdsServiceSpec extends ServiceSpec    {
           UserDetails(
             userType = "Individual",
             agentReferenceNumber = None,
-            clientId = "aClientId",
+            clientID = "aClientID",
             identityData = Some(IdentityDataTestData.correctModel)
           ),
         request = FakeRequest().withHeaders(
@@ -85,7 +85,7 @@ class RdsServiceSpec extends ServiceSpec    {
 
         val request: RdsRequest = RdsRequest(
           Seq(
-            RdsRequest.InputWithString("feedbackId", feedbackId),
+            RdsRequest.InputWithString("feedbackID", feedbackId),
             RdsRequest.InputWithString("nino", nino)
           )
         )
@@ -93,7 +93,7 @@ class RdsServiceSpec extends ServiceSpec    {
         val expectedResult:ServiceOutcome[NewRdsAssessmentReport] = Right( ResponseWrapper( correlationId, simpleAcknowledgeNewRdsAssessmentReport)  )
         MockRdsConnector.acknowledgeRds(request) returns Future.successful(expectedResult)
 
-        val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(nino, feedbackId, simpleRDSCorrelationId)
+        val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(nino, feedbackId, simpleRDSCorrelationID)
 
         await(service.acknowlege(acknowledgeReportRequest)) shouldBe expectedResult
       }

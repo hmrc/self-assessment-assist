@@ -28,6 +28,6 @@ class AcknowledgeRequestParser @Inject()(val validator: AcknowledgeReportValidat
   extends RequestParser[AcknowledgeReportRawData, AcknowledgeReportRequest] {
 
   override protected def requestFor(data: AcknowledgeReportRawData): AcknowledgeReportRequest = {
-    AcknowledgeReportRequest(data.nino, data.reportId, rdsCorrelationId=data.rdsCorrelationId)
+    AcknowledgeReportRequest(data.nino, data.reportID, rdsCorrelationID=data.rdsCorrelationID)
   }
 }

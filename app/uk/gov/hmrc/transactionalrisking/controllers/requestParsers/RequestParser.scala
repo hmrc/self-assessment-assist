@@ -28,20 +28,20 @@ trait RequestParser[Raw <: RawData, Request] extends Logging {
 
   protected def requestFor(data: Raw): Request
 
-  def parseRequest(data: Raw)(implicit correlationId: String): ServiceOutcome[ Request] = {
+  def parseRequest(data: Raw)(implicit correlationID: String): ServiceOutcome[ Request] = {
     validator.validate(data) match {
       case Nil =>
         logger.info(message = "[RequestParser][parseRequest] " +
-          s"Validation successful for the request with correlationId : $correlationId")
-        Right( ResponseWrapper( correlationId, requestFor(data)))
+          s"Validation successful for the request with correlationID : $correlationID")
+        Right( ResponseWrapper( correlationID, requestFor(data)))
       case err :: Nil =>
         logger.info(message = "[RequestParser][parseRequest] " +
-          s"Validation failed with ${err.code} error for the request with correlationId : $correlationId")
-        Left(ErrorWrapper( correlationId, err, None))
+          s"Validation failed with ${err.code} error for the request with correlationId : $correlationID")
+        Left(ErrorWrapper( correlationID, err, None))
       case errs =>
         logger.info("[RequestParser][parseRequest] " +
-          s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request with correlationId : $correlationId")
-        Left(ErrorWrapper( correlationId, BadRequestError, Some(errs)))
+          s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request with correlationId : $correlationID")
+        Left(ErrorWrapper( correlationID, BadRequestError, Some(errs)))
     }
   }
 }

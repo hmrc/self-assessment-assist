@@ -24,10 +24,10 @@ trait BaseController {
 
   implicit class Response(result: Result) {
 
-    def withApiHeaders(correlationId: String, responseHeaders: (String, String)*): Result = {
+    def withApiHeaders(correlationID: String, responseHeaders: (String, String)*): Result = {
 
       val newHeaders: Seq[(String, String)] = responseHeaders ++ Seq(
-        "X-CorrelationId"        -> correlationId,
+        "X-CorrelationId"        -> correlationID,
         "X-Content-Type-Options" -> "nosniff",
         "Content-Type"           -> "application/json"
       )

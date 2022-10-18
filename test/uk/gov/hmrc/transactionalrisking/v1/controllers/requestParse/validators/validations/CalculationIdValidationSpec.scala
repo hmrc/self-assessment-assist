@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators.
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations.CalculationIdValidation
 import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, ErrorWrapper, MtdError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{invalidUUIDString, simpleCalculationId, simpleCalculationIdStrangeCharsString}
+import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{invalidUUIDString, simpleCalculationID, simpleCalculationIDStrangeCharsString}
 
 class CalculationIdValidationSpec extends UnitSpec {
   val validator = CalculationIdValidation
@@ -27,7 +27,7 @@ class CalculationIdValidationSpec extends UnitSpec {
   "running a validation" should {
     "return no errors" when {
       "a valid request" in {
-        validator.validate(simpleCalculationId.toString) shouldBe Nil
+        validator.validate(simpleCalculationID.toString) shouldBe Nil
       }
 
       "an actual invalid request. No UUID format specifier" in {
@@ -40,7 +40,7 @@ class CalculationIdValidationSpec extends UnitSpec {
 
       "an actual invalid request. Strange characters in string" in {
 
-        val vl = validator.validate(simpleCalculationIdStrangeCharsString)
+        val vl = validator.validate(simpleCalculationIDStrangeCharsString)
         val vr = Seq(CalculationIdFormatError)
 
         vl shouldBe vr

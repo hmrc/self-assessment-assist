@@ -25,7 +25,7 @@ class GenerateReportValidator extends Validator[GenerateReportRawData] {
   private val validationSet = List(parameterFormatValidation)
 
   private def parameterFormatValidation: GenerateReportRawData => List[List[MtdError]] = { data =>
-    List(NinoValidation.validate(data.nino), CalculationIdValidation.validate(data.calculationId))
+    List(NinoValidation.validate(data.nino), CalculationIdValidation.validate(data.calculationID))
   }
 
   override def validate(data: GenerateReportRawData): List[MtdError] = {

@@ -16,4 +16,4 @@
 
 package uk.gov.hmrc.transactionalrisking.services.nrs.models.request
 
-case class AcknowledgeReportRequest(nino: String, feedbackId: String, rdsCorrelationId:String)
+case class AcknowledgeReportRequest(nino: String, feedbackID: String, rdsCorrelationID:String)

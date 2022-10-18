@@ -20,10 +20,10 @@ import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
 import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MtdError}
 
 object CalculationIdValidation {
-  private val calculationIdRegex = "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+  private val calculationIDRegex = "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
 
-  def validate(calculationId: String): List[MtdError] = calculationId match {
-    case _ if calculationId matches calculationIdRegex => NoValidationErrors
+  def validate(calculationID: String): List[MtdError] = calculationID match {
+    case _ if calculationID matches calculationIDRegex => NoValidationErrors
     case _                                             => List(CalculationIdFormatError)
   }
 

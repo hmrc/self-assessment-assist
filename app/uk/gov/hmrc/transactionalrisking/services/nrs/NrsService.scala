@@ -40,7 +40,7 @@ class NrsService @Inject()(
   def buildNrsSubmission(requestData: RequestData,
                          submissionTimestamp: OffsetDateTime,
                          request: UserRequest[_], notableEventType:NotableEventType,taxYear: String): NrsSubmission = {
-    //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationId))
+    //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationID))
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
     // val payloadString = Json.toJson(body).toString()
     val payloadString = Json.toJson(requestData.body).toString()

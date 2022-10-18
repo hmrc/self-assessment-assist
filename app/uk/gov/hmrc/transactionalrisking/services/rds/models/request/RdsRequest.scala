@@ -24,9 +24,9 @@ import java.util.UUID
 
 case class RdsRequest(inputs: Seq[Input]) {
 
-  def calculationId: UUID =
-    inputs.find(_.name == "calculationId").map(_.value.toString).map(UUID.fromString)
-      .getOrElse(throw new RuntimeException("No 'calculationId' present."))
+  def calculationID: UUID =
+    inputs.find(_.name == "calculationID").map(_.value.toString).map(UUID.fromString)
+      .getOrElse(throw new RuntimeException("No 'calculationID' present."))
 
 }
 
