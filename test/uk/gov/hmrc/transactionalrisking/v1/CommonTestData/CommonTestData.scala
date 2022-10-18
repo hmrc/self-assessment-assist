@@ -101,7 +101,7 @@ class CommonTestData  {
   //val simpleAcknowledgeReport = AcknowledgeReport(NO_CONTENT, simpleTaxYearEndInt)
   //TODO:delete me.
 
-  val rdsAssessmentReportJson = loadAckResponseTemplate(simpleReportID.toString, simpleNino)
+  val rdsAssessmentReportJson = loadAckResponseTemplate(simpleReportID.toString, replaceNino=simpleNino, replaceResponseCode="200")
   val rdsAssessmentReport: NewRdsAssessmentReport = rdsAssessmentReportJson.as[NewRdsAssessmentReport]
 
   val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentReport

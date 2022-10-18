@@ -39,12 +39,13 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
     parsedContent
   }
 
-  def loadAckResponseTemplate(replaceFeedbackID: String, replaceNino: String) = {
+  def loadAckResponseTemplate(replaceFeedbackID: String, replaceNino: String,  replaceResponseCode:String) = {
     val fileName = s"conf/response/acknowledge/feedback-ack.json"
     val templateCotent =
       findResource(fileName).map(
         _.replace("replaceFeedbackID", replaceFeedbackID)
-          .replace("replaceNino", replaceNino))
+          .replace("replaceNino", replaceNino)
+          .replace("replaceResponseCode", replaceResponseCode))
 
     val parsedContent = templateCotent
       .map(Json.parse).getOrElse(throw new IllegalStateException("Acknowledge template parsing failed"))
