@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.common
+package uk.gov.hmrc.transactionalrisking.v1.utils
 
 import play.api.Logging
 import play.api.http.ContentTypes

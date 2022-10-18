@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.transactionalrisking.common.StubResource.loadAckResponseTemplate
+import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.loadAckResponseTemplate
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
