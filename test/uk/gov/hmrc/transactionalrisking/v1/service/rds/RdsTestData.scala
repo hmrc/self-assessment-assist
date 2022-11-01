@@ -16,25 +16,16 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
-import play.api.libs.json._
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, MtdError}
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
-import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
-import java.util.UUID
 
 object RdsTestData {
-
-  val rdsRequest: RdsRequest =
-      RdsRequest(
-        Seq()
-      )
 
   val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq( ))
 
@@ -395,11 +386,9 @@ object RdsTestData {
        |
        |""".stripMargin
 
-  private val rdsAssessmentReportJson = Json.parse(rdsSubmissionResponse)
-  val rdsAssessmentReport: NewRdsAssessmentReport = rdsAssessmentReportJson.as[NewRdsAssessmentReport]
 
   val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationID = UUID.fromString("a365c0b4-06e3-4fef-a555-06fd0877dc7c"),
+    calculationID = simpleCalculationID,
     nino = "AA00000B",
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
@@ -414,9 +403,7 @@ object RdsTestData {
     watchlistFlags = Set(WatchlistFlag("flag"))
   )
 
-  val requestSO: ServiceOutcome[RdsRequest] =
-    Right(
-    ResponseWrapper(internalCorrelationIDImplicit,
+  def rdsRequest: RdsRequest =
       RdsRequest(
         Seq(
           RdsRequest.InputWithString("calculationID", assessmentRequestForSelfAssessment.calculationID.toString),
@@ -447,8 +434,6 @@ object RdsTestData {
             )
           )
         )
-      )
-    )
   )
 
   val risks = Seq(

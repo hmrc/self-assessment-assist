@@ -100,13 +100,13 @@ class CommonTestData  {
 
 
   val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationID.toString, simpleReportID.toString, simpleRDSCorrelationID )
-  val rdsSubmissionReport: String = rdsSubmissionReportJson.toString()  //as[String]
+//  val rdsSubmissionReport: String = rdsSubmissionReportJson.toString()  //as[String]
   val rdsNewSubmissionReport: NewRdsAssessmentReport = rdsSubmissionReportJson.as[NewRdsAssessmentReport]
 
-  val rdsSubmitRequest: RdsRequest =
-    RdsRequest(
-      Seq()
-    )
+//  val rdsSubmitRequest: RdsRequest =
+//    RdsRequest(
+//      Seq()
+//    )
 
   val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportID.toString, replaceNino=simpleNino, replaceResponseCode="202")
   val rdsAssessmentAck: NewRdsAssessmentReport = rdsAssessmentAckJson.as[NewRdsAssessmentReport]

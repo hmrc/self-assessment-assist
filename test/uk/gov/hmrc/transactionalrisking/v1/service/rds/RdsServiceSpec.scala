@@ -29,9 +29,9 @@ import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAsses
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
-import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, requestSO}
+import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, rdsNewSubmissionReport, rdsSubmitRequest, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationID, simpleReportID}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, rdsNewSubmissionReport, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationID, simpleReportID}
 
 import scala.concurrent.Future
 
@@ -61,8 +61,7 @@ class RdsServiceSpec extends ServiceSpec    {
     "the submit method is called" must {
       "return the expected result" in new Test {
 
-        val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationID, rdsNewSubmissionReport))
-        MockRdsConnector.submit( requestSO ) returns Future.successful(rdsAssessmentReportSO)
+        MockRdsConnector.submit(rdsRequest) returns Future.successful(Right(ResponseWrapper(internalCorrelationID, rdsNewSubmissionReport)))
 
         val assessmentReportSO:ServiceOutcome[AssessmentReport] = await(service.submit( assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
         assessmentReportSO shouldBe Right(ResponseWrapper(internalCorrelationID,  assessmentReport))
@@ -72,7 +71,7 @@ class RdsServiceSpec extends ServiceSpec    {
     "return the expected result in Welsh if it's selected as preferred Language" in new Test {
 
       val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationID, rdsNewSubmissionReport))
-      MockRdsConnector.submit(requestSO) returns Future.successful(rdsAssessmentReportSO)
+      MockRdsConnector.submit(rdsRequest) returns Future.successful(rdsAssessmentReportSO)
 
       private val assementReportSO: ServiceOutcome[AssessmentReport] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
       assementReportSO shouldBe Right(ResponseWrapper(internalCorrelationID, assessmentReport))

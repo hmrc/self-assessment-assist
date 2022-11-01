@@ -23,7 +23,8 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReport, simpleRDSCorrelationID, rdsSubmitRequest}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationID}
+import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.rdsRequest
 
 //import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 
@@ -52,7 +53,7 @@ class RdsConnectorSpec extends ConnectorSpec
         val ws = MockWS {
           case (POST, submitBaseUrlTmp) if (submitBaseUrlTmp == submitBaseUrl) =>
             Action {
-              Ok(rdsSubmissionReport)
+              Ok(rdsSubmissionReportJson.toString())
             }
           case (_, _) =>
             throw new RuntimeException("Unable to distinguish API call or path whilst testing")
@@ -62,10 +63,9 @@ class RdsConnectorSpec extends ConnectorSpec
 
         MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
 
-        val rhs = await(connector.submit(rdsSubmitRequest))
-        val lhs =  Right(ResponseWrapper(simpleRDSCorrelationID, rdsNewSubmissionReport))
+       await(connector.submit(rdsRequest)) shouldBe Right(ResponseWrapper(simpleRDSCorrelationID, rdsNewSubmissionReport))
 
-        lhs shouldBe rhs
+
 
       }
     }

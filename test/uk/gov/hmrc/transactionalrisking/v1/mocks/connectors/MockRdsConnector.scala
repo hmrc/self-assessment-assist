@@ -32,7 +32,7 @@ trait MockRdsConnector extends MockFactory {
 
   object MockRdsConnector {
 
-    def submit(requestSO: ServiceOutcome[RdsRequest]  ): CallHandler[Future[ServiceOutcome[ NewRdsAssessmentReport]]] = {
+    def submit(rdsRequest: RdsRequest  ): CallHandler[Future[ServiceOutcome[ NewRdsAssessmentReport]]] = {
       (mockRdsConnector.submit( _: RdsRequest)( _: ExecutionContext))
         .expects(*, *)
     }
