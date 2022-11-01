@@ -23,7 +23,7 @@ import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global

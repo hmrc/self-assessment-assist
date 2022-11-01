@@ -27,12 +27,12 @@ case class AssessmentReport(reportID: UUID, risks: Seq[Risk], nino:String, taxYe
 object AssessmentReport {
 
   implicit val writes: Writes[AssessmentReport] =
-    (JsPath \ "reportID").write[UUID]
+    (JsPath \ "reportId").write[UUID]
       .and((JsPath \ "messages").write[Seq[Risk]])
       .and((JsPath \ "nino").write[String])
       .and((JsPath \ "taxyear").write[String])
-      .and((JsPath \ "calculationID").write[UUID])
-      .and((JsPath \ "correlationID").write[String])(unlift(AssessmentReport.unapply))
+      .and((JsPath \ "calculationId").write[UUID])
+      .and((JsPath \ "correlationId").write[String])(unlift(AssessmentReport.unapply))
 
 }
 

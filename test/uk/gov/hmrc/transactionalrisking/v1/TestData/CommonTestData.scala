@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1
+package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.loadAckResponseTemplate
+import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
+import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
@@ -45,8 +46,8 @@ class CommonTestData  {
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
-  val internalCorrelationIdString: String = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000201").toString
-  implicit val internalCorrelationId: String = internalCorrelationIdString
+  val internalCorrelationID: String = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000201").toString
+  implicit val internalCorrelationIDImplicit: String = internalCorrelationID
 
   val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
     calculationID = simpleCalculationID,
@@ -72,9 +73,9 @@ class CommonTestData  {
   val simplePayload: String = ""
 
   val simpleBody: RequestBody = null
-  val simpleGenerateReportRequest = RequestData(nino = simpleNino, body = simpleBody)
+  val simpleGenerateReportControllerRequest = RequestData(nino = simpleNino, body = simpleBody)
 
-  val simpleGeneratedNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
+  val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
   val simpeNotableEventType: NotableEventType = AssistReportGenerated
 
@@ -96,22 +97,25 @@ class CommonTestData  {
   //  val simpleFeedbackID:String = "a365cc12c845c057eb548febfa8048ba"
   val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
   val simpeAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID:String)
-  //TODO: ask if zaarportId and simplefeedbcakId not the same. Do we get a diff reponse from ack to that in gen report
 
-  //val simpleAcknowledgeReport = AcknowledgeReport(NO_CONTENT, simpleTaxYearEndInt)
-  //TODO:delete me.
 
-  val rdsAssessmentReportJson = loadAckResponseTemplate(simpleReportID.toString, replaceNino=simpleNino, replaceResponseCode="200")
-  val rdsAssessmentReport: NewRdsAssessmentReport = rdsAssessmentReportJson.as[NewRdsAssessmentReport]
+  val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationID.toString, simpleReportID.toString, simpleRDSCorrelationID )
+  val rdsSubmissionReport: String = rdsSubmissionReportJson.toString()  //as[String]
+  val rdsNewSubmissionReport: NewRdsAssessmentReport = rdsSubmissionReportJson.as[NewRdsAssessmentReport]
 
-  val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentReport
+  val rdsSubmitRequest: RdsRequest =
+    RdsRequest(
+      Seq()
+    )
 
-  //  val simpleAcknowledgementReturn:JsValue = JsString("")
-  //  val simpleAcknowledgementMtdJson: JsValue = Json.toJson[JsValue](simpleAcknowledgementReturn)
+  val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportID.toString, replaceNino=simpleNino, replaceResponseCode="202")
+  val rdsAssessmentAck: NewRdsAssessmentReport = rdsAssessmentAckJson.as[NewRdsAssessmentReport]
+  val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentAck
+
 
   val invalidUUID: UUID = new UUID(0, 1)
   val invalidUUIDString: String = invalidUUID.toString
-  // Actually invalid type is not determined.
+    // Actually invalid type is not determined.
 
   val simpleCalculationIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
   val simpleReportaIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"

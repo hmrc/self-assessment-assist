@@ -1,11 +1,11 @@
 {
   "links": [],
   "version": 2,
-  "moduleId": "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK",
+  "moduleId": "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK_ACK",
   "stepId": "execute",
   "executionState": "completed",
   "metadata": {
-    "module_id": "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK",
+    "module_id": "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK_ACK",
     "step_id": "execute"
   },
   "outputs": [
@@ -23,7 +23,7 @@
     },
     {
       "name": "responseCode",
-      "value": 204
+      "value": "replaceResponseCode"
     },
     {
       "name": "response",

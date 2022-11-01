@@ -24,7 +24,7 @@ import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 import java.util.UUID
@@ -38,13 +38,13 @@ object RdsTestData {
 
   val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq( ))
 
-  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationId,MtdError(code = "", message = "")))
+  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationIDImplicit,MtdError(code = "", message = "")))
 
   var rdsRequestBody: String = """
                                  |{
                                  |  "inputs": [
                                  |    {
-               a                  |      "name": "calculationID",
+                                 |      "name": "calculationID",
                                  |      "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
                                  |    },
                                  |    {
@@ -258,15 +258,15 @@ object RdsTestData {
                                     |      ]
                                     |    },
                                     |    {
-                                    |      "name": "feedbackID",
+                                    |      "name": "feedbackId",
                                     |      "value": "a365c0b4-06e3-4fef-a555-6fd0877dc7c"
                                     |    },
                                     |    {
-                                    |      "name": "calculationID",
+                                    |      "name": "calculationId",
                                     |      "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
                                     |    },
                                     |    {
-                                    |      "name": "correlationID",
+                                    |      "name": "correlationId",
                                     |      "value": "5fht738957jfjf845jgjf855"
                                     |    }
                                     |  ]
@@ -377,15 +377,15 @@ object RdsTestData {
        |        {
        |      "identifiers": [
        |        {
-       |            "name": "feedbackID",
+       |            "name": "feedbackId",
        |            "value": "a365c0b4-06e3-4fef-a555-6fd0877dc7c"
        |        },
        |        {
-       |            "name": "calculationID",
+       |            "name": "calculationId",
        |            "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
        |        },
        |        {
-       |            "name": "correlationID",
+       |            "name": "correlationId",
        |            "value": "5fht738957jfjf845jgjf855"
        |        }
        |        ]
@@ -414,8 +414,9 @@ object RdsTestData {
     watchlistFlags = Set(WatchlistFlag("flag"))
   )
 
-  val requestSO: ServiceOutcome[RdsRequest] = Right(
-    ResponseWrapper(internalCorrelationId,
+  val requestSO: ServiceOutcome[RdsRequest] =
+    Right(
+    ResponseWrapper(internalCorrelationIDImplicit,
       RdsRequest(
         Seq(
           RdsRequest.InputWithString("calculationID", assessmentRequestForSelfAssessment.calculationID.toString),

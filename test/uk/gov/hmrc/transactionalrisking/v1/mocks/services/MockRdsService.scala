@@ -26,7 +26,7 @@ import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,7 +41,7 @@ trait MockRdsService extends MockFactory {
                fraudRiskReport: FraudRiskReport,
                origin: Origin): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
       (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(internalCorrelationId, simpleAssementReport) )))
+        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(internalCorrelationIDImplicit, simpleAssementReport) )))
     }
 
 //
@@ -52,7 +52,7 @@ trait MockRdsService extends MockFactory {
 //
 
     def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[NewRdsAssessmentReport]]] = {
-      (mockRdsService.acknowlege(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
+      (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
         .expects(*, *, *, *, *).anyNumberOfTimes().returns( Future( Right(ResponseWrapper( simpleRDSCorrelationID, simpleAcknowledgeNewRdsAssessmentReport ) ) ) )
     }
 

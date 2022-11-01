@@ -128,7 +128,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
     ): ServiceOutcome[RdsRequest]
   }
 
-  def acknowlege(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
+  def acknowledge(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
                                                     ec: ExecutionContext,
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],

@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.support
+package uk.gov.hmrc.transactionalrisking.utils
 
-import play.api.http.{HeaderNames, MimeTypes, Status}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.simpleRDSCorrelationID
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
-import scala.concurrent.ExecutionContext
 
-trait ConnectorSpec extends UnitSpec
-  with Status
-  with MimeTypes
-  with HeaderNames  {
-
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
-
-  implicit val correlationId: String = simpleRDSCorrelationID
-
-  implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
-
+@Singleton
+class IdGenerator  @Inject()() {
+  def getUid: String =
+    UUID.randomUUID().toString
 }
+

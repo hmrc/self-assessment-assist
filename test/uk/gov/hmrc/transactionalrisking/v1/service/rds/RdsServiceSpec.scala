@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.service.rds
 import play.api.test.FakeRequest
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
-import uk.gov.hmrc.transactionalrisking.models.domain.Internal
+import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, Internal}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
@@ -27,11 +27,11 @@ import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{simpleAcknowledgeNewRdsAssessmentReport, simpleRDSCorrelationID}
-import RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, rdsAssessmentReport, requestSO}
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
+import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, requestSO}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, rdsNewSubmissionReport, rdsSubmitRequest, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationID, simpleReportID}
 
 import scala.concurrent.Future
 
@@ -61,41 +61,39 @@ class RdsServiceSpec extends ServiceSpec    {
     "the submit method is called" must {
       "return the expected result" in new Test {
 
-        val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(CommonTestData.commonTestData.internalCorrelationId,rdsAssessmentReport))
-        MockRdsConnector.submit(requestSO) returns Future.successful(rdsAssessmentReportSO)
+        val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationID, rdsNewSubmissionReport))
+        MockRdsConnector.submit( requestSO ) returns Future.successful(rdsAssessmentReportSO)
 
-        await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)) shouldBe Right(ResponseWrapper(CommonTestData.commonTestData.internalCorrelationId,assessmentReport))
+        val assessmentReportSO:ServiceOutcome[AssessmentReport] = await(service.submit( assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
+        assessmentReportSO shouldBe Right(ResponseWrapper(internalCorrelationID,  assessmentReport))
       }
     }
 
     "return the expected result in Welsh if it's selected as preferred Language" in new Test {
 
-      val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(CommonTestData.commonTestData.internalCorrelationId,rdsAssessmentReport))
+      val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationID, rdsNewSubmissionReport))
       MockRdsConnector.submit(requestSO) returns Future.successful(rdsAssessmentReportSO)
 
-      await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)) shouldBe Right(ResponseWrapper(CommonTestData.commonTestData.internalCorrelationId, assessmentReport))
+      private val assementReportSO: ServiceOutcome[AssessmentReport] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
+      assementReportSO shouldBe Right(ResponseWrapper(internalCorrelationID, assessmentReport))
     }
 
     "the acknowledged method is called" must {
       "return the expected result" in new Test {
-        val nino = "AA00000B"
-        val feedbackId = "1234"
-        implicit val correlationId = "12348888889"
-        val rdsCorrelationId = "5fht738957jfjf845jgjf855"
 
         val request: RdsRequest = RdsRequest(
-          Seq(
-            RdsRequest.InputWithString("feedbackID", feedbackId),
-            RdsRequest.InputWithString("nino", nino)
+          Vector(
+            RdsRequest.InputWithString("feedbackID", simpleReportID.toString),
+            RdsRequest.InputWithString("nino", simpleNino)
           )
         )
 
-        val expectedResult:ServiceOutcome[NewRdsAssessmentReport] = Right( ResponseWrapper( correlationId, simpleAcknowledgeNewRdsAssessmentReport)  )
+        val expectedResult:ServiceOutcome[NewRdsAssessmentReport] = Right( ResponseWrapper( internalCorrelationID, simpleAcknowledgeNewRdsAssessmentReport)  )
         MockRdsConnector.acknowledgeRds(request) returns Future.successful(expectedResult)
 
-        val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(nino, feedbackId, simpleRDSCorrelationID)
+        val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
 
-        await(service.acknowlege(acknowledgeReportRequest)) shouldBe expectedResult
+        await(service.acknowledge(acknowledgeReportRequest)) shouldBe expectedResult
       }
     }
   }

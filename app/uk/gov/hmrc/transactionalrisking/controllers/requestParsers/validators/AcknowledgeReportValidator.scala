@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators
 
-import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations.{NinoValidation,  ReportIdValidation}
+import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations.{NinoValidation, ReportIdValidation}
 import uk.gov.hmrc.transactionalrisking.models.errors.MtdError
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import javax.inject.{Inject, Singleton}
+
+import javax.inject.Singleton
 
 @Singleton
 class AcknowledgeReportValidator extends Validator[AcknowledgeReportRawData] {

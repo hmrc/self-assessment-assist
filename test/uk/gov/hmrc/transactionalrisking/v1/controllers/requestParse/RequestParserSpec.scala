@@ -22,14 +22,14 @@ import uk.gov.hmrc.transactionalrisking.models.errors.{BadRequestError, Downstre
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.RawData
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{internalCorrelationIdString, simpleNino}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, simpleNino}
 
 class RequestParserSpec extends UnitSpec {
 
   private val nino = simpleNino
   case class Raw(nino: String) extends RawData
   case class Request(nino: String)
-  implicit val correlationId: String = internalCorrelationIdString
+  implicit val correlationId: String = internalCorrelationID
 
   trait Test {
     test =>
@@ -56,9 +56,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns a single error" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError)
 
-        val vl = parser.parseRequest(Raw(nino))
-        val vr = Left(ErrorWrapper(correlationId, NinoFormatError, None))
-        vl shouldBe vr
+        parser.parseRequest(Raw(nino)) shouldBe Left(ErrorWrapper(correlationId, NinoFormatError, None))
       }
     }
 
@@ -66,9 +64,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns multiple errors" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError , DownstreamError)
 
-        val vl = parser.parseRequest(Raw(nino))
-        val vr = Left(ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
-        vl shouldBe vr
+        parser.parseRequest(Raw(nino)) shouldBe Left(ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
       }
     }
   }

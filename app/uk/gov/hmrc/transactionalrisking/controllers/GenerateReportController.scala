@@ -28,7 +28,7 @@ import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
-import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging, ProvideRandomCorrelationId}
+import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging, IdGenerator}
 
 import java.util.UUID
 import javax.inject.Inject
@@ -36,21 +36,21 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class GenerateReportController @Inject()(
-                                          val cc: ControllerComponents,//TODO add request parser
+                                          val cc: ControllerComponents, //TODO add request parser
                                           val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
                                           nonRepudiationService: NrsService,
                                           insightService: InsightService,
                                           rdsService: RdsService,
                                           currentDateTime: CurrentDateTime,
-                                          provideRandomCorrelationId: ProvideRandomCorrelationId
+                                          idGenerator: IdGenerator
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
-  def generateReportInternal(nino: String, calculationID: String): Action[AnyContent] =
+  def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      implicit val correlationId: String = provideRandomCorrelationId.getRandomCorrelationId()
+      implicit val correlationId: String = idGenerator.getUid
       val customerType = deriveCustomerType(request)
-      toId(calculationID).map { calculationIDUuid =>
+      toId(calculationId).map { calculationIDUuid =>
         val calculationInfo = getCalculationInfo(calculationIDUuid, nino)
         val assessmentRequestForSelfAssessment = new AssessmentRequestForSelfAssessment(calculationIDUuid,
           nino,
@@ -66,9 +66,9 @@ class GenerateReportController @Inject()(
         logger.info(s"Received RDS assessment response")
 
         Future {
-          def assementReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
-            assementReportserviceOutcome =>
-              assementReportserviceOutcome match {
+          def assessmentReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
+            assessmentReportServiceOutcome =>
+              assessmentReportServiceOutcome match {
                 case Right(ResponseWrapper(correlationIdRes,assessmentReportResponse)) =>
                   val rdsReportContent = RequestData(nino = nino,
                     RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportID.toString))
@@ -77,13 +77,13 @@ class GenerateReportController @Inject()(
                     submissionTimestamp = currentDateTime.getDateTime,
                     notableEventType = AssistReportGenerated,calculationInfo.taxYear)
                   //TODO:DE Need   to deal with post NRS errors here.
-                  Right(ResponseWrapper(correlationId,assessmentReportResponse)): ServiceOutcome[AssessmentReport]
+                  Right(ResponseWrapper(correlationId,assessmentReportResponse))
                 case Left(errorWrapper) =>
-                  Left(errorWrapper): ServiceOutcome[AssessmentReport]
+                  Left(errorWrapper)
               }
           }
 
-          def ret: Future[Result] = assementReportFuture.flatMap {
+          def ret: Future[Result] = assessmentReportFuture.flatMap {
             serviceOutcome =>
               serviceOutcome match {
                 case Right(ResponseWrapper(correlationId,assessmentReport)) =>

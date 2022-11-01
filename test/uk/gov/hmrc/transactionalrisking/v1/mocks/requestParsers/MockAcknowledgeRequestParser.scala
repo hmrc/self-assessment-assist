@@ -23,7 +23,7 @@ import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{internalCorrelationId, simpleRDSCorrelationID, simpleNino, simpleReportID}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationIDImplicit, simpleRDSCorrelationID, simpleNino, simpleReportID}
 
 trait MockAcknowledgeRequestParser extends MockFactory {
 
@@ -32,7 +32,7 @@ trait MockAcknowledgeRequestParser extends MockFactory {
   object MockAcknowledgeRequestParser {
 
     def parseRequest(rawData: AcknowledgeReportRawData): CallHandler[ServiceOutcome[AcknowledgeReportRequest]] = {
-      (mockAcknowledgeRequestParser.parseRequest(_: AcknowledgeReportRawData)(_: String)).expects(*, *).anyNumberOfTimes() returns (Right(ResponseWrapper(internalCorrelationId, AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID))))
+      (mockAcknowledgeRequestParser.parseRequest(_: AcknowledgeReportRawData)(_: String)).expects(*, *).anyNumberOfTimes() returns (Right(ResponseWrapper(internalCorrelationIDImplicit, AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID))))
     }
   }
 

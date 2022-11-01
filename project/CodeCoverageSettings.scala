@@ -17,7 +17,7 @@ object CodeCoverageSettings {
   val settings: Seq[Setting[_]] = Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
     // TODO Increase the code coverage minimum to 70%
-    ScoverageKeys.coverageMinimumStmtTotal := 40,
+    ScoverageKeys.coverageMinimumStmtTotal := 50,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )

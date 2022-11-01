@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.utils
+package uk.gov.hmrc.transactionalrisking.v1.mocks.utils
 
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
-//object ProvideRandomCorrelationIdCont {
-//
-//  trait ProvideRandomCorrelationIdBase {
-//    def getRandomCorrelationId(): String =
-//      UUID.randomUUID().toString
-//  }
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.transactionalrisking.utils.IdGenerator
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
+trait MockIdGenerator extends MockFactory {
+  val mockIdGenerator = mock[IdGenerator ]
 
-@Singleton
-class ProvideRandomCorrelationId  @Inject()() {
-  def getRandomCorrelationId(): String =
-    UUID.randomUUID().toString
+  object MockProvideRandomCorrelationId {
+
+    def IdGenerator: CallHandler[String] = {
+      (mockIdGenerator.getUid _)
+        .expects
+        .returns( internalCorrelationID )
+    }
+  }
 }
-
-    //val provideRandomCorrelationId = new ProvideRandomCorrelationId
-
-//}
-

@@ -20,10 +20,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.{AcknowledgeReportController, ControllerBaseSpec}
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{ _ }
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
-import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockProvideRandomCorrelationId
+import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -35,7 +35,7 @@ class AcknowledgeReportControllerSpec
   with MockRdsService
   with MockAcknowledgeRequestParser
   with MockCurrentDateTime
-  with MockProvideRandomCorrelationId
+  with MockIdGenerator
    {
 
 
@@ -53,10 +53,8 @@ class AcknowledgeReportControllerSpec
       nonRepudiationService = mockNrsService,
       rdsService = mockRdsService,
       currentDateTime = mockCurrentDateTime,
-      provideRandomCorrelationId = mockProvideRandomCorrelationId
+      idGenerator = mockIdGenerator
     )
-      //override authorisedAction(nino: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent]
-      //TODO:DE Make this abstarct abstract override.
 
   }
 
@@ -73,7 +71,7 @@ class AcknowledgeReportControllerSpec
         MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequest, generatedNrsId=simpleAcknowledgeNrsID,
           submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
 
-        MockProvideRandomCorrelationId.getRandomCorrelationId()
+        MockProvideRandomCorrelationId.IdGenerator
 
         val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationID.toString, simpleRDSCorrelationID)(fakeGetRequest)
         val retHttpResult = status( result )
@@ -83,7 +81,7 @@ class AcknowledgeReportControllerSpec
         ct shouldBe None
 
         val xcorrelationId = header("X-CorrelationId", result)
-        xcorrelationId shouldBe Some(internalCorrelationIdString)
+        xcorrelationId shouldBe Some(internalCorrelationID)
 
       }
 

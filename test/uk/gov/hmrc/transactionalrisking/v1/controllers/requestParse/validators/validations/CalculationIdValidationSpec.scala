@@ -17,9 +17,9 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators.validations
 
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations.CalculationIdValidation
-import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, ErrorWrapper, MtdError, NinoFormatError}
+import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.commonTestData.{invalidUUIDString, simpleCalculationID, simpleCalculationIDStrangeCharsString}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{invalidUUIDString, simpleCalculationID, simpleCalculationIDStrangeCharsString}
 
 class CalculationIdValidationSpec extends UnitSpec {
   val validator = CalculationIdValidation
@@ -30,20 +30,16 @@ class CalculationIdValidationSpec extends UnitSpec {
         validator.validate(simpleCalculationID.toString) shouldBe Nil
       }
 
-      "an actual invalid request. No UUID format specifier" in {
+      "return no errors" when {
+        "an actual invalid request. No UUID format specifier" in {
 
-        val vl = validator.validate(invalidUUIDString)
-        val vr = Seq(CalculationIdFormatError)
+          validator.validate(invalidUUIDString) shouldBe Seq(CalculationIdFormatError)
+        }
 
-        vl shouldBe vr
-      }
+        "an actual invalid request. Strange characters in string" in {
 
-      "an actual invalid request. Strange characters in string" in {
-
-        val vl = validator.validate(simpleCalculationIDStrangeCharsString)
-        val vr = Seq(CalculationIdFormatError)
-
-        vl shouldBe vr
+          validator.validate(simpleCalculationIDStrangeCharsString) shouldBe Seq(CalculationIdFormatError)
+        }
       }
 
     }
