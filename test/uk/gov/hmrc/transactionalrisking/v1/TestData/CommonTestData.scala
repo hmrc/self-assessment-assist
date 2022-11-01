@@ -34,7 +34,7 @@ class CommonTestData  {
   val simpleNino: String = "AA000000B"
   val simpleCalculationID: UUID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000001")
   val simpleRDSCorrelationID: String = "5fht738957jfjf845jgjf855"
-  val simpleReportID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000101")
+  val simpleReportID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000011111")
   val simpleRiskTitle = "title"
   val simpleRiskBody = "body"
   val simpeRiskAction = "action"
