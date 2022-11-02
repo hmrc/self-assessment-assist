@@ -18,26 +18,27 @@ package uk.gov.hmrc.transactionalrisking.controllers
 
 import play.api.libs.json.Json
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
-import uk.gov.hmrc.transactionalrisking.models.errors.ForbiddenDownstreamError
 import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.models.domain.NinoChecker
 import uk.gov.hmrc.transactionalrisking.models.errors.{ClientOrAgentNotAuthorisedError, DownstreamError, ForbiddenDownstreamError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.transactionalrisking.utils.Logging
 
 case class UserRequest[A](userDetails: UserDetails, request: Request[A]) extends WrappedRequest[A](request)
 
-abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) {
+abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   val authService: EnrolmentsAuthService
 
-  def authorisedAction(nino: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
+  def authorisedAction(nino: String, correlationID: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
+    logger.info(s"$correlationID::[authorisedAction] Check we have authority to do the required work and do it if possible.")
 
     override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
 
@@ -56,21 +57,31 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
     .withDelegatedAuthRule("sa-auth")
 
     override def invokeBlock[A](request: Request[A], block: UserRequest[A] => Future[Result]): Future[Result] = {
+      logger.info(s"$correlationID::[invokeBlock]Check authorisation and continue if ok otherwise some sort of error: $correlationID")
+
       implicit val headerCarrier: HeaderCarrier = hc(request)
       val clientID = request.headers.get("X-Client-Id").getOrElse("N/A")
 
       if (NinoChecker.isValid(nino)) {
-        authService.authorised(predicate(nino), nrsRequired).flatMap[Result] {
+        authService.authorised(predicate(nino), correlationID, nrsRequired).flatMap[Result] {
           case Right(userDetails) =>
+            logger.info(s"$correlationID::[invokeBlock]Nino correct and authorised")
             block(UserRequest(userDetails.copy(clientID = clientID), request))
           case Left(ClientOrAgentNotAuthorisedError) =>
+            logger.warn(s"$correlationID::[invokeBlock]Unable to authorise client or agent")
             Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
           case Left(ForbiddenDownstreamError) =>
+            logger.warn(s"$correlationID::[invokeBlock]Forbidden downstream error")
             Future.successful(Forbidden(Json.toJson(DownstreamError)))
           case Left(_) =>
+            logger.warn(s"$correlationID::[invokeBlock]Downstream")
+            Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+          case _ =>
+            logger.error(s"$correlationID::[invokeBlock]Unknown error")
             Future.successful(InternalServerError(Json.toJson(DownstreamError)))
         }
       } else {
+        logger.warn(s"$correlationID::[invokeBlock]Error in nino format")
         Future.successful(BadRequest(Json.toJson(NinoFormatError)))
       }
     }

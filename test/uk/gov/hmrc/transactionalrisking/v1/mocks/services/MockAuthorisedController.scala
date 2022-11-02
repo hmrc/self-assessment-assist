@@ -27,10 +27,10 @@ trait MockAuthorisedController extends MockFactory {
 
   object MockAuthorisedController {
 
-    def authorisedAction(nino: String, nrsRequired: Boolean = false): CallHandler[ActionBuilder[UserRequest, AnyContent]] = {
+    def authorisedAction(nino: String, correlationID:String, nrsRequired: Boolean = false): CallHandler[ActionBuilder[UserRequest, AnyContent]] = {
 
-      (mockAuthorisedController.authorisedAction(_: String, _: Boolean))
-        .expects(*, *)
+      (mockAuthorisedController.authorisedAction(_: String, _:String, _: Boolean))
+        .expects(*, *, *)
     }
   }
 }

@@ -24,6 +24,7 @@ import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.loadAckResponseTemplate
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 import java.time.{Month, OffsetDateTime, ZoneOffset}
@@ -37,12 +38,12 @@ class CommonTestData  {
   val simpleReportID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000011111")
   val simpleRiskTitle = "title"
   val simpleRiskBody = "body"
-  val simpeRiskAction = "action"
+  val simpleRiskAction = "action"
   val simpleLinkTitle = "title"
   val simpleLinkUrl = "url"
-  val simpePath = "path"
+  val simplePath = "path"
   val simpleTaxYearEndInt=2022
-  val simpeTaxYear = "2021-22"
+  val simpleTaxYear = "2021-22"
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
@@ -61,12 +62,12 @@ class CommonTestData  {
     , risks = Seq(Risk(title = simpleRiskTitle, body = simpleRiskBody, action = simpeRiskAction
       , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simpePath))
     , nino = simpleNino
-    , taxYear = DesTaxYear.fromMtd(simpeTaxYear).toString
+    , taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString
     , calculationID = simpleCalculationID,rdsCorrelationId = simpleRDSCorrelationID)
 
-  val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssementReport)
+  val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
 
-  val simpleFraudRiskRequest: FraudRiskRequest = new FraudRiskRequest(nino = simpleNino, taxYear = simpeTaxYear, fraudRiskHeaders = Map.empty[String, String])
+  val simpleFraudRiskRequest: FraudRiskRequest = new FraudRiskRequest(nino = simpleNino, taxYear = simpleTaxYear, fraudRiskHeaders = Map.empty[String, String])
   val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(decision = FraudDecision.Accept, 0, Set.empty[FraudRiskHeader], Set.empty[WatchlistFlag].empty)
 
   val simpleMetadata: Metadata = null
@@ -77,14 +78,14 @@ class CommonTestData  {
 
   val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
-  val simpeNotableEventType: NotableEventType = AssistReportGenerated
+  val simpleNotableEventType: NotableEventType = AssistReportGenerated
 
   val reportSubmissionID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000010").toString
   val simpleNRSResponseReportSubmission = new NrsResponse(reportSubmissionID)
 
   val simpleAcknowledgeNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleAcknowledgedSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue, 1, 12, 0, 0, 0, ZoneOffset.UTC)
-  val simpeAcknowledgedNotableEventType: NotableEventType = AssistReportAcknowledged
+  val simpleAcknowledgedNotableEventType: NotableEventType = AssistReportAcknowledged
 
   val simpleBodyAcknowledge: RequestBody = null
   val simpleAcknowledgeReportRequest = RequestData(nino = simpleNino, body = simpleBody)
@@ -93,20 +94,14 @@ class CommonTestData  {
   val acknowledgeSubmissionID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
   val simpleNRSResponseAcknowledgeSubmission = new NrsResponse(acknowledgeSubmissionID)
 
-
-  //  val simpleFeedbackID:String = "a365cc12c845c057eb548febfa8048ba"
   val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
   val simpeAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID:String)
 
 
   val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationID.toString, simpleReportID.toString, simpleRDSCorrelationID )
-//  val rdsSubmissionReport: String = rdsSubmissionReportJson.toString()  //as[String]
   val rdsNewSubmissionReport: NewRdsAssessmentReport = rdsSubmissionReportJson.as[NewRdsAssessmentReport]
 
-//  val rdsSubmitRequest: RdsRequest =
-//    RdsRequest(
-//      Seq()
-//    )
+
 
   val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportID.toString, replaceNino=simpleNino, replaceResponseCode="202")
   val rdsAssessmentAck: NewRdsAssessmentReport = rdsAssessmentAckJson.as[NewRdsAssessmentReport]
@@ -118,7 +113,7 @@ class CommonTestData  {
     // Actually invalid type is not determined.
 
   val simpleCalculationIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
-  val simpleReportaIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
+  val simpleReportIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"
 

@@ -20,14 +20,13 @@ import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json._
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.Input
 
-import java.util.UUID
-
 case class RdsRequest(inputs: Seq[Input]) {
 
-  def calculationID: UUID =
-    inputs.find(_.name == "calculationID").map(_.value.toString).map(UUID.fromString)
-      .getOrElse(throw new RuntimeException("No 'calculationID' present."))
-
+//  def calculationID: UUID =
+//    inputs.find(_.name == "calculationID").map(_.value.toString).map(UUID.fromString)
+//      .getOrElse(throw new RuntimeException("No 'calculationID' present."))
+// Mot used
+// TODO: Check how much below is actually used in program.
 }
 
 object RdsRequest {

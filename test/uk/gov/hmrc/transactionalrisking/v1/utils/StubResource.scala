@@ -27,7 +27,7 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
 
   def loadSubmitResponseTemplate(calculationID: String, replaceFeedbackID: String, replaceCorrelationID: String) = {
     val fileName = s"conf/response/submit/$calculationID-response.json"
-    val templateCotent =
+    val templateContent =
       findResource(fileName).map(
         _.replace("replaceFeedbackID", replaceFeedbackID)
           .replace("replaceCalculationID", calculationID)
@@ -42,7 +42,7 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
 
   def loadAckResponseTemplate(replaceFeedbackID: String, replaceNino: String,  replaceResponseCode:String) = {
     val fileName = s"conf/response/acknowledge/feedback-ack.json"
-    val templateCotent =
+    val templateContent =
       findResource(fileName).map(
         _.replace("replaceFeedbackID", replaceFeedbackID)
           .replace("replaceNino", replaceNino)

@@ -20,6 +20,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.models.auth.AffinityGroupType
 import uk.gov.hmrc.transactionalrisking.models.domain._
+import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MatchingResourcesNotFoundError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MatchingResourcesNotFoundError}
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
@@ -34,6 +35,7 @@ import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import uk.gov.hmrc.transactionalrisking.utils.Logging
 
 class GenerateReportController @Inject()(
                                           val cc: ControllerComponents, //TODO add request parser
@@ -46,39 +48,56 @@ class GenerateReportController @Inject()(
                                           idGenerator: IdGenerator
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
-  def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
-    authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      implicit val correlationId: String = idGenerator.getUid
+  def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] = {
+
+    implicit val correlationID: String = provideRandomCorrelationId.getRandomCorrelationId()
+    logger.info(s"$correlationID::[generateReportInternal] Received request to generate an assessment report")
+
+    authorisedAction(nino, correlationID, nrsRequired = true).async { implicit request =>
+
       val customerType = deriveCustomerType(request)
       toId(calculationId).map { calculationIDUuid =>
         val calculationInfo = getCalculationInfo(calculationIDUuid, nino)
+
+   val ret: Future[Result] = calculationInfo match {
+          case Left(errorWrapper) =>
+            logger.warn(s"$correlationID::[generateReportInternal]Received request to generate an assessment report")
+            Future(BadRequest(Json.toJson(errorWrapper.error)).withApiHeaders(correlationID))
+
+          case Right(ResponseWrapper(correlationIdRes, assessmentReportResponse)) => {
+          
         val assessmentRequestForSelfAssessment = new AssessmentRequestForSelfAssessment(calculationIDUuid,
           nino,
           PreferredLanguage.English,
           customerType,
           None,
-          DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
+          DesTaxYear.fromMtd(assessmentReportResponse).toString)
 
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
-        logger.info(s"$correlationId :: Received response for fraudRiskReport")
+        logger.debug(s"$correlationID::[generateReportInternal]Received response for fraudRiskReport")
+        
         val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] =
           rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
-        logger.info(s"Received RDS assessment response")
+        logger.debug(s"$correlationID::[generateReportInternal]Received RDS assessment response")
 
-        Future {
+        val ret = Future {
           def assessmentReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
             assessmentReportServiceOutcome =>
               assessmentReportServiceOutcome match {
                 case Right(ResponseWrapper(correlationIdRes,assessmentReportResponse)) =>
                   val rdsReportContent = RequestData(nino = nino,
                     RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportID.toString))
-                  logger.debug(s"RDS request content $rdsReportContent")
+                  logger.debug(s"$correlationID::[generateReportInternal]RDS request content")
+                  
                   nonRepudiationService.submit(requestData = rdsReportContent,
                     submissionTimestamp = currentDateTime.getDateTime,
-                    notableEventType = AssistReportGenerated,calculationInfo.taxYear)
+                    notableEventType = AssistReportGenerated, assessmentReportResponse.taxYear)
+                  logger.info(s"$correlationID::[generateReportInternal]NRS report sent")  
                   //TODO:DE Need   to deal with post NRS errors here.
+                  
                   Right(ResponseWrapper(correlationId,assessmentReportResponse))
                 case Left(errorWrapper) =>
+                  logger.warn(s"$correlationID::[generateReportInternal]Error submitting report $errorWrapper")                
                   Left(errorWrapper)
               }
           }
@@ -88,15 +107,20 @@ class GenerateReportController @Inject()(
               serviceOutcome match {
                 case Right(ResponseWrapper(correlationId,assessmentReport)) =>
                   serviceOutcome.right.get.flatMap {
-                    assessmentReport =>
+                    assessmentReport =>                      
                       val jsValue = Json.toJson[AssessmentReport](assessmentReport)
+                      logger.info(s"$correlationID::[generateReportInternal]Sending back correct response")
                       Future(Ok(jsValue).withApiHeaders(correlationId))
 
                   }
                 case Left(errorWrapper) =>
                   errorWrapper.error match {
-                    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
-                    case _ => Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+                    case MatchingResourcesNotFoundError =>
+                    	logger.warn(s"$correlationID::[generateReportInternal]Matching resource not found")
+                    	Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+                    case _ =>
+                    	logger.error(s"$correlationID::[generateReportInternal]Unable to get report")
+                    	Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
                   }
               }
           }
@@ -104,7 +128,14 @@ class GenerateReportController @Inject()(
           ret
 
         }.flatten
-      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))) //TODO Add RequestParser
+        ret
+        }
+        }
+        ret
+      }.getOrElse( {
+        logger.warn(s"$correlationID::[generateReportInternal]CalculationID format error")
+      	Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))
+      }) //TODO Add RequestParser
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {
@@ -130,9 +161,16 @@ class GenerateReportController @Inject()(
 
   //private def asError(message: String): JsObject = Json.obj("message" -> message)
 
-
-  private def getCalculationInfo(id: UUID, nino: String): CalculationInfo =
-    integrationFrameworkService.getCalculationInfo(id, nino)
-      .getOrElse(throw new RuntimeException(s"Unknown calculation for id [$id] and nino [$nino]"))
+  private def getCalculationInfo(id: UUID, nino: String, correlationID: String): ServiceOutcome[CalculationInfo] = {
+    integrationFrameworkService.getCalculationInfo(id, nino, correlationID)
+      .map { x =>
+        x match {
+          case right@(ResponseWrapper(correlationID, calcInfo)) =>
+            right
+          case errorWrapper =>
+            errorWrapper
+        }
+      }
+  }
 
 }

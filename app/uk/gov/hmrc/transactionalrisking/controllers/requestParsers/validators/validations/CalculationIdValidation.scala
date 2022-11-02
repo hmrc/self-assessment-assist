@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations
 
-import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
 import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MtdError}
 
 object CalculationIdValidation {

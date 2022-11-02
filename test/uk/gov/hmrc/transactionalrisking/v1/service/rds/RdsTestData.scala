@@ -437,7 +437,7 @@ object RdsTestData {
         )
   )
 
-  val risks = Seq(
+  val risks = Vector(
     Risk(
       "Non-Business Income Source",
       "You have declared family loan as a source of your income. There have been changes to the rules around non-business sources you may declare, please check the appropriate guidance to see how this impacts you.",

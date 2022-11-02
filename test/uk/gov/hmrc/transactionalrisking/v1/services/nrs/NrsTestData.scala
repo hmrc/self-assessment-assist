@@ -112,7 +112,7 @@ object MetadataTestData {
        |    },
        |    "searchKeys": {
        |      "nino": "AA000000B",
-       |      "taxYear": "${simpeTaxYear}",
+       |      "taxYear": "${simpleTaxYear}",
        |      "reportId": "${simpleReportID.toString}"
        |    }
        |}
@@ -141,7 +141,7 @@ object MetadataTestData {
     searchKeys =
       SearchKeys(
         nino = "AA000000B",
-        taxYear = simpeTaxYear,
+        taxYear = simpleTaxYear,
         reportId = simpleReportID.toString
       )
   )

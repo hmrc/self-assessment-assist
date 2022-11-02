@@ -66,7 +66,7 @@ class AcknowledgeReportControllerSpec
 
         MockEnrolmentsAuthService.authoriseUser()
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
-        MockRdsService.acknowlegeRds(simpeAcknowledgeReportRequest)
+        MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
         MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequest, generatedNrsId=simpleAcknowledgeNrsID,
           submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
