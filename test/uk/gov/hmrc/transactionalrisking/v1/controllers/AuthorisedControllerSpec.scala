@@ -29,9 +29,8 @@ import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID}
 
-
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.CommonTestData.commonTestData._
 
 class AuthorisedControllerSpec extends ControllerBaseSpec {
 

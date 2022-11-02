@@ -68,8 +68,8 @@ class AcknowledgeReportControllerSpec
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequest, generatedNrsId=simpleAcknowledgeNrsID,
-          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
+        MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequestData, generatedNrsId=simpleAcknowledgeNrsID,
+          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpleNotableEventType )
 
         MockProvideRandomCorrelationId.IdGenerator
 

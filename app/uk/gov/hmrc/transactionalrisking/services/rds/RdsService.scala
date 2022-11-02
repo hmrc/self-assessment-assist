@@ -43,7 +43,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
                              correlationID: String): Future[ServiceOutcome[AssessmentReport]] = {
-    logger.info(s"$correlationID::[RdsService][submit]submit request for report}")
+    logger.info(s"$correlationID::[submit]submit request for report}")
 
     val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
     rdsRequestSO match {
@@ -56,7 +56,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
               assessmentReportSO match {
 
                 case Right(ResponseWrapper(correlationIdResponse, assessmentReport)) =>
-                  logger.info(s"$correlationID::[RdsService][submit]submit request for report successful returning it")
+                  logger.info(s"$correlationID::[submit]submit request for report successful returning it")
                   Right(ResponseWrapper(correlationID, assessmentReport))
 
                 case Left(errorWrapper) =>
@@ -79,7 +79,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
   }
 
   private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationID: String): ServiceOutcome[AssessmentReport] = {
-    logger.info(s"$correlationID::[RdsService][toAssessmentReport]Generated assessment report")
+    logger.info(s"$correlationID::[toAssessmentReport]Generated assessment report")
 
     val feedbackIDOption = report.feedbackId
     feedbackIDOption match {
@@ -87,7 +87,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
         val rdsCorrelationIdOption = report.rdsCorrelationId
         rdsCorrelationIdOption match {
           case Some(rdsCorrelationID) =>
-            logger.info(s"$correlationID::[RdsService][toAssessmentReport]Successfully generated assessment report")
+            logger.info(s"$correlationID::[toAssessmentReport]Successfully generated assessment report")
             Right(ResponseWrapper(correlationID,
               AssessmentReport(reportID = reportID,
                 risks = risks(report, request.preferredLanguage, correlationID), nino = request.nino,
@@ -106,7 +106,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
   }
 
   private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationID: String): Seq[Risk] = {
-    logger.info(s"$correlationID::[RdsService][risks]Create risk for $preferredLanguage.Value")
+    logger.info(s"$correlationID::[risks]Create risk for $preferredLanguage.Value")
     report.outputs.collect {
       case elm: NewRdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
     }.flatMap(_.value).collect {
@@ -129,7 +129,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
-    logger.info(s"$correlationId::[RdsService][generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
+    logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
 
     //TODO Errors need to be dealt looked at.
     Right(ResponseWrapper(correlationId, RdsRequest(
@@ -172,7 +172,7 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],
                                                     correlationId: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-    logger.info(s"$correlationId::[RdsService][acknowledge]acknowledge")
+    logger.info(s"$correlationId::[acknowledge]acknowledge")
     connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
   }
 

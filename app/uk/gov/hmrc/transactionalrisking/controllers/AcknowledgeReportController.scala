@@ -46,7 +46,7 @@ class AcknowledgeReportController @Inject()(
                                            )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
   //TODO revisit if reportId needs to be UUID instead of string? as regex validation is done anyway
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
-    implicit val correlationID: String = provideRandomCorrelationId.getRandomCorrelationId()
+    implicit val correlationID: String = idGenerator.getUid
     logger.info(s"$correlationID::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
 
     authorisedAction(nino, correlationID, nrsRequired = true).async { implicit request =>
@@ -117,12 +117,12 @@ class AcknowledgeReportController @Inject()(
         acknowledgeReportSO: ServiceOutcome[NewRdsAssessmentReport] =>
           val ret: Future[ServiceOutcome[Int]] = acknowledgeReportSO match {
             case Right(ResponseWrapper(correlationIdResponse, acknowledgeReport)) => {
-              val reponseCode:Int = acknowledgeReport.responseCode
+              val responseCode:Int = acknowledgeReport.responseCode
                 .getOrElse(BAD_REQUEST)
               val ret: Future[ServiceOutcome[Int]] = responseCode match {
                 //TODO This status code doesn't look right, need to check the response code from RDS it might be 202 (ACCEPTED)
-                case ACCEPTED@a => {
-                  logger.debug(s"$correlationID::[acknowledgeReport] rds ack response is ${a}}")
+                case ACCEPTED => {
+                  logger.debug(s"$correlationID::[acknowledgeReport] rds ack response is ${responseCode}}")
 
                   //TODO submissionTimestamp should this be current time?
                   val submissionTimestamp = currentDateTime.getDateTime
@@ -147,17 +147,17 @@ class AcknowledgeReportController @Inject()(
                   ret
                 }
                 //TODO : Place holder for any errors via response when we get them.
-                case NO_CONTENT@a => {
-                  logger.warn(s"$correlationID::[acknowledgeReport] Place Holder: rds ack response is ${a}")
+                case NO_CONTENT => {
+                  logger.warn(s"$correlationID::[acknowledgeReport] Place Holder: rds ack response is ${responseCode}")
                   Future(Right(ResponseWrapper(correlationID, NO_CONTENT)))
                 }
-                case BAD_REQUEST@a => {
-                  logger.warn(s"$correlationID::[acknowledgeReport] rds ack response is ${a}")
+                case BAD_REQUEST => {
+                  logger.warn(s"$correlationID::[acknowledgeReport] rds ack response is ${responseCode}")
                   Future(Left(ErrorWrapper(correlationID, DownstreamError)): ServiceOutcome[Int])
                 }
                 // case other errors from system.
-                case _@a =>
-                  logger.warn(s"$correlationID::[acknowledgeReport] rds ack response is unknown ${a} and not been handled so is rejected: ")
+                case _ =>
+                  logger.warn(s"$correlationID::[acknowledgeReport] rds ack response is unknown ${responseCode} and not been handled so is rejected: ")
                   Future(Left(ErrorWrapper(correlationID, DownstreamError)): ServiceOutcome[Int])
               }
               ret

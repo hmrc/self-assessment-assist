@@ -17,14 +17,12 @@
 package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
-import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.loadAckResponseTemplate
+import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 import java.time.{Month, OffsetDateTime, ZoneOffset}
@@ -56,11 +54,11 @@ class CommonTestData  {
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
     agentRef = None,
-    taxYear = DesTaxYear.fromMtd(simpeTaxYear).toString)
+    taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString)
 
-  val simpleAssementReport = AssessmentReport(reportID = simpleReportID
-    , risks = Seq(Risk(title = simpleRiskTitle, body = simpleRiskBody, action = simpeRiskAction
-      , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simpePath))
+  val simpleAssessmentReport = AssessmentReport(reportID = simpleReportID
+    , risks = Seq(Risk(title = simpleRiskTitle, body = simpleRiskBody, action = simpleRiskAction
+      , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simplePath))
     , nino = simpleNino
     , taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString
     , calculationID = simpleCalculationID,rdsCorrelationId = simpleRDSCorrelationID)
@@ -74,7 +72,7 @@ class CommonTestData  {
   val simplePayload: String = ""
 
   val simpleBody: RequestBody = null
-  val simpleGenerateReportControllerRequest = RequestData(nino = simpleNino, body = simpleBody)
+  val simpleGenerateReportControllerRequestData = RequestData(nino = simpleNino, body = simpleBody)
 
   val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
@@ -88,14 +86,14 @@ class CommonTestData  {
   val simpleAcknowledgedNotableEventType: NotableEventType = AssistReportAcknowledged
 
   val simpleBodyAcknowledge: RequestBody = null
-  val simpleAcknowledgeReportRequest = RequestData(nino = simpleNino, body = simpleBody)
+  val simpleAcknowledgeReportRequestData = RequestData(nino = simpleNino, body = simpleBody)
 
   val acknowledgeSubmissionIdString = ""
   val acknowledgeSubmissionID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
   val simpleNRSResponseAcknowledgeSubmission = new NrsResponse(acknowledgeSubmissionID)
 
   val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
-  val simpeAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID:String)
+  val simpleAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID:String)
 
 
   val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationID.toString, simpleReportID.toString, simpleRDSCorrelationID )

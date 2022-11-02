@@ -22,7 +22,6 @@ import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
-import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.risks
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 

@@ -34,7 +34,7 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
           .replace("replaceCorrelationID", replaceCorrelationID))
 
 
-    val parsedContent = templateCotent
+    val parsedContent = templateContent
       .map(Json.parse)
       .getOrElse(throw new IllegalStateException("Response template parsing failed"))
     parsedContent
@@ -48,7 +48,7 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
           .replace("replaceNino", replaceNino)
           .replace(s""""replaceResponseCode"""", replaceResponseCode))
 
-    val parsedContent = templateCotent
+    val parsedContent = templateContent
       .map(Json.parse)
       .getOrElse(
         throw new IllegalStateException("Acknowledge template parsing failed"))
