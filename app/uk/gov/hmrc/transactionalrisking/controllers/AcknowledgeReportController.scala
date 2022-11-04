@@ -114,6 +114,7 @@ class AcknowledgeReportController @Inject()(
                 //TODO This status code doesn't look right, need to check the response code from RDS it might be 202 (ACCEPTED)
                 case ACCEPTED => {
 
+
                   //TODO submissionTimestamp should this be current time?
                   val submissionTimestamp = currentDateTime.getDateTime
                   val body = s"""{"reportId":"${request.feedbackID}"}"""
