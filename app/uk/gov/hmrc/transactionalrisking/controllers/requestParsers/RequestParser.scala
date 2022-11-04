@@ -18,7 +18,9 @@ package uk.gov.hmrc.transactionalrisking.controllers.requestParsers
 
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.Validator
 import uk.gov.hmrc.transactionalrisking.models.errors.{BadRequestError, ErrorWrapper}
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.RawData
+import uk.gov.hmrc.transactionalrisking.services.ParseOutcome
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 
 trait RequestParser[Raw <: RawData, Request] extends Logging {
@@ -26,20 +28,20 @@ trait RequestParser[Raw <: RawData, Request] extends Logging {
 
   protected def requestFor(data: Raw): Request
 
-  def parseRequest(data: Raw)(implicit correlationId: String): Either[ErrorWrapper, Request] = {
+  def parseRequest(data: Raw)(implicit correlationID: String): ParseOutcome[ Request] = {
     validator.validate(data) match {
       case Nil =>
         logger.info(message = "[RequestParser][parseRequest] " +
-          s"Validation successful for the request with correlationId : $correlationId")
-        Right(requestFor(data))
+          s"Validation successful for the request with correlationId : $correlationID")
+        Right( ResponseWrapper( correlationID, requestFor(data)))
       case err :: Nil =>
         logger.info(message = "[RequestParser][parseRequest] " +
-          s"Validation failed with ${err.code} error for the request with correlationId : $correlationId")
-        Left(ErrorWrapper( correlationId, err, None))
+          s"Validation failed with ${err.code} error for the request with correlationId : $correlationID")
+        Left(ErrorWrapper( correlationID, err, None))
       case errs =>
         logger.info("[RequestParser][parseRequest] " +
-          s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request with correlationId : $correlationId")
-        Left(ErrorWrapper( correlationId, BadRequestError, Some(errs)))
+          s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request with correlationId : $correlationID")
+        Left(ErrorWrapper( correlationID, BadRequestError, Some(errs)))
     }
   }
 }

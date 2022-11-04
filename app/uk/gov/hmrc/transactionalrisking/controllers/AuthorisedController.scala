@@ -43,22 +43,26 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
 
     override protected def executionContext: ExecutionContext = cc.executionContext
 
-    //TODO fix predicate
+    //TODO fix predicate, maybe we need to use delegatedAuthRule("sa-auth"), but this was failing
+    // also do we need to restrict AuthProviders in predicate,authorised(AuthProviders(GovernmentGateway, PrivilegedApplication))
+    //https://confluence.tools.tax.service.gov.uk/display/GG/Predicate+Reference
+    //https://confluence.tools.tax.service.gov.uk/display/AG/Agent++Access+Control+-+patterns
+    //https://confluence.tools.tax.service.gov.uk/display/AG/2.+Self+Assessment+Agent+Access+Control
+    //https://confluence.tools.tax.service.gov.uk/display/AG/Integration+with+sa-auth
+
+
     def predicate(nino: String): Predicate =
-      Nino(hasNino = true, nino = Some(nino)) or Enrolment("IR-SA").withIdentifier(AuthorisedController.ninoKey, nino)
-        //.withDelegatedAuthRule("afi-auth")
+      Nino(hasNino = true, nino = Some(nino)) or Enrolment("IR-SA").withIdentifier(ninoKey, nino)
+    .withDelegatedAuthRule("sa-auth")
 
     override def invokeBlock[A](request: Request[A], block: UserRequest[A] => Future[Result]): Future[Result] = {
-
       implicit val headerCarrier: HeaderCarrier = hc(request)
+      val clientID = request.headers.get("X-Client-Id").getOrElse("N/A")
 
-      val clientId = request.headers.get("X-Client-Id").getOrElse("N/A")
-
-      //TODO check if we need to perform NINO validation here Nino.isValid(nino)
       if (NinoChecker.isValid(nino)) {
         authService.authorised(predicate(nino), nrsRequired).flatMap[Result] {
           case Right(userDetails) =>
-            block(UserRequest(userDetails.copy(clientId = clientId), request))
+            block(UserRequest(userDetails.copy(clientID = clientID), request))
           case Left(ClientOrAgentNotAuthorisedError) =>
             Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
           case Left(ForbiddenDownstreamError) =>
@@ -74,5 +78,5 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
 }
 
 object AuthorisedController {
-  val ninoKey: String = "NINO"
+  val ninoKey: String = "nino"
 }

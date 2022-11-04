@@ -22,7 +22,7 @@ import play.api.libs.json.{JsPath, Writes}
 import java.util.UUID
 
 // At this point, we don't expect that the report will differ according to the context.
-case class AssessmentReport(reportId: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationId:UUID, correlationID:String)
+case class AssessmentReport(reportID: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationID:UUID, rdsCorrelationId:String)
 
 object AssessmentReport {
 
@@ -31,8 +31,8 @@ object AssessmentReport {
       .and((JsPath \ "messages").write[Seq[Risk]])
       .and((JsPath \ "nino").write[String])
       .and((JsPath \ "taxyear").write[String])
-      .and((JsPath \ "calculationID").write[UUID])
-      .and((JsPath \ "correlationID").write[String])(unlift(AssessmentReport.unapply))
+      .and((JsPath \ "calculationId").write[UUID])
+      .and((JsPath \ "correlationId").write[String])(unlift(AssessmentReport.unapply))
 
 }
 

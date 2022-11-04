@@ -17,11 +17,10 @@
 package uk.gov.hmrc.transactionalrisking.services.nrs.models.request
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.transactionalrisking.models.domain.AssessmentReport
 
 //TODO newRdsAssessmentReport will be populated using NewRdsAssessmentReport class, as of now String because common
 // class is used for generate report and acknowledge
-//TODO should this be called NRSRequestBody? is this left NRS specific?
+//TODO should this be called NRSRequestBody? is this left NRS specific?Check this and remove
 //TODO reportID may be it should be UUID for type safety not String
 case class RequestBody(bodyContent:String, reportId:String)
 object RequestBody{

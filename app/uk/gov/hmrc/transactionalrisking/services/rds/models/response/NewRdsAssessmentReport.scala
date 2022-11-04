@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.transactionalrisking.services.rds.models.response
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsObject, JsPath, JsString, Reads, Writes}
 import NewRdsAssessmentReport.{KeyValueWrapper, Output}
 
 import java.util.UUID
 
-//TODO Revisit this taken from Simulator
 case class NewRdsAssessmentReport(links: Seq[String],
                                   version: Int,
                                   moduleId: String,
@@ -31,7 +30,7 @@ case class NewRdsAssessmentReport(links: Seq[String],
                                   outputs: Seq[Output]
                                  ) {
 
-  def calculationId: UUID =
+  def calculationID: UUID =
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
@@ -40,7 +39,7 @@ case class NewRdsAssessmentReport(links: Seq[String],
       .map(UUID.fromString)
       .getOrElse(throw new RuntimeException("No 'calculationID' present."))
 
-  def rdsCorrelationID: String = {
+  def rdsCorrelationId: String = {
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
@@ -58,6 +57,25 @@ case class NewRdsAssessmentReport(links: Seq[String],
       .map(UUID.fromString)
       .getOrElse(throw new RuntimeException("No 'feedbackID' present."))
 
+
+  def taxYear: Int =
+    outputs
+      .filter(_.isInstanceOf[KeyValueWrapper])
+      .map(_.asInstanceOf[KeyValueWrapper])
+      .find(_.name == "taxYear")
+      .map(_.value)
+      .map(_.toInt)
+      .getOrElse(throw new RuntimeException("No 'taxYear' present."))
+
+  def responseCode: Int =
+    outputs
+      .filter(_.isInstanceOf[KeyValueWrapper])
+      .map(_.asInstanceOf[KeyValueWrapper])
+      .find(_.name == "responseCode")
+      .map(_.value)
+      .map(_.toInt)
+      .getOrElse(throw new RuntimeException("No 'responseCode' present."))
+
 }
 
 object NewRdsAssessmentReport {
@@ -65,12 +83,12 @@ object NewRdsAssessmentReport {
   trait Output
 
   object Output {
-    val temp = List("correlationID","feedbackID","calculationID")
+    val specialKeys = List("correlationID","feedbackID","calculationID","nino","taxYear","responseCode","response")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {
-          case Seq("name", "value") if (temp.contains(json("name").asInstanceOf[JsString].value)) =>
-            KeyValueWrapper.reads.reads(json)
+          case Seq("name", "value") if (specialKeys.contains(json("name").asInstanceOf[JsString].value)) =>
+              KeyValueWrapper.reads.reads(json)
           case _ =>
               MainOutputWrapper.reads.reads(json)
         }
@@ -86,10 +104,14 @@ object NewRdsAssessmentReport {
 
   case class KeyValueWrapper(name:String,value:String) extends Output
   object KeyValueWrapper {
+    val convertIntToString: Reads[String] = implicitly[Reads[Int]]
+      .map(x => x.toString)
 
     val reads: Reads[KeyValueWrapper] =
-      (JsPath \ "name").read[String]
-        .and((JsPath \ "value").read[String])(KeyValueWrapper.apply _)
+      ((JsPath \ "name").read[String] and
+        ((JsPath \ "value").read[String] or
+          (JsPath \ "value").read[String](convertIntToString)))(KeyValueWrapper.apply _)
+
 
     val writes: Writes[KeyValueWrapper] =
       (JsPath \ "name").write[String]

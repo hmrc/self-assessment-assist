@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.controllers
 
 import play.api.libs.json._
 import play.api.mvc._
+import uk.gov.hmrc.transactionalrisking.models.auth.AffinityGroupType
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MatchingResourcesNotFoundError}
@@ -27,7 +28,7 @@ import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
-import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging}
+import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging, IdGenerator}
 
 import java.util.UUID
 import javax.inject.Inject
@@ -35,22 +36,23 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class GenerateReportController @Inject()(
-                                          val cc: ControllerComponents,//TODO add request parser
+                                          val cc: ControllerComponents, //TODO add request parser
                                           val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
                                           nonRepudiationService: NrsService,
                                           insightService: InsightService,
                                           rdsService: RdsService,
                                           currentDateTime: CurrentDateTime,
+                                          idGenerator: IdGenerator
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      implicit val correlationId: String = UUID.randomUUID().toString
+      implicit val correlationId: String = idGenerator.getUid
       val customerType = deriveCustomerType(request)
-      toId(calculationId).map { calculationIdUuid =>
-        val calculationInfo = getCalculationInfo(calculationIdUuid, nino)
-        val assessmentRequestForSelfAssessment = new AssessmentRequestForSelfAssessment(calculationIdUuid,
+      toId(calculationId).map { calculationIDUuid =>
+        val calculationInfo = getCalculationInfo(calculationIDUuid, nino)
+        val assessmentRequestForSelfAssessment = new AssessmentRequestForSelfAssessment(calculationIDUuid,
           nino,
           PreferredLanguage.English,
           customerType,
@@ -58,29 +60,30 @@ class GenerateReportController @Inject()(
           DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
 
         val fraudRiskReport: FraudRiskReport = insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment))
-        logger.info(s"Received response for fraudRiskReport")
-        val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] = rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
+        logger.info(s"$correlationId :: Received response for fraudRiskReport")
+        val rdsAssessmentReportResponse: Future[ServiceOutcome[AssessmentReport]] =
+          rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal)
         logger.info(s"Received RDS assessment response")
+
         Future {
-          def assementReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
-            assementReportserviceOutcome =>
-              assementReportserviceOutcome match {
+          def assessmentReportFuture: Future[ServiceOutcome[AssessmentReport]] = rdsAssessmentReportResponse.map {
+            assessmentReportServiceOutcome =>
+              assessmentReportServiceOutcome match {
                 case Right(ResponseWrapper(correlationIdRes,assessmentReportResponse)) =>
                   val rdsReportContent = RequestData(nino = nino,
-                    RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportId.toString))
+                    RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportID.toString))
                   logger.debug(s"RDS request content $rdsReportContent")
                   nonRepudiationService.submit(requestData = rdsReportContent,
                     submissionTimestamp = currentDateTime.getDateTime,
                     notableEventType = AssistReportGenerated,calculationInfo.taxYear)
                   //TODO:DE Need   to deal with post NRS errors here.
-                  //TODO:DE match case saved nrs no problems(Pretend no errors for moment)
-                  Right(ResponseWrapper(correlationId,assessmentReportResponse)): ServiceOutcome[AssessmentReport]
+                  Right(ResponseWrapper(correlationId,assessmentReportResponse))
                 case Left(errorWrapper) =>
-                  Left(errorWrapper): ServiceOutcome[AssessmentReport]
+                  Left(errorWrapper)
               }
           }
 
-          def ret: Future[Result] = assementReportFuture.flatMap {
+          def ret: Future[Result] = assessmentReportFuture.flatMap {
             serviceOutcome =>
               serviceOutcome match {
                 case Right(ResponseWrapper(correlationId,assessmentReport)) =>
@@ -105,8 +108,11 @@ class GenerateReportController @Inject()(
     }
 
   private def deriveCustomerType(request: Request[AnyContent]) = {
-    //TODO fix me, write logic to derive customer type
-    CustomerType.TaxPayer
+    request.asInstanceOf[UserRequest[_]].userDetails.userType match {
+      case AffinityGroupType.individual => CustomerType.TaxPayer
+      case AffinityGroupType.organisation => CustomerType.Agent
+      case AffinityGroupType.agent => CustomerType.Agent
+    }
   }
 
   //TODO Revisit Check headers as pending
@@ -122,7 +128,7 @@ class GenerateReportController @Inject()(
   private def toId(rawId: String): Option[UUID] =
     Try(UUID.fromString(rawId)).toOption
 
-  private def asError(message: String): JsObject = Json.obj("message" -> message)
+  //private def asError(message: String): JsObject = Json.obj("message" -> message)
 
 
   private def getCalculationInfo(id: UUID, nino: String): CalculationInfo =

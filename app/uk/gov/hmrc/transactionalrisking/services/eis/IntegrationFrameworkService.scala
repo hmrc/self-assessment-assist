@@ -36,7 +36,6 @@ import javax.inject.{Inject, Singleton}
  *
  */
 
-//TODO DE : Make IntegrationFramework = AuditService al VAT?
 
 @Singleton
 class IntegrationFrameworkService @Inject()(){

@@ -19,9 +19,9 @@ package uk.gov.hmrc.transactionalrisking.controllers
 
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
-import uk.gov.hmrc.transactionalrisking.models.domain.FraudRiskRequest
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
+import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -34,6 +34,7 @@ class GenerateReportControllerSpec
   with MockInsightService
   with MockRdsService
   with MockCurrentDateTime
+    with MockIdGenerator
    {
 
 
@@ -52,10 +53,10 @@ class GenerateReportControllerSpec
       nonRepudiationService = mockNrsService,
       insightService = mockInsightService,
       rdsService = mockRdsService,
-      currentDateTime = mockCurrentDateTime
-      )
+      currentDateTime = mockCurrentDateTime,
+      idGenerator = mockIdGenerator
+    )
       //override authorisedAction(nino: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent]
-      //TODO:DE Make this abstarct abstract override.
 
   }
 
@@ -65,21 +66,20 @@ class GenerateReportControllerSpec
 
 
         MockEnrolmentsAuthService.authoriseUser()
-        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId,simpleNino)
+        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID,simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit(simpleGenerateReportRequest,simpleGeneratedNrsId,simpleSubmissionTimestamp,simpeNotableEventType)
-//        MockNrsService.submit(generateReportRequest = simpleGenerateReportRequest, generatedNrsId=simpleGeneratedNrsId,
-//          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
-//        MockCurrentDateTime.getDateTime().returns( OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC))
+        MockNrsService.submit(simpleGenerateReportControllerRequest,simpleGenerateReportControllerNrsID,simpleSubmissionTimestamp,simpeNotableEventType)
+        MockNrsService.submit(generateReportRequest = simpleGenerateReportControllerRequest, generatedNrsId=simpleGenerateReportControllerNrsID,
+          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
+         MockProvideRandomCorrelationId.IdGenerator
 
-
-        val result = controller.generateReportInternal( simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+        val result = controller.generateReportInternal( simpleNino, simpleCalculationID.toString)(fakeGetRequest)
         status(result) shouldBe OK
-        contentAsJson(result) shouldBe simpleMtdJson
+        contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
-//        header("X-CorrelationId", result) shouldBe Some(correlationId)
+//        header("X-CorrelationId", result) shouldBe Some(correlationID)
 
         // Put the nrs save to test here.
 
@@ -96,7 +96,7 @@ class GenerateReportControllerSpec
 //          .assess(request, origin)
 //          .returns( Future.successful(Left(ErrorWrapper( /*correlationId,*/ mtdError))))
 //
-//        val result: Future[Result] = controller.generateReportInternal( nino, calculationId.toString)(fakeGetRequest)
+//        val result: Future[Result] = controller.generateReportInternal( nino, calculationID.toString)(fakeGetRequest)
 //
 //        status(result) shouldBe expectedStatus
 //        contentAsJson(result) shouldBe Json.toJson(mtdError)
@@ -130,7 +130,7 @@ class GenerateReportControllerSpec
 ////
 ////      status(result) shouldBe NOT_FOUND
 ////      contentAsString(result) shouldBe ""
-////      header("X-CorrelationId", result) shouldBe Some(correlationId)
+////      header("X-CorrelationId", result) shouldBe Some(correlationID)
 ////
 ////      val auditResponse: AuditResponse = AuditResponse(NOT_FOUND, Some(Seq(AuditError(EmptyNotFoundError.code))), None)
 ////      MockedAuditService.verifyAuditEvent(AuditEvents.auditReturns(correlationId,

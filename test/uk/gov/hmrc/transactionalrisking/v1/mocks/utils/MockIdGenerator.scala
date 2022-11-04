@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations
+package uk.gov.hmrc.transactionalrisking.v1.mocks.utils
 
-import uk.gov.hmrc.transactionalrisking.models.errors.{FormatReportIdError, MtdError}
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.transactionalrisking.utils.IdGenerator
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
-object ReportIDValidation {
-  private val reportIdRegex =
-    "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+trait MockIdGenerator extends MockFactory {
+  val mockIdGenerator = mock[IdGenerator ]
 
-  def validate(reportId: String): List[MtdError] = {
-    if (reportId != null && reportId.matches(reportIdRegex)) NoValidationErrors else List(FormatReportIdError)
+  object MockProvideRandomCorrelationId {
+
+    def IdGenerator: CallHandler[String] = {
+      (mockIdGenerator.getUid _)
+        .expects
+        .returns( internalCorrelationID )
+    }
   }
 }

@@ -20,7 +20,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
 import java.util.UUID
 
@@ -35,7 +35,7 @@ trait MockIntegrationFrameworkService extends MockFactory {
     def getCalculationInfo(id: UUID, nino: String): CallHandler[Option[CalculationInfo]] = {
 
             (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String))
-              .expects( *, * /*simpleCalculationId, simpleNino*/ ).anyNumberOfTimes() returns (Some(CalculationInfo(simpleCalculationId, simpleNino, "2021-22")))
+              .expects( *, * /*simpleCalculationId, simpleNino*/ ).anyNumberOfTimes() returns (Some(CalculationInfo(simpleCalculationID, simpleNino, "2021-22")))
 
 //      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String))
 //        .expects(*, *)

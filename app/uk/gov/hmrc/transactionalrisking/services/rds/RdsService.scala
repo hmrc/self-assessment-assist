@@ -17,7 +17,6 @@
 package uk.gov.hmrc.transactionalrisking.services.rds
 
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
@@ -43,23 +42,31 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
                              correlationId: String): Future[ServiceOutcome[AssessmentReport]] = {
-    connector.submit(generateRdsAssessmentRequest(request, fraudRiskReport))
-      .map { _ match {
-          case Right(ResponseWrapper(correlationId,rdsResponse)) =>
-            val assessmentReport = toAssessmentReport(rdsResponse, request)
-            logger.info("... RDS request successful, returning it.")
-            Right(ResponseWrapper(correlationId, assessmentReport))
-           //TODO:DE deal with Errors.
-          case Left(errorWrapper) => Left(errorWrapper)
-        }
-      }
+    val rdsRequestSO:ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
+    rdsRequestSO match {
+      case Right(ResponseWrapper(correlationId, rdsRequest)) =>
+        val submit = connector.submit( rdsRequest )
+        val ret = submit.map {
+            _ match {
+              case Right(ResponseWrapper(correlationId, rdsResponse)) =>
+                val assessmentReport = toAssessmentReport(rdsResponse, request)
+                logger.info("... RDS request successful, returning it.")
+                Right(ResponseWrapper(correlationId, assessmentReport))
+              //TODO:DE deal with Errors.
+              case Left(errorWrapper) => Left(errorWrapper)
+            }
+          }
+        ret
+      case Left(er) =>
+        Future(Left(er):ServiceOutcome[AssessmentReport])
+    }
   }
 
   private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment) = {
-    AssessmentReport(reportId = report.feedbackId,
+    AssessmentReport(reportID = report.feedbackId,
       risks = risks(report, request.preferredLanguage), nino = request.nino,
       taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
-      calculationId = request.calculationId,report.rdsCorrelationID)
+      calculationID = request.calculationID,report.rdsCorrelationId)
   }
 
   private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
@@ -82,13 +89,13 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
       body = riskParts(1), action = riskParts(2),
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
-//TODO Fix me, request dont need to be ServiceOutcome
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
+    logger.info(s"$correlationId :: rdsservice processing generateRdsAssessmentRequest")
     Right(ResponseWrapper(correlationId,RdsRequest(
       Seq(
-        RdsRequest.InputWithString("calculationId", request.calculationId.toString),
+        RdsRequest.InputWithString("calculationID", request.calculationID.toString),
         RdsRequest.InputWithString("nino", request.nino),
         RdsRequest.InputWithString("taxYear", request.taxYear),
         RdsRequest.InputWithString("customerType", request.customerType.toString),
@@ -121,18 +128,21 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
     ): ServiceOutcome[RdsRequest]
   }
 
-  def acknowlege(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
+  def acknowledge(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
                                                     ec: ExecutionContext,
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],
-                                                    correlationId: String): Future[Int] =
+                                                    correlationId: String): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] = {
+    logger.info(s"$correlationId :: rdsservice processing acknowledge")
     connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
+  }
 
   private def generateRdsAcknowledgementRequest(request: AcknowledgeReportRequest): RdsRequest
   = RdsRequest(
     Seq(
-      RdsRequest.InputWithString("feedbackId", request.feedbackId),
-      RdsRequest.InputWithString("nino", request.nino)
+      RdsRequest.InputWithString("feedbackID", request.feedbackID),
+      RdsRequest.InputWithString("nino", request.nino),
+      RdsRequest.InputWithString("correlationID", request.rdsCorrelationID)
     )
   )
 }

@@ -23,7 +23,7 @@ import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.Preferre
 
 import java.util.UUID
 
-case class AssessmentRequestForSelfAssessment(calculationId: UUID,
+case class AssessmentRequestForSelfAssessment(calculationID: UUID,
                                               nino: String,
                                               preferredLanguage: PreferredLanguage,
                                               customerType: CustomerType,

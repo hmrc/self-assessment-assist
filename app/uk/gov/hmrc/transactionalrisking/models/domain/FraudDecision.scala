@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.models.domain
 
 import play.api.libs.json.{Format, Json}
-//TODO revisit me later
+//TODO revisit me later: This class might not be neeeded as RDS doesn't return decision
 object FraudDecision extends Enumeration {
 
   type FraudRiskDecision = Value

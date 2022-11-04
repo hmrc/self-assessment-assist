@@ -16,39 +16,27 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
-import play.api.libs.json._
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, CustomerType, DesTaxYear, FraudDecision, FraudRiskHeader, FraudRiskReport, Link, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, MtdError}
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
-import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.risks
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
-import uk.gov.hmrc.transactionalrisking.v1.CommonTestData.{simpeTaxYear, simpleReportId}
 
-import java.util.UUID
 
-trait RdsTestData {
+object RdsTestData {
 
-  val rdsRequest: ServiceOutcome[RdsRequest] = Right(
-    ResponseWrapper(CommonTestData.correlationId,
-      RdsRequest(
-        Seq()
-      )
-    )
-  )
+  val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq( ))
 
-  val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq())
-
-  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(CommonTestData.correlationId,MtdError(code = "", message = "")))
+  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationIDImplicit,MtdError(code = "", message = "")))
 
   var rdsRequestBody: String = """
                                  |{
                                  |  "inputs": [
                                  |    {
-                                 |      "name": "calculationId",
+                                 |      "name": "calculationID",
                                  |      "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
                                  |    },
                                  |    {
@@ -262,15 +250,15 @@ trait RdsTestData {
                                     |      ]
                                     |    },
                                     |    {
-                                    |      "name": "feedbackID",
+                                    |      "name": "feedbackId",
                                     |      "value": "a365c0b4-06e3-4fef-a555-6fd0877dc7c"
                                     |    },
                                     |    {
-                                    |      "name": "calculationID",
+                                    |      "name": "calculationId",
                                     |      "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
                                     |    },
                                     |    {
-                                    |      "name": "correlationID",
+                                    |      "name": "correlationId",
                                     |      "value": "5fht738957jfjf845jgjf855"
                                     |    }
                                     |  ]
@@ -381,15 +369,15 @@ trait RdsTestData {
        |        {
        |      "identifiers": [
        |        {
-       |            "name": "feedbackID",
+       |            "name": "feedbackId",
        |            "value": "a365c0b4-06e3-4fef-a555-6fd0877dc7c"
        |        },
        |        {
-       |            "name": "calculationID",
+       |            "name": "calculationId",
        |            "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
        |        },
        |        {
-       |            "name": "correlationID",
+       |            "name": "correlationId",
        |            "value": "5fht738957jfjf845jgjf855"
        |        }
        |        ]
@@ -399,11 +387,9 @@ trait RdsTestData {
        |
        |""".stripMargin
 
-  private val rdsAssessmentReportJson = Json.parse(rdsSubmissionResponse)
-  val rdsAssessmentReport: NewRdsAssessmentReport = rdsAssessmentReportJson.as[NewRdsAssessmentReport]
 
   val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationId = UUID.fromString("a365c0b4-06e3-4fef-a555-06fd0877dc7c"),
+    calculationID = simpleCalculationID,
     nino = "AA00000B",
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
@@ -418,11 +404,10 @@ trait RdsTestData {
     watchlistFlags = Set(WatchlistFlag("flag"))
   )
 
-  val requestSO: ServiceOutcome[RdsRequest] = Right(
-    ResponseWrapper(CommonTestData.correlationId,
+  def rdsRequest: RdsRequest =
       RdsRequest(
         Seq(
-          RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
+          RdsRequest.InputWithString("calculationID", assessmentRequestForSelfAssessment.calculationID.toString),
           RdsRequest.InputWithString("nino", assessmentRequestForSelfAssessment.nino),
           RdsRequest.InputWithString("taxYear", assessmentRequestForSelfAssessment.taxYear),
           RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
@@ -450,8 +435,6 @@ trait RdsTestData {
             )
           )
         )
-      )
-    )
   )
 
   val risks = Seq(
@@ -472,11 +455,11 @@ trait RdsTestData {
   )
 
   val assessmentReport = AssessmentReport(
-    reportId = assessmentRequestForSelfAssessment.calculationId,
+    reportID =  simpleReportID,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
     taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
-    calculationId = assessmentRequestForSelfAssessment.calculationId,
-    correlationID = "5fht738957jfjf845jgjf855"
+    calculationID = simpleCalculationID,
+    rdsCorrelationId = "5fht738957jfjf845jgjf855"
   )
 }
