@@ -18,9 +18,16 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.domain.{FraudRiskReport, FraudRiskRequest}
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.simpleFraudRiskReport
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationIDImplicit, simpleFraudRiskReport}
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait MockInsightService extends MockFactory {
 
@@ -28,9 +35,9 @@ trait MockInsightService extends MockFactory {
 
   object MockInsightService {
 
-    def assess(fraudRiskRequest: FraudRiskRequest): CallHandler[FraudRiskReport] = {
-      (mockInsightService.assess(_: FraudRiskRequest))
-        .expects(*).returns(simpleFraudRiskReport)
+    def assess(fraudRiskRequest: FraudRiskRequest): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
+      (mockInsightService.assess(_: FraudRiskRequest)(_: ExecutionContext,_: String))
+        .expects(*,*,*).returns(Future(Right(ResponseWrapper(internalCorrelationIDImplicit, simpleFraudRiskReport))))
     }
 
   }

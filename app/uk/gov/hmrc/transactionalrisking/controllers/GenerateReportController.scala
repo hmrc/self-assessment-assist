@@ -16,24 +16,26 @@
 
 package uk.gov.hmrc.transactionalrisking.controllers
 
+import akka.actor.FSM.Failure
+import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.models.auth.AffinityGroupType
 import uk.gov.hmrc.transactionalrisking.models.domain._
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, MatchingResourcesNotFoundError}
+import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, ErrorWrapper, MatchingResourcesNotFoundError, MtdError}
 import uk.gov.hmrc.transactionalrisking.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AssistReportGenerated, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ServiceOutcome}
-import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging, IdGenerator}
+import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Success, Try}
 
 class GenerateReportController @Inject()(
                                           val cc: ControllerComponents, //TODO add request parser
@@ -50,7 +52,54 @@ class GenerateReportController @Inject()(
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       implicit val correlationId: String = idGenerator.getUid
       val customerType = deriveCustomerType(request)
+      val submissionTimestamp = currentDateTime.getDateTime
+      //val calculationIDUuid = toId(calculationId)
       toId(calculationId).map { calculationIDUuid =>
+
+        val calculationInfo = getCalculationInfo(calculationIDUuid, nino)
+        val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(calculationIDUuid,
+          nino,
+          PreferredLanguage.English,
+          customerType,
+          None,
+          DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
+
+        val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
+          fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment)))
+          rdsAssessmentReportResponse <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+        } yield {
+          rdsAssessmentReportResponse.map { assessmentReportResponse: AssessmentReport =>
+            val rdsReportContent = RequestData(nino = nino, RequestBody(assessmentReportResponse.toString,
+              assessmentReportResponse.reportID.toString))
+
+            nonRepudiationService.submit(requestData = rdsReportContent,
+              submissionTimestamp,
+              notableEventType = AssistReportGenerated,
+              calculationInfo.taxYear)
+             assessmentReportResponse
+//            val jsValue = Json.toJson[AssessmentReport](assessmentReportResponse)
+//            Ok(jsValue).withApiHeaders(correlationId)
+          }
+        }
+
+         responseData.fold(
+          errorWrapper => errorHandler(errorWrapper,correlationId), report => {
+            val t = Future(Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationId))
+            t
+          }
+        ).flatten
+
+      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
+    }
+
+
+  def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = errorWrapper.error match {
+    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+    case _ => Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+  }
+
+
+     /* toId(calculationId).map { calculationIDUuid =>
         val calculationInfo = getCalculationInfo(calculationIDUuid, nino)
         val assessmentRequestForSelfAssessment = new AssessmentRequestForSelfAssessment(calculationIDUuid,
           nino,
@@ -74,7 +123,7 @@ class GenerateReportController @Inject()(
                     RequestBody(assessmentReportResponse.toString, assessmentReportResponse.reportID.toString))
                   logger.debug(s"RDS request content $rdsReportContent")
                   nonRepudiationService.submit(requestData = rdsReportContent,
-                    submissionTimestamp = currentDateTime.getDateTime,
+                    submissionTimestamp,
                     notableEventType = AssistReportGenerated,calculationInfo.taxYear)
                   //TODO:DE Need   to deal with post NRS errors here.
                   Right(ResponseWrapper(correlationId,assessmentReportResponse))
@@ -105,7 +154,8 @@ class GenerateReportController @Inject()(
 
         }.flatten
       }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))) //TODO Add RequestParser
-    }
+    */
+    //}
 
   private def deriveCustomerType(request: Request[AnyContent]) = {
     request.asInstanceOf[UserRequest[_]].userDetails.userType match {

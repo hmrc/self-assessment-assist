@@ -17,9 +17,14 @@
 package uk.gov.hmrc.transactionalrisking.services.cip
 
 import play.api.Logger
-import uk.gov.hmrc.transactionalrisking.models.domain.{FraudDecision, FraudRiskReport, FraudRiskRequest}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
+import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, FraudDecision, FraudRiskReport, FraudRiskRequest}
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 
 @Singleton
@@ -27,12 +32,19 @@ class InsightService @Inject()() {
 
   val logger: Logger = Logger("InsightService")
 
-  def assess(fraudRiskRequest: FraudRiskRequest): FraudRiskReport = {
+  def assess(fraudRiskRequest: FraudRiskRequest)(implicit ec: ExecutionContext,
+                                                 correlationId: String): Future[ServiceOutcome[FraudRiskReport]] = {
+    logger.info(s"Received request for a fraud risk report ...")
+    val fraudRiskReport = FraudRiskReport(FraudDecision.Accept, 1, Set.empty, Set.empty)
+    logger.info("... returning it.")
+    Future(Right(ResponseWrapper(correlationId, fraudRiskReport)))
+  }
+
+/*  def assess(fraudRiskRequest: FraudRiskRequest): FraudRiskReport = {
     logger.info(s"Received request for a fraud risk report ...")
     val fraudRiskReport = FraudRiskReport(FraudDecision.Accept, 1, Set.empty, Set.empty)
     logger.info("... returning it.")
     fraudRiskReport
-  }
-
+  }*/
 }
 
