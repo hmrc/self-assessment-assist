@@ -74,14 +74,11 @@ class AcknowledgeReportControllerSpec
         MockProvideRandomCorrelationId.IdGenerator
 
         val result = controller.acknowledgeReportForSelfAssessment( simpleNino, simpleCalculationID.toString, simpleRDSCorrelationID)(fakeGetRequest)
-        val retHttpResult = status( result )
-        retHttpResult shouldBe NO_CONTENT
+        status(result) shouldBe NO_CONTENT
 
-        val ct = contentType(result)
-        ct shouldBe None
+        contentType(result) shouldBe None
 
-        val xcorrelationId = header("X-CorrelationId", result)
-        xcorrelationId shouldBe Some(internalCorrelationID)
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
 
       }
 
