@@ -124,6 +124,7 @@ class AcknowledgeReportController @Inject()(
                 case ACCEPTED => {
                   logger.debug(s"$correlationID::[acknowledgeReport] rds ack response is ${responseCode}}")
 
+
                   //TODO submissionTimestamp should this be current time?
                   val submissionTimestamp = currentDateTime.getDateTime
                   val body = s"""{"reportID":"${request.feedbackID}"}"""
