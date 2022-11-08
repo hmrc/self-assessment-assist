@@ -22,7 +22,6 @@ import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
-import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.risks
 import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 
@@ -437,7 +436,7 @@ object RdsTestData {
         )
   )
 
-  val risks = Seq(
+  val risks = Vector(
     Risk(
       "Non-Business Income Source",
       "You have declared family loan as a source of your income. There have been changes to the rules around non-business sources you may declare, please check the appropriate guidance to see how this impacts you.",

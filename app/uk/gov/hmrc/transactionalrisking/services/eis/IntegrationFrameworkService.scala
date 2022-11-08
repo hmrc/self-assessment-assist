@@ -20,7 +20,6 @@ import play.api.Logger
 import uk.gov.hmrc.transactionalrisking.models.domain.CalculationInfo
 
 import java.util.UUID
-import javax.inject.Inject
 import javax.inject.{Inject, Singleton}
 
 

@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers
 
-import org.scalamock.handlers.CallHandler
+import org.scalamock.handlers.{CallHandler, CallHandler2}
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
+import uk.gov.hmrc.transactionalrisking.services.{ParseOutcome, ServiceOutcome}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationIDImplicit, simpleRDSCorrelationID, simpleNino, simpleReportID}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationIDImplicit, simpleNino, simpleRDSCorrelationID, simpleReportID}
 
 trait MockAcknowledgeRequestParser extends MockFactory {
 
@@ -31,8 +31,8 @@ trait MockAcknowledgeRequestParser extends MockFactory {
 
   object MockAcknowledgeRequestParser {
 
-    def parseRequest(rawData: AcknowledgeReportRawData): CallHandler[ServiceOutcome[AcknowledgeReportRequest]] = {
-      (mockAcknowledgeRequestParser.parseRequest(_: AcknowledgeReportRawData)(_: String)).expects(*, *).anyNumberOfTimes() returns (Right(ResponseWrapper(internalCorrelationIDImplicit, AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID))))
+    def parseRequest(rawData: AcknowledgeReportRawData): CallHandler[ParseOutcome[AcknowledgeReportRequest]] = {
+      (mockAcknowledgeRequestParser.parseRequest(_: AcknowledgeReportRawData)(_: String)).expects(*, *).anyNumberOfTimes() returns (Right(AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)))
     }
   }
 

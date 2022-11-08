@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators
 import uk.gov.hmrc.transactionalrisking.models.errors.{FormatReportIdError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleNino, simpleNinoInvalid, simpleRDSCorrelationID, simpleReportID, simpleReportaIDStrangeCharsString}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleNino, simpleNinoInvalid, simpleRDSCorrelationID, simpleReportID, simpleReportIDStrangeCharsString}
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.AcknowledgeReportValidator
 
 class AcknowledgeReportValidationSpec extends UnitSpec {
@@ -43,7 +43,7 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
 
         "an invalid reportId." in {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportaIDStrangeCharsString, simpleRDSCorrelationID)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportIDStrangeCharsString, simpleRDSCorrelationID)
 
           validator.validate(acknowledgeReportRawData) shouldBe Seq(FormatReportIdError)
         }
@@ -62,7 +62,7 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
 
         "all invalid nino, reportId, correlationId(is ignored)." in {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportaIDStrangeCharsString, simpleRDSCorrelationID)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportIDStrangeCharsString, simpleRDSCorrelationID)
 
           validator.validate(acknowledgeReportRawData) shouldBe Seq(NinoFormatError, FormatReportIdError)
         }

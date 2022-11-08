@@ -70,9 +70,9 @@ class GenerateReportControllerSpec
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit(simpleGenerateReportControllerRequest,simpleGenerateReportControllerNrsID,simpleSubmissionTimestamp,simpeNotableEventType)
-        MockNrsService.submit(generateReportRequest = simpleGenerateReportControllerRequest, generatedNrsId=simpleGenerateReportControllerNrsID,
-          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpeNotableEventType )
+        MockNrsService.submit(simpleGenerateReportControllerRequestData,simpleGenerateReportControllerNrsID,simpleSubmissionTimestamp,simpleNotableEventType)
+        MockNrsService.submit(generateReportRequest = simpleGenerateReportControllerRequestData, generatedNrsId=simpleGenerateReportControllerNrsID,
+          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpleNotableEventType )
          MockProvideRandomCorrelationId.IdGenerator
 
         val result = controller.generateReportInternal( simpleNino, simpleCalculationID.toString)(fakeGetRequest)

@@ -48,9 +48,11 @@ class GenerateReportController @Inject()(
                                           idGenerator: IdGenerator
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
-  def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] =
-    authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      implicit val correlationId: String = idGenerator.getUid
+  def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] = {
+    implicit val correlationID: String = idGenerator.getUid
+    logger.info(s"$correlationID::[generateReportInternal] Received request to generate an assessment report")
+
+    authorisedAction(nino, correlationID, nrsRequired = true).async { implicit request =>
       val customerType = deriveCustomerType(request)
       val submissionTimestamp = currentDateTime.getDateTime
       toId(calculationId).map { calculationIDUuid =>
@@ -75,18 +77,18 @@ class GenerateReportController @Inject()(
               submissionTimestamp,
               notableEventType = AssistReportGenerated,
               calculationInfo.taxYear)
-             assessmentReportResponse
+            assessmentReportResponse
           }
         }
 
-         responseData.fold(
-          errorWrapper => errorHandler(errorWrapper,correlationId), report =>
-            Future(Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationId))
-         ).flatten
+        responseData.fold(
+          errorWrapper => errorHandler(errorWrapper, correlationID), report =>
+            Future(Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationID))
+        ).flatten
 
-      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
+      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationID)))
     }
-
+  }
 
   def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = errorWrapper.error match {
     case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))

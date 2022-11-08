@@ -17,6 +17,9 @@
 package uk.gov.hmrc.transactionalrisking.services.rds.models.response
 
 import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps, unlift}
+import play.api.libs.json._
+import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport.{KeyValueWrapper, Output}
+import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport._
 import play.api.libs.json.{JsObject, JsPath, JsString, Reads, Writes}
 import NewRdsAssessmentReport.{KeyValueWrapper, Output}
 
@@ -45,37 +48,37 @@ case class NewRdsAssessmentReport(links: Seq[String],
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
       .find(_.name=="correlationID")
-      .map(_.value)
-      .getOrElse(throw new RuntimeException("No 'correlationID' present."))
+      .map( x=>Some(x.value))
+      .getOrElse(None)
   }
 
-  def feedbackId: UUID =
+  def feedbackId: Option[UUID] =
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
       .find(_.name=="feedbackID")
       .map(_.value)
-      .map(UUID.fromString)
-      .getOrElse(throw new RuntimeException("No 'feedbackID' present."))
+      .map( x=>Some(UUID.fromString(x)))
+      .getOrElse(None)
 
 
-  def taxYear: Int =
+  def taxYear: Option[Int] =
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
       .find(_.name == "taxYear")
       .map(_.value)
-      .map(_.toInt)
-      .getOrElse(throw new RuntimeException("No 'taxYear' present."))
+      .map(x=>Some(x.toInt))
+      .getOrElse(None)
 
-  def responseCode: Int =
+  def responseCode: Option[Int] =
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
       .find(_.name == "responseCode")
       .map(_.value)
-      .map(_.toInt)
-      .getOrElse(throw new RuntimeException("No 'responseCode' present."))
+      .map(x=>Some(x.toInt))
+      .getOrElse(None)
 
 }
 

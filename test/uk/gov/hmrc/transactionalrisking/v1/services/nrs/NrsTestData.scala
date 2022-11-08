@@ -21,7 +21,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, User}
 import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, Credentials, ItmpAddress, ItmpName, LoginTimes, MdtpInformation, Name}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{IdentityData, Metadata, NrsSubmission, SearchKeys}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpeTaxYear, simpleReportID}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleTaxYear, simpleReportID}
 
 import java.time.{Instant, LocalDate}
 
@@ -112,7 +112,7 @@ object MetadataTestData {
        |    },
        |    "searchKeys": {
        |      "nino": "AA000000B",
-       |      "taxYear": "${simpeTaxYear}",
+       |      "taxYear": "${simpleTaxYear}",
        |      "reportId": "${simpleReportID.toString}"
        |    }
        |}
@@ -141,7 +141,7 @@ object MetadataTestData {
     searchKeys =
       SearchKeys(
         nino = "AA000000B",
-        taxYear = simpeTaxYear,
+        taxYear = simpleTaxYear,
         reportId = simpleReportID.toString
       )
   )

@@ -34,11 +34,8 @@ trait MockIntegrationFrameworkService extends MockFactory {
 
     def getCalculationInfo(id: UUID, nino: String): CallHandler[Option[CalculationInfo]] = {
 
-            (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String))
-              .expects( *, * /*simpleCalculationId, simpleNino*/ ).anyNumberOfTimes() returns (Some(CalculationInfo(simpleCalculationID, simpleNino, "2021-22")))
-
-//      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String))
-//        .expects(*, *)
+      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String))
+        .expects(*, * /*simpleCalculationId, simpleNino*/).anyNumberOfTimes() returns (Some(CalculationInfo(simpleCalculationID, simpleNino, "2021-22")))
 
     }
   }

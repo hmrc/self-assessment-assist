@@ -25,7 +25,6 @@ import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController
 import uk.gov.hmrc.transactionalrisking.models.auth.{AffinityGroupType, AuthOutcome, UserDetails}
-import uk.gov.hmrc.transactionalrisking.models.errors.ForbiddenDownstreamError
 import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ForbiddenDownstreamError, LegacyUnauthorisedError, MtdError}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.IdentityData
 import uk.gov.hmrc.transactionalrisking.utils.Logging
@@ -40,22 +39,26 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     override def authConnector: AuthConnector = connector
   }
 
-  def authorised(predicate: Predicate, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
-    if(!nrsRequired){
-      logger.info(s" Performing authorisation check ")
+  def authorised(predicate: Predicate, correlationID: String, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
+    logger.info(s"correlationID::[authorised]Performing authorisation check")
+
+    if (!nrsRequired) {
+      logger.info(s"correlationID::[authorised]Performing nrs not required")
+
       //TODO revisit below as this doesn't look right based on below doc
       //https://confluence.tools.tax.service.gov.uk/display/GG/Predicate+Reference#PredicateReference-EnrolmentwithagentauthorisationbasedonNINO
       //affinityGroup = "Individual" or "Organisation" is not reliable
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
-        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.individual, enrolments)
-        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.organisation, enrolments)
-        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.agent, enrolments)
+        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.individual, enrolments, correlationID)
+        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.organisation, enrolments, correlationID)
+        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.agent, enrolments, correlationID)
         case _ =>
-          logger.warn(s"[AuthorisationService] [authoriseAsClient] Authorisation failed due to unsupported affinity group.")
+          logger.warn(s"correlationID::[authorised]Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
-      }recoverWith unauthorisedError
+      } recoverWith unauthorisedError(correlationID)
     } else {
-      logger.info(s" authorisation NRS required else part")
+      logger.info(s"correlationID::[authorised]authorisation NRS required.")
+
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
         and internalId and externalId and agentCode and credentials
         and confidenceLevel and nino and saUtr and name and dateOfBirth
@@ -69,6 +72,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
           ~ mdtpInfo ~ credStrength ~ logins
           ~ itmpName ~ itmpAddress
           if affGroup.contains(AffinityGroup.Organisation) || affGroup.contains(AffinityGroup.Individual) || affGroup.contains(AffinityGroup.Agent) =>
+          logger.info(s"correlationID::[authorised]authorisation is ok create userDetails .")
 
           val emptyItmpName: ItmpName = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
@@ -78,26 +82,29 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
               inId, exId, agCode, creds,
               confLevel, ni, saRef, nme, dob,
               eml, agInfo, groupId,
-              credRole, mdtpInfo, itmpName.getOrElse(emptyItmpName), itmpDateOfBirth=None,
+              credRole, mdtpInfo, itmpName.getOrElse(emptyItmpName), itmpDateOfBirth = None,
               itmpAddress.getOrElse(emptyItmpAddress), affGroup, credStrength, logins
             )
 
-          createUserDetailsWithLogging(affinityGroup = affGroup.get.toString, enrolments, Some(identityData))
+          createUserDetailsWithLogging(affinityGroup = affGroup.get.toString, enrolments, correlationID, Some(identityData))
         case _ =>
           logger.warn(s"[EnrolmentsAuthService] [authorised with nrsRequired = true] Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
 
-      }recoverWith unauthorisedError
+      } recoverWith unauthorisedError(correlationID)
     }
 
   }
 
   private def createUserDetailsWithLogging(affinityGroup: String,
                                            enrolments: Enrolments,
+                                           correlationID: String,
                                            identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
     //TODO Fixme clientReference is coming as none in logs
+    logger.info(s"$correlationID::[createUserDetailsWithLogging] Authorisation succeeded")
+
     val clientReference = getClientReferenceFromEnrolments(enrolments)
-    logger.info(s"[EnrolmentsAuthService] [authoriseAsClient] Authorisation succeeded as " +
+    logger.debug(s"$correlationID::[createUserDetailsWithLogging] Authorisation succeeded as " +
       s"fully-authorised organisation with reference $clientReference.")
 
     val userDetails = UserDetails(
@@ -108,8 +115,10 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     )
 
     if (affinityGroup != AffinityGroupType.agent) {
+      logger.info(s"$correlationID::[createUserDetailsWithLogging] Agent not part of affinityGroup")
       Future.successful(Right(userDetails))
     } else {
+      logger.info(s"$correlationID::[createUserDetailsWithLogging] Agent is part of affinityGroup")
       Future.successful(Right(userDetails.copy(agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments))))
     }
   }
@@ -125,18 +134,18 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     .flatMap(_.getIdentifier("AgentReferenceNumber"))
     .map(_.value)
 
-  private def unauthorisedError: PartialFunction[Throwable, Future[AuthOutcome]] = {
+  private def unauthorisedError(correlationID: String): PartialFunction[Throwable, Future[AuthOutcome]] = {
     case _: InsufficientEnrolments =>
-      logger.warn(s"[AuthorisationService] [unauthorisedError] Client authorisation failed due to unsupported insufficient enrolments.")
+      logger.warn(s"$correlationID::[unauthorisedError] Client authorisation failed due to unsupported insufficient enrolments.")
       Future.successful(Left(LegacyUnauthorisedError))
     case _: InsufficientConfidenceLevel =>
-      logger.warn(s"[AuthorisationService] [unauthorisedError] Client authorisation failed due to unsupported insufficient confidenceLevels.")
+      logger.warn(s"$correlationID::[unauthorisedError] Client authorisation failed due to unsupported insufficient confidenceLevels.")
       Future.successful(Left(LegacyUnauthorisedError))
     case _: JsResultException =>
-      logger.warn(s"[AuthorisationService] [unauthorisedError] - Did not receive minimum data from Auth required for NRS Submission")
+      logger.warn(s"$correlationID::[unauthorisedError] - Did not receive minimum data from Auth required for NRS Submission")
       Future.successful(Left(ForbiddenDownstreamError))
     case exception@_ =>
-      logger.warn(s"[AuthorisationService] [unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
+      logger.warn(s"$correlationID::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
       Future.successful(Left(DownstreamError))
   }
 }

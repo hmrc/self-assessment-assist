@@ -48,7 +48,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns no errors" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => Nil
 
-        parser.parseRequest(Raw(nino)) shouldBe Right(ResponseWrapper( correlationId, Request(nino)))
+        parser.parseRequest(Raw(nino)) shouldBe Right(Request(nino))
       }
     }
 
