@@ -18,9 +18,10 @@ package uk.gov.hmrc.transactionalrisking.services.eis
 
 import play.api.Logger
 import uk.gov.hmrc.transactionalrisking.models.domain.CalculationInfo
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 
 import java.util.UUID
-import javax.inject.Inject
 import javax.inject.{Inject, Singleton}
 
 
@@ -42,9 +43,9 @@ class IntegrationFrameworkService @Inject()(){
 
   val logger: Logger = Logger("IntegrationFrameworkService")
 //TODO fix me actual integration and stub pending
-  def getCalculationInfo(id: UUID, nino: String): Option[CalculationInfo] = {
+  def getCalculationInfo(id: UUID, nino: String, correlationID:String): ServiceOutcome[CalculationInfo] = {
     logger.info(s"Attempting to get the calculation info ... ")
-    val calculationInfo = Some(CalculationInfo(id, nino, "2021-22"))
+    val calculationInfo = Right( ResponseWrapper(correlationID,CalculationInfo(id, nino, "2021-22")))
     logger.info("... recevied calculation info.")
     calculationInfo
   }

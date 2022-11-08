@@ -20,6 +20,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, FormatReportIdError, ResourceNotFoundError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
@@ -41,35 +42,71 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                              ec: ExecutionContext,
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
-                             correlationId: String): Future[ServiceOutcome[AssessmentReport]] = {
-    val rdsRequestSO:ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
+                             correlationID: String): Future[ServiceOutcome[AssessmentReport]] = {
+    logger.info(s"$correlationID::[submit]submit request for report}")
+
+    val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
     rdsRequestSO match {
-      case Right(ResponseWrapper(correlationId, rdsRequest)) =>
-        val submit = connector.submit( rdsRequest )
+      case Right(ResponseWrapper(correlationIdResponse, rdsRequest)) =>
+        val submit = connector.submit(rdsRequest)
         val ret = submit.map {
-            _ match {
-              case Right(ResponseWrapper(correlationId, rdsResponse)) =>
-                val assessmentReport = toAssessmentReport(rdsResponse, request)
-                logger.info("... RDS request successful, returning it.")
-                Right(ResponseWrapper(correlationId, assessmentReport))
-              //TODO:DE deal with Errors.
-              case Left(errorWrapper) => Left(errorWrapper)
+          _ match {
+            case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) => {
+              val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationID)
+              assessmentReportSO match {
+
+                case Right(ResponseWrapper(correlationIdResponse, assessmentReport)) =>
+                  logger.info(s"$correlationID::[submit]submit request for report successful returning it")
+                  Right(ResponseWrapper(correlationID, assessmentReport))
+
+                case Left(errorWrapper) =>
+                  logger.warn(s"$correlationID::[RdsService][submit]submit request for report error from service $errorWrapper.error")
+                  Left(errorWrapper)
+              }
             }
+
+            //TODO:DE deal with Errors.
+            case Left(errorWrapper) =>
+              logger.warn(s"$correlationID::[RdsService][submit]Unable to do generate report $errorWrapper.error")
+              Left(errorWrapper)
           }
+        }
         ret
-      case Left(er) =>
-        Future(Left(er):ServiceOutcome[AssessmentReport])
+      case Left(errorWrapper) =>
+        logger.warn(s"$correlationID::[RdsService][submit]Unable to generate report request $errorWrapper.error")
+        Future(Left(errorWrapper): ServiceOutcome[AssessmentReport])
     }
   }
 
-  private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment) = {
-    AssessmentReport(reportID = report.feedbackId,
-      risks = risks(report, request.preferredLanguage), nino = request.nino,
-      taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
-      calculationID = request.calculationID,report.rdsCorrelationId)
+  private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationID: String): ServiceOutcome[AssessmentReport] = {
+    logger.info(s"$correlationID::[toAssessmentReport]Generated assessment report")
+
+    val feedbackIDOption = report.feedbackId
+    feedbackIDOption match {
+      case Some(reportID) =>
+        val rdsCorrelationIdOption = report.rdsCorrelationId
+        rdsCorrelationIdOption match {
+          case Some(rdsCorrelationID) =>
+            logger.info(s"$correlationID::[toAssessmentReport]Successfully generated assessment report")
+            Right(ResponseWrapper(correlationID,
+              AssessmentReport(reportID = reportID,
+                risks = risks(report, request.preferredLanguage, correlationID), nino = request.nino,
+                taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
+                calculationID = request.calculationID, rdsCorrelationID)))
+
+          case None =>
+            logger.warn(s"$correlationID::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
+            Left(ErrorWrapper(correlationID, ResourceNotFoundError)): ServiceOutcome[AssessmentReport]
+        }
+
+      case None =>
+        logger.warn(s"$correlationID::[RdsService][toAssessmentReport]Unable to find reportId")
+        Left(ErrorWrapper(correlationID, FormatReportIdError)): ServiceOutcome[AssessmentReport]
+    }
   }
 
-  private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
+  private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationID: String): Seq[Risk] = {
+    logger.info(s"$correlationID::[risks]Create risk for $preferredLanguage.Value")
     report.outputs.collect {
       case elm: NewRdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
     }.flatMap(_.value).collect {
@@ -92,8 +129,10 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
-    logger.info(s"$correlationId :: rdsservice processing generateRdsAssessmentRequest")
-    Right(ResponseWrapper(correlationId,RdsRequest(
+    logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
+
+    //TODO Errors need to be dealt looked at.
+    Right(ResponseWrapper(correlationId, RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationID", request.calculationID.toString),
         RdsRequest.InputWithString("nino", request.nino),
@@ -125,24 +164,26 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
       )
     )
     )
-    ): ServiceOutcome[RdsRequest]
+    )
   }
 
   def acknowledge(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
                                                     ec: ExecutionContext,
                                                     //logContext: EndpointLogContext,
                                                     userRequest: UserRequest[_],
-                                                    correlationId: String): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] = {
-    logger.info(s"$correlationId :: rdsservice processing acknowledge")
+                                                    correlationId: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+    logger.info(s"$correlationId::[acknowledge]acknowledge")
     connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
   }
 
   private def generateRdsAcknowledgementRequest(request: AcknowledgeReportRequest): RdsRequest
-  = RdsRequest(
-    Seq(
-      RdsRequest.InputWithString("feedbackID", request.feedbackID),
-      RdsRequest.InputWithString("nino", request.nino),
-      RdsRequest.InputWithString("correlationID", request.rdsCorrelationID)
+  = {
+    RdsRequest(
+      Seq(
+        RdsRequest.InputWithString("feedbackID", request.feedbackID),
+        RdsRequest.InputWithString("nino", request.nino),
+        RdsRequest.InputWithString("correlationID", request.rdsCorrelationID)
+      )
     )
-  )
+  }
 }

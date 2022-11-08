@@ -41,7 +41,7 @@ trait MockRdsService extends MockFactory {
                fraudRiskReport: FraudRiskReport,
                origin: Origin): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
       (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(internalCorrelationIDImplicit, simpleAssementReport) )))
+        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(internalCorrelationIDImplicit, simpleAssessmentReport) )))
     }
 
 //

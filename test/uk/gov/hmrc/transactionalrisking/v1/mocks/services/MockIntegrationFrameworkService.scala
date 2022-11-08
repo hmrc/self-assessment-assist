@@ -19,6 +19,8 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.transactionalrisking.models.domain._
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
@@ -32,13 +34,10 @@ trait MockIntegrationFrameworkService extends MockFactory {
 
   object MockIntegrationFrameworkService {
 
-    def getCalculationInfo(id: UUID, nino: String): CallHandler[Option[CalculationInfo]] = {
+    def getCalculationInfo(id: UUID, nino: String, correlationID: String): CallHandler[ServiceOutcome[CalculationInfo]] = {
 
-            (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String))
-              .expects( *, * /*simpleCalculationId, simpleNino*/ ).anyNumberOfTimes() returns (Some(CalculationInfo(simpleCalculationID, simpleNino, "2021-22")))
-
-//      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String))
-//        .expects(*, *)
+      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String, _: String))
+        .expects(*, *, * /*simpleCalculationId, simpleNino*/).anyNumberOfTimes() returns (Right(ResponseWrapper(correlationID, CalculationInfo(simpleCalculationID, simpleNino, "2021-22"))))
 
     }
   }

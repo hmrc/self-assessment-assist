@@ -37,18 +37,18 @@ trait MockNrsService extends MockFactory {
 
     def buildNrsSubmission(selfAssessmentSubmission: RequestData,
                            submissionTimestamp: OffsetDateTime,
-                           request: UserRequest[_], notableEventType: NotableEventType): CallHandler[NrsSubmission] = {
+                           request: UserRequest[_], notableEventType: NotableEventType, corrrelationID:String): CallHandler[NrsSubmission] = {
       (mockNrsService.buildNrsSubmission(_: RequestData,
         _: OffsetDateTime,
-        _: UserRequest[_], _: NotableEventType,_:String))
-        .expects(*, *, *, *,*).anyNumberOfTimes()
+        _: UserRequest[_], _: NotableEventType,_:String, _:String))
+        .expects(*, *, *, *, *, *).anyNumberOfTimes()
     }
 
     def submit(generateReportRequest: RequestData, generatedNrsId: String, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType):
     CallHandler[Future[Option[NrsResponse]]] = {
       (mockNrsService.submit(_: RequestData, _: OffsetDateTime, _: NotableEventType,_:String)
       (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
-        .expects( *, *, simpeNotableEventType, *, *, *, *, *)
+        .expects( *, *, simpleNotableEventType, *, *, *, *, *)
         .returns( Future(Some(simpleNRSResponseReportSubmission) )).anyNumberOfTimes()
     }
 
@@ -56,7 +56,7 @@ trait MockNrsService extends MockFactory {
     CallHandler[Future[Option[NrsResponse]]] = {
       (mockNrsService.submit(_: RequestData, _: OffsetDateTime, _: NotableEventType, _: String)
       (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
-        .expects(*, *, simpeAcknowledgedNotableEventType, *, *, *, *, *)
+        .expects(*, *, simpleAcknowledgedNotableEventType, *, *, *, *, *)
         .returns(Future(Some(simpleNRSResponseAcknowledgeSubmission))).anyNumberOfTimes()
     }
 

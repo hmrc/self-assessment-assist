@@ -18,9 +18,8 @@ package uk.gov.hmrc.transactionalrisking.controllers.requestParsers
 
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.AcknowledgeReportValidator
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AcknowledgeReportRequest}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
 
-import javax.inject.Inject
 import javax.inject.{Inject, Singleton}
 
 @Singleton

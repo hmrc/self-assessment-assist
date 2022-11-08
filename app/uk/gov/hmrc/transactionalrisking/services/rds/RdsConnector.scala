@@ -34,38 +34,47 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client is recommended by HMRC
                               //val httpClient: HttpClient,
-                             appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationId:String) extends Logging{
+                             appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID:String) extends Logging{
 
   private def baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
 
 
   def submit(request: RdsRequest)(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-    logger.debug(s"$correlationId :: RDS request content ${request}")
+    logger.info(s"$correlationID::[submit]submit the report")
+
     wsClient
       .url(baseUrlForRdsAssessmentsSubmit)
       .post(Json.toJson(request))
       .map(response =>
         response.status match {
-          case Status.OK => Right(ResponseWrapper(correlationId, response.json.validate[NewRdsAssessmentReport].get))
-          case Status.NOT_FOUND => Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError))
-          case unexpectedStatus => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+          case Status.OK =>
+            logger.info(s"$correlationID::[submit]Successfully submitted the report")
+            Right(ResponseWrapper(correlationID, response.json.validate[NewRdsAssessmentReport].get))
+          case Status.NOT_FOUND =>
+            logger.warn(s"$correlationID::[submit]Unable to submit the report")
+            Left(ErrorWrapper(correlationID, MatchingResourcesNotFoundError))
+          case unexpectedStatus =>
+            logger.error(s"$correlationID::[submit]Unable to submit the report due to unexpected status code returned")
+            Left(ErrorWrapper(correlationID, ServiceUnavailableError))
         }
       )
   }
 
 
   def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
-                                                  ec: ExecutionContext,
-                                                  correlationId:String
-                                          ): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] =
+                                          ec: ExecutionContext,
+                                          correlationID:String
+                                          ): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] = {
+    logger.info(s"$correlationID::[acknowledgeRds]acknowledge the report")
+
     wsClient
       .url(baseUrlToAcknowledgeRdsAssessments)
       .post(Json.toJson(request))
       .map(response =>
         response.status match {
           case Status.CREATED => {
-            logger.info(s"... submitting acknowledgement to RDS success")
+            logger.debug(s"$correlationID::[acknowledgeRds] submitting acknowledgement to RDS success")
             //no need to validate as we are interested only in OK response.if validation is required then
             // we need separate class, as the structure is different, ignore response as only report id needs to go into the body of nrs
             //            response.json.validate[RdsAcknowledgementResponse].getOrElse(throw new RuntimeException("failed to validate "))
@@ -73,17 +82,20 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
 
             val ret = response.json.validate[NewRdsAssessmentReport] match {
               case  JsSuccess(newRdsAssessmentReport, _)  =>
-                Right( ResponseWrapper(correlationId, newRdsAssessmentReport ) )
+                logger.info(s"$correlationID::[acknowledgeRds]the results return are ok")
+                Right( ResponseWrapper(correlationID, newRdsAssessmentReport ) )
               case JsError(e) =>
-                Left (ErrorWrapper (correlationId, DownstreamError) )
+                logger.warn(s"$correlationID::[acknowledgeRds]Unable to validate the returned results")
+                Left (ErrorWrapper (correlationID, DownstreamError) )
             }
             ret
           }
 
-          case _ => {
-            logger.error(s"... error during rds acknowledgement ")
-            Left(ErrorWrapper(correlationId, DownstreamError ))
+          case _@errorCode => {
+            logger.error(s"[acknowledgeRds]error during rds acknowledgement $errorCode")
+            Left(ErrorWrapper(correlationID, DownstreamError ))
           }
         }
       )
+  }
 }
