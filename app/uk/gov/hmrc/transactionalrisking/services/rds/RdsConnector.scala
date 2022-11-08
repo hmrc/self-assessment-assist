@@ -64,26 +64,25 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
       .post(Json.toJson(request))
       .map(response =>
         response.status match {
-          case Status.CREATED => {
+          case Status.CREATED =>
             logger.info(s"... submitting acknowledgement to RDS success")
             //no need to validate as we are interested only in OK response.if validation is required then
             // we need separate class, as the structure is different, ignore response as only report id needs to go into the body of nrs
             //            response.json.validate[RdsAcknowledgementResponse].getOrElse(throw new RuntimeException("failed to validate "))
             //Right(ResponseWrapper( correlationId, AcknowledgeReport( NO_CONTENT, 2022 ) ) )
 
-            val ret = response.json.validate[NewRdsAssessmentReport] match {
+            response.json.validate[NewRdsAssessmentReport] match {
               case  JsSuccess(newRdsAssessmentReport, _)  =>
                 Right( ResponseWrapper(correlationId, newRdsAssessmentReport ) )
               case JsError(e) =>
+                logger.error(s"response parsing failed with $e")
                 Left (ErrorWrapper (correlationId, DownstreamError) )
             }
-            ret
-          }
 
-          case _ => {
+          case _ =>
             logger.error(s"... error during rds acknowledgement ")
             Left(ErrorWrapper(correlationId, DownstreamError ))
-          }
+
         }
       )
 }

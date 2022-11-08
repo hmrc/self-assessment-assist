@@ -21,5 +21,5 @@ import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 
 package object services {
   type ServiceOutcome[Resp] = Either[ErrorWrapper, ResponseWrapper[Resp]]
-  type ParseOutcome[Resp] = Either[ErrorWrapper, ResponseWrapper[Resp]]
+  type ParseOutcome[A] = Either[ErrorWrapper, A]
 }

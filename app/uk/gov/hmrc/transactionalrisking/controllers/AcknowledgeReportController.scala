@@ -17,12 +17,13 @@
 package uk.gov.hmrc.transactionalrisking.controllers
 
 
+import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
 import uk.gov.hmrc.transactionalrisking.models.domain.{DesTaxYear, Internal, Origin}
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, ServiceUnavailableError}
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, MatchingResourcesNotFoundError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
@@ -50,6 +51,25 @@ class AcknowledgeReportController @Inject()(
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       implicit val correlationId: String = idGenerator.getUid
       logger.info(s"Received request to acknowledge assessment report")
+
+//      val result = for {
+//        parsedRequest <- EitherT.fromEither[Future](requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
+//        serviceResponse <- EitherT(acknowledgeReport(parsedRequest, Internal))
+//      } yield {
+//        serviceResponse.map { statusCode =>
+//          statusCode match {
+//            case OK => Future(NoContent.withApiHeaders(correlationId))
+//            case NO_CONTENT => Future(NoContent.withApiHeaders(correlationId)) //TODO why this case?
+//            case _ => Future(BadRequest(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+//          }
+//        }
+//      }
+//
+//      result.fold(
+//        errorWrapper => errorHandler(errorWrapper,correlationId),
+//        responseWrapper => responseWrapper.responseData
+//      ).flatten
+
 
       val parsedRequest: ParseOutcome[AcknowledgeReportRequest] = requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId))
 
@@ -93,6 +113,10 @@ class AcknowledgeReportController @Inject()(
       response
     }
 
+  def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = errorWrapper.error match {
+    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+    case _ => Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+  }
 
   private def acknowledgeReport(request: AcknowledgeReportRequest, origin: Origin)(implicit hc: HeaderCarrier,
                                                                                    ec: ExecutionContext,
@@ -102,6 +126,13 @@ class AcknowledgeReportController @Inject()(
     logger.info(s"$correlationId Received request to acknowledge assessment report for Self Assessment [${request.feedbackID}]")
     //    doImplicitAuditing()
     //    auditRequestToAcknowledge(request)
+
+//    for{
+//      ackResponse <- EitherT(rdsService.acknowledge(request))
+//
+//    }yield {
+//
+//    }
 
     Future {
       val ret: Future[ServiceOutcome[Int]] = rdsService.acknowledge(request).flatMap {

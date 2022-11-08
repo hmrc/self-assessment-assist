@@ -39,12 +39,5 @@ class InsightService @Inject()() {
     logger.info("... returning it.")
     Future(Right(ResponseWrapper(correlationId, fraudRiskReport)))
   }
-
-/*  def assess(fraudRiskRequest: FraudRiskRequest): FraudRiskReport = {
-    logger.info(s"Received request for a fraud risk report ...")
-    val fraudRiskReport = FraudRiskReport(FraudDecision.Accept, 1, Set.empty, Set.empty)
-    logger.info("... returning it.")
-    fraudRiskReport
-  }*/
 }
 

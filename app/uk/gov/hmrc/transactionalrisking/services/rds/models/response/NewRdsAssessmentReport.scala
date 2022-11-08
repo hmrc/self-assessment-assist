@@ -30,16 +30,17 @@ case class NewRdsAssessmentReport(links: Seq[String],
                                   outputs: Seq[Output]
                                  ) {
 
-  def calculationID: UUID =
-    outputs
-      .filter(_.isInstanceOf[KeyValueWrapper])
-      .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="calculationID")
-      .map(_.value)
-      .map(UUID.fromString)
-      .getOrElse(throw new RuntimeException("No 'calculationID' present."))
+  //TODO fix me we need to read calculationid and compare it with the one we passed it.
+//  def calculationID: Option[UUID] =
+//    outputs
+//      .filter(_.isInstanceOf[KeyValueWrapper])
+//      .map(_.asInstanceOf[KeyValueWrapper])
+//      .find(_.name=="calculationID")
+//      .map(_.value)
+//      .map(x=>Some(UUID.fromString(x)))
+//      .getOrElse(None)
 
-  def rdsCorrelationId: String = {
+  def rdsCorrelationId: Option[String] = {
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
