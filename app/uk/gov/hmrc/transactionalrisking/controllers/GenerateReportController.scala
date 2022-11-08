@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.transactionalrisking.controllers
 
-import akka.actor.FSM.Failure
 import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
@@ -35,7 +34,7 @@ import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Log
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success, Try}
+import scala.util.Try
 
 class GenerateReportController @Inject()(
                                           val cc: ControllerComponents, //TODO add request parser
@@ -49,25 +48,27 @@ class GenerateReportController @Inject()(
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] = {
+
     implicit val correlationID: String = idGenerator.getUid
     logger.info(s"$correlationID::[generateReportInternal] Received request to generate an assessment report")
 
     authorisedAction(nino, correlationID, nrsRequired = true).async { implicit request =>
       val customerType = deriveCustomerType(request)
       val submissionTimestamp = currentDateTime.getDateTime
+
       toId(calculationId).map { calculationIDUuid =>
 
-        val calculationInfo = getCalculationInfo(calculationIDUuid, nino)
-        val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(calculationIDUuid,
-          nino,
-          PreferredLanguage.English,
-          customerType,
-          None,
-          DesTaxYear.fromMtd(calculationInfo.taxYear).toString)
-
         val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
-          fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment)))
-          rdsAssessmentReportResponse <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+          calculationInfo                     <- EitherT(getCalculationInfo(calculationIDUuid, nino))
+          assessmentRequestForSelfAssessment  = AssessmentRequestForSelfAssessment(calculationIDUuid,
+                                                nino,
+                                                PreferredLanguage.English,
+                                                customerType,
+                                                None,
+                                                DesTaxYear.fromMtd(calculationInfo.responseData.taxYear).toString)
+
+          fraudRiskReport                     <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment)))
+          rdsAssessmentReportResponse         <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
         } yield {
           rdsAssessmentReportResponse.map { assessmentReportResponse: AssessmentReport =>
             val rdsReportContent = RequestData(nino = nino, RequestBody(assessmentReportResponse.toString,
@@ -76,7 +77,7 @@ class GenerateReportController @Inject()(
             nonRepudiationService.submit(requestData = rdsReportContent,
               submissionTimestamp,
               notableEventType = AssistReportGenerated,
-              calculationInfo.taxYear)
+              assessmentReportResponse.taxYear)
             assessmentReportResponse
           }
         }
@@ -117,8 +118,10 @@ class GenerateReportController @Inject()(
   private def toId(rawId: String): Option[UUID] =
     Try(UUID.fromString(rawId)).toOption
 
-  private def getCalculationInfo(id: UUID, nino: String): CalculationInfo =
-    integrationFrameworkService.getCalculationInfo(id, nino)
-      .getOrElse(throw new RuntimeException(s"Unknown calculation for id [$id] and nino [$nino]"))
+  private def getCalculationInfo(id: UUID, nino: String)(implicit correlationId:String): Future[ServiceOutcome[CalculationInfo]] = {
+    for{
+      calculationInfo <- integrationFrameworkService.getCalculationInfo(id, nino)
+    } yield calculationInfo
+  }
 
 }
