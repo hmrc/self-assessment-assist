@@ -23,7 +23,7 @@ import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
 import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, DesTaxYear, Internal, Origin}
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, MatchingResourcesNotFoundError, ServiceUnavailableError}
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, FormatReportIdError, MatchingResourcesNotFoundError, NinoFormatError, ResourceNotFoundError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
@@ -97,6 +97,9 @@ class AcknowledgeReportController @Inject()(
 
   def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = errorWrapper.error match {
     case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+    case ResourceNotFoundError => Future(NotFound(Json.toJson(ResourceNotFoundError)).withApiHeaders(correlationId))
+    case FormatReportIdError => Future(BadRequest(Json.toJson(FormatReportIdError)).withApiHeaders(correlationId))
+    case NinoFormatError => Future(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
     case _ => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
   }
 }
