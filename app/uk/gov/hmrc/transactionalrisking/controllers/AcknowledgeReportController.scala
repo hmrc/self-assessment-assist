@@ -22,7 +22,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.transactionalrisking.models.domain.{DesTaxYear, Internal, Origin}
+import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, DesTaxYear, Internal, Origin}
 import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, MatchingResourcesNotFoundError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
@@ -58,15 +58,15 @@ class AcknowledgeReportController @Inject()(
 //      } yield {
 //        serviceResponse.map { statusCode =>
 //          statusCode match {
-//            case OK => Future(NoContent.withApiHeaders(correlationId))
-//            case NO_CONTENT => Future(NoContent.withApiHeaders(correlationId)) //TODO why this case?
-//            case _ => Future(BadRequest(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+//            case OK => Future(NoContent.withApiHeaders(correlationID))
+//            case NO_CONTENT => Future(NoContent.withApiHeaders(correlationID)) //TODO why this case?
+//            case _ => Future(BadRequest(Json.toJson(DownstreamError)).withApiHeaders(correlationID))
 //          }
 //        }
 //      }
 //
 //      result.fold(
-//        errorWrapper => errorHandler(errorWrapper,correlationId),
+//        errorWrapper => errorHandler(errorWrapper,correlationID),
 //        responseWrapper => responseWrapper.responseData
 //      ).flatten
 
@@ -131,18 +131,50 @@ class AcknowledgeReportController @Inject()(
                                                                                    ec: ExecutionContext,
                                                                                    //  logContext: EndpointLogContext,
                                                                                    userRequest: UserRequest[_],
-                                                                                   correlationID: String): Future[ServiceOutcome[Int]] = {
+                                                                                   correlationID: String) = {
     logger.info(s"$correlationID::[acknowledgeReport] Received request to acknowledge assessment report for Self Assessment [${request.feedbackID}]")
     //    doImplicitAuditing()
     //    auditRequestToAcknowledge(request)
 
-//    for{
+//    val submissionTimestamp = currentDateTime.getDateTime
+//    val body = s"""{"reportID":"${request.feedbackID}"}"""
+//    val result: EitherT[Future, ErrorWrapper, Future[ServiceOutcome[Int]]] = for{
 //      ackResponse <- EitherT(rdsService.acknowledge(request))
-//
+//      acknowledgeReport = ackResponse.responseData
 //    }yield {
+//      acknowledgeReport.responseCode match {
+//        case code@Some(ACCEPTED) =>
+//          logger.debug(s"$correlationID::[acknowledgeReport] rds ack response code is ${code.value}}")
+//          acknowledgeReport.taxYear match {
+//            case Some(taxYear) =>
+//              val taxYearFromResponse: String = DesTaxYear.fromDesIntToString(taxYear)
+//              val reportAcknowledgementContent = RequestData(request.nino, RequestBody(body, reportId = request.feedbackID))
+//
+//              logger.debug(s"$correlationID::[acknowledgeReport] ... submitting acknowledgement to NRS")
+//              //Submit asynchronously to NRS
+//              nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged, taxYearFromResponse)
+//              //TODO confirm documentation if nrs failure needs to handled/audited?
+//
+//              logger.info(s"$correlationID::[acknowledgeReport] ... report submitted to NRS")
+//              Future(Right(ResponseWrapper(correlationID, NO_CONTENT)))
+//          }
+//        case code@Some(NO_CONTENT) =>
+//          logger.warn(s"$correlationID::[acknowledgeReport] Place Holder: rds ack response code is ${code.value}")
+//          Future(Right(ResponseWrapper(correlationID, NO_CONTENT)))
+//
+//        case code@Some(BAD_REQUEST) =>
+//          logger.warn(s"$correlationID::[acknowledgeReport] rds ack response code is ${code.value}")
+//          Future(Left(ErrorWrapper(correlationID, DownstreamError)): ServiceOutcome[Int])
+//
+//        case None =>
+//          logger.warn(s"$correlationID::[acknowledgeReport] rds ack response code is missing")
+//          Future(Left(ErrorWrapper(correlationID, DownstreamError)): ServiceOutcome[Int])
+//      }
 //
 //    }
-
+//
+//    result.fold(
+//      errorWrapper => errorHandler(errorWrapper, correlationID), response => response).flatten
     Future {
       val ret: Future[ServiceOutcome[Int]] = rdsService.acknowledge(request).flatMap {
         acknowledgeReportSO: ServiceOutcome[NewRdsAssessmentReport] =>
