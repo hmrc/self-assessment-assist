@@ -23,25 +23,27 @@ import uk.gov.hmrc.transactionalrisking.models.request.RawData
 import uk.gov.hmrc.transactionalrisking.services.ParseOutcome
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 
+import scala.concurrent.{ExecutionContext, Future}
+
 trait RequestParser[Raw <: RawData, Request] extends Logging {
   val validator: Validator[Raw]
 
   protected def requestFor(data: Raw): Request
 
-  def parseRequest(data: Raw)(implicit correlationID: String): ParseOutcome[Request] = {
+  def parseRequest(data: Raw)(implicit ec:ExecutionContext,correlationID: String): Future[ParseOutcome[Request]] = {
     validator.validate(data) match {
       case Nil =>
         logger.info(message = s"$correlationID::[RequestParser][parseRequest]" +
           s"Validation successful for the request")
-        Right(requestFor(data))
+        Future(Right(requestFor(data)))
       case err :: Nil =>
         logger.error(message = s"$correlationID::[RequestParser][parseRequest]" +
           s"Validation failed with ${err.code} error for the request")
-        Left(ErrorWrapper( correlationID, err, None))
+        Future(Left(ErrorWrapper( correlationID, err, None)))
       case errs =>
         logger.error(s"$correlationID::[RequestParser][parseRequest]" +
           s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request")
-        Left(ErrorWrapper( correlationID, BadRequestError, Some(errs)))
+        Future(Left(ErrorWrapper( correlationID, BadRequestError, Some(errs))))
     }
   }
 }
