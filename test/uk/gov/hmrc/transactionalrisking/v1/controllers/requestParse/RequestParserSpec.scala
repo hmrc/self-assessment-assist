@@ -23,6 +23,8 @@ import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.RawData
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, simpleNino}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class RequestParserSpec extends UnitSpec {
 
@@ -48,7 +50,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns no errors" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => Nil
 
-        parser.parseRequest(Raw(nino)) shouldBe Right(ResponseWrapper( correlationId, Request(nino)))
+        await(parser.parseRequest(Raw(nino))) shouldBe Right(Request(nino))
       }
     }
 
@@ -56,7 +58,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns a single error" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError)
 
-        parser.parseRequest(Raw(nino)) shouldBe Left(ErrorWrapper(correlationId, NinoFormatError, None))
+        await(parser.parseRequest(Raw(nino))) shouldBe Left(ErrorWrapper(correlationId, NinoFormatError, None))
       }
     }
 
@@ -64,7 +66,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns multiple errors" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError , DownstreamError)
 
-        parser.parseRequest(Raw(nino)) shouldBe Left(ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
+        await(parser.parseRequest(Raw(nino))) shouldBe Left(ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
       }
     }
   }

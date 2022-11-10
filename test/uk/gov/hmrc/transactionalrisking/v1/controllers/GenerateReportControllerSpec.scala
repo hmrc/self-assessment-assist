@@ -66,7 +66,7 @@ class GenerateReportControllerSpec
 
 
         MockEnrolmentsAuthService.authoriseUser()
-        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID,simpleNino, internalCorrelationID)
+        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID,simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()

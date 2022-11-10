@@ -33,14 +33,15 @@ case class NewRdsAssessmentReport(links: Seq[String],
                                   outputs: Seq[Output]
                                  ) {
 
-  def calculationID: Option[UUID] =
-    outputs
-      .filter(_.isInstanceOf[KeyValueWrapper])
-      .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="calculationID")
-      .map(_.value)
-      .map(x=>Some(UUID.fromString(x)))
-      .getOrElse(None)
+  //TODO fix me we need to read calculationid and compare it with the one we passed it.TRDT-697
+//  def calculationID: Option[UUID] =
+//    outputs
+//      .filter(_.isInstanceOf[KeyValueWrapper])
+//      .map(_.asInstanceOf[KeyValueWrapper])
+//      .find(_.name=="calculationID")
+//      .map(_.value)
+//      .map(x=>Some(UUID.fromString(x)))
+//      .getOrElse(None)
 
   def rdsCorrelationId: Option[String] = {
     outputs

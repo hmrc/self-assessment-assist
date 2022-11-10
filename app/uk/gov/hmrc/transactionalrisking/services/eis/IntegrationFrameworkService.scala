@@ -23,6 +23,7 @@ import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 
 /**
@@ -43,11 +44,9 @@ class IntegrationFrameworkService @Inject()(){
 
   val logger: Logger = Logger("IntegrationFrameworkService")
 //TODO fix me actual integration and stub pending
-  def getCalculationInfo(id: UUID, nino: String, correlationID:String): ServiceOutcome[CalculationInfo] = {
-    logger.info(s"Attempting to get the calculation info ... ")
-    val calculationInfo = Right( ResponseWrapper(correlationID,CalculationInfo(id, nino, "2021-22")))
-    logger.info("... recevied calculation info.")
-    calculationInfo
+  def getCalculationInfo(id: UUID, nino: String)(implicit ec:ExecutionContext,correlationID: String): Future[ServiceOutcome[CalculationInfo]] = {
+    logger.info(s"returning calculation info ... ")
+    Future(Right( ResponseWrapper(correlationID,CalculationInfo(id, nino, "2021-22"))))
   }
 
 }

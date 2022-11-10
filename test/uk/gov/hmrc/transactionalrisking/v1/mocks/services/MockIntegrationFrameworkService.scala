@@ -25,6 +25,7 @@ import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
 import java.util.UUID
+import scala.concurrent.{ExecutionContext, Future}
 
 
 trait MockIntegrationFrameworkService extends MockFactory {
@@ -34,11 +35,10 @@ trait MockIntegrationFrameworkService extends MockFactory {
 
   object MockIntegrationFrameworkService {
 
-    def getCalculationInfo(id: UUID, nino: String, correlationID: String): CallHandler[ServiceOutcome[CalculationInfo]] = {
-
-      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String, _: String))
-        .expects(*, *, * /*simpleCalculationId, simpleNino*/).anyNumberOfTimes() returns (Right(ResponseWrapper(correlationID, CalculationInfo(simpleCalculationID, simpleNino, "2021-22"))))
-
+    def getCalculationInfo(id: UUID, nino: String): CallHandler[Future[ServiceOutcome[CalculationInfo]]] = {
+      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String)(_: ExecutionContext, _:String))
+        .expects(*, *, *, *).anyNumberOfTimes()
+        .returns(Future.successful(Right(ResponseWrapper(internalCorrelationIDImplicit, CalculationInfo(simpleCalculationID, simpleNino, "2021-22")))))
     }
   }
 }

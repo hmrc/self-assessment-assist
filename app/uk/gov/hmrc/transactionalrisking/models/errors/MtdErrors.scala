@@ -18,19 +18,6 @@ package uk.gov.hmrc.transactionalrisking.models.errors
 
 import play.api.libs.json._
 
-//TODO Revisit below error scenarios
-/*
-NINO is empty
-NINO is of an invalid format.
-NINO is unrecognised.
-NINO is recognised but the current user isn't able to "access" it.
-NINO isn't enrolled for SA.
-Calculation ID is empty.
-Calculation ID is of an invalid format (should be UUID, I believe).
-Calculation ID isn't recognised.
-Calculation ID is for a calculation which is irrelevant for that NINO.
- */
-
 case class MtdError(code: String, message: String, customJson: Option[JsValue] = None){
   lazy val toJson: JsValue = Json.obj(
     "code" -> this.code,

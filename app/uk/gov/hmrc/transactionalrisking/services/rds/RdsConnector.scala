@@ -17,11 +17,12 @@
 package uk.gov.hmrc.transactionalrisking.services.rds
 
 import play.api.http.Status
+import play.api.http.Status.{CREATED, NOT_FOUND}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, MatchingResourcesNotFoundError, ServiceUnavailableError}
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, MatchingResourcesNotFoundError, ResourceNotFoundError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
@@ -73,28 +74,27 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
       .post(Json.toJson(request))
       .map(response =>
         response.status match {
-          case Status.CREATED => {
+          case code@CREATED =>
             logger.debug(s"$correlationID::[acknowledgeRds] submitting acknowledgement to RDS success")
             //no need to validate as we are interested only in OK response.if validation is required then
             // we need separate class, as the structure is different, ignore response as only report id needs to go into the body of nrs
             //            response.json.validate[RdsAcknowledgementResponse].getOrElse(throw new RuntimeException("failed to validate "))
             //Right(ResponseWrapper( correlationId, AcknowledgeReport( NO_CONTENT, 2022 ) ) )
 
-            val ret = response.json.validate[NewRdsAssessmentReport] match {
+            response.json.validate[NewRdsAssessmentReport] match {
               case  JsSuccess(newRdsAssessmentReport, _)  =>
                 logger.info(s"$correlationID::[acknowledgeRds]the results return are ok")
                 Right( ResponseWrapper(correlationID, newRdsAssessmentReport ) )
               case JsError(e) =>
-                logger.warn(s"$correlationID::[acknowledgeRds]Unable to validate the returned results")
+                logger.warn(s"$correlationID::[acknowledgeRds]Unable to validate the returned results failed with $e")
                 Left (ErrorWrapper (correlationID, DownstreamError) )
             }
-            ret
-          }
-
-          case _@errorCode => {
+          case code@NOT_FOUND =>
+            logger.error(s"[acknowledgeRds]not found error during rds acknowledgement $code")
+            Left(ErrorWrapper(correlationID, ResourceNotFoundError ))
+          case _@errorCode =>
             logger.error(s"[acknowledgeRds]error during rds acknowledgement $errorCode")
             Left(ErrorWrapper(correlationID, DownstreamError ))
-          }
         }
       )
   }

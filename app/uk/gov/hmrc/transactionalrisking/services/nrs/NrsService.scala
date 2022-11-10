@@ -45,7 +45,6 @@ class NrsService @Inject()(
 
     //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationID))
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
-    // val payloadString = Json.toJson(body).toString()
     val payloadString = Json.toJson(requestData.body).toString()
     val encodedPayload = hashUtil.encode(payloadString)
     val sha256Checksum = hashUtil.getHash(payloadString)
