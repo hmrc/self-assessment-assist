@@ -44,10 +44,6 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
     if (!nrsRequired) {
       logger.info(s"correlationID::[authorised]Performing nrs not required")
-
-      //TODO revisit below as this doesn't look right based on below doc
-      //https://confluence.tools.tax.service.gov.uk/display/GG/Predicate+Reference#PredicateReference-EnrolmentwithagentauthorisationbasedonNINO
-      //affinityGroup = "Individual" or "Organisation" is not reliable
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
         case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.individual, enrolments, correlationID)
         case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.organisation, enrolments, correlationID)
@@ -125,7 +121,6 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
   def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
     .getEnrolment("IR-SA")
-    //TODO vat had specifc attribute(VRN) to fetch this value, what value should be used in our case?
     .flatMap(_.getIdentifier(AuthorisedController.ninoKey))
     .map(_.value)
 

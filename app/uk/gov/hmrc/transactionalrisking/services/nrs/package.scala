@@ -21,7 +21,5 @@ import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.{NrsFailure
 //import javax.xml.ws.ResponseWrapper
 
 package object nrs {
-  //TODO fix me
-//  type NrsServiceOutcome[Resp] = Either[ErrorWrapper, ResponseWrapper[Resp]]
   type NrsOutcome = Either[NrsFailure, NrsResponse]
 }

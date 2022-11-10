@@ -64,8 +64,6 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                   Left(errorWrapper)
               }
             }
-
-            //TODO:DE deal with Errors.
             case Left(errorWrapper) =>
               logger.warn(s"$correlationID::[RdsService][submit]Unable to do generate report $errorWrapper.error")
               Left(errorWrapper)
