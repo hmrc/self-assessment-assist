@@ -18,7 +18,6 @@ package uk.gov.hmrc.transactionalrisking.controllers.requestParsers
 
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.Validator
 import uk.gov.hmrc.transactionalrisking.models.errors.{BadRequestError, ErrorWrapper}
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.RawData
 import uk.gov.hmrc.transactionalrisking.services.ParseOutcome
 import uk.gov.hmrc.transactionalrisking.utils.Logging

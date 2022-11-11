@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.transactionalrisking.services.nrs
 
-//import com.kenshoo.play.metrics.Metrics
-
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
-//import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse

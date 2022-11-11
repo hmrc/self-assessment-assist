@@ -45,7 +45,6 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
     override protected def executionContext: ExecutionContext = cc.executionContext
 
     //TODO fix predicate, maybe we need to use delegatedAuthRule("sa-auth"), but this was failing
-    // also do we need to restrict AuthProviders in predicate,authorised(AuthProviders(GovernmentGateway, PrivilegedApplication))
     //https://confluence.tools.tax.service.gov.uk/display/GG/Predicate+Reference
     //https://confluence.tools.tax.service.gov.uk/display/AG/Agent++Access+Control+-+patterns
     //https://confluence.tools.tax.service.gov.uk/display/AG/2.+Self+Assessment+Agent+Access+Control

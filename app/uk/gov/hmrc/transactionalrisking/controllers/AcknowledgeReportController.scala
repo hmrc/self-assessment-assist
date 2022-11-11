@@ -20,17 +20,15 @@ package uk.gov.hmrc.transactionalrisking.controllers
 import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, DesTaxYear, Internal, Origin}
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, FormatReportIdError, MatchingResourcesNotFoundError, NinoFormatError, ResourceNotFoundError, ServiceUnavailableError}
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.models.domain.{DesTaxYear}
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, FormatReportIdError, MatchingResourcesNotFoundError, NinoFormatError, ResourceNotFoundError}
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{AcknowledgeReportRequest, AssistReportAcknowledged, RequestBody, RequestData}
+import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{ AssistReportAcknowledged, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
-import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService, ParseOutcome, ServiceOutcome}
+import uk.gov.hmrc.transactionalrisking.services.{EnrolmentsAuthService}
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 
 import javax.inject.Inject
