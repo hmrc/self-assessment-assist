@@ -20,8 +20,8 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
+import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 
 import scala.concurrent.{ExecutionContext, Future}
 

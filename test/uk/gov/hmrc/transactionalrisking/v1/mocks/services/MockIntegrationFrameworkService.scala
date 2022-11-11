@@ -18,11 +18,11 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.transactionalrisking.models.domain._
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
-import uk.gov.hmrc.transactionalrisking.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.CalculationInfo
+import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
+import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}

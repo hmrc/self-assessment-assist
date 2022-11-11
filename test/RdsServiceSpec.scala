@@ -17,20 +17,20 @@
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import play.api.test.FakeRequest
-import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
-import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, Internal}
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
-import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, rdsNewSubmissionReport, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationID, simpleReportID}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, Internal}
+import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
+import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
 
 import scala.concurrent.Future
 

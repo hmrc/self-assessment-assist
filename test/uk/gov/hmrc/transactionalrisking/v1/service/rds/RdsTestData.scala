@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
-import uk.gov.hmrc.transactionalrisking.models.domain._
-import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, MtdError}
-import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
-import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
-import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
+import uk.gov.hmrc.transactionalrisking.v1.models.domain._
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
+import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 
 
 object RdsTestData {

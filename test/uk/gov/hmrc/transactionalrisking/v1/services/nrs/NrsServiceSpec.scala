@@ -19,14 +19,13 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import uk.gov.hmrc.transactionalrisking.controllers.AuthorisedController.ninoKey
-import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
-import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.{NrsFailure, NrsResponse}
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
+import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController.ninoKey
+import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 
 import java.time.OffsetDateTime
 import scala.concurrent.Future

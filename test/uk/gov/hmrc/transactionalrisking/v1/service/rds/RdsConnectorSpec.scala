@@ -20,11 +20,11 @@ import mockws.{MockWS, MockWSHelpers}
 import org.scalatest.BeforeAndAfterAll
 import play.api.mvc.Results.Ok
 import play.api.test.Helpers._
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationID}
+import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.rdsRequest
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsConnector
 
 //import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
 

@@ -17,13 +17,12 @@
 package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.transactionalrisking.models.domain._
-import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.models.domain._
+import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
-import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 import java.time.{Month, OffsetDateTime, ZoneOffset}
 import java.util.UUID

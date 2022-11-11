@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators
 
-import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.GenerateReportValidator
-import uk.gov.hmrc.transactionalrisking.models.errors.{CalculationIdFormatError, NinoFormatError}
-import uk.gov.hmrc.transactionalrisking.models.request.GenerateReportRawData
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleCalculationID, simpleCalculationIDStrangeCharsString, simpleNino, simpleNinoInvalid}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.GenerateReportValidator
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, NinoFormatError}
+import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
 class GenerateReportValidationSpec extends UnitSpec {
   val validator:GenerateReportValidator = new GenerateReportValidator

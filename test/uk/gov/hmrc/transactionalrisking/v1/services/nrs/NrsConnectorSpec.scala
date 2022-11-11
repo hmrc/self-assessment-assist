@@ -26,11 +26,11 @@ import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.NrsSubmission
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsFailure.ExceptionThrown
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.{NrsFailure, NrsResponse}
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.FullRequestTestData
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.NrsSubmission
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.ExceptionThrown
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.{FullRequestTestData, NrsConnector}
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 

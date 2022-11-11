@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators.validations
 
-import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.validations.CalculationIdValidation
-import uk.gov.hmrc.transactionalrisking.models.errors.CalculationIdFormatError
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{invalidUUIDString, simpleCalculationID, simpleCalculationIDStrangeCharsString}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.CalculationIdValidation
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.CalculationIdFormatError
 
 class CalculationIdValidationSpec extends UnitSpec {
   val validator = CalculationIdValidation

@@ -19,10 +19,10 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.connectors
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
-import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
-import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsConnector
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
 
 import scala.concurrent.{ExecutionContext, Future}
 

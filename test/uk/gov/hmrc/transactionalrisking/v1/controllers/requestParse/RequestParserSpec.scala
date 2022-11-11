@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse
 
-import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.RequestParser
-import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.validators.Validator
-import uk.gov.hmrc.transactionalrisking.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, NinoFormatError}
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.models.request.RawData
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, simpleNino}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.RequestParser
+import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.Validator
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, NinoFormatError}
+import uk.gov.hmrc.transactionalrisking.v1.models.request.RawData
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class RequestParserSpec extends UnitSpec {
 
