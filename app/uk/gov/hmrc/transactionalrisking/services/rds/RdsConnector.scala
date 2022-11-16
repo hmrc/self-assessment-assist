@@ -19,10 +19,13 @@ package uk.gov.hmrc.transactionalrisking.services.rds
 import play.api.http.Status
 import play.api.http.Status.{CREATED, NOT_FOUND}
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.libs.ws.WSClient
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ResourceNotFoundError}
+
+import java.net.URLEncoder
+//import uk.gov.hmrc.http.{HttpClient}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
-import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ErrorWrapper, MatchingResourcesNotFoundError, ResourceNotFoundError, ServiceUnavailableError}
+import uk.gov.hmrc.transactionalrisking.models.errors.{ ErrorWrapper, MatchingResourcesNotFoundError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
@@ -33,34 +36,35 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client is recommended by HMRC
-                              //val httpClient: HttpClient,
+class RdsConnector @Inject()(val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID:String) extends Logging{
 
   private def baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
+  val proxyRequestBody = s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
+    s"&client_secret=${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}" +
+    s"&grant_type=${URLEncoder.encode("client_credentials", "UTF-8")}"
 
-
-  def submit(request: RdsRequest)(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+  def submit(request: RdsRequest)(implicit hc: HeaderCarrier,ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[submit]submit the report")
 
-    wsClient
-      .url(baseUrlForRdsAssessmentsSubmit)
-      .post(Json.toJson(request))
-      .map(response =>
+    //http.GET[Greeting](url = s"$baseUrl/greet")
+    httpClient
+      .POSTString(baseUrlForRdsAssessmentsSubmit, proxyRequestBody, headers = Seq("Content-type" -> "application/x-www-form-urlencoded"))
+      .map { response =>
         response.status match {
-          case Status.OK =>
-            logger.info(s"$correlationID::[submit]Successfully submitted the report")
-            Right(ResponseWrapper(correlationID, response.json.validate[NewRdsAssessmentReport].get))
-          case Status.NOT_FOUND =>
-            logger.warn(s"$correlationID::[submit]Unable to submit the report")
-            Left(ErrorWrapper(correlationID, MatchingResourcesNotFoundError))
-          case unexpectedStatus =>
-            logger.error(s"$correlationID::[submit]Unable to submit the report due to unexpected status code returned")
-            Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+        case Status.OK =>
+        logger.info(s"$correlationID::[submit]Successfully submitted the report")
+        Right(ResponseWrapper(correlationID, response.json.validate[NewRdsAssessmentReport].get))
+        case Status.NOT_FOUND =>
+        logger.warn(s"$correlationID::[submit]Unable to submit the report")
+        Left(ErrorWrapper(correlationID, MatchingResourcesNotFoundError))
+        case unexpectedStatus =>
+        logger.error(s"$correlationID::[submit]Unable to submit the report due to unexpected status code returned")
+        Left(ErrorWrapper(correlationID, ServiceUnavailableError))
         }
-      )
-  }
+        }
+      }
 
 
   def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
@@ -69,9 +73,8 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
                                           ): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] = {
     logger.info(s"$correlationID::[acknowledgeRds]acknowledge the report")
 
-    wsClient
-      .url(baseUrlToAcknowledgeRdsAssessments)
-      .post(Json.toJson(request))
+    httpClient
+      .POSTString(baseUrlForRdsAssessmentsSubmit, proxyRequestBody, headers = Seq("Content-type" -> "application/x-www-form-urlencoded"))
       .map(response =>
         response.status match {
           case code@CREATED =>

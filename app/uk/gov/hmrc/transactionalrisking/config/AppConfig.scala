@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.config
 
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.transactionalrisking.models.auth.AuthCredential
 import uk.gov.hmrc.transactionalrisking.utils.Retrying
 
 import javax.inject.{Inject, Singleton}
@@ -35,6 +36,7 @@ trait AppConfig {
   def nrsRetries: List[FiniteDuration]
   def appName: String
   def nrsBaseUrl: String
+  def rdsAuthCredential: AuthCredential
 }
 
 @Singleton
@@ -50,6 +52,13 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
   private val rdsConfig = configuration.get[Configuration]("microservice.services.rds")
   val rdsBaseUrlForSubmit:String = config.baseUrl("rds")+rdsConfig.get[String]("submit-url")
   val rdsBaseUrlForAcknowledge:String = config.baseUrl("rds")+rdsConfig.get[String]("acknowledge-url")
+
+  def rdsAuthCredential: AuthCredential =
+    AuthCredential(
+      client_id = rdsConfig.get[String]("clientId"),
+      client_secret = rdsConfig.get[String]("clientSecret"),
+      grant_type = "client_credentials"
+    )
 
   private val cipConfig = configuration.get[Configuration]("microservice.services.cip-fraud-service")
   val cipFraudServiceBaseUrl:String = config.baseUrl("cip-fraud-service")+cipConfig.get[String]("submit-url")
