@@ -20,6 +20,8 @@ import play.api.http.Status
 import play.api.http.Status.{CREATED, NOT_FOUND}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.transactionalrisking.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.transactionalrisking.models.auth.RdsAuthCredentials.rdsAuthHeader
 import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ResourceNotFoundError}
 
 import java.net.URLEncoder
@@ -41,16 +43,13 @@ class RdsConnector @Inject()(val httpClient: HttpClient,
 
   private def baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
   private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
-  val proxyRequestBody = s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
-    s"&client_secret=${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}" +
-    s"&grant_type=${URLEncoder.encode("client_credentials", "UTF-8")}"
 
-  def submit(request: RdsRequest)(implicit hc: HeaderCarrier,ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+
+  def submit(request: RdsRequest,rdsAuthCredentials: RdsAuthCredentials)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[submit]submit the report")
 
-    //http.GET[Greeting](url = s"$baseUrl/greet")
     httpClient
-      .POSTString(baseUrlForRdsAssessmentsSubmit, proxyRequestBody, headers = Seq("Content-type" -> "application/x-www-form-urlencoded"))
+      .POST(baseUrlForRdsAssessmentsSubmit,Json.toJson(request) , headers = rdsAuthHeader(rdsAuthCredentials))
       .map { response =>
         response.status match {
         case Status.OK =>
@@ -67,14 +66,14 @@ class RdsConnector @Inject()(val httpClient: HttpClient,
       }
 
 
-  def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
+  def acknowledgeRds(request: RdsRequest,rdsAuthCredentials: RdsAuthCredentials)(implicit hc: HeaderCarrier,
                                           ec: ExecutionContext,
                                           correlationID:String
                                           ): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] = {
     logger.info(s"$correlationID::[acknowledgeRds]acknowledge the report")
 
     httpClient
-      .POSTString(baseUrlForRdsAssessmentsSubmit, proxyRequestBody, headers = Seq("Content-type" -> "application/x-www-form-urlencoded"))
+      .POST(baseUrlToAcknowledgeRdsAssessments, Json.toJson(request), headers = rdsAuthHeader(rdsAuthCredentials))
       .map(response =>
         response.status match {
           case code@CREATED =>

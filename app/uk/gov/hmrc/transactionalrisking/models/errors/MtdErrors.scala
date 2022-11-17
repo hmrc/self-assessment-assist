@@ -103,3 +103,4 @@ object UnsupportedVersionError extends MtdError("NOT_FOUND", "The requested reso
 object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body")
 
 object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later")
+object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplised")

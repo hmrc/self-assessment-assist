@@ -16,11 +16,15 @@
 
 package uk.gov.hmrc.transactionalrisking.services.rds
 
+import play.api.libs.json.Json
+import play.api.mvc.Results
+import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
+import uk.gov.hmrc.transactionalrisking.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
-import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, FormatReportIdError, ResourceNotFoundError}
+import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, FormatReportIdError, MatchingResourcesNotFoundError, ResourceNotFoundError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
@@ -33,7 +37,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsService @Inject()(connector: RdsConnector) extends Logging {
+class RdsService @Inject()(rdsAuthConnector:RdsAuthConnector[Future],connector: RdsConnector) extends Logging {
 
 
   def submit(request: AssessmentRequestForSelfAssessment,
@@ -43,37 +47,48 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
                              correlationID: String): Future[ServiceOutcome[AssessmentReport]] = {
+
+    def processRdsRequest(rdsAuthCredentials: RdsAuthCredentials) = {
+      val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
+      rdsRequestSO match {
+        case Right(ResponseWrapper(correlationIdResponse, rdsRequest)) =>
+          val submit = connector.submit(rdsRequest,rdsAuthCredentials)
+          val ret = submit.map {
+            _ match {
+              case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) => {
+                val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationID)
+                assessmentReportSO match {
+
+                  case Right(ResponseWrapper(correlationIdResponse, assessmentReport)) =>
+                    logger.info(s"$correlationID::[submit]submit request for report successful returning it")
+                    Right(ResponseWrapper(correlationID, assessmentReport))
+
+                  case Left(errorWrapper) =>
+                    logger.warn(s"$correlationID::[RdsService][submit]submit request for report error from service $errorWrapper.error")
+                    Left(errorWrapper)
+                }
+              }
+              case Left(errorWrapper) =>
+                logger.warn(s"$correlationID::[RdsService][submit]Unable to do generate report $errorWrapper.error")
+                Left(errorWrapper)
+            }
+          }
+          ret
+        case Left(errorWrapper) =>
+          logger.warn(s"$correlationID::[RdsService][submit]Unable to generate report request $errorWrapper.error")
+          Future(Left(errorWrapper): ServiceOutcome[AssessmentReport])
+      }
+    }
+
     logger.info(s"$correlationID::[submit]submit request for report}")
 
-    val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
-    rdsRequestSO match {
-      case Right(ResponseWrapper(correlationIdResponse, rdsRequest)) =>
-        val submit = connector.submit(rdsRequest)
-        val ret = submit.map {
-          _ match {
-            case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) => {
-              val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationID)
-              assessmentReportSO match {
-
-                case Right(ResponseWrapper(correlationIdResponse, assessmentReport)) =>
-                  logger.info(s"$correlationID::[submit]submit request for report successful returning it")
-                  Right(ResponseWrapper(correlationID, assessmentReport))
-
-                case Left(errorWrapper) =>
-                  logger.warn(s"$correlationID::[RdsService][submit]submit request for report error from service $errorWrapper.error")
-                  Left(errorWrapper)
-              }
-            }
-            case Left(errorWrapper) =>
-              logger.warn(s"$correlationID::[RdsService][submit]Unable to do generate report $errorWrapper.error")
-              Left(errorWrapper)
-          }
-        }
-        ret
-      case Left(errorWrapper) =>
-        logger.warn(s"$correlationID::[RdsService][submit]Unable to generate report request $errorWrapper.error")
-        Future(Left(errorWrapper): ServiceOutcome[AssessmentReport])
-    }
+    rdsAuthConnector
+      .retrieveAuthorisedBearer()
+      .foldF(
+        error =>
+          Future.successful(Left(ErrorWrapper(correlationID, error))),
+        credentials => processRdsRequest(credentials)
+      )
   }
 
   private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationID: String): ServiceOutcome[AssessmentReport] = {
@@ -171,7 +186,14 @@ class RdsService @Inject()(connector: RdsConnector) extends Logging {
                                                     userRequest: UserRequest[_],
                                                     correlationId: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationId::[acknowledge]acknowledge")
-    connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
+    rdsAuthConnector
+      .retrieveAuthorisedBearer()
+      .foldF(
+        error =>
+          Future.successful(Left(ErrorWrapper(correlationId, error))),
+        credentials => connector.acknowledgeRds(generateRdsAcknowledgementRequest(request),credentials)
+      )
+
   }
 
   private def generateRdsAcknowledgementRequest(request: AcknowledgeReportRequest): RdsRequest
