@@ -29,6 +29,8 @@ trait AppConfig {
   def rdsBaseUrlForSubmit: String
   def rdsBaseUrlForAcknowledge: String
 
+  // API Config
+  def featureSwitch: Option[Configuration]
 
   // NRS config items
   def nrsApiKey: String
@@ -41,6 +43,8 @@ trait AppConfig {
 class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuration) extends AppConfig {
 
   val appName: String = config.getString("appName")
+
+  def featureSwitch: Option[Configuration] = configuration.getOptional[Configuration](s"feature-switch")
 
   // NRS config items
   val nrsApiKey: String = config.getString("access-keys.xApiKey")
