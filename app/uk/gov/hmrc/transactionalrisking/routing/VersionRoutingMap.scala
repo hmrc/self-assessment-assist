@@ -18,8 +18,10 @@ package uk.gov.hmrc.transactionalrisking.routing
 
 import com.google.inject.ImplementedBy
 import play.api.routing.Router
-import uk.gov.hmrc.transactionalrisking.config.AppConfig
+import uk.gov.hmrc.transactionalrisking.config.{AppConfig, FeatureSwitch}
 import uk.gov.hmrc.transactionalrisking.definitions.Versions.VERSION_1
+import uk.gov.hmrc.transactionalrisking.definitions.Versions.VERSION_2
+import uk.gov.hmrc.transactionalrisking.utils.Logging
 
 import javax.inject.Inject
 
@@ -40,7 +42,7 @@ trait VersionRoutingMap extends Logging {
 case class VersionRoutingMapImpl @Inject()(appConfig: AppConfig,
                                            defaultRouter: Router,
                                            v1Router: v1.Routes,
-                                           v2Route: v2.Routes
+                                           v2Router: v2.Routes
                                           ) extends VersionRoutingMap {
 
   val featureSwitch: FeatureSwitch = FeatureSwitch(appConfig.featureSwitch)

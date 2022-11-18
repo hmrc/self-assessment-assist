@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.mocks.utils
+package uk.gov.hmrc.transactionalrisking.mocks.utils.utils
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory

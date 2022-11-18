@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.controllers.ControllerBaseSpec
-import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
+import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._

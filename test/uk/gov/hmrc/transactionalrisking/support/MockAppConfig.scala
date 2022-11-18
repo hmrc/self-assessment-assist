@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.support
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import play.api.Configuration
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 
 import scala.concurrent.duration.FiniteDuration
@@ -31,6 +32,9 @@ trait MockAppConfig extends MockFactory {
     // RDS config items
     def rdsBaseUrlForSubmit: CallHandler[String] = (mockAppConfig.rdsBaseUrlForSubmit _).expects()
     def rdsBaseUrlForAcknowledge: CallHandler[String] = (mockAppConfig.rdsBaseUrlForAcknowledge _).expects()
+
+    //API Config
+    def featureSwitch: CallHandler[Option[Configuration]] = (mockAppConfig.featureSwitch _: () => Option[Configuration]).expects()
 
     // NRS config items
     def nrsApiKey: CallHandler[String] = (mockAppConfig.nrsApiKey _).expects()
