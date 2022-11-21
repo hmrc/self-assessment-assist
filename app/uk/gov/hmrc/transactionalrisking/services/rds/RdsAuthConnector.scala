@@ -35,7 +35,7 @@ trait RdsAuthConnector[F[_]] {
   def retrieveAuthorisedBearer()(implicit hc: HeaderCarrier): EitherT[F, MtdError, RdsAuthCredentials]
 }
 
-class DefaultRdsAuthConnector @Inject() (@Named("pega-auth-http-client") http: HttpClient)(implicit
+class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http: HttpClient)(implicit
                                                                                             appConfig: AppConfig,
                                                                                             ec: ExecutionContext
 ) extends RdsAuthConnector[Future] {

@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.transactionalrisking.models.domain._
+import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse

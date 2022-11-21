@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import play.api.test.FakeRequest
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.models.auth.UserDetails
+import uk.gov.hmrc.transactionalrisking.models.auth.{RdsAuthCredentials, UserDetails}
 import uk.gov.hmrc.transactionalrisking.models.domain.{AssessmentReport, Internal}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
@@ -29,12 +29,15 @@ import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAsses
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, rdsNewSubmissionReport, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationID, simpleReportID}
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
+import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockRdsAuthConnector
 import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 
+import java.util.UUID
 import scala.concurrent.Future
 
-class RdsServiceSpec extends ServiceSpec    {
+class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector    {
+  val rdsAuthCredentials = RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
 
   class Test extends MockRdsConnector {
     implicit val userRequest: UserRequest[_] =
@@ -53,7 +56,7 @@ class RdsServiceSpec extends ServiceSpec    {
         )
       )
 
-    val service = new RdsService(mockRdsConnector)
+    val service = new RdsService(mockRdsAuthConnector,mockRdsConnector)
   }
 
   "service" when {

@@ -19,6 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.connectors
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
@@ -33,13 +34,13 @@ trait MockRdsConnector extends MockFactory {
   object MockRdsConnector {
 
     def submit(rdsRequest: RdsRequest  ): CallHandler[Future[ServiceOutcome[ NewRdsAssessmentReport]]] = {
-      (mockRdsConnector.submit( _: RdsRequest)( _: ExecutionContext))
-        .expects(*, *)
+      (mockRdsConnector.submit( _: RdsRequest,_:RdsAuthCredentials)( _:HeaderCarrier,_: ExecutionContext))
+        .expects(*, *,*,*)
     }
 
     def acknowledgeRds(request: RdsRequest): CallHandler[Future[ ServiceOutcome[ NewRdsAssessmentReport]]] = {
-      (mockRdsConnector.acknowledgeRds(_: RdsRequest)(_: HeaderCarrier, _: ExecutionContext, _:String ))
-        .expects(*, *, *, *)
+      (mockRdsConnector.acknowledgeRds(_: RdsRequest,_:RdsAuthCredentials)(_: HeaderCarrier, _: ExecutionContext, _:String ))
+        .expects(*, *, *,*, *)
     }
 
   }

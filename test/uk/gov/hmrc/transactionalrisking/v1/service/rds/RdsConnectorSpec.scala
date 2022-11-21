@@ -16,57 +16,92 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
-import mockws.{MockWS, MockWSHelpers}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, post, stubFor, urlPathEqualTo}
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import mockws.MockWSHelpers
 import org.scalatest.BeforeAndAfterAll
-import play.api.mvc.Results.Ok
-import play.api.test.Helpers._
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.http.MimeTypes
+import play.api.libs.json.Json
+import play.api.test.Injecting
+import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.transactionalrisking.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.transactionalrisking.models.errors.{ErrorWrapper, ForbiddenDownstreamError}
 import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationID}
 import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.rdsRequest
 
-//import uk.gov.hmrc.transactionalrisking.services.rds.models.request.RdsRequest
+import java.util.UUID
+
 
 
 class RdsConnectorSpec extends ConnectorSpec
+  with BeforeAndAfterAll
+  with GuiceOneAppPerSuite
+  with Injecting
   with MockAppConfig
-  with MockWSHelpers
-  with BeforeAndAfterAll {
-
+  with MockWSHelpers {
   var port: Int = _
 
-  val submitBaseUrl:String = s"http://localhost:$port/submit"
-  val acknowledgeUrl:String = s"http://localhost:$port/acknowledge"
+  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
+
+  override def beforeAll(): Unit = {
+    wireMockServer.start()
+    port = wireMockServer.port()
+    println(s"started at $port")
+  }
 
   override def afterAll(): Unit = {
+    wireMockServer.stop()
     shutdownHelpers()
   }
-
   class Test {
+    val submitBaseUrl:String = s"http://localhost:$port/submit"
+    val acknowledgeUrl:String = s"http://localhost:$port/acknowledge"
+    val rdsAuthCredentials = RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
+
+    MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
+    MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
+    val connector = new RdsConnector(httpClient, mockAppConfig)
   }
+//TODO move this to RDSAuthConnectorStub
+//  class RDSAuthConnectorStub(
+//                               result: Either[MtdError, RdsAuthCredentials] = Right(
+//                                 RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
+//                               )
+//                             ) extends RdsAuthConnector[Future] {
+//    override def retrieveAuthorisedBearer()(implicit
+//                                            hc: HeaderCarrier
+//    ): EitherT[Future, MtdError, RdsAuthCredentials] =
+//      EitherT[Future, MtdError, RdsAuthCredentials](Future(result))
+//  }
+
 
   "RDSConnector" when {
     "submit method is called" must {
       "return the response if successful" in new Test {
+        wireMockServer.stubFor(
+          post(urlPathEqualTo("/submit"))
+            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
+            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
+            .willReturn(aResponse()
+              .withBody(rdsSubmissionReportJson.toString)
+              .withStatus(OK)))
 
-        val ws = MockWS {
-          case (POST, submitBaseUrlTmp) if (submitBaseUrlTmp == submitBaseUrl) =>
-            Action {
-              Ok(rdsSubmissionReportJson.toString())
-            }
-          case (_, _) =>
-            throw new RuntimeException("Unable to distinguish API call or path whilst testing")
-        }
+       await(connector.submit(rdsRequest,rdsAuthCredentials)) shouldBe Right(ResponseWrapper(simpleRDSCorrelationID, rdsNewSubmissionReport))
+      }
 
-        val connector = new RdsConnector(ws, mockAppConfig)
+      "fail when the bearer token is invalid" in new Test {
+        wireMockServer.stubFor(
+          post(urlPathEqualTo("/submit"))
+            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
+            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
+            .willReturn(aResponse()
+              .withStatus(UNAUTHORIZED)))
 
-        MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
-
-       await(connector.submit(rdsRequest)) shouldBe Right(ResponseWrapper(simpleRDSCorrelationID, rdsNewSubmissionReport))
-
-
-
+        await(connector.submit(rdsRequest,rdsAuthCredentials)) shouldBe Left(ErrorWrapper(simpleRDSCorrelationID, ForbiddenDownstreamError))
       }
     }
 
@@ -103,4 +138,11 @@ class RdsConnectorSpec extends ConnectorSpec
     //      }
     //    }
   }
+//TODO move this to RDSAuthConnectorSpec
+  def stubRdsAuth(response: RdsAuthCredentials, statusCode: Int = 202): StubMapping =
+    stubFor(
+      post(
+        urlPathEqualTo("/prweb/PRRestService/oauth2/v1/token")
+      ).willReturn(aResponse().withStatus(statusCode).withBody(Json.toJson(response).toString()))
+    )
 }
