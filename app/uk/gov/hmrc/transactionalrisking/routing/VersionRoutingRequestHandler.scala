@@ -72,24 +72,11 @@ class VersionRoutingRequestHandler @Inject()(versionRoutingMap: VersionRoutingMa
     router
       .handlerFor(request)
       .orElse {
-//         if (validatePath(request.path)) {
-          if (request.path.endsWith("/")) {
-            val pathWithoutSlash = request.path.dropRight(1)
-            val requestWithModifiedPath = request.withTarget(request.target.withPath(pathWithoutSlash))
-            router.handlerFor(requestWithModifiedPath)
-          }
-          else None
-//        }
-//        else {
-//          //Some(action(Results.BadRequest(Json.toJson(VrnFormatError))))
-//          Some(action(BadRequestError))
-//        }
+        if (request.path.endsWith("/")) {
+          val pathWithoutSlash = request.path.dropRight(1)
+          val requestWithModifiedPath = request.withTarget(request.target.withPath(pathWithoutSlash))
+          router.handlerFor(requestWithModifiedPath)
+        }
+        else None
       }
-
-//  private def validatePath(path: String): Boolean = {
-//    val vrn = path.split("/")(1)
-//    if(VrnValidation.validate(vrn) == Nil)
-//      true
-//    else false
-//  }
 }

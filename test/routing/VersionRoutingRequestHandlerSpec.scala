@@ -91,72 +91,72 @@ class VersionRoutingRequestHandlerSpec extends UnitSpec with Inside with MockApp
     handleWithDefaultRoutes()
   }
 
-//  "Routing requests with valid version" should {
-//    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.1.0+json")
-//
-//    handleWithDefaultRoutes()
-//  }
-//
-//  "Routing requests to non default router with no version" should {
-//    implicit val acceptHeader: None.type = None
-//
-//    "return 406" in new Test {
-//
-//      val request: RequestHeader = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
-//      inside(requestHandler.routeRequest(request)) {
-//        case Some(a: EssentialAction) =>
-//          val result = a.apply(request)
-//
-//          status(result) shouldBe NOT_ACCEPTABLE
-//          contentAsJson(result) shouldBe Json.toJson(InvalidAcceptHeaderError)
-//      }
-//    }
-//  }
-//
-//  "Routing requests with v1" should {
-//    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.1.0+json")
-//    handleWithVersionRoutes("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca", V1Handler)
-//  }
-//
-//  "Routing requests with v2" should {
-//    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.2.0+json")
-//    handleWithVersionRoutes("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca", V2Handler)
-//  }
-//
-//  "Routing requests with unsupported version" should {
-//    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.5.0+json")
-//
-//    "return 406" in new Test {
-//      private val request = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
-//
-//      inside(requestHandler.routeRequest(request)) {
-//        case Some(a: EssentialAction) =>
-//          val result = a.apply(request)
-//
-//          status(result) shouldBe NOT_ACCEPTABLE
-//          contentAsJson(result) shouldBe Json.toJson(InvalidAcceptHeaderError)
-//      }
-//    }
-//  }
-//
-//  "Routing requests for supported version but not enabled" when {
-//    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.3.0+json")
-//
-//    "the version has a route for the resource" must {
-//      "return 404 Not Found" in new Test {
-//
-//        private val request = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
-//        inside(requestHandler.routeRequest(request)) {
-//          case Some(a:EssentialAction) =>
-//            val result = a.apply(request)
-//
-//            status(result) shouldBe NOT_FOUND
-//            contentAsJson(result) shouldBe Json.toJson(UnsupportedVersionError)
-//
-//        }
-//      }
-//    }
-//  }
+  "Routing requests with valid version" should {
+    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.1.0+json")
+
+    handleWithDefaultRoutes()
+  }
+
+  "Routing requests to non default router with no version" should {
+    implicit val acceptHeader: None.type = None
+
+    "return 406" in new Test {
+
+      val request: RequestHeader = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
+      inside(requestHandler.routeRequest(request)) {
+        case Some(a: EssentialAction) =>
+          val result = a.apply(request)
+
+          status(result) shouldBe NOT_ACCEPTABLE
+          contentAsJson(result) shouldBe Json.toJson(InvalidAcceptHeaderError)
+      }
+    }
+  }
+
+  "Routing requests with v1" should {
+    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.1.0+json")
+    handleWithVersionRoutes("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca", V1Handler)
+  }
+
+  "Routing requests with v2" should {
+    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.2.0+json")
+    handleWithVersionRoutes("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca", V2Handler)
+  }
+
+  "Routing requests with unsupported version" should {
+    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.5.0+json")
+
+    "return 406" in new Test {
+      private val request = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
+
+      inside(requestHandler.routeRequest(request)) {
+        case Some(a: EssentialAction) =>
+          val result = a.apply(request)
+
+          status(result) shouldBe NOT_ACCEPTABLE
+          contentAsJson(result) shouldBe Json.toJson(InvalidAcceptHeaderError)
+      }
+    }
+  }
+
+  "Routing requests for supported version but not enabled" when {
+    implicit val acceptHeader: Some[String] = Some("application/vnd.hmrc.3.0+json")
+
+    "the version has a route for the resource" must {
+      "return 404 Not Found" in new Test {
+
+        private val request = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
+        inside(requestHandler.routeRequest(request)) {
+          case Some(a:EssentialAction) =>
+            val result = a.apply(request)
+
+            status(result) shouldBe NOT_FOUND
+            contentAsJson(result) shouldBe Json.toJson(UnsupportedVersionError)
+
+        }
+      }
+    }
+  }
 
   private def handleWithDefaultRoutes()(implicit acceptHeader: Option[String]): Unit = {
     "if the request ends with a trailing slash" when {
