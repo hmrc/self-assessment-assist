@@ -16,12 +16,18 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
+import akka.actor
+import akka.actor.ActorSystem
+import akka.stream.Materializer
+import com.codahale.metrics.SharedMetricRegistries
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, post, stubFor, urlPathEqualTo}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import mockws.MockWSHelpers
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Application
 import play.api.http.MimeTypes
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
@@ -34,28 +40,41 @@ import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestDat
 import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.rdsRequest
 
 import java.util.UUID
-
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 
 class RdsConnectorSpec extends ConnectorSpec
   with BeforeAndAfterAll
   with GuiceOneAppPerSuite
   with Injecting
-  with MockAppConfig
-  with MockWSHelpers {
+  with MockAppConfig{
+  //with MockWSHelpers {
   var port: Int = _
 
+  private val actorSystem: ActorSystem    = actor.ActorSystem("unit-testing")
+  implicit val materializer: Materializer = Materializer.matFromSystem(actorSystem)
   val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
+
+  override def fakeApplication(): Application =
+    GuiceApplicationBuilder()
+      .configure(
+        "metrics.enabled" -> false,
+        "auditing.enabled" -> false)
+      .build()
 
   override def beforeAll(): Unit = {
     wireMockServer.start()
     port = wireMockServer.port()
     println(s"started at $port")
+    SharedMetricRegistries.clear()
   }
 
   override def afterAll(): Unit = {
     wireMockServer.stop()
-    shutdownHelpers()
+   // shutdownHelpers()
+    materializer.shutdown()
+    Await.result(actorSystem.terminate(), 3.minutes)
   }
   class Test {
     val submitBaseUrl:String = s"http://localhost:$port/submit"

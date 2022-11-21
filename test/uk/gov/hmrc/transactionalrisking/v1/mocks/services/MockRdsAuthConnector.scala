@@ -19,16 +19,13 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 import cats.data.EitherT
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.models.auth.{AuthOutcome, RdsAuthCredentials, UserDetails}
-import uk.gov.hmrc.transactionalrisking.models.domain.AssessmentReport
+import uk.gov.hmrc.transactionalrisking.models.auth.{RdsAuthCredentials}
 import uk.gov.hmrc.transactionalrisking.models.errors.MtdError
-import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.services.rds.RdsAuthConnector
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.UUID
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait MockRdsAuthConnector extends MockFactory {
 

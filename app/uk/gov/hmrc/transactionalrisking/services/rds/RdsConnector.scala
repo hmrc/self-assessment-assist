@@ -42,15 +42,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID: String) extends Logging {
 
-  private val baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
-  private val baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
+ // private val baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
+ // private val baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
 
 
   def submit(request: RdsRequest, rdsAuthCredentials: RdsAuthCredentials)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[submit]submit the report")
 
     httpClient
-      .POST(baseUrlForRdsAssessmentsSubmit, Json.toJson(request), headers = rdsAuthHeader(rdsAuthCredentials))
+      .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeader(rdsAuthCredentials))
       .map { response =>
         logger.info(s"======= response is $response")
         response.status match {
@@ -79,7 +79,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     logger.info(s"$correlationID::[acknowledgeRds]acknowledge the report")
 
     httpClient
-      .POST(baseUrlToAcknowledgeRdsAssessments, Json.toJson(request), headers = rdsAuthHeader(rdsAuthCredentials))
+      .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeader(rdsAuthCredentials))
       .map { response =>
         response.status match {
           case code@CREATED =>
