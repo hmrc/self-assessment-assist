@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.transactionalrisking.services.rds
 
-import play.api.libs.json.Json
-import play.api.mvc.Results
-import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.models.domain.PreferredLanguage.PreferredLanguage
@@ -37,7 +35,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsService @Inject()(rdsAuthConnector:RdsAuthConnector[Future],connector: RdsConnector) extends Logging {
+class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector: RdsConnector, appConfig: AppConfig) extends Logging {
 
 
   def submit(request: AssessmentRequestForSelfAssessment,
@@ -48,11 +46,11 @@ class RdsService @Inject()(rdsAuthConnector:RdsAuthConnector[Future],connector: 
                              userRequest: UserRequest[_],
                              correlationID: String): Future[ServiceOutcome[AssessmentReport]] = {
 
-    def processRdsRequest(rdsAuthCredentials: RdsAuthCredentials) = {
+    def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None) = {
       val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
       rdsRequestSO match {
         case Right(ResponseWrapper(correlationIdResponse, rdsRequest)) =>
-          val submit = connector.submit(rdsRequest,rdsAuthCredentials)
+          val submit = connector.submit(rdsRequest, rdsAuthCredentials)
           val ret = submit.map {
             _ match {
               case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) => {
@@ -82,13 +80,17 @@ class RdsService @Inject()(rdsAuthConnector:RdsAuthConnector[Future],connector: 
 
     logger.info(s"$correlationID::[submit]submit request for report}")
 
-    rdsAuthConnector
-      .retrieveAuthorisedBearer()
-      .foldF(
-        error =>
-          Future.successful(Left(ErrorWrapper(correlationID, error))),
-        credentials => processRdsRequest(credentials)
-      )
+    if (appConfig.rdsAuthRequiredForThisEnv) {
+      rdsAuthConnector
+        .retrieveAuthorisedBearer()
+        .foldF(
+          error =>
+            Future.successful(Left(ErrorWrapper(correlationID, error))),
+          credentials => processRdsRequest(Some(credentials))
+        )
+    } else {
+      processRdsRequest()
+    }
   }
 
   private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationID: String): ServiceOutcome[AssessmentReport] = {
@@ -181,18 +183,22 @@ class RdsService @Inject()(rdsAuthConnector:RdsAuthConnector[Future],connector: 
   }
 
   def acknowledge(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
-                                                    ec: ExecutionContext,
-                                                    //logContext: EndpointLogContext,
-                                                    userRequest: UserRequest[_],
-                                                    correlationId: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+                                                     ec: ExecutionContext,
+                                                     //logContext: EndpointLogContext,
+                                                     userRequest: UserRequest[_],
+                                                     correlationId: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationId::[acknowledge]acknowledge")
-    rdsAuthConnector
-      .retrieveAuthorisedBearer()
-      .foldF(
-        error =>
-          Future.successful(Left(ErrorWrapper(correlationId, error))),
-        credentials => connector.acknowledgeRds(generateRdsAcknowledgementRequest(request),credentials)
-      )
+    if (appConfig.rdsAuthRequiredForThisEnv) {
+      rdsAuthConnector
+        .retrieveAuthorisedBearer()
+        .foldF(
+          error =>
+            Future.successful(Left(ErrorWrapper(correlationId, error))),
+          credentials => connector.acknowledgeRds(generateRdsAcknowledgementRequest(request), Some(credentials))
+        )
+    } else {
+      connector.acknowledgeRds(generateRdsAcknowledgementRequest(request))
+    }
 
   }
 

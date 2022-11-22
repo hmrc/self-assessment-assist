@@ -109,7 +109,7 @@ class RdsConnectorSpec extends ConnectorSpec
               .withBody(rdsSubmissionReportJson.toString)
               .withStatus(OK)))
 
-       await(connector.submit(rdsRequest,rdsAuthCredentials)) shouldBe Right(ResponseWrapper(simpleRDSCorrelationID, rdsNewSubmissionReport))
+       await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationID, rdsNewSubmissionReport))
       }
 
       "fail when the bearer token is invalid" in new Test {
@@ -120,7 +120,7 @@ class RdsConnectorSpec extends ConnectorSpec
             .willReturn(aResponse()
               .withStatus(UNAUTHORIZED)))
 
-        await(connector.submit(rdsRequest,rdsAuthCredentials)) shouldBe Left(ErrorWrapper(simpleRDSCorrelationID, ForbiddenDownstreamError))
+        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(simpleRDSCorrelationID, ForbiddenDownstreamError))
       }
     }
 

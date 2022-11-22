@@ -49,6 +49,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
 
     MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
     MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
+    MockedAppConfig.rdsAuthRequiredForThisEnv returns false
 //    val connector = new RdsConnector(httpClient, mockAppConfig)
 
     implicit val userRequest: UserRequest[_] =
@@ -67,7 +68,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         )
       )
 
-    val service = new RdsService(mockRdsAuthConnector,mockRdsConnector)
+    val service = new RdsService(mockRdsAuthConnector,mockRdsConnector,mockAppConfig)
   }
 
 

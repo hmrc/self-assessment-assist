@@ -19,12 +19,10 @@ package uk.gov.hmrc.transactionalrisking.services.rds
 import play.api.http.Status
 import play.api.http.Status.{CREATED, NOT_FOUND}
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.models.auth.RdsAuthCredentials.rdsAuthHeader
 import uk.gov.hmrc.transactionalrisking.models.errors.{DownstreamError, ForbiddenDownstreamError, ResourceNotFoundError}
-
-import java.net.URLEncoder
 import javax.inject.Named
 //import uk.gov.hmrc.http.{HttpClient}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
@@ -46,11 +44,13 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
  // private val baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
 
 
-  def submit(request: RdsRequest, rdsAuthCredentials: RdsAuthCredentials)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[submit]submit the report")
 
+    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+
     httpClient
-      .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeader(rdsAuthCredentials))
+      .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
         logger.info(s"======= response is $response")
         response.status match {
@@ -72,14 +72,15 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
   }
 
 
-  def acknowledgeRds(request: RdsRequest, rdsAuthCredentials: RdsAuthCredentials)(implicit hc: HeaderCarrier,
+  def acknowledgeRds(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier,
                                                                                   ec: ExecutionContext,
                                                                                   correlationID: String
   ): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[acknowledgeRds]acknowledge the report")
+    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
     httpClient
-      .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeader(rdsAuthCredentials))
+      .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
         response.status match {
           case code@CREATED =>

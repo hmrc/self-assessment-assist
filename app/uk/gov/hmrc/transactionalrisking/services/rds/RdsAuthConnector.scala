@@ -43,6 +43,7 @@ class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http:
   override def retrieveAuthorisedBearer()(implicit
                                           hc: HeaderCarrier
   ): EitherT[Future, MtdError, RdsAuthCredentials] = {
+
     val url = s"${appConfig.rdsBaseUrlForSubmit}"
 
     val body = s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +

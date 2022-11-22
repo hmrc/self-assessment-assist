@@ -31,6 +31,7 @@ trait MockAppConfig extends MockFactory {
     // RDS config items
     def rdsBaseUrlForSubmit: CallHandler[String] = (mockAppConfig.rdsBaseUrlForSubmit _).expects().anyNumberOfTimes()
     def rdsBaseUrlForAcknowledge: CallHandler[String] = (mockAppConfig.rdsBaseUrlForAcknowledge _).expects().anyNumberOfTimes()
+    def rdsAuthRequiredForThisEnv: CallHandler[Boolean] = (mockAppConfig.rdsAuthRequiredForThisEnv _).expects().anyNumberOfTimes()
 
     // NRS config items
     def nrsApiKey: CallHandler[String] = (mockAppConfig.nrsApiKey _).expects().anyNumberOfTimes()
