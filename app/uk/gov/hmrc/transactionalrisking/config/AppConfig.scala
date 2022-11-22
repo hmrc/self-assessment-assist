@@ -29,8 +29,10 @@ trait AppConfig {
   // RDS
   def rdsBaseUrlForSubmit: String
   def rdsBaseUrlForAcknowledge: String
-  def rdsAuthRequiredForThisEnv: Boolean
 
+  //SAS
+  def rdsSasBaseUrlForAuth : String
+  def rdsAuthRequiredForThisEnv: Boolean
 
   // NRS config items
   def nrsApiKey: String
@@ -53,12 +55,14 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
   private val rdsConfig = configuration.get[Configuration]("microservice.services.rds")
   val rdsBaseUrlForSubmit:String = config.baseUrl("rds")+rdsConfig.get[String]("submit-url")
   val rdsBaseUrlForAcknowledge:String = config.baseUrl("rds")+rdsConfig.get[String]("acknowledge-url")
+
+  val rdsSasBaseUrlForAuth:String = config.baseUrl("rds.sas")+rdsConfig.get[String]("sas.auth-url")
   val rdsAuthRequiredForThisEnv = rdsConfig.get[Boolean]("rdsAuthRequiredForThisEnv")
 
   def rdsAuthCredential: AuthCredential =
     AuthCredential(
-      client_id = rdsConfig.get[String]("clientId"),
-      client_secret = rdsConfig.get[String]("clientSecret"),
+      client_id = rdsConfig.get[String]("sas.clientId"),
+      client_secret = rdsConfig.get[String]("sas.clientSecret"),
       grant_type = "client_credentials"
     )
 

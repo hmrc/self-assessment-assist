@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.services.rds
 
 import cats.data.EitherT
 import uk.gov.hmrc.transactionalrisking.models.errors.MtdError
+import uk.gov.hmrc.transactionalrisking.utils.Logging
 //import cats.implicits.catsSyntaxEitherId
 import com.google.inject.ImplementedBy
 import play.api.http.Status.{ACCEPTED, OK}
@@ -38,22 +39,25 @@ trait RdsAuthConnector[F[_]] {
 class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http: HttpClient)(implicit
                                                                                             appConfig: AppConfig,
                                                                                             ec: ExecutionContext
-) extends RdsAuthConnector[Future] {
+) extends RdsAuthConnector[Future] with Logging{
 
   override def retrieveAuthorisedBearer()(implicit
                                           hc: HeaderCarrier
   ): EitherT[Future, MtdError, RdsAuthCredentials] = {
 
-    val url = s"${appConfig.rdsBaseUrlForSubmit}"
+    val url = s"${appConfig.rdsSasBaseUrlForAuth}+${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}"
 
-    val body = s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
+    val body = ""
+/*    val body = s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
       s"&client_secret=${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}" +
-      s"&grant_type=${URLEncoder.encode("client_credentials", "UTF-8")}"
+      s"&grant_type=${URLEncoder.encode("client_credentials", "UTF-8")}"*/
 
+    logger.info(s"RDSConnector :: request info url=$url body=$body")
     EitherT {
       http
         .POSTString(url, body, headers = Seq("Content-type" -> "application/x-www-form-urlencoded"))
         .map { response =>
+          logger.info(s"RDSConnector :: response is $response")
           response.status match {
             case ACCEPTED        => handleResponse(response)
             case OK              => handleResponse(response)
@@ -61,8 +65,12 @@ class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http:
           }
         }
         .recover {
-          case ex: HttpException         => Left(RdsAuthError)
-          case ex: UpstreamErrorResponse => Left(RdsAuthError)
+          case ex: HttpException         =>
+            logger.error(s"RDSConnector :: HttpException=$ex")
+            Left(RdsAuthError)
+          case ex: UpstreamErrorResponse =>
+            logger.error(s"RDSConnector :: UpstreamErrorResponse=$ex")
+            Left(RdsAuthError)
         }
     }
   }
