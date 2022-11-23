@@ -45,12 +45,14 @@ class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http:
                                           hc: HeaderCarrier
   ): EitherT[Future, MtdError, RdsAuthCredentials] = {
 
-    val url = s"${appConfig.rdsSasBaseUrlForAuth}${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}"
+    val url = s"${appConfig.rdsSasBaseUrlForAuth}"
 
-    val body = ""
-/*    val body = s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
+    //val body = s"&grant_type=${URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")}"
+    val body = s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
       s"&client_secret=${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}" +
-      s"&grant_type=${URLEncoder.encode("client_credentials", "UTF-8")}"*/
+      s"&grant_type=${URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")}"+
+      s"&code=${URLEncoder.encode("o1a2fXTJVU", "UTF-8")}"
+
 
     logger.info(s"RDSConnector :: request info url=$url body=$body")
     EitherT {
