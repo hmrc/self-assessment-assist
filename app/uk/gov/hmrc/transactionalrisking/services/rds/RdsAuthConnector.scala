@@ -64,8 +64,8 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
     EitherT {
       http
         .POSTString(url, body, headers = reqHeaders)
-        .map { response =>
-          logger.info(s"RDSConnector :: response is $response")
+        .map { response: HttpResponse =>
+          logger.info(s"RDSConnector :: response is ${response.body} ${response.headers} ${response.status}")
           response.status match {
             case ACCEPTED =>
               logger.info(s"RDSConnector :: ACCEPTED reponse")
