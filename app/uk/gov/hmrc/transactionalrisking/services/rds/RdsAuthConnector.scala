@@ -56,12 +56,14 @@ class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http:
 val credentials = s"${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}"+
     s":${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}"
 
-    logger.info(s"RDSConnector :: request info url=$url body=$body")
+    val reqHeaders = Seq("Content-type" -> "application/x-www-form-urlencoded",
+      "Accept"-> "application/json",
+      "Authorization"-> s"Basic $credentials")
+
+    logger.info(s"RDSConnector :: request info url=$url body=$body headers=$reqHeaders")
     EitherT {
       http
-        .POSTString(url, body, headers = Seq("Content-type" -> "application/x-www-form-urlencoded",
-          "Accept"-> "application/json",
-          "Authorization"-> s"Basic $credentials"))
+        .POSTString(url, body, headers = reqHeaders)
         .map { response =>
           logger.info(s"RDSConnector :: response is $response")
           response.status match {
