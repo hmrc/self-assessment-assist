@@ -59,10 +59,13 @@ class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http:
       http
         .POSTString(url, body, headers = Seq("Content-type" -> "application/x-www-form-urlencoded"))
         .map { response =>
-          logger.info(s"RDSConnector :: response is $response")
+          logger.info(s"RDSConnector :: response is ${response.json}")
           response.status match {
-            case ACCEPTED        => handleResponse(response)
-            case OK              => handleResponse(response)
+            case ACCEPTED        =>
+              logger.info(s"RDSConnector :: ACCEPTED reponse")
+              handleResponse(response)
+            case OK              => logger.info(s"RDSConnector :: Ok reponse")
+              handleResponse(response)
             case errorStatusCode => Left(RdsAuthError)
           }
         }
