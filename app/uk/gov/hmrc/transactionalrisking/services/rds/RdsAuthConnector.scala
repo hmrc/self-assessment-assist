@@ -36,10 +36,10 @@ trait RdsAuthConnector[F[_]] {
   def retrieveAuthorisedBearer()(implicit hc: HeaderCarrier): EitherT[F, MtdError, RdsAuthCredentials]
 }
 
-class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http: HttpClient)(implicit
+class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: HttpClient)(implicit
                                                                                             appConfig: AppConfig,
                                                                                             ec: ExecutionContext
-) extends RdsAuthConnector[Future] with Logging{
+) extends RdsAuthConnector[Future] with Logging {
 
   override def retrieveAuthorisedBearer()(implicit
                                           hc: HeaderCarrier
@@ -51,32 +51,32 @@ class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http:
     val body = /*s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
       s"&client_secret=${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}" +*/
       s"grant_type=${URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")}"
-     // s"&code=${URLEncoder.encode("o1a2fXTJVU", "UTF-8")}"
+    // s"&code=${URLEncoder.encode("o1a2fXTJVU", "UTF-8")}"
 
-val credentials = s"${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}"+
-    s":${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}"
+    val credentials = s"${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
+      s":${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}"
 
     val reqHeaders = Seq("Content-type" -> "application/x-www-form-urlencoded",
-      "Accept"-> "application/json",
-      "Authorization"-> s"Basic $credentials")
+      "Accept" -> "application/json",
+      "authorization" -> s"Basic $credentials")
 
-    logger.info(s"RDSConnector :: request info url=$url body=$body headers=$reqHeaders")
+    logger.info(s"RDSConnector :: request info url=$url body=$body")
     EitherT {
       http
         .POSTString(url, body, headers = reqHeaders)
         .map { response =>
           logger.info(s"RDSConnector :: response is $response")
           response.status match {
-            case ACCEPTED        =>
+            case ACCEPTED =>
               logger.info(s"RDSConnector :: ACCEPTED reponse")
               handleResponse(response)
-            case OK              => logger.info(s"RDSConnector :: Ok reponse")
+            case OK => logger.info(s"RDSConnector :: Ok reponse")
               handleResponse(response)
             case errorStatusCode => Left(RdsAuthError)
           }
         }
         .recover {
-          case ex: HttpException         =>
+          case ex: HttpException =>
             logger.error(s"RDSConnector :: HttpException=$ex")
             Left(RdsAuthError)
           case ex: UpstreamErrorResponse =>
@@ -89,7 +89,7 @@ val credentials = s"${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "
   private def handleResponse(response: HttpResponse): Either[MtdError, RdsAuthCredentials] =
     response.json.asOpt[RdsAuthCredentials].toRight(RdsAuthError)
 
-//  private def handleError(statusCode: Int): Either[RdsAuthError, RdsAuthCredentials] =
-//    RdsAuthError(statusCode).asLeft[RdsAuthCredentials]
+  //  private def handleError(statusCode: Int): Either[RdsAuthError, RdsAuthCredentials] =
+  //    RdsAuthError(statusCode).asLeft[RdsAuthCredentials]
 
 }
