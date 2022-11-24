@@ -35,8 +35,8 @@ trait MockRdsAuthConnector extends MockFactory {
 
     def retrieveAuthorisedBearer(): CallHandler[EitherT[Future,MtdError, RdsAuthCredentials]] = {
 
-        (mockRdsAuthConnector.retrieveAuthorisedBearer()(_: HeaderCarrier))
-          .expects(*).anyNumberOfTimes()
+        (mockRdsAuthConnector.retrieveAuthorisedBearer()(_: HeaderCarrier, _:String))
+          .expects(*,*).anyNumberOfTimes()
           .returns(EitherT.fromEither(Right(RdsAuthCredentials(UUID.randomUUID().toString,"bearer",3600))))
 
     }

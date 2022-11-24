@@ -23,7 +23,7 @@ import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
 import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleNotableEventType, simpleNRSResponseReportSubmission, simpleAcknowledgedNotableEventType, simpleNRSResponseAcknowledgeSubmission}
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,17 +37,17 @@ trait MockNrsService extends MockFactory {
 
     def buildNrsSubmission(selfAssessmentSubmission: RequestData,
                            submissionTimestamp: OffsetDateTime,
-                           request: UserRequest[_], notableEventType: NotableEventType, corrrelationID:String): CallHandler[NrsSubmission] = {
+                           request: UserRequest[_], notableEventType: NotableEventType, taxYear: String) ( corrrelationID:String) : CallHandler[NrsSubmission] = {
       (mockNrsService.buildNrsSubmission(_: RequestData,
         _: OffsetDateTime,
-        _: UserRequest[_], _: NotableEventType,_:String, _:String))
+        _: UserRequest[_], _: NotableEventType, _:String) ( _:String))
         .expects(*, *, *, *, *, *).anyNumberOfTimes()
     }
 
     def submit(generateReportRequest: RequestData, generatedNrsId: String, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType):
     CallHandler[Future[Option[NrsResponse]]] = {
       (mockNrsService.submit(_: RequestData, _: OffsetDateTime, _: NotableEventType,_:String)
-      (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
+      (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext,  _: String))
         .expects( *, *, simpleNotableEventType, *, *, *, *, *)
         .returns( Future(Some(simpleNRSResponseReportSubmission) )).anyNumberOfTimes()
     }

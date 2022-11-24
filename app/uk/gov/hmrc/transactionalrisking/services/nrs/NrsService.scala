@@ -37,7 +37,7 @@ class NrsService @Inject()(
 
   def buildNrsSubmission(requestData: RequestData,
                          submissionTimestamp: OffsetDateTime,
-                         request: UserRequest[_], notableEventType: NotableEventType, taxYear: String, correlationID:String): NrsSubmission = {
+                         request: UserRequest[_], notableEventType: NotableEventType, taxYear: String)(implicit correlationID: String): NrsSubmission = {
     logger.info(s"$correlationID::[buildNrsSubmission]Build the NRS submission")
 
     //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationID))
@@ -77,7 +77,7 @@ class NrsService @Inject()(
   ): Future[Option[NrsResponse]] = {
     logger.info(s"$correlationID::[submit]submit the data to nrs")
 
-    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType, taxYear, correlationID)
+    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType, taxYear)
     logger.info(s"$correlationID::[submit]Request initiated to store report content to NRS")
     connector.submit(nrsSubmission).map { response =>
       val ret = response.toOption

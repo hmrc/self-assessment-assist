@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DefaultRdsAuthConnector])
 trait RdsAuthConnector[F[_]] {
-  def retrieveAuthorisedBearer()(implicit hc: HeaderCarrier): EitherT[F, MtdError, RdsAuthCredentials]
+  def retrieveAuthorisedBearer()(implicit hc: HeaderCarrier, correlationID: String): EitherT[F, MtdError, RdsAuthCredentials]
 }
 
 class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: HttpClient)(implicit
@@ -44,7 +44,7 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
 ) extends RdsAuthConnector[Future] with Logging {
 
   override def retrieveAuthorisedBearer()(implicit
-                                          hc: HeaderCarrier
+                                          hc: HeaderCarrier, correlationID: String
   ): EitherT[Future, MtdError, RdsAuthCredentials] = {
 
     val url = s"${appConfig.rdsSasBaseUrlForAuth}"
@@ -54,8 +54,9 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
     val utfEncodedGrantType = URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")
     val utfEncodedCode = URLEncoder.encode("o1a2fXTJVU", "UTF-8")
 
-    val body = s"client_id=${Base64.getEncoder.encodeToString(utfEncodedClientId.getBytes)}" +
-      s"&client_secret=${Base64.getEncoder.encodeToString(utfEncodedSecret.getBytes)}" +
+    val body =
+//      s"client_id=${Base64.getEncoder.encodeToString(utfEncodedClientId.getBytes)}" +
+//      s"&client_secret=${Base64.getEncoder.encodeToString(utfEncodedSecret.getBytes)}" +
       s"grant_type=${utfEncodedGrantType}" +
      s"&code=${utfEncodedCode}"
 
@@ -67,27 +68,27 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
       "authorization" -> s"Basic $base64EncodedCredentials",
       "Authorization" -> s"Basic $base64EncodedCredentials")
 
-    logger.info(s"RDSConnector :: request info url=$url body=$body")
+    logger.info(s"$correlationID::[retrieveAuthorisedBearer] request info url=$url body=$body")
     EitherT {
       http
         .POSTString(url, body, headers = reqHeaders)
-        .map { response: HttpResponse =>
-          logger.info(s"RDSConnector :: response is ${response.body} ${response.headers} ${response.status}")
+        .map { response =>
+          logger.info(s"$correlationID::[retrieveAuthorisedBearer] response is $response")
           response.status match {
             case ACCEPTED =>
-              logger.info(s"RDSConnector :: ACCEPTED reponse")
+              logger.info(s"$correlationID::[retrieveAuthorisedBearer] ACCEPTED reponse")
               handleResponse(response)
-            case OK => logger.info(s"RDSConnector :: Ok reponse")
+            case OK => logger.info(s"$correlationID::[retrieveAuthorisedBearer] Ok reponse")
               handleResponse(response)
             case errorStatusCode => Left(RdsAuthError)
           }
         }
         .recover {
           case ex: HttpException =>
-            logger.error(s"RDSConnector :: HttpException=$ex")
+            logger.error(s"$correlationID::[retrieveAuthorisedBearer] HttpException=$ex")
             Left(RdsAuthError)
           case ex: UpstreamErrorResponse =>
-            logger.error(s"RDSConnector :: UpstreamErrorResponse=$ex")
+            logger.error(s"$correlationID::[retrieveAuthorisedBearer] UpstreamErrorResponse=$ex")
             Left(RdsAuthError)
         }
     }

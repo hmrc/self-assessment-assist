@@ -142,12 +142,12 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
-                                           fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
+                                           fraudRiskReport: FraudRiskReport)(implicit correlationID: String): ServiceOutcome[RdsRequest]
   = {
-    logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
+    logger.info(s"$correlationID::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
 
     //TODO Errors need to be dealt looked at.
-    Right(ResponseWrapper(correlationId, RdsRequest(
+    Right(ResponseWrapper(correlationID, RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationID", request.calculationID.toString),
         RdsRequest.InputWithString("nino", request.nino),
