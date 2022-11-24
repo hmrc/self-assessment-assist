@@ -50,6 +50,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
       val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
       rdsRequestSO match {
         case Right(ResponseWrapper(correlationIdResponse, rdsRequest)) =>
+          logger.info(s"$correlationID::[RdsService submit ] RdsAssessmentRequest Created")
           val submit = connector.submit(rdsRequest, rdsAuthCredentials)
           val ret = submit.map {
             _ match {
@@ -145,7 +146,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                                            fraudRiskReport: FraudRiskReport)(implicit correlationID: String): ServiceOutcome[RdsRequest]
   = {
     logger.info(s"$correlationID::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
-
     //TODO Errors need to be dealt looked at.
     Right(ResponseWrapper(correlationID, RdsRequest(
       Seq(
