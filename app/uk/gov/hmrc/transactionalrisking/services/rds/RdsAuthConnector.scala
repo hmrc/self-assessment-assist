@@ -73,7 +73,7 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
       http
         .POSTString(url, body, headers = reqHeaders)
         .map { response =>
-          logger.info(s"$correlationID::[retrieveAuthorisedBearer] response is $response")
+          logger.info(s"$correlationID::[retrieveAuthorisedBearer] response is $response body=${response.body}}")
           response.status match {
             case ACCEPTED =>
               logger.info(s"$correlationID::[retrieveAuthorisedBearer] ACCEPTED reponse")

@@ -67,13 +67,13 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                 }
               }
               case Left(errorWrapper) =>
-                logger.warn(s"$correlationID::[RdsService][submit]Unable to do generate report $errorWrapper.error")
+                logger.warn(s"$correlationID::[RdsService][submit] RDS connector failed Unable to generate report $errorWrapper.error")
                 Left(errorWrapper)
             }
           }
           ret
         case Left(errorWrapper) =>
-          logger.warn(s"$correlationID::[RdsService][submit]Unable to generate report request $errorWrapper.error")
+          logger.warn(s"$correlationID::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request $errorWrapper.error")
           Future(Left(errorWrapper): ServiceOutcome[AssessmentReport])
       }
     }

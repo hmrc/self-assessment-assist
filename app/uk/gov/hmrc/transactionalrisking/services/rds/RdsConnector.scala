@@ -41,23 +41,27 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
                              appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID: String) extends Logging {
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-    logger.info(s"$correlationID::[submit]submit the report")
+    logger.info(s"$correlationID::[RdsConnector:submit]submit the report")
 
-    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+    def rdsAuthHeaders = rdsAuthCredentials.map{ r =>
+      logger.info(s"$r")
+      rdsAuthHeader(r)
+    }.getOrElse(Seq.empty)
 
+    logger.info(s"rdsAuthHeader $rdsAuthHeaders")
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationID::[submit]======= response is $response")
+        logger.info(s"$correlationID::[RdsConnector:submit]======= response is $response")
         response.status match {
           case Status.OK =>
-            logger.info(s"$correlationID::[submit]Successfully submitted the report")
+            logger.info(s"$correlationID::[RdsConnector:submit]Successfully submitted the report")
             Right(ResponseWrapper(correlationID, response.json.validate[NewRdsAssessmentReport].get))
           case Status.NOT_FOUND =>
-            logger.warn(s"$correlationID::[submit]Unable to submit the report")
+            logger.warn(s"$correlationID::[RdsConnector:submit]Unable to submit the report")
             Left(ErrorWrapper(correlationID, MatchingResourcesNotFoundError))
           case unexpectedStatus =>
-            logger.error(s"$correlationID::[submit]Unable to submit the report due to unexpected status code returned")
+            logger.error(s"$correlationID::[RdsConnector:submit]Unable to submit the report due to unexpected status code returned")
             Left(ErrorWrapper(correlationID, ServiceUnavailableError))
         }
       }
