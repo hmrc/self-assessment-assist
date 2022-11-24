@@ -65,7 +65,7 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
 
     val reqHeaders = Seq("Content-type" -> "application/x-www-form-urlencoded",
       "Accept" -> "application/json",
-      "authorization" -> s"Basic $base64EncodedCredentials",
+     // "authorization" -> s"Basic $base64EncodedCredentials",
       "Authorization" -> s"Basic $base64EncodedCredentials")
 
     logger.info(s"$correlationID::[retrieveAuthorisedBearer] request info url=$url body=$body")
