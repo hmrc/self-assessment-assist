@@ -66,8 +66,13 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         }
       }
       .recover {
-        case ex: HttpException => Left(ErrorWrapper(correlationID, ServiceUnavailableError))
-        case ex: UpstreamErrorResponse => Left(ErrorWrapper(correlationID, ForbiddenDownstreamError))
+        case ex: HttpException =>
+          logger.error(s"HttpException $ex")
+          Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+
+        case ex: UpstreamErrorResponse =>
+          logger.error(s"UpstreamErrorResponse $ex")
+          Left(ErrorWrapper(correlationID, ForbiddenDownstreamError))
       }
   }
 
