@@ -19,6 +19,8 @@ package uk.gov.hmrc.transactionalrisking.services.rds
 import cats.data.EitherT
 import uk.gov.hmrc.transactionalrisking.models.errors.MtdError
 import uk.gov.hmrc.transactionalrisking.utils.Logging
+
+import java.util.Base64
 //import cats.implicits.catsSyntaxEitherId
 import com.google.inject.ImplementedBy
 import play.api.http.Status.{ACCEPTED, OK}
@@ -47,19 +49,23 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
 
     val url = s"${appConfig.rdsSasBaseUrlForAuth}"
 
-    //val body = s"&grant_type=${URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")}"
-    val body = s"client_id=${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
-      s"&client_secret=${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}" +
-      s"grant_type=${URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")}" +
-     s"&code=${URLEncoder.encode("o1a2fXTJVU", "UTF-8")}"
+    val utfEncodedClientId = URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")
+    val utfEncodedSecret = URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")
+    val utfEncodedGrantType = URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")
+    val utfEncodedCode = URLEncoder.encode("o1a2fXTJVU", "UTF-8")
 
-    val credentials = s"${URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")}" +
-      s":${URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")}"
+    val body = s"client_id=${Base64.getEncoder.encodeToString(utfEncodedClientId.getBytes)}" +
+      s"&client_secret=${Base64.getEncoder.encodeToString(utfEncodedSecret.getBytes)}" +
+      s"grant_type=${utfEncodedGrantType}" +
+     s"&code=${utfEncodedCode}"
 
-    val reqHeaders = Seq("Content-type" -> "application/json",
+    val credentials = s"$utfEncodedClientId:$utfEncodedSecret"
+    val base64EncodedCredentials = Base64.getEncoder.encodeToString(credentials.getBytes)
+
+    val reqHeaders = Seq("Content-type" -> "application/x-www-form-urlencoded",
       "Accept" -> "application/json",
-      "authorization" -> s"Basic $credentials",
-      "Authorization" -> s"Basic $credentials")
+      "authorization" -> s"Basic $base64EncodedCredentials",
+      "Authorization" -> s"Basic $base64EncodedCredentials")
 
     logger.info(s"RDSConnector :: request info url=$url body=$body")
     EitherT {
