@@ -54,18 +54,14 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
     val utfEncodedGrantType = URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")
     val utfEncodedCode = URLEncoder.encode("o1a2fXTJVU", "UTF-8")
 
-    val body =
-//      s"client_id=${Base64.getEncoder.encodeToString(utfEncodedClientId.getBytes)}" +
-//      s"&client_secret=${Base64.getEncoder.encodeToString(utfEncodedSecret.getBytes)}" +
-      s"grant_type=${utfEncodedGrantType}" +
-     s"&code=${utfEncodedCode}"
+    val body = s"grant_type=$utfEncodedGrantType&code=$utfEncodedCode"
 
     val credentials = s"$utfEncodedClientId:$utfEncodedSecret"
     val base64EncodedCredentials = Base64.getEncoder.encodeToString(credentials.getBytes)
 
-    val reqHeaders = Seq("Content-type" -> "application/x-www-form-urlencoded",
+    val reqHeaders = Seq(
+      "Content-type" -> "application/x-www-form-urlencoded",
       "Accept" -> "application/json",
-     // "authorization" -> s"Basic $base64EncodedCredentials",
       "Authorization" -> s"Basic $base64EncodedCredentials")
 
     logger.info(s"$correlationID::[retrieveAuthorisedBearer] request info url=$url body=$body")

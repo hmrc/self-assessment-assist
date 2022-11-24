@@ -41,14 +41,10 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
                              appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID: String) extends Logging {
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-    logger.info(s"$correlationID::[RdsConnector:submit]submit the report")
+    logger.info(s"$correlationID::[RdsConnector:submit] requesting report")
 
-    def rdsAuthHeaders = rdsAuthCredentials.map{ r =>
-      logger.info(s"$r")
-      rdsAuthHeader(r)
-    }.getOrElse(Seq.empty)
+    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
-    logger.info(s"$correlationID::[RdsConnector:submit] rdsAuthHeader $rdsAuthHeaders")
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
