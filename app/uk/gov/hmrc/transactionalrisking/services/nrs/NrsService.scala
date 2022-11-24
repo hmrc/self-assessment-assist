@@ -37,7 +37,7 @@ class NrsService @Inject()(
 
   def buildNrsSubmission(requestData: RequestData,
                          submissionTimestamp: OffsetDateTime,
-                         request: UserRequest[_], notableEventType: NotableEventType, taxYear: String, correlationID:String): NrsSubmission = {
+                         request: UserRequest[_], notableEventType: NotableEventType, taxYear: String)(implicit correlationID: String): NrsSubmission = {
     logger.info(s"$correlationID::[buildNrsSubmission]Build the NRS submission")
 
     //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationID))
@@ -57,7 +57,7 @@ class NrsService @Inject()(
         payloadSha256Checksum = sha256Checksum,
         userSubmissionTimestamp = formattedDate,
         identityData = request.userDetails.identityData,
-        userAuthToken = request.headers.get("Authorization").get,  //TODO:Fix error handling for get throws. Maybe build NRS should be moved out of class.
+        userAuthToken = request.headers.get("Authorization").get, //TODO:Fix error handling for get throws. Maybe build NRS should be moved out of class.
         headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }),
         searchKeys =
           SearchKeys(
@@ -77,21 +77,20 @@ class NrsService @Inject()(
   ): Future[Option[NrsResponse]] = {
     logger.info(s"$correlationID::[submit]submit the data to nrs")
 
-    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType, taxYear, correlationID)
+    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType, taxYear)
     logger.info(s"$correlationID::[submit]Request initiated to store report content to NRS")
     connector.submit(nrsSubmission).map { response =>
       val ret = response.toOption
       ret match {
-          case Some(response) =>
-            logger.info(s"$correlationID::[submit]Succesful submission")
-            response
-          case None =>
-            logger.info(s"$correlationID::[submit]Nothing submitted")
-            None
+        case Some(response) =>
+          logger.info(s"$correlationID::[submit]Succesful submission")
+          response
+        case None =>
+          logger.info(s"$correlationID::[submit]Nothing submitted")
+          None
       }
       ret
     }
-
   }
 
 }

@@ -48,7 +48,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"======= response is $response")
+        logger.info(s"$correlationID::[submit]======= response is $response")
         response.status match {
           case Status.OK =>
             logger.info(s"$correlationID::[submit]Successfully submitted the report")
@@ -95,10 +95,10 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
                 Left(ErrorWrapper(correlationID, DownstreamError))
             }
           case code@NOT_FOUND =>
-            logger.error(s"[acknowledgeRds]not found error during rds acknowledgement $code")
+            logger.error(s"$correlationID::[acknowledgeRds]not found error during rds acknowledgement $code")
             Left(ErrorWrapper(correlationID, ResourceNotFoundError))
           case _@errorCode =>
-            logger.error(s"[acknowledgeRds]error during rds acknowledgement $errorCode")
+            logger.error(s"$correlationID::[acknowledgeRds]error during rds acknowledgement $errorCode")
             Left(ErrorWrapper(correlationID, DownstreamError))
         }
       }

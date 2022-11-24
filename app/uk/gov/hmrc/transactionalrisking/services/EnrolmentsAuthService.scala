@@ -40,20 +40,20 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
   }
 
   def authorised(predicate: Predicate, correlationID: String, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
-    logger.info(s"correlationID::[authorised]Performing authorisation check")
+    logger.info(s"$correlationID::[authorised]Performing authorisation check")
 
     if (!nrsRequired) {
-      logger.info(s"correlationID::[authorised]Performing nrs not required")
+      logger.info(s"$correlationID::[authorised]Performing nrs not required")
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
         case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.individual, enrolments, correlationID)
         case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.organisation, enrolments, correlationID)
         case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.agent, enrolments, correlationID)
         case _ =>
-          logger.warn(s"correlationID::[authorised]Authorisation failed due to unsupported affinity group.")
+          logger.warn(s"$correlationID::[authorised]Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
       } recoverWith unauthorisedError(correlationID)
     } else {
-      logger.info(s"correlationID::[authorised]authorisation NRS required.")
+      logger.info(s"$correlationID::[authorised]authorisation NRS required.")
 
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
         and internalId and externalId and agentCode and credentials
@@ -68,7 +68,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
           ~ mdtpInfo ~ credStrength ~ logins
           ~ itmpName ~ itmpAddress
           if affGroup.contains(AffinityGroup.Organisation) || affGroup.contains(AffinityGroup.Individual) || affGroup.contains(AffinityGroup.Agent) =>
-          logger.info(s"correlationID::[authorised]authorisation is ok create userDetails .")
+          logger.info(s"$correlationID::[authorised]authorisation is ok create userDetails .")
 
           val emptyItmpName: ItmpName = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
@@ -84,7 +84,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
           createUserDetailsWithLogging(affinityGroup = affGroup.get.toString, enrolments, correlationID, Some(identityData))
         case _ =>
-          logger.warn(s"[EnrolmentsAuthService] [authorised with nrsRequired = true] Authorisation failed due to unsupported affinity group.")
+          logger.warn(s"$correlationID::[EnrolmentsAuthService] [authorised with nrsRequired = true] Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
 
       } recoverWith unauthorisedError(correlationID)
