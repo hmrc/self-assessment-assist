@@ -42,6 +42,8 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[RdsConnector:submit] requesting report")
+    logger.info(s"$correlationID::[RdsConnector:submit] Base url ${appConfig.rdsBaseUrlForSubmit}")
+
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
