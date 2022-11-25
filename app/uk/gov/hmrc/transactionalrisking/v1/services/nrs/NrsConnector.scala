@@ -51,7 +51,7 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
     }
 
     retry(appConfig.nrsRetries, retryCondition) { attemptNumber =>
-      logger.info(s"$correlationID::[submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
+      logger.info(s"$correlationID::[submit] Attempt $attemptNumber NRS submission: sending POST request to $url with key $apiKey)")
 
       httpClient
         .POST[NrsSubmission, HttpResponse](s"$url", nrsSubmission, Seq("X-API-Key" -> apiKey))
