@@ -53,9 +53,9 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
   def featureSwitch: Option[Configuration] = configuration.getOptional[Configuration](s"feature-switch")
 
   // NRS config items
-  val nrsApiKey: String = config.getString("access-keys.xApiKey")
   private val nrsConfig = configuration.get[Configuration]("microservice.services.non-repudiation")
   val nrsBaseUrl: String = config.baseUrl("non-repudiation")+nrsConfig.get[String]("submit-url")
+  val nrsApiKey: String = nrsConfig.get[String]("x-api-key")
 
   private val rdsConfig = configuration.get[Configuration]("microservice.services.rds")
   val rdsBaseUrlForSubmit:String = config.baseUrl("rds")+rdsConfig.get[String]("submit-url")
