@@ -30,16 +30,17 @@ trait MockAppConfig extends MockFactory {
   object MockedAppConfig {
 
     // RDS config items
-    def rdsBaseUrlForSubmit: CallHandler[String] = (mockAppConfig.rdsBaseUrlForSubmit _).expects()
-    def rdsBaseUrlForAcknowledge: CallHandler[String] = (mockAppConfig.rdsBaseUrlForAcknowledge _).expects()
+    def rdsBaseUrlForSubmit: CallHandler[String] = (mockAppConfig.rdsBaseUrlForSubmit _).expects().anyNumberOfTimes()
+    def rdsBaseUrlForAcknowledge: CallHandler[String] = (mockAppConfig.rdsBaseUrlForAcknowledge _).expects().anyNumberOfTimes()
+    def rdsAuthRequiredForThisEnv: CallHandler[Boolean] = (mockAppConfig.rdsAuthRequiredForThisEnv _).expects().anyNumberOfTimes()
 
     //API Config
     def featureSwitch: CallHandler[Option[Configuration]] = (mockAppConfig.featureSwitch _: () => Option[Configuration]).expects()
 
     // NRS config items
-    def nrsApiKey: CallHandler[String] = (mockAppConfig.nrsApiKey _).expects()
-    def appName: CallHandler[String] = (mockAppConfig.appName _).expects()
-    def nrsBaseUrl: CallHandler[String] = (mockAppConfig.nrsBaseUrl _).expects()
-    def nrsRetries: CallHandler[List[FiniteDuration]] = (mockAppConfig.nrsRetries _).expects()
+    def nrsApiKey: CallHandler[String] = (mockAppConfig.nrsApiKey _).expects().anyNumberOfTimes()
+    def appName: CallHandler[String] = (mockAppConfig.appName _).expects().anyNumberOfTimes()
+    def nrsBaseUrl: CallHandler[String] = (mockAppConfig.nrsBaseUrl _).expects().anyNumberOfTimes()
+    def nrsRetries: CallHandler[List[FiniteDuration]] = (mockAppConfig.nrsRetries _).expects().anyNumberOfTimes()
   }
 }

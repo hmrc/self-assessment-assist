@@ -19,6 +19,7 @@ package uk.gov.hmrc.transactionalrisking.config
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.transactionalrisking.utils.Retrying
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.AuthCredential
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, FiniteDuration}
@@ -31,12 +32,17 @@ trait AppConfig {
 
   // API Config
   def featureSwitch: Option[Configuration]
+  
+  //SAS
+  def rdsSasBaseUrlForAuth : String
+  def rdsAuthRequiredForThisEnv: Boolean
 
   // NRS config items
   def nrsApiKey: String
   def nrsRetries: List[FiniteDuration]
   def appName: String
   def nrsBaseUrl: String
+  def rdsAuthCredential: AuthCredential
 }
 
 @Singleton
@@ -54,6 +60,16 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
   private val rdsConfig = configuration.get[Configuration]("microservice.services.rds")
   val rdsBaseUrlForSubmit:String = config.baseUrl("rds")+rdsConfig.get[String]("submit-url")
   val rdsBaseUrlForAcknowledge:String = config.baseUrl("rds")+rdsConfig.get[String]("acknowledge-url")
+
+  val rdsSasBaseUrlForAuth:String = config.baseUrl("rds.sas")+rdsConfig.get[String]("sas.auth-url")
+  val rdsAuthRequiredForThisEnv = rdsConfig.get[Boolean]("rdsAuthRequiredForThisEnv")
+
+  def rdsAuthCredential: AuthCredential =
+    AuthCredential(
+      client_id = rdsConfig.get[String]("sas.clientId"),
+      client_secret = rdsConfig.get[String]("sas.clientSecret"),
+      grant_type = "client_credentials"
+    )
 
   private val cipConfig = configuration.get[Configuration]("microservice.services.cip-fraud-service")
   val cipFraudServiceBaseUrl:String = config.baseUrl("cip-fraud-service")+cipConfig.get[String]("submit-url")

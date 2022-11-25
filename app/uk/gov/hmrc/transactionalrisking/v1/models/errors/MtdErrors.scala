@@ -81,7 +81,7 @@ object InvalidBearerTokenError extends MtdError("UNAUTHORIZED", "Bearer token is
 // Legacy Authorisation Errors
 object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.")
 object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.")
-
+//TODO check correct message
 object ForbiddenDownstreamError extends MtdError(
   code = "INTERNAL_SERVER_ERROR",
   message = "An internal server error occurred",
@@ -90,7 +90,7 @@ object ForbiddenDownstreamError extends MtdError(
       """
         |{
         |  "code": "INTERNAL_SERVER_ERROR",
-        |  "message": "An internal server error occurred"
+        |  "message": "An internal server error occurred, forbidden"
         |}
       """.stripMargin
     )
@@ -103,3 +103,4 @@ object UnsupportedVersionError extends MtdError("NOT_FOUND", "The requested reso
 object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body")
 
 object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later")
+object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplised")

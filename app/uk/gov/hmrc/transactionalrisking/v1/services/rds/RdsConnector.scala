@@ -19,8 +19,12 @@ package uk.gov.hmrc.transactionalrisking.v1.services.rds
 import play.api.http.Status
 import play.api.http.Status.{CREATED, NOT_FOUND}
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.libs.ws.WSClient
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, ResourceNotFoundError}
+import javax.inject.Named
+//import uk.gov.hmrc.http.{HttpClient}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
@@ -33,46 +37,52 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client is recommended by HMRC
-                              //val httpClient: HttpClient,
-                             appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID:String) extends Logging{
+class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
+                             appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID: String) extends Logging {
 
-  private def baseUrlForRdsAssessmentsSubmit = s"${appConfig.rdsBaseUrlForSubmit}"
-  private def baseUrlToAcknowledgeRdsAssessments = s"${appConfig.rdsBaseUrlForAcknowledge}"
+  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+    logger.info(s"$correlationID::[RdsConnector:submit] requesting report")
 
+    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
-  def submit(request: RdsRequest)(implicit ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-    logger.info(s"$correlationID::[submit]submit the report")
-
-    wsClient
-      .url(baseUrlForRdsAssessmentsSubmit)
-      .post(Json.toJson(request))
-      .map(response =>
+    httpClient
+      .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
+      .map { response =>
+        logger.info(s"$correlationID::[RdsConnector:submit]======= response is $response")
         response.status match {
           case Status.OK =>
-            logger.info(s"$correlationID::[submit]Successfully submitted the report")
+            logger.info(s"$correlationID::[RdsConnector:submit]Successfully submitted the report")
             Right(ResponseWrapper(correlationID, response.json.validate[NewRdsAssessmentReport].get))
           case Status.NOT_FOUND =>
-            logger.warn(s"$correlationID::[submit]Unable to submit the report")
+            logger.warn(s"$correlationID::[RdsConnector:submit]Unable to submit the report")
             Left(ErrorWrapper(correlationID, MatchingResourcesNotFoundError))
           case unexpectedStatus =>
-            logger.error(s"$correlationID::[submit]Unable to submit the report due to unexpected status code returned")
+            logger.error(s"$correlationID::[RdsConnector:submit]Unable to submit the report due to unexpected status code returned")
             Left(ErrorWrapper(correlationID, ServiceUnavailableError))
         }
-      )
+      }
+      .recover {
+        case ex: HttpException =>
+          logger.error(s"HttpException $ex")
+          Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+
+        case ex: UpstreamErrorResponse =>
+          logger.error(s"UpstreamErrorResponse $ex")
+          Left(ErrorWrapper(correlationID, ForbiddenDownstreamError))
+      }
   }
 
 
-  def acknowledgeRds(request: RdsRequest)(implicit hc: HeaderCarrier,
-                                          ec: ExecutionContext,
-                                          correlationID:String
-                                          ): Future[ ServiceOutcome[ NewRdsAssessmentReport ]  ] = {
+  def acknowledgeRds(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier,
+                                                                                  ec: ExecutionContext,
+                                                                                  correlationID: String
+  ): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[acknowledgeRds]acknowledge the report")
+    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
-    wsClient
-      .url(baseUrlToAcknowledgeRdsAssessments)
-      .post(Json.toJson(request))
-      .map(response =>
+    httpClient
+      .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
+      .map { response =>
         response.status match {
           case code@CREATED =>
             logger.debug(s"$correlationID::[acknowledgeRds] submitting acknowledgement to RDS success")
@@ -82,20 +92,24 @@ class RdsConnector @Inject()(val wsClient: WSClient, //TODO revisit which client
             //Right(ResponseWrapper( correlationId, AcknowledgeReport( NO_CONTENT, 2022 ) ) )
 
             response.json.validate[NewRdsAssessmentReport] match {
-              case  JsSuccess(newRdsAssessmentReport, _)  =>
+              case JsSuccess(newRdsAssessmentReport, _) =>
                 logger.info(s"$correlationID::[acknowledgeRds]the results return are ok")
-                Right( ResponseWrapper(correlationID, newRdsAssessmentReport ) )
+                Right(ResponseWrapper(correlationID, newRdsAssessmentReport))
               case JsError(e) =>
                 logger.warn(s"$correlationID::[acknowledgeRds]Unable to validate the returned results failed with $e")
-                Left (ErrorWrapper (correlationID, DownstreamError) )
+                Left(ErrorWrapper(correlationID, DownstreamError))
             }
           case code@NOT_FOUND =>
-            logger.error(s"[acknowledgeRds]not found error during rds acknowledgement $code")
-            Left(ErrorWrapper(correlationID, ResourceNotFoundError ))
+            logger.error(s"$correlationID::[acknowledgeRds]not found error during rds acknowledgement $code")
+            Left(ErrorWrapper(correlationID, ResourceNotFoundError))
           case _@errorCode =>
-            logger.error(s"[acknowledgeRds]error during rds acknowledgement $errorCode")
-            Left(ErrorWrapper(correlationID, DownstreamError ))
+            logger.error(s"$correlationID::[acknowledgeRds]error during rds acknowledgement $errorCode")
+            Left(ErrorWrapper(correlationID, DownstreamError))
         }
-      )
+      }
+      .recover {
+        case ex: HttpException => Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+        case ex: UpstreamErrorResponse => Left(ErrorWrapper(correlationID, ForbiddenDownstreamError))
+      }
   }
 }

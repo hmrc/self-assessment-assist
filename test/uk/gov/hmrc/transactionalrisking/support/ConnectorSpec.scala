@@ -30,7 +30,19 @@ trait ConnectorSpec extends UnitSpec
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   implicit val correlationId: String = simpleRDSCorrelationID
+  val otherHeaders: Seq[(String, String)] = Seq(
+    "Gov-Test-Scenario" -> "DEFAULT",
+    "AnotherHeader" -> "HeaderValue"
+  )
+
+  val dummyHeaderCarrierConfig: HeaderCarrier.Config =
+    HeaderCarrier.Config(
+      Seq("^not-test-BaseUrl?$".r),
+      Seq.empty[String],
+      Some("self-assessment-assist-api")
+    )
+
 
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
-
+  //implicit val hc: HeaderCarrier = HeaderCarrier(requestId = Some(RequestId("123")), otherHeaders = otherHeaders)
 }

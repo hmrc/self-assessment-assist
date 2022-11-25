@@ -22,7 +22,7 @@ import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import java.time.LocalDate
 
 case class SearchKeys(nino: String,
-                      taxYear: String, //TODO is taxPeriodEndDate optional??
+                      taxYear: String,
                       reportId: String
                      )
 

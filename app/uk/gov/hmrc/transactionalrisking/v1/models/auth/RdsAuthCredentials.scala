@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.models.domain
+package uk.gov.hmrc.transactionalrisking.v1.models.auth
 
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.FraudRiskRequest.FraudRiskHeaders
+import play.api.libs.json.Json
 
-// This is still being determined; please see TRDT-85.//TODO revisit me later
-class FraudRiskRequest(nino: String, taxYear: String, fraudRiskHeaders: FraudRiskHeaders)
+final case class RdsAuthCredentials(access_token: String, token_type: String, expires_in: Int)
 
-object FraudRiskRequest {
-  type FraudRiskHeaders = Map[String, String]
+object RdsAuthCredentials {
+  implicit val format = Json.format[RdsAuthCredentials]
+
+  def rdsAuthHeader(rdsAuthCredentials: RdsAuthCredentials): Seq[(String, String)] =
+    Seq("Authorization" -> s"Bearer ${rdsAuthCredentials.access_token}")
 }

@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
-//import com.kenshoo.play.metrics.Metrics
-
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController.ninoKey
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
-//import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
@@ -41,7 +38,7 @@ class NrsService @Inject()(
 
   def buildNrsSubmission(requestData: RequestData,
                          submissionTimestamp: OffsetDateTime,
-                         request: UserRequest[_], notableEventType: NotableEventType, taxYear: String, correlationID:String): NrsSubmission = {
+                         request: UserRequest[_], notableEventType: NotableEventType, taxYear: String)(implicit correlationID: String): NrsSubmission = {
     logger.info(s"$correlationID::[buildNrsSubmission]Build the NRS submission")
 
     //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationID))
@@ -81,7 +78,7 @@ class NrsService @Inject()(
   ): Future[Option[NrsResponse]] = {
     logger.info(s"$correlationID::[submit]submit the data to nrs")
 
-    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType, taxYear, correlationID)
+    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType, taxYear)
     logger.info(s"$correlationID::[submit]Request initiated to store report content to NRS")
     connector.submit(nrsSubmission).map { response =>
       val ret = response.toOption

@@ -45,7 +45,7 @@ class IntegrationFrameworkService @Inject()(){
   val logger: Logger = Logger("IntegrationFrameworkService")
 //TODO fix me actual integration and stub pending
   def getCalculationInfo(id: UUID, nino: String)(implicit ec:ExecutionContext,correlationID: String): Future[ServiceOutcome[CalculationInfo]] = {
-    logger.info(s"returning calculation info ... ")
+    logger.info(s"$correlationID::[getCalculationInfo] returning calculation info ... ")
     Future(Right( ResponseWrapper(correlationID,CalculationInfo(id, nino, "2021-22"))))
   }
 

@@ -22,14 +22,14 @@ import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.AffinityGroupType
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, ErrorWrapper, MatchingResourcesNotFoundError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService, ServiceOutcome}
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AssistReportGenerated, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
+import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService, ServiceOutcome}
 
 import java.util.UUID
 import javax.inject.Inject
@@ -93,6 +93,7 @@ class GenerateReportController @Inject()(
 
   def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = errorWrapper.error match {
     case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+    case RdsAuthError => Future(InternalServerError(Json.toJson(ForbiddenDownstreamError)).withApiHeaders(correlationId))
     case _ => Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
   }
 
