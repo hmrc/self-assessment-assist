@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import play.api.mvc.{ActionBuilder, AnyContent}
-import uk.gov.hmrc.transactionalrisking.controllers.{AuthorisedController, UserRequest}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.{AuthorisedController, UserRequest}
 
 trait MockAuthorisedController extends MockFactory {
 

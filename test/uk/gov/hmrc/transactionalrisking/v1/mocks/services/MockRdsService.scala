@@ -19,14 +19,14 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.models.domain._
-import uk.gov.hmrc.transactionalrisking.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.services.ServiceOutcome
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
-import uk.gov.hmrc.transactionalrisking.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, FraudRiskReport, Origin}
+import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}

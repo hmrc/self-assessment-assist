@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.controllers
+package uk.gov.hmrc.v1.transactionalrisking.controllers
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
@@ -26,8 +26,9 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.transactionalrisking.connectors.GreetingConnector
-import uk.gov.hmrc.transactionalrisking.models.Greeting
+import uk.gov.hmrc.transactionalrisking.v1.connectors.GreetingConnector
+import uk.gov.hmrc.transactionalrisking.v1.controllers.HelloWorldController
+import uk.gov.hmrc.transactionalrisking.v1.models.Greeting
 
 import scala.concurrent.Future
 

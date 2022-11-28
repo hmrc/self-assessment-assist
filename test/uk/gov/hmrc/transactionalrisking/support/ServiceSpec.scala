@@ -18,10 +18,9 @@ package uk.gov.hmrc.transactionalrisking.support
 
 import play.api.http.{HeaderNames, MimeTypes, Status}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationIDImplicit
 
 import scala.concurrent.ExecutionContext
-
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationIDImplicit
 
 
 trait ServiceSpec extends UnitSpec

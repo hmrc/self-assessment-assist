@@ -17,13 +17,13 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.controllers.{AcknowledgeReportController, ControllerBaseSpec}
-import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
-import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
+import uk.gov.hmrc.transactionalrisking.controllers.ControllerBaseSpec
+import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
+import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

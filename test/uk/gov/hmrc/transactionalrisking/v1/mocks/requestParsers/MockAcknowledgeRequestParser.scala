@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers
 
-import org.scalamock.handlers.{CallHandler}
+import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.transactionalrisking.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.services.{ParseOutcome}
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request.AcknowledgeReportRequest
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationIDImplicit, simpleNino, simpleRDSCorrelationID, simpleReportID}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleNino, simpleRDSCorrelationID, simpleReportID}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.AcknowledgeRequestParser
+import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
+import uk.gov.hmrc.transactionalrisking.v1.services.ParseOutcome
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 

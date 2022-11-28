@@ -17,13 +17,12 @@
 package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.transactionalrisking.models.domain._
-import uk.gov.hmrc.transactionalrisking.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.request._
-import uk.gov.hmrc.transactionalrisking.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.models.domain._
+import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
-import uk.gov.hmrc.transactionalriskingsimulator.domain.WatchlistFlag
 
 import java.time.{Month, OffsetDateTime, ZoneOffset}
 import java.util.UUID
@@ -99,8 +98,6 @@ class CommonTestData  {
   val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationID.toString, simpleReportID.toString, simpleRDSCorrelationID )
   val rdsNewSubmissionReport: NewRdsAssessmentReport = rdsSubmissionReportJson.as[NewRdsAssessmentReport]
 
-
-
   val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportID.toString, replaceNino=simpleNino, replaceResponseCode="202")
   val rdsAssessmentAck: NewRdsAssessmentReport = rdsAssessmentAckJson.as[NewRdsAssessmentReport]
   val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentAck
@@ -108,13 +105,11 @@ class CommonTestData  {
 
   val invalidUUID: UUID = new UUID(0, 1)
   val invalidUUIDString: String = invalidUUID.toString
-    // Actually invalid type is not determined.
 
   val simpleCalculationIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
   val simpleReportIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"
-
 }
 
 object CommonTestData {

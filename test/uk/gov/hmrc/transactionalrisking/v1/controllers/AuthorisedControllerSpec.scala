@@ -23,13 +23,14 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationID
+import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockEnrolmentsAuthService
-import uk.gov.hmrc.transactionalrisking.models.errors._
-import uk.gov.hmrc.transactionalrisking.services.EnrolmentsAuthService
+import uk.gov.hmrc.transactionalrisking.v1.models.errors._
+import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID}
 
 
 class AuthorisedControllerSpec extends ControllerBaseSpec {
