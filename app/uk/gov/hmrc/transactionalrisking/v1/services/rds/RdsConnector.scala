@@ -70,7 +70,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
 
         case ex: BadRequestException =>
           logger.error(s"BadRequestException $ex")
-          Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+          Left(ErrorWrapper(correlationID, DownstreamError))
 
         case ex: UpstreamErrorResponse =>
           logger.error(s"UpstreamErrorResponse $ex")
