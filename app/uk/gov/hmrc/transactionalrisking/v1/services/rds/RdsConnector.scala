@@ -19,10 +19,11 @@ package uk.gov.hmrc.transactionalrisking.v1.services.rds
 import play.api.http.Status
 import play.api.http.Status.{CREATED, NOT_FOUND}
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, ResourceNotFoundError}
+
 import javax.inject.Named
 //import uk.gov.hmrc.http.{HttpClient}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
@@ -65,6 +66,10 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
       .recover {
         case ex: HttpException =>
           logger.error(s"HttpException $ex")
+          Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+
+        case ex: BadRequestException =>
+          logger.error(s"BadRequestException $ex")
           Left(ErrorWrapper(correlationID, ServiceUnavailableError))
 
         case ex: UpstreamErrorResponse =>
