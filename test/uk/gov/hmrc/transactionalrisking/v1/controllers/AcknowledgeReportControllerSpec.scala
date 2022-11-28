@@ -23,6 +23,7 @@ import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestDat
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{MatchingResourcesNotFoundError, ResourceNotFoundError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -83,6 +84,55 @@ class AcknowledgeReportControllerSpec
       }
 
     }
+
+    "a valid request is supplied 2" should {
+      "return 204 to indicate that the data has been accepted and saved and that there is nothing else needed to return. 2" in new Test {
+
+        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
+
+        MockEnrolmentsAuthService.authoriseUser()
+        MockAcknowledgeRequestParser.parseRequestFail(acknowledgeReportRawData, MatchingResourcesNotFoundError)
+        //MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
+        MockCurrentDateTime.getDateTime()
+//        MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequestData, generatedNrsId = simpleAcknowledgeNrsID,
+//          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpleNotableEventType)
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+        status(result) shouldBe NOT_FOUND
+
+        contentType(result) shouldBe Some("application/json")
+
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+
+      }
+
+    }
+
+    "a valid request is supplied 3" should {
+      "return 204 to indicate that the data has been accepted and saved and that there is nothing else needed to return. 3" in new Test {
+
+        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
+
+        MockEnrolmentsAuthService.authoriseUser()
+        MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
+        MockRdsService.acknowlegeRdsFail(simpleAcknowledgeReportRequest, MatchingResourcesNotFoundError )
+        MockCurrentDateTime.getDateTime()
+        //        MockNrsService.submit_Acknowledge(generateReportRequest = simpleAcknowledgeReportRequestData, generatedNrsId = simpleAcknowledgeNrsID,
+        //          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpleNotableEventType)
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+        status(result) shouldBe NOT_FOUND
+
+        contentType(result) shouldBe Some("application/json")
+
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+
+      }
+
+    }
+
   }
 
 }
