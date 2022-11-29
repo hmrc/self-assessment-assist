@@ -82,6 +82,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     logger.info(s"$correlationID::[submit]submit request for report}")
 
     if (appConfig.rdsAuthRequiredForThisEnv) {
+      logger.info(s"$correlationID::[submit]RDS Auth Required}")
       rdsAuthConnector
         .retrieveAuthorisedBearer()
         .foldF(
@@ -90,6 +91,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
           credentials => processRdsRequest(Some(credentials))
         )
     } else {
+      logger.info(s"$correlationID::[submit]RDS Auth Not Required}")
       processRdsRequest()
     }
   }
