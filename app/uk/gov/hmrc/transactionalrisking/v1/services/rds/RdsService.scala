@@ -54,10 +54,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
           val submit = connector.submit(rdsRequest, rdsAuthCredentials)
           val ret = submit.map {
             _ match {
-              case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) => {
+              case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) =>
                 val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationID)
                 assessmentReportSO match {
-
                   case Right(ResponseWrapper(correlationIdResponse, assessmentReport)) =>
                     logger.info(s"$correlationID::[submit]submit request for report successful returning it")
                     Right(ResponseWrapper(correlationID, assessmentReport))
@@ -66,7 +65,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                     logger.warn(s"$correlationID::[RdsService][submit]submit request for report error from service $errorWrapper.error")
                     Left(errorWrapper)
                 }
-              }
               case Left(errorWrapper) =>
                 logger.warn(s"$correlationID::[RdsService][submit] RDS connector failed Unable to generate report $errorWrapper.error")
                 Left(errorWrapper)
