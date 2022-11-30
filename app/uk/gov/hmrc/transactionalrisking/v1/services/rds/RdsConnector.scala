@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.services.rds
 import play.api.http.Status
 import play.api.http.Status.{CREATED, NOT_FOUND}
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, ResourceNotFoundError}
@@ -36,12 +36,13 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAs
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+//TODO Revisit implicits at class level, correaltionId is definetly not needed, its present in function
 @Singleton
 class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID: String) extends Logging {
 
-  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
-    logger.info(s"$correlationID::[RdsConnector:submit] requesting report")
+  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext,correlationID: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+    logger.info(s"$correlationID::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
@@ -65,6 +66,10 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         case ex: HttpException =>
           logger.error(s"HttpException $ex")
           Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+
+        case ex: BadRequestException =>
+          logger.error(s"BadRequestException $ex")
+          Left(ErrorWrapper(correlationID, DownstreamError))
 
         case ex: UpstreamErrorResponse =>
           logger.error(s"UpstreamErrorResponse $ex")
