@@ -24,7 +24,7 @@ import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestDat
 import uk.gov.hmrc.transactionalrisking.v1.controllers.GenerateReportController
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, DownstreamError, MatchingResourcesNotFoundError, MtdError, UnsupportedVersionError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, DownstreamError, MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError, UnsupportedVersionError}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -64,32 +64,26 @@ class GenerateReportControllerSpec
   }
 
   "generateReport" when {
-    //    "a valid request is supplied" should {
-    //      "return the expected data when controller is called" in new Test {
-    //
-    //
-    //        MockEnrolmentsAuthService.authoriseUser()
-    //        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID,simpleNino)
-    //        MockInsightService.assess(simpleFraudRiskRequest)
-    //        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment,simpleFraudRiskReport,simpleInternalOrigin)
-    //        MockCurrentDateTime.getDateTime()
-    //        MockNrsService.submit(simpleGenerateReportControllerRequestData,simpleGenerateReportControllerNrsID,simpleSubmissionTimestamp,simpleNotableEventType)
-    //        MockNrsService.submit(generateReportRequest = simpleGenerateReportControllerRequestData, generatedNrsId=simpleGenerateReportControllerNrsID,
-    //          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpleNotableEventType )
-    //         MockProvideRandomCorrelationId.IdGenerator
-    //
-    //        val result = controller.generateReportInternal( simpleNino, simpleCalculationID.toString)(fakeGetRequest)
-    //        status(result) shouldBe OK
-    //        contentAsJson(result) shouldBe simpleAsssementReportMtdJson
-    //        contentType(result) shouldBe Some("application/json")
-    ////        header("X-CorrelationId", result) shouldBe Some(correlationID)
-    //
-    //        // Put the nrs save to test here.
-    //
-    //      }
-    //    }
+    "a valid request is supplied" should {
+      "return the expected data when controller is called" in new Test {
 
-    "a request fails due to a failed getCalculationInfo " should {
+        MockEnrolmentsAuthService.authoriseUser()
+        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
+        MockInsightService.assess(simpleFraudRiskRequest)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
+        MockCurrentDateTime.getDateTime()
+        MockNrsService.submit(simpleGenerateReportControllerRequestData, simpleSubmissionTimestamp, simpleReportNotableEventType, simpleNRSResponseReportSubmission)
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
+        status(result) shouldBe OK
+        contentAsJson(result) shouldBe simpleAsssementReportMtdJson
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+      }
+    }
+
+    "a request fails due to a failed getCalculationInfo" should {
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} when controller is set to return error from getCalculationInfo " in new Test {
@@ -102,22 +96,19 @@ class GenerateReportControllerSpec
           val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
-
           contentAsJson(result) shouldBe MatchingResourcesNotFoundError.toJson
-
           contentType(result) shouldBe Some("application/json")
-          //        header("X-CorrelationId", result) shouldBe Some(correlationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
         }
       }
 
       val errorInErrorOut =
         Seq(
           (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson)
-          //,(DownstreamError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-          ,(ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
+//          , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
         )
 
-      errorInErrorOut.foreach( args=> (runTest _ ).tupled(args) )
+      errorInErrorOut.foreach(args => (runTest _).tupled(args))
 
     }
 
@@ -128,20 +119,16 @@ class GenerateReportControllerSpec
 
           MockEnrolmentsAuthService.authoriseUser()
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
-          MockInsightService.assessFail(simpleFraudRiskRequest, MatchingResourcesNotFoundError)
-          //        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
+          MockInsightService.assessFail(simpleFraudRiskRequest, mtdError)
           MockCurrentDateTime.getDateTime()
-          //        MockNrsService.submit(simpleGenerateReportControllerRequestData, simpleGenerateReportControllerNrsID, simpleSubmissionTimestamp, simpleNotableEventType)
           MockProvideRandomCorrelationId.IdGenerator
 
           val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
-
           contentAsJson(result) shouldBe MatchingResourcesNotFoundError.toJson
-
           contentType(result) shouldBe Some("application/json")
-          //        header("X-CorrelationId", result) shouldBe Some(correlationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
         }
       }
 
@@ -149,7 +136,7 @@ class GenerateReportControllerSpec
         Seq(
           (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson)
           //,(DownstreamError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-          , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
+  //        , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -164,19 +151,16 @@ class GenerateReportControllerSpec
           MockEnrolmentsAuthService.authoriseUser()
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
           MockInsightService.assess(simpleFraudRiskRequest)
-          MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, MatchingResourcesNotFoundError)
+          MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, mtdError)
           MockCurrentDateTime.getDateTime()
-          //        MockNrsService.submit(simpleGenerateReportControllerRequestData, simpleGenerateReportControllerNrsID, simpleSubmissionTimestamp, simpleNotableEventType)
           MockProvideRandomCorrelationId.IdGenerator
 
           val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
-
-          contentAsJson(result) shouldBe MatchingResourcesNotFoundError.toJson
-
+          contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          //        header("X-CorrelationId", result) shouldBe Some(correlationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
         }
       }
 
@@ -184,81 +168,44 @@ class GenerateReportControllerSpec
         Seq(
           (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson)
           //,(DownstreamError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-          , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
+//          , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
 
     }
 
-    "a request fails due to a failed RDSService.submit " should {
 
-      def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
-        s"return the expected error ${mtdError.code} when controller is set to return error from RDSService.submit " in new Test {
-
-          MockEnrolmentsAuthService.authoriseUser()
-          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
-          MockInsightService.assess(simpleFraudRiskRequest)
-          MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, MatchingResourcesNotFoundError)
-          MockCurrentDateTime.getDateTime()
-          //        MockNrsService.submit(simpleGenerateReportControllerRequestData, simpleGenerateReportControllerNrsID, simpleSubmissionTimestamp, simpleNotableEventType)
-          MockProvideRandomCorrelationId.IdGenerator
-
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
-
-          status(result) shouldBe expectedStatus
-
-          contentAsJson(result) shouldBe MatchingResourcesNotFoundError.toJson
-
-          contentType(result) shouldBe Some("application/json")
-          //        header("X-CorrelationId", result) shouldBe Some(correlationID)
-        }
-      }
-
-      val errorInErrorOut =
-        Seq(
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson)
-          //,(DownstreamError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-          , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-        )
-
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
-
-    }
-    "a request fails due to a failed NRSService.submit " should {
-
-      def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
-        s"return the expected error ${mtdError.code} when controller is set to return error from NRSService.submit " in new Test {
-
-          MockEnrolmentsAuthService.authoriseUser()
-          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
-          MockInsightService.assess(simpleFraudRiskRequest)
-          MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, MatchingResourcesNotFoundError)
-          MockCurrentDateTime.getDateTime()
-          MockNrsService.submit(simpleGenerateReportControllerRequestData, simpleGenerateReportControllerNrsID, simpleSubmissionTimestamp, simpleNotableEventType)
-          MockProvideRandomCorrelationId.IdGenerator
-
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
-
-          status(result) shouldBe expectedStatus
-
-          contentAsJson(result) shouldBe MatchingResourcesNotFoundError.toJson
-
-          contentType(result) shouldBe Some("application/json")
-          //        header("X-CorrelationId", result) shouldBe Some(correlationID)
-        }
-      }
-
-      val errorInErrorOut =
-        Seq(
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson)
-          //,(DownstreamError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-          , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-        )
-
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
-
-    }
-
+//    "a request fails due to a failed NRSService.submit " should {
+//
+//      def runTest( expectedStatus: Int, expectedBody: JsValue): Unit = {
+//        s"return the expected error ${expectedStatus} when controller is set to return error from NRSService.submit " in new Test {
+//
+//          MockEnrolmentsAuthService.authoriseUser()
+//          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
+//          MockInsightService.assess(simpleFraudRiskRequest)
+//          MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
+//          MockCurrentDateTime.getDateTime()
+//          MockNrsService.submitFail(simpleGenerateReportControllerRequestData, simpleGenerateReportControllerNrsID, simpleSubmissionTimestamp, simpleNotableEventType)
+//          MockProvideRandomCorrelationId.IdGenerator
+//
+//          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
+//
+//          status(result) shouldBe expectedStatus
+//          contentAsJson(result) shouldBe expectedBody
+//          contentType(result) shouldBe Some("application/json")
+//          //        header("X-CorrelationId", result) shouldBe Some(correlationID)
+//        }
+//      }
+//
+//      // Only one thing to test. May change later.
+//      val errorInErrorOut =
+//        Seq(
+//          (NOT_FOUND, MatchingResourcesNotFoundError.toJson)
+//        )
+//
+//      errorInErrorOut.foreach(args => (runTest _).tupled(args))
+//
+//    }
   }
 }

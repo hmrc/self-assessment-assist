@@ -48,8 +48,5 @@ trait MockIntegrationFrameworkService extends MockFactory {
         .expects(*, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Left(ErrorWrapper(internalCorrelationIDImplicit, error))))
     }
-
-
-
   }
 }

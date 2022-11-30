@@ -111,8 +111,6 @@ object MetadataTestData {
        |      "Gov-Client-Colour-Depth": "24"
        |    },
        |    "searchKeys": {
-       |      "nino": "AA000000B",
-       |      "taxYear": "${simpleTaxYear}",
        |      "reportId": "${simpleReportID.toString}"
        |    }
        |}
@@ -140,8 +138,6 @@ object MetadataTestData {
     )),
     searchKeys =
       SearchKeys(
-        nino = "AA000000B",
-        taxYear = simpleTaxYear,
         reportId = simpleReportID.toString
       )
   )

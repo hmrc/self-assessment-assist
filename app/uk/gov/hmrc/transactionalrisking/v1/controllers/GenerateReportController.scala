@@ -76,8 +76,7 @@ class GenerateReportController @Inject()(
 
             nonRepudiationService.submit(requestData = rdsReportContent,
               submissionTimestamp,
-              notableEventType = AssistReportGenerated,
-              assessmentReportResponse.taxYear)
+              notableEventType = AssistReportGenerated)
             assessmentReportResponse
           }
         }

@@ -66,8 +66,6 @@ class NrsServiceSpec extends ServiceSpec {
         )),
         searchKeys =
           SearchKeys(
-            nino = ninoKey,
-            taxYear = taxYear,
             reportId = "12345"
           )
       )
@@ -104,7 +102,7 @@ class NrsServiceSpec extends ServiceSpec {
         MockedHashUtil.encode(generateReportBodyRequestString).returns(encodedString)
         MockedHashUtil.getHash(generateReportBodyRequestString).returns(checksum)
 
-        await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated,taxYear)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+        await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
       }
     }
   }
@@ -118,7 +116,7 @@ class NrsServiceSpec extends ServiceSpec {
       MockNrsConnector.submitNrs(nrsSubmission, reportId)
         .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
 
-      await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated,taxYear)) shouldBe None
+      await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated)) shouldBe None
     }
   }
 }

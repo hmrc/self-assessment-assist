@@ -52,12 +52,6 @@ trait MockRdsService extends MockFactory {
         .expects(*, *, simpleInternalOrigin, *, *, *, *) returns (Future(Left(ErrorWrapper(internalCorrelationIDImplicit, error))))
     }
 
-//
-//    def acknowlege(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
-//      (mockRdsService.acknowlege(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
-//        .expects(*, *, *, *, *)
-//    }
-//
 
     def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[NewRdsAssessmentReport]]] = {
       (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))

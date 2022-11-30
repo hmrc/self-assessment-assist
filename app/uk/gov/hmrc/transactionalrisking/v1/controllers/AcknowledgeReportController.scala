@@ -69,7 +69,7 @@ class AcknowledgeReportController @Inject()(
                   val taxYearFromResponse: String = DesTaxYear.fromDesIntToString(taxYear)
                   logger.debug(s"$correlationID::[acknowledgeReport] ... submitting acknowledgement to NRS")
                   //Submit asynchronously to NRS
-                  nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged, taxYearFromResponse)
+                  nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
 
                   logger.info(s"$correlationID::[acknowledgeReport] ... report submitted to NRS")
                   Future(NoContent.withApiHeaders(correlationID))
