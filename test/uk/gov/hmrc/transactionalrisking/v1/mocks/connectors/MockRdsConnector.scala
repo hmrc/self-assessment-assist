@@ -34,13 +34,13 @@ trait MockRdsConnector extends MockFactory {
   object MockRdsConnector {
 
     def submit(rdsRequest: RdsRequest  ): CallHandler[Future[ServiceOutcome[ NewRdsAssessmentReport]]] = {
-      (mockRdsConnector.submit( _: RdsRequest,_:Option[RdsAuthCredentials])( _:HeaderCarrier,_: ExecutionContext))
-        .expects(*, *,*,*)
+      (mockRdsConnector.submit( _: RdsRequest,_:Option[RdsAuthCredentials])( _:HeaderCarrier,_: ExecutionContext,_:String))
+        .expects(*, *, *, *, *)
     }
 
     def acknowledgeRds(request: RdsRequest): CallHandler[Future[ ServiceOutcome[ NewRdsAssessmentReport]]] = {
       (mockRdsConnector.acknowledgeRds(_: RdsRequest,_:Option[RdsAuthCredentials])(_: HeaderCarrier, _: ExecutionContext, _:String ))
-        .expects(*, *, *,*, *)
+        .expects(*, *, *, *, *)
     }
 
   }
