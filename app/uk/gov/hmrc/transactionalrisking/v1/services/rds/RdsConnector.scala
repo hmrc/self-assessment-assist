@@ -64,15 +64,15 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
       }
       .recover {
         case ex: HttpException =>
-          logger.error(s"HttpException $ex")
+          logger.error(s"$correlationID::[RdsConnector:submit] HttpException $ex")
           Left(ErrorWrapper(correlationID, ServiceUnavailableError))
 
         case ex: BadRequestException =>
-          logger.error(s"BadRequestException $ex")
+          logger.error(s"$correlationID::[RdsConnector:submit] BadRequestException $ex")
           Left(ErrorWrapper(correlationID, DownstreamError))
 
         case ex: UpstreamErrorResponse =>
-          logger.error(s"UpstreamErrorResponse $ex")
+          logger.error(s"$correlationID::[RdsConnector:submit] UpstreamErrorResponse $ex")
           Left(ErrorWrapper(correlationID, ForbiddenDownstreamError))
       }
   }
