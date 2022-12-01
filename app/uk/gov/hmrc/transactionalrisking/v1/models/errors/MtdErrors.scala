@@ -77,10 +77,11 @@ object UnexpectedFailure {
 // Authorisation Errors
 object UnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised")
 object InvalidBearerTokenError extends MtdError("UNAUTHORIZED", "Bearer token is missing or not authorized")
+object InvalidCredentialsError extends MtdError("INVALID_CREDENTIALS", "Invalid Authentication information provided")
 
 // Legacy Authorisation Errors
 object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.")
-object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.")
+object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client or agent is not authorised")
 //TODO check correct message
 object ForbiddenDownstreamError extends MtdError(
   code = "INTERNAL_SERVER_ERROR",
@@ -103,4 +104,6 @@ object UnsupportedVersionError extends MtdError("NOT_FOUND", "The requested reso
 object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body")
 
 object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later")
-object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplised")
+object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished")
+
+object ServerError extends MtdError("SERVER_ERROR", "Server error")

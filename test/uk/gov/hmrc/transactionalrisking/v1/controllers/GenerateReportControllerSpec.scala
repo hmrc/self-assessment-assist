@@ -24,7 +24,7 @@ import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestDat
 import uk.gov.hmrc.transactionalrisking.v1.controllers.GenerateReportController
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, DownstreamError, MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError, UnsupportedVersionError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, CalculationIdFormatError, ClientOrAgentNotAuthorisedError, DownstreamError, ForbiddenDownstreamError, InvalidCredentialsError, MatchingResourcesNotFoundError, MtdError, NinoFormatError, ServerError, ServiceUnavailableError, UnsupportedVersionError}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -96,7 +96,7 @@ class GenerateReportControllerSpec
           val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe MatchingResourcesNotFoundError.toJson
+          contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
         }
@@ -104,18 +104,22 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson)
-//          , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
+          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
+          (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
+          (CalculationIdFormatError, BAD_REQUEST, CalculationIdFormatError.toJson),
+          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
+          (InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
-
     }
 
-    "a request fails due to a failed assess " should {
+    "a request fails due to a failed InsightService.assess " should {
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
-        s"return the expected error ${mtdError.code} when controller is set to return error from assess " in new Test {
+        s"return the expected error ${mtdError.code} when controller is set to return error from InsightService.assess " in new Test {
 
           MockEnrolmentsAuthService.authoriseUser()
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
@@ -126,7 +130,7 @@ class GenerateReportControllerSpec
           val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe MatchingResourcesNotFoundError.toJson
+          contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
         }
@@ -134,13 +138,16 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson)
-          //,(DownstreamError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-  //        , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
+          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
+          (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
+          //(CalculationIdFormatError, BAD_REQUEST, CalculationIdFormatError.toJson),
+          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
+          (InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
-
     }
 
     "a request fails due to a failed RDSService.submit " should {
@@ -166,13 +173,16 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson)
-          //,(DownstreamError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
-//          , (ServiceUnavailableError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
+          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
+          (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
+          (CalculationIdFormatError, BAD_REQUEST, CalculationIdFormatError.toJson),
+          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
+          (InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
-
     }
 
 
