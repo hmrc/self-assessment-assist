@@ -36,11 +36,12 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAs
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+//TODO Revisit implicits at class level, correaltionId is definetly not needed, its present in function
 @Singleton
 class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID: String) extends Logging {
 
-  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext,correlationID: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
