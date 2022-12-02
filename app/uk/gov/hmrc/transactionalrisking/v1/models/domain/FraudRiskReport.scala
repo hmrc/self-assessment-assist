@@ -22,20 +22,18 @@ import uk.gov.hmrc.transactionalrisking.v1.models.domain.FraudDecision.FraudRisk
 
 
 // This is still being determined; please see TRDT-85.
-case class FraudRiskReport(decision: FraudRiskDecision, score: Int, headers: Set[FraudRiskHeader], watchlistFlags: Set[WatchlistFlag])
+case class FraudRiskReport( score: Int, headers: Set[FraudRiskHeader], fraudRiskReportReasons: Set[FraudRiskReportReason])
 
 object FraudRiskReport {
 
   implicit val reads: Reads[FraudRiskReport] =
-    (JsPath \ "decision").read[FraudRiskDecision]
-      .and((JsPath \ "score").read[Int])
+    (JsPath \ "score").read[Int]
       .and((JsPath \ "headers").readWithDefault[Set[FraudRiskHeader]](Set.empty))
-      .and((JsPath \ "watchlistFlags").readWithDefault[Set[WatchlistFlag]](Set.empty))(FraudRiskReport.apply _)
+      .and((JsPath \ "fraudRiskReportReasons").readWithDefault[Set[FraudRiskReportReason]](Set.empty))(FraudRiskReport.apply _)
 
   implicit val writes: Writes[FraudRiskReport] =
-    (JsPath \ "decision").write[FraudRiskDecision]
-      .and((JsPath \ "score").write[Int])
+   (JsPath \ "score").write[Int]
       .and((JsPath \ "headers").write[Set[FraudRiskHeader]])
-      .and((JsPath \ "watchlistFlags").write[Set[WatchlistFlag]])(unlift(FraudRiskReport.unapply))
+      .and((JsPath \ "fraudRiskReportReasons").write[Set[FraudRiskReportReason]])(unlift(FraudRiskReport.unapply))
 
 }

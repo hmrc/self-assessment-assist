@@ -396,10 +396,9 @@ object RdsTestData {
   )
 
   val fraudRiskReport = FraudRiskReport(
-    decision = FraudDecision.Accept,
     score = 10,
     headers = Set(FraudRiskHeader("key", "value")),
-    watchlistFlags = Set(WatchlistFlag("flag"))
+    fraudRiskReportReasons = Set(FraudRiskReportReason("flag"))
   )
 
   def rdsRequest: RdsRequest =
@@ -411,7 +410,6 @@ object RdsTestData {
           RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
           RdsRequest.InputWithString("agentRef", assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
           RdsRequest.InputWithString("preferredLanguage", assessmentRequestForSelfAssessment.preferredLanguage.toString),
-          RdsRequest.InputWithString("fraudRiskReportDecision", fraudRiskReport.decision.toString),
           RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
           RdsRequest.InputWithObject("fraudRiskReportHeaders",
             Seq(
@@ -423,13 +421,13 @@ object RdsTestData {
               DataWrapper(fraudRiskReport.headers.map(header => Seq(header.key, header.value)).toSeq)
             )
           ),
-          RdsRequest.InputWithObject("fraudRiskReportWatchlistFlags",
+          RdsRequest.InputWithObject("reason",
             Seq(
               MetadataWrapper(
                 Seq(
-                  Map("NAME" -> "string")
+                  Map("Reason" -> "string")
                 )),
-              DataWrapper(fraudRiskReport.watchlistFlags.map(flag => Seq(flag.name)).toSeq)
+              DataWrapper(fraudRiskReport.fraudRiskReportReasons.map(value => Seq(value.reason)).toSeq)
             )
           )
         )

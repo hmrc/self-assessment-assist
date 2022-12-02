@@ -65,7 +65,7 @@ class CommonTestData  {
   val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
 
   val simpleFraudRiskRequest: FraudRiskRequest = new FraudRiskRequest(nino = simpleNino, taxYear = simpleTaxYear, fraudRiskHeaders = Map.empty[String, String])
-  val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(decision = FraudDecision.Accept, 0, Set.empty[FraudRiskHeader], Set.empty[WatchlistFlag].empty)
+  val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(0, Set.empty[FraudRiskHeader], Set.empty[FraudRiskReportReason].empty)
 
   val simpleMetadata: Metadata = null
   val simplePayload: String = ""
