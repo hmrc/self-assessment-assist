@@ -51,14 +51,14 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
       .map { response =>
         logger.info(s"$correlationID::[RdsConnector:submit]======= response is $response")
         response.status match {
-          case Status.OK =>
-            logger.info(s"$correlationID::[RdsConnector:submit]Successfully submitted the report")
+          case Status.CREATED =>
+            logger.info(s"$correlationID::[RdsConnector:submit]Successfully submitted the report response is ${response.body}")
             Right(ResponseWrapper(correlationID, response.json.validate[NewRdsAssessmentReport].get))
           case Status.NOT_FOUND =>
             logger.warn(s"$correlationID::[RdsConnector:submit]Unable to submit the report")
             Left(ErrorWrapper(correlationID, MatchingResourcesNotFoundError))
-          case unexpectedStatus =>
-            logger.error(s"$correlationID::[RdsConnector:submit]Unable to submit the report due to unexpected status code returned")
+          case unexpectedStatus@_ =>
+            logger.error(s"$correlationID::[RdsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
             Left(ErrorWrapper(correlationID, ServiceUnavailableError))
         }
       }
