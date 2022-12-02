@@ -1,0 +1,82 @@
+
+openapi: "3.0.3"
+
+info:
+  version: 1.0.0
+  title: Self Assessment Assist (MTD)
+  description: |
+    # Overview
+    The HMRC Assist report is generated using the customers’ National Insurance number (NINO) and Calculation ID. The report contains targeted messages contained within the JSON response for the customer.
+    
+    This API allows developers to: 
+    
+    * retrieve a HMRC Assist report for a given customer with a list of messages for the customer
+    * securely generate a report that is sent to or displayed after it has been generated
+    * allow the client to acknowledge the report
+
+    # Send Fraud Prevention Data
+    HMRC monitors transactions to help protect your customers' confidential data from criminals and fraudsters. 
+
+    <div class="govuk-warning-text warning-icon-fix">
+      <span class="govuk-warning-text__icon warning-icon-ui-fix" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-warning-text__assistive">Warning</span>
+        You are required by law to submit header data for this API. This includes all associated APIs and endpoints.
+      </strong>
+    </div>
+
+    [Check the data you need to send](/guides/fraud-prevention/). You can also use the [Test API](/api-documentation/docs/api/service/txm-fph-validator-api/1.0) during initial development and as part of your quality assurance checks.
+    
+    # Versioning
+    When an API changes in a way that is backwards-incompatible, we increase the version number of the API. 
+    See our [reference guide](/api-documentation/docs/reference-guide#versioning) for more on
+    versioning.
+
+    # Errors
+    We use standard HTTP status codes to show whether an API request succeeded or not. They are usually in the range:
+
+    - 200 to 299 if it succeeded, including code 202 if it was accepted by an API that needs to wait for further action
+    - 400 to 499 if it failed because of a client error by your application
+    - 500 to 599 if it failed because of an error on our server
+    
+    Errors specific to each API are shown in the Endpoints section, under Response. See our 
+    [reference guide](/api-documentation/docs/reference-guide#errors) for more on errors.
+    
+    # Changelog
+    You can find the changelog in the [self-assessment-assist-changelog](https://github.com/hmrc/transactional-risking/wiki) GitHub wiki.
+    
+    # Support
+    * Raise non-technical or platform-related issues with the [Software Development Support Team (SDST)](https://developer.service.hmrc.gov.uk/developer/support).
+    * Raise technical issues on the [self-assessment-assist-changelog](https://github.com/hmrc/transactional-risking/wiki) GitHub page.
+    
+    # Testing
+    todo
+
+servers:
+  - url: https://test-api.service.hmrc.gov.uk
+    description: Sandbox
+  - url: https://api.service.hmrc.gov.uk/
+    description: Production
+
+components:
+  securitySchemes:
+    User-Restricted:
+      type: oauth2
+      description: HMRC supports OAuth 2.0 for authenticating User-restricted API requests
+      flows:
+        authorizationCode:
+          authorizationUrl: https://api.service.hmrc.gov.uk/oauth/authorize
+          tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
+          refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
+          scopes:
+            write:self-assessment: Grant write access
+            read:self-assessment: Grant read access
+
+tags:
+  - name: HMRC Self Assessment Assist Report
+    description: a description
+
+paths:
+  /individuals/self-assessment/assist/reports/{nino}/{calculationId}:
+    $ref: "./endpoints/generateReport.yaml"
+
