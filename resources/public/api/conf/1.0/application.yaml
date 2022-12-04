@@ -7,7 +7,7 @@ info:
   description: |
     # Overview
     This is an example API that allows software developers to test that their applications can connect with the HMRC API Platform. It also acts as a hands-on tutorial for developers to get started with HMRC APIs.
-
+    
     It includes resources for testing access to the three different access levels:
 
     - Say hello world is an example of an unrestricted endpoint
@@ -33,7 +33,7 @@ info:
     
     Errors specific to each API are shown in the Endpoints section, under Response. See our 
     [reference guide](/api-documentation/docs/reference-guide#errors) for more on errors.
-  
+
 servers:
 - url: https://test-api.service.hmrc.gov.uk
   description: Sandbox
@@ -72,7 +72,7 @@ components:
     userScheme:
       type: oauth2
       description: HMRC supports OAuth 2.0 for authenticating User-restricted API requests
-      flows: 
+      flows:
         authorizationCode:
           authorizationUrl: https://api.service.hmrc.gov.uk/oauth/authorize
           tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
@@ -103,11 +103,11 @@ paths:
           description: "OK Response"
           content:
             application/json:
-              example: 
+              example:
                 {
                   "message" : "Hello World"
                 }
-                
+
   /hello/user:
     get:
       summary: Say hello user
@@ -124,7 +124,7 @@ paths:
           description: "OK Response"
           content:
             application/json:
-              example: 
+              example:
                 {
                   "message" : "Hello User"
                 }
@@ -132,7 +132,7 @@ paths:
           description: "UNAUTHORISED Response"
           content:
             application/json:
-              example: 
+              example:
                 {
                   "code": "MISSING_CREDENTIALS",
                   "message": "Authentication information is not provided"
@@ -140,7 +140,7 @@ paths:
       security:
       - userScheme:
         - hello
-        
+
   /hello/application:
     get:
       summary: Say hello application
@@ -158,7 +158,7 @@ paths:
           description: "OK Response"
           content:
             application/json:
-              example: 
+              example:
                 {
                   "message" : "Hello Application"
                 }
@@ -166,7 +166,7 @@ paths:
           description: "UNAUTHORISED Response"
           content:
             application/json:
-              example: 
+              example:
                 {
                   "code": "MISSING_CREDENTIALS",
                   "message": "Authentication information is not provided"

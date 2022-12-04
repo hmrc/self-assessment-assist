@@ -59,6 +59,33 @@ servers:
     description: Production
 
 components:
+  responses:
+    badOrExpiredTokenResponse:
+      description: |
+        Bad or expired token.
+        This can happen if the user or HMRC revoked or expired an access token.
+        To fix, you should re-authenticate the user.
+      content:
+        application/json:
+          example:
+    forbiddenResponse:
+      description: |
+        Bad OAuth request (wrong consumer key, bad nonce, expired
+        timestamp...). Unfortunately, re-authenticating the user won't help here.
+      content:
+        application/json:
+          example:
+    parameters:
+      acceptHeader:
+        name: Accept
+        in: header
+        schema:
+          type: string
+          enum: [
+            "application/vnd.hmrc.1.0+json",
+            "application/vnd.hmrc.1.0+xml"
+          ]
+        required: true
   securitySchemes:
     User-Restricted:
       type: oauth2
@@ -71,12 +98,21 @@ components:
           scopes:
             write:self-assessment: Grant write access
             read:self-assessment: Grant read access
+      appScheme:
+        type: oauth2
+        description: HMRC supports OAuth 2.0 for authenticating app-restricted API requests
+        flows:
+          clientCredentials:
+            tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
+            scopes: { }
+
+
 
 tags:
-  - name: HMRC Self Assessment Assist Report
+  - name: Generate Report
     description: a description
 
 paths:
   /individuals/self-assessment/assist/reports/{nino}/{calculationId}:
-    $ref: "./endpoints/generateReport.yaml"
+    $ref: "./endpoints/self_assessment_assist_endpoints.yaml"
 
