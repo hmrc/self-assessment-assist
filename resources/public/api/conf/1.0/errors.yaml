@@ -1,0 +1,39 @@
+components:
+  examples:
+    formatNino:
+      description: |
+        The format of the supplied NINO field is not valid.
+      value:
+        code: FORMAT_NINO
+    formatCalcId:
+      description: |
+        The format of the supplied CalculationID is not valid
+      value:
+        code: FORMAT_CALC_ID
+
+    # 403
+
+    clientOrAgentNotAuthorised:
+      description: |
+        The client and/or agent is not authorised. This is normally because: the client is not subscribed to MTD, the agent is not subscribed to Agent Services, or the client has not authorised the agent to act on their behalf.
+      value:
+        code: CLIENT_OR_AGENT_NOT_AUTHORISED
+
+    # 404
+
+    matchingResourceNotFound:
+      description: |
+        Calculation ID was not found
+      value:
+        code: MATCHING_RESOURCE_NOT_FOUND
+
+    # 401
+
+    invalidCredentials:
+      description: |
+        Invalid Authentication information provided
+      value:
+        code: INVALID_CREDENTIALS
+
+
+
