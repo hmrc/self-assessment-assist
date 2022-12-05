@@ -84,6 +84,7 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
             logger.error(s"$correlationID::[retrieveAuthorisedBearer] HttpException=$ex")
             Left(RdsAuthError)
           case ex: UpstreamErrorResponse =>
+            logger.error(s"$correlationID::[RdsAuthConnector:retrieveAuthorisedBearer] UpstreamErrorResponse")
             logger.error(s"$correlationID::[retrieveAuthorisedBearer] UpstreamErrorResponse=$ex")
             Left(RdsAuthError)
         }
