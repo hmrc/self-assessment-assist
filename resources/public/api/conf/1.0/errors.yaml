@@ -1,5 +1,8 @@
 components:
   examples:
+
+    #400
+
     formatNino:
       description: |
         The format of the supplied NINO field is not valid.
@@ -10,6 +13,11 @@ components:
         The format of the supplied CalculationID is not valid
       value:
         code: FORMAT_CALC_ID
+    formatReportId:
+      description: |
+        The format of the supplied reportId is not valid.
+      value:
+        code: FORMAT_REPORT_ID
 
     # 403
 

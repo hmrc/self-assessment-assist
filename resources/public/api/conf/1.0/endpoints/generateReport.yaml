@@ -8,8 +8,8 @@ tags:
 parameters:
   - $ref: '../pathParameters/nino.yaml#/components/parameters/nino'
   - $ref: '../pathParameters/calculationId.yaml#/components/parameters/calculationId'
-  - $ref: './header.yaml#/components/parameters/acceptHeader'
-  - $ref: './header.yaml#/components/parameters/authorizationReadScopeHeader'
+  - $ref: '../header.yaml#/components/parameters/acceptHeader'
+  - $ref: '../header.yaml#/components/parameters/authorizationReadScopeHeader'
 
 security:
   - User-Restricted:
