@@ -16,5 +16,5 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.models.request
 
-case class GenerateReportRawData(nino: String, calculationID: String) extends RawData
+case class GenerateReportRawData(nino: String, calculationId: String) extends RawData
 case class AcknowledgeReportRawData(nino: String, reportID: String, rdsCorrelationID:String) extends RawData

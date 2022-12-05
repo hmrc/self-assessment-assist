@@ -39,13 +39,13 @@ class GenerateReportValidationSpec extends UnitSpec {
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError)
         }
 
-        "an invalid calculationID." in {
+        "an invalid calculationId." in {
           val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationIDStrangeCharsString)
 
           validator.validate(generateReportRawData) shouldBe Seq(CalculationIdFormatError)
         }
 
-        "an invalid nino and calculationID." in {
+        "an invalid nino and calculationId." in {
           val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationIDStrangeCharsString)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, CalculationIdFormatError)

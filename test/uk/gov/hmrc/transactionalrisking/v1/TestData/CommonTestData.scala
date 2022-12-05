@@ -48,7 +48,7 @@ class CommonTestData  {
   implicit val internalCorrelationIDImplicit: String = internalCorrelationID
 
   val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationID = simpleCalculationID,
+    calculationId = simpleCalculationID,
     nino = simpleNino,
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
@@ -60,7 +60,7 @@ class CommonTestData  {
       , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simplePath))
     , nino = simpleNino
     , taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString
-    , calculationID = simpleCalculationID,rdsCorrelationId = simpleRDSCorrelationID)
+    , calculationId = simpleCalculationID,rdsCorrelationId = simpleRDSCorrelationID)
 
   val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
 

@@ -56,11 +56,11 @@ class GenerateReportController @Inject()(
       val customerType = deriveCustomerType(request)
       val submissionTimestamp = currentDateTime.getDateTime
 
-      toId(calculationId).map { calculationIDUuid =>
+      toId(calculationId).map { calculationIdUuid =>
 
         val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
-          calculationInfo                     <- EitherT(getCalculationInfo(calculationIDUuid, nino))
-          assessmentRequestForSelfAssessment  = AssessmentRequestForSelfAssessment(calculationIDUuid,
+          calculationInfo                     <- EitherT(getCalculationInfo(calculationIdUuid, nino))
+          assessmentRequestForSelfAssessment  = AssessmentRequestForSelfAssessment(calculationIdUuid,
                                                 nino,
                                                 PreferredLanguage.English,
                                                 customerType,

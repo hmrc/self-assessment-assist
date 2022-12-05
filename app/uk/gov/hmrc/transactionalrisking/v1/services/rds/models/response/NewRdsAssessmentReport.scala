@@ -84,7 +84,7 @@ object NewRdsAssessmentReport {
   trait Output
 
   object Output {
-    val specialKeys = List("correlationID","feedbackID","calculationID","nino","taxYear","responseCode","response")
+    val specialKeys = List("correlationID","feedbackID","calculationId","nino","taxYear","responseCode","response")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {

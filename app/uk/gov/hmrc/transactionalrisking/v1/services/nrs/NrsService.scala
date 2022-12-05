@@ -39,7 +39,6 @@ class NrsService @Inject()(
                          request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationID: String): NrsSubmission = {
     logger.info(s"$correlationID::[buildNrsSubmission]Build the NRS submission")
 
-    //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationID))
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
     val payloadString = Json.toJson(requestData.body).toString()
     val encodedPayload = hashUtil.encode(payloadString)

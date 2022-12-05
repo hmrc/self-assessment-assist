@@ -76,7 +76,6 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
           logger.error(s"$correlationID::[RdsConnector:submit] HttpException $ex")
           Left(ErrorWrapper(correlationID, ServiceUnavailableError))
 
-
         case ex@_ =>
           logger.error(s"$correlationID::[RdsConnector:submit] Unknown exception $ex")
           Left(ErrorWrapper(correlationID, ServiceUnavailableError))          

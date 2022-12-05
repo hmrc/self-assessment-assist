@@ -108,7 +108,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
               AssessmentReport(reportID = reportID,
                 risks = risks(report, request.preferredLanguage, correlationID), nino = request.nino,
                 taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
-                calculationID = request.calculationID, rdsCorrelationID)))
+                calculationId = request.calculationId, rdsCorrelationID)))
 
           case None =>
             logger.warn(s"$correlationID::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
@@ -149,7 +149,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     //TODO Errors need to be dealt looked at.
     Right(ResponseWrapper(correlationID, RdsRequest(
       Seq(
-        RdsRequest.InputWithString("calculationID", request.calculationID.toString),
+        RdsRequest.InputWithString("calculationId", request.calculationId.toString),
         RdsRequest.InputWithString("nino", request.nino),
         RdsRequest.InputWithString("taxYear", request.taxYear),
         RdsRequest.InputWithString("customerType", request.customerType.toString),
