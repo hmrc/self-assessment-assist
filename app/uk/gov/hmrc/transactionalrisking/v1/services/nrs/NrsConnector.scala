@@ -42,7 +42,7 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
   private lazy val apiKey: String = appConfig.nrsApiKey
 
   def submit(nrsSubmission: NrsSubmission)(
-    implicit hc: HeaderCarrier, correlationID: String): Future[NrsOutcome] = {
+    implicit hc: HeaderCarrier, correlationId: String): Future[NrsOutcome] = {
 
     val retryCondition: Try[NrsOutcome] => Boolean = {
       case Success(Left(failure)) => failure.
@@ -51,7 +51,7 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
     }
 
     retry(appConfig.nrsRetries, retryCondition) { attemptNumber =>
-      logger.info(s"$correlationID::[submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
+      logger.info(s"$correlationId::[submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
 
       httpClient
         .POST[NrsSubmission, HttpResponse](s"$url", nrsSubmission, Seq("X-API-Key" -> apiKey))
@@ -59,16 +59,16 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
           val status = response.status
 
           if (Status.isSuccessful(status)) {
-            logger.info(s"$correlationID::[submit] NRS submission successful")
+            logger.info(s"$correlationId::[submit] NRS submission successful")
             Right(response.json.as[NrsResponse])
           } else {
-            logger.warn(s"$correlationID::[submit] RequestId:${hc.requestId}\nNRS submission failed with error: ${response.body}")
+            logger.warn(s"$correlationId::[submit] RequestId:${hc.requestId}\nNRS submission failed with error: ${response.body}")
             Left(NrsFailure.ErrorResponse(status))
           }
         }
         .recover {
           case NonFatal(e) =>
-            logger.error(s"$correlationID::[submit] RequestId:${hc.requestId}\nNRS submission failed with exception", e)
+            logger.error(s"$correlationId::[submit] RequestId:${hc.requestId}\nNRS submission failed with exception", e)
             Left(NrsFailure.ExceptionThrown)
         }
     }

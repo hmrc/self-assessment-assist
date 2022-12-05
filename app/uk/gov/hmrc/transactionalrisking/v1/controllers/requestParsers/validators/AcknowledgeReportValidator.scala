@@ -27,7 +27,7 @@ class AcknowledgeReportValidator extends Validator[AcknowledgeReportRawData] {
 
   private val validationSet = List(parameterFormatValidation)
   private def parameterFormatValidation: AcknowledgeReportRawData => List[List[MtdError]] = { data =>
-    List(NinoValidation.validate(data.nino), ReportIdValidation.validate(data.reportID))
+    List(NinoValidation.validate(data.nino), ReportIdValidation.validate(data.reportId))
   }
 
   override def validate(data: AcknowledgeReportRawData): List[MtdError] = {

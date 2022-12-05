@@ -28,7 +28,7 @@ object RdsTestData {
 
   val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq( ))
 
-  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationIDImplicit,MtdError(code = "", message = "")))
+  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationIdImplicit,MtdError(code = "", message = "")))
 
   var rdsRequestBody: String = """
                                  |{
@@ -387,7 +387,7 @@ object RdsTestData {
 
 
   val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationId = simpleCalculationID,
+    calculationId = simpleCalculationId,
     nino = "AA00000B",
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
@@ -451,11 +451,11 @@ object RdsTestData {
   )
 
   val assessmentReport = AssessmentReport(
-    reportID =  simpleReportID,
+    reportId =  simpleReportId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
     taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
-    calculationId = simpleCalculationID,
+    calculationId = simpleCalculationId,
     rdsCorrelationId = "5fht738957jfjf845jgjf855"
   )
 }

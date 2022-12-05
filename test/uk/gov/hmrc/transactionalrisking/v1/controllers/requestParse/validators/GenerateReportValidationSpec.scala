@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleCalculationID, simpleCalculationIDStrangeCharsString, simpleNino, simpleNinoInvalid}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleCalculationId, simpleCalculationIdStrangeCharsString, simpleNino, simpleNinoInvalid}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.GenerateReportValidator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
@@ -28,25 +28,25 @@ class GenerateReportValidationSpec extends UnitSpec {
   "running a validation" should {
     "return no errors" when {
       "a valid request" in {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationID.toString)
+        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString)
         validator.validate(generateReportRawData) shouldBe Nil
       }
 
       "return errors" when {
         "an invalid nino." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationID.toString)
+          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationId.toString)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError)
         }
 
         "an invalid calculationId." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationIDStrangeCharsString)
+          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationIdStrangeCharsString)
 
           validator.validate(generateReportRawData) shouldBe Seq(CalculationIdFormatError)
         }
 
         "an invalid nino and calculationId." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationIDStrangeCharsString)
+          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationIdStrangeCharsString)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, CalculationIdFormatError)
         }

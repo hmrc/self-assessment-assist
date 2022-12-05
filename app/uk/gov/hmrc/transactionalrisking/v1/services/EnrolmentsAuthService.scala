@@ -39,21 +39,21 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     override def authConnector: AuthConnector = connector
   }
 
-  def authorised(predicate: Predicate, correlationID: String, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
-    logger.info(s"$correlationID::[authorised]Performing authorisation check")
+  def authorised(predicate: Predicate, correlationId: String, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
+    logger.info(s"$correlationId::[authorised]Performing authorisation check")
 
     if (!nrsRequired) {
-      logger.info(s"$correlationID::[authorised]Performing nrs not required")
+      logger.info(s"$correlationId::[authorised]Performing nrs not required")
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
-        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.individual, enrolments, correlationID)
-        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.organisation, enrolments, correlationID)
-        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.agent, enrolments, correlationID)
+        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.individual, enrolments, correlationId)
+        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.organisation, enrolments, correlationId)
+        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.agent, enrolments, correlationId)
         case _ =>
-          logger.warn(s"$correlationID::[authorised]Authorisation failed due to unsupported affinity group.")
+          logger.warn(s"$correlationId::[authorised]Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
-      } recoverWith unauthorisedError(correlationID)
+      } recoverWith unauthorisedError(correlationId)
     } else {
-      logger.info(s"$correlationID::[authorised]authorisation NRS required.")
+      logger.info(s"$correlationId::[authorised]authorisation NRS required.")
 
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
         and internalId and externalId and agentCode and credentials
@@ -68,7 +68,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
           ~ mdtpInfo ~ credStrength ~ logins
           ~ itmpName ~ itmpAddress
           if affGroup.contains(AffinityGroup.Organisation) || affGroup.contains(AffinityGroup.Individual) || affGroup.contains(AffinityGroup.Agent) =>
-          logger.info(s"$correlationID::[authorised]authorisation is ok create userDetails .")
+          logger.info(s"$correlationId::[authorised]authorisation is ok create userDetails .")
 
           val emptyItmpName: ItmpName = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
@@ -82,25 +82,25 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
               itmpAddress.getOrElse(emptyItmpAddress), affGroup, credStrength, logins
             )
 
-          createUserDetailsWithLogging(affinityGroup = affGroup.get.toString, enrolments, correlationID, Some(identityData))
+          createUserDetailsWithLogging(affinityGroup = affGroup.get.toString, enrolments, correlationId, Some(identityData))
         case _ =>
-          logger.warn(s"$correlationID::[EnrolmentsAuthService] [authorised with nrsRequired = true] Authorisation failed due to unsupported affinity group.")
+          logger.warn(s"$correlationId::[EnrolmentsAuthService] [authorised with nrsRequired = true] Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
 
-      } recoverWith unauthorisedError(correlationID)
+      } recoverWith unauthorisedError(correlationId)
     }
 
   }
 
   private def createUserDetailsWithLogging(affinityGroup: String,
                                            enrolments: Enrolments,
-                                           correlationID: String,
+                                           correlationId: String,
                                            identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
     //TODO Fixme clientReference is coming as none in logs
-    logger.info(s"$correlationID::[createUserDetailsWithLogging] Authorisation succeeded")
+    logger.info(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded")
 
     val clientReference = getClientReferenceFromEnrolments(enrolments)
-    logger.debug(s"$correlationID::[createUserDetailsWithLogging] Authorisation succeeded as " +
+    logger.debug(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
       s"fully-authorised organisation with reference $clientReference.")
 
     val userDetails = UserDetails(
@@ -111,10 +111,10 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     )
 
     if (affinityGroup != AffinityGroupType.agent) {
-      logger.info(s"$correlationID::[createUserDetailsWithLogging] Agent not part of affinityGroup")
+      logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent not part of affinityGroup")
       Future.successful(Right(userDetails))
     } else {
-      logger.info(s"$correlationID::[createUserDetailsWithLogging] Agent is part of affinityGroup")
+      logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup")
       Future.successful(Right(userDetails.copy(agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments))))
     }
   }

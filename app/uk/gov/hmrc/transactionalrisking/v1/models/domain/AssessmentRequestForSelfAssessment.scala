@@ -34,7 +34,7 @@ case class AssessmentRequestForSelfAssessment(calculationId: UUID,
 object AssessmentRequestForSelfAssessment {
 
   implicit val reads: Reads[AssessmentRequestForSelfAssessment] =
-    (JsPath \ "calculation_id").read[UUID]
+    (JsPath \ "calculationId").read[UUID]//TODO check why this has underscode
       .and((JsPath \ "nino").read[String])
       .and((JsPath \ "preferred_language").read[PreferredLanguage])
       .and((JsPath \ "customer_type").read[CustomerType])

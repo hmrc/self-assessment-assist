@@ -44,58 +44,58 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                              ec: ExecutionContext,
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
-                             correlationID: String): Future[ServiceOutcome[AssessmentReport]] = {
+                             correlationId: String): Future[ServiceOutcome[AssessmentReport]] = {
 
     def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None) = {
       val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
       rdsRequestSO match {
         case Right(ResponseWrapper(correlationIdResponse, rdsRequest)) =>
-          logger.info(s"$correlationID::[RdsService submit ] RdsAssessmentRequest Created")
+          logger.info(s"$correlationId::[RdsService submit ] RdsAssessmentRequest Created")
           val submit = connector.submit(rdsRequest, rdsAuthCredentials)
           val ret = submit.map {
             _ match {
               case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) =>
-                val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationID)
+                val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
                 assessmentReportSO match {
                   case Right(ResponseWrapper(correlationIdResponse, assessmentReport)) =>
-                    logger.info(s"$correlationID::[submit]submit request for report successful returning it")
-                    Right(ResponseWrapper(correlationID, assessmentReport))
+                    logger.info(s"$correlationId::[submit]submit request for report successful returning it")
+                    Right(ResponseWrapper(correlationId, assessmentReport))
 
                   case Left(errorWrapper) =>
-                    logger.warn(s"$correlationID::[RdsService][submit]submit request for report error from service ${errorWrapper.error}")
+                    logger.warn(s"$correlationId::[RdsService][submit]submit request for report error from service ${errorWrapper.error}")
                     Left(errorWrapper)
                 }
               case Left(errorWrapper) =>
-                logger.warn(s"$correlationID::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
+                logger.warn(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
                 Left(errorWrapper)
             }
           }
           ret
         case Left(errorWrapper) =>
-          logger.warn(s"$correlationID::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request ${errorWrapper.error}")
+          logger.warn(s"$correlationId::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request ${errorWrapper.error}")
           Future(Left(errorWrapper): ServiceOutcome[AssessmentReport])
       }
     }
 
-    logger.info(s"$correlationID::[submit]submit request for report}")
+    logger.info(s"$correlationId::[submit]submit request for report}")
 
     if (appConfig.rdsAuthRequiredForThisEnv) {
-      logger.info(s"$correlationID::[submit]RDS Auth Required}")
+      logger.info(s"$correlationId::[submit]RDS Auth Required}")
       rdsAuthConnector
         .retrieveAuthorisedBearer()
         .foldF(
           error =>
-            Future.successful(Left(ErrorWrapper(correlationID, error))),
+            Future.successful(Left(ErrorWrapper(correlationId, error))),
           credentials => processRdsRequest(Some(credentials))
         )
     } else {
-      logger.info(s"$correlationID::[submit]RDS Auth Not Required}")
+      logger.info(s"$correlationId::[submit]RDS Auth Not Required}")
       processRdsRequest()
     }
   }
 
-  private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationID: String): ServiceOutcome[AssessmentReport] = {
-    logger.info(s"$correlationID::[toAssessmentReport]Generated assessment report")
+  private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationId: String): ServiceOutcome[AssessmentReport] = {
+    logger.info(s"$correlationId::[toAssessmentReport]Generated assessment report")
 
     val feedbackIDOption = report.feedbackId
     feedbackIDOption match {
@@ -103,21 +103,21 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
         val rdsCorrelationIdOption = report.rdsCorrelationId
         rdsCorrelationIdOption match {
           case Some(rdsCorrelationID) =>
-            logger.info(s"$correlationID::[toAssessmentReport]Successfully generated assessment report")
-            Right(ResponseWrapper(correlationID,
-              AssessmentReport(reportID = reportID,
-                risks = risks(report, request.preferredLanguage, correlationID), nino = request.nino,
+            logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
+            Right(ResponseWrapper(correlationId,
+              AssessmentReport(reportId = reportID,
+                risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
                 taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
                 calculationId = request.calculationId, rdsCorrelationID)))
 
           case None =>
-            logger.warn(s"$correlationID::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
-            Left(ErrorWrapper(correlationID, ResourceNotFoundError)): ServiceOutcome[AssessmentReport]
+            logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
+            Left(ErrorWrapper(correlationId, ResourceNotFoundError)): ServiceOutcome[AssessmentReport]
         }
 
       case None =>
-        logger.warn(s"$correlationID::[RdsService][toAssessmentReport]Unable to find reportId")
-        Left(ErrorWrapper(correlationID, FormatReportIdError)): ServiceOutcome[AssessmentReport]
+        logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find reportId")
+        Left(ErrorWrapper(correlationId, FormatReportIdError)): ServiceOutcome[AssessmentReport]
     }
   }
 
@@ -205,9 +205,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   = {
     RdsRequest(
       Seq(
-        RdsRequest.InputWithString("feedbackID", request.feedbackID),
+        RdsRequest.InputWithString("feedbackID", request.feedbackId),
         RdsRequest.InputWithString("nino", request.nino),
-        RdsRequest.InputWithString("correlationID", request.rdsCorrelationID)
+        RdsRequest.InputWithString("correlationID", request.rdsCorrelationId)
       )
     )
   }

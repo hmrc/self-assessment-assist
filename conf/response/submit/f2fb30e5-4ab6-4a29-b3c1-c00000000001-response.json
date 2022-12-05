@@ -126,16 +126,16 @@
       ]
     },
     {
-      "name": "feedbackID",
-      "value": "replaceFeedbackID"
+      "name": "feedbackId",
+      "value": "replaceFeedbackId"
     },
     {
-      "name": "calculationID",
-      "value": "replaceCalculationID"
+      "name": "calculationId",
+      "value": "replaceCalculationId"
     },
     {
-      "name": "correlationID",
-      "value": "replaceCorrelationID"
+      "name": "correlationId",
+      "value": "replaceCorrelationId"
     }
   ]
 }

@@ -44,7 +44,7 @@ case class NewRdsAssessmentReport(links: Seq[String],
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="correlationID")
+      .find(_.name=="correlationId")
       .map( x=>Some(x.value))
       .getOrElse(None)
   }
@@ -53,7 +53,7 @@ case class NewRdsAssessmentReport(links: Seq[String],
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="feedbackID")
+      .find(_.name=="feedbackId")
       .map(_.value)
       .map( x=>Some(UUID.fromString(x)))
       .getOrElse(None)
@@ -84,7 +84,7 @@ object NewRdsAssessmentReport {
   trait Output
 
   object Output {
-    val specialKeys = List("correlationID","feedbackID","calculationId","nino","taxYear","responseCode","response")
+    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","responseCode","response")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {
