@@ -97,9 +97,18 @@ class AcknowledgeReportController @Inject()(
     case FormatReportIdError => Future(BadRequest(Json.toJson(FormatReportIdError)).withApiHeaders(correlationId))
     case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
     case ResourceNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
-    case ClientOrAgentNotAuthorisedError => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId))
+    case ClientOrAgentNotAuthorisedError => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId))  //RDS 10 201 CREATED Rejected => 403 FOBBIDEN ( ClientOrAgentNotAuthorisedError)
 //    case InvalidCredentialsError => Future(Unauthorized(Json.toJson(InvalidCredentialsError)).withApiHeaders(correlationId))
     case NinoFormatError => Future(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
+    case DownstreamError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                         // RDS 11 (400 ) =>500(INTERNAL_SERVER_ERROR)(MatchingResourcesNotFoundError)
+    case MatchingResourcesNotFoundError => Future(ServiceUnavailable(Json.toJson(ServiceUnavailableError)).withApiHeaders(correlationId))   // RDS 12 (404 NOT_FOUND)) =>503(ServiceUnavailableError)(ServiceUnavailableError)
+
+    // case  => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 13 ??? => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
+
+    // case  => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 14 408 => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
+
+    // case  => Future(ServiceUnavailable(Json.toJson(ServiceUnavailable)).withApiHeaders(correlationId))                                       // RDS 15 ?  => 503 SERVICE_UNAVAILABLE (ServiceUnavailableError)
+
     case _ => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
   }
 }

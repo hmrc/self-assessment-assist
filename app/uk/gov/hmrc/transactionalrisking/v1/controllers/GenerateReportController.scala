@@ -95,11 +95,19 @@ class GenerateReportController @Inject()(
     case ServiceUnavailableError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
     case NinoFormatError => Future(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
     case CalculationIdFormatError => Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))
-    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))      // RDS 3 (201 CREATED 404 NOT_FOUND) =>404 NOT_FOUND (MatchingResourcesNotFoundError)
+    case MatchingResourcesNotFoundError => Future(ServiceUnavailable(Json.toJson(ServiceUnavailableError)).withApiHeaders(correlationId))   // RDS 5 (404 NOT_FOUND)) =>503(ServiceUnavailableError)(ServiceUnavailableError)
+
+   // case  => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 6 ??? => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
+
+    // case  => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 7 408 => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
+
+    // case  => Future(ServiceUnavailable(Json.toJson(ServiceUnavailable)).withApiHeaders(correlationId))                                       // RDS 8 ?  => 503 SERVICE_UNAVAILABLE (ServiceUnavailableError)
+
     case ClientOrAgentNotAuthorisedError => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId))
     case InvalidCredentialsError => Future(Unauthorized(Json.toJson(InvalidCredentialsError)).withApiHeaders(correlationId))
     case RdsAuthError => Future(InternalServerError(Json.toJson(ForbiddenDownstreamError)).withApiHeaders(correlationId))
-    case DownstreamError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+    case DownstreamError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                         // RDS 4 (400 ) =>500(INTERNAL_SERVER_ERROR)(MatchingResourcesNotFoundError)
     case ServiceUnavailableError => Future(InternalServerError(Json.toJson(ServiceUnavailableError)).withApiHeaders(correlationId))
     case error@_ =>
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
