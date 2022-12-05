@@ -74,6 +74,10 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationID::[RdsConnector:submit] UpstreamErrorResponse $ex")
           Left(ErrorWrapper(correlationID, ForbiddenDownstreamError))
+
+        case ex: _ =>
+          logger.error(s"$correlationID::[RdsConnector:submit] Unknown exception $ex")
+          Left(ErrorWrapper(correlationID, ServiceUnavailableError))
       }
   }
 
