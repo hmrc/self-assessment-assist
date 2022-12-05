@@ -21,7 +21,6 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
-import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController.ninoKey
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
@@ -40,7 +39,6 @@ class NrsServiceSpec extends ServiceSpec {
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
   private val newRdsReport = "AReport"
-  private val taxYear = "2017-18"
 
   private val generateReportBodyRequest: RequestBody = RequestBody(newRdsReport, reportId)
   private val selfAssessmentSubmission: RequestData = RequestData(nino, generateReportBodyRequest)
@@ -66,8 +64,6 @@ class NrsServiceSpec extends ServiceSpec {
         )),
         searchKeys =
           SearchKeys(
-            nino = ninoKey,
-            taxYear = taxYear,
             reportId = "12345"
           )
       )
@@ -104,7 +100,7 @@ class NrsServiceSpec extends ServiceSpec {
         MockedHashUtil.encode(generateReportBodyRequestString).returns(encodedString)
         MockedHashUtil.getHash(generateReportBodyRequestString).returns(checksum)
 
-        await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated,taxYear)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+        await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
       }
     }
   }
@@ -118,7 +114,7 @@ class NrsServiceSpec extends ServiceSpec {
       MockNrsConnector.submitNrs(nrsSubmission, reportId)
         .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
 
-      await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated,taxYear)) shouldBe None
+      await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated)) shouldBe None
     }
   }
 }

@@ -106,7 +106,7 @@ class RdsConnectorSpec extends ConnectorSpec
             .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
             .willReturn(aResponse()
               .withBody(rdsSubmissionReportJson.toString)
-              .withStatus(OK)))
+              .withStatus(CREATED)))
 
        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationID, rdsNewSubmissionReport))
       }

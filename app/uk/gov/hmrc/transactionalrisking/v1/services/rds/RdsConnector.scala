@@ -39,34 +39,31 @@ import scala.concurrent.{ExecutionContext, Future}
 //TODO Revisit implicits at class level, correaltionId is definetly not needed, its present in function
 @Singleton
 class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
-                             appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID: String) extends Logging {
+                             appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext,correlationID: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+    logger.info(s"temporary $rdsAuthHeaders")
 
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
         logger.info(s"$correlationID::[RdsConnector:submit]======= response is $response")
         response.status match {
-          case Status.OK =>
-            logger.info(s"$correlationID::[RdsConnector:submit]Successfully submitted the report")
+          case Status.CREATED =>
+            logger.info(s"$correlationID::[RdsConnector:submit]Successfully submitted the report response is ${response.body}")
             Right(ResponseWrapper(correlationID, response.json.validate[NewRdsAssessmentReport].get))
           case Status.NOT_FOUND =>
             logger.warn(s"$correlationID::[RdsConnector:submit]Unable to submit the report")
             Left(ErrorWrapper(correlationID, MatchingResourcesNotFoundError))
-          case unexpectedStatus =>
-            logger.error(s"$correlationID::[RdsConnector:submit]Unable to submit the report due to unexpected status code returned")
+          case unexpectedStatus@_ =>
+            logger.error(s"$correlationID::[RdsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
             Left(ErrorWrapper(correlationID, ServiceUnavailableError))
         }
       }
       .recover {
-        case ex: HttpException =>
-          logger.error(s"$correlationID::[RdsConnector:submit] HttpException $ex")
-          Left(ErrorWrapper(correlationID, ServiceUnavailableError))
-
         case ex: BadRequestException =>
           logger.error(s"$correlationID::[RdsConnector:submit] BadRequestException $ex")
           Left(ErrorWrapper(correlationID, DownstreamError))
@@ -74,6 +71,15 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationID::[RdsConnector:submit] UpstreamErrorResponse $ex")
           Left(ErrorWrapper(correlationID, ForbiddenDownstreamError))
+
+        case ex: HttpException =>
+          logger.error(s"$correlationID::[RdsConnector:submit] HttpException $ex")
+          Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+
+
+        case ex@_ =>
+          logger.error(s"$correlationID::[RdsConnector:submit] Unknown exception $ex")
+          Left(ErrorWrapper(correlationID, ServiceUnavailableError))          
       }
   }
 

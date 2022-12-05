@@ -155,7 +155,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
         RdsRequest.InputWithString("customerType", request.customerType.toString),
         RdsRequest.InputWithString("agentRef", request.agentRef.getOrElse("")),
         RdsRequest.InputWithString("preferredLanguage", request.preferredLanguage.toString),
-        RdsRequest.InputWithString("fraudRiskReportDecision", fraudRiskReport.decision.toString),
         RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
         RdsRequest.InputWithObject("fraudRiskReportHeaders",
           Seq(
@@ -167,13 +166,13 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
             DataWrapper(fraudRiskReport.headers.map(header => Seq(header.key, header.value)).toSeq)
           )
         ),
-        RdsRequest.InputWithObject("fraudRiskReportWatchlistFlags",
+        RdsRequest.InputWithObject("fraudRiskReportReasons",
           Seq(
             MetadataWrapper(
               Seq(
-                Map("NAME" -> "string")
+                Map("Reason" -> "string")
               )),
-            DataWrapper(fraudRiskReport.watchlistFlags.map(flag => Seq(flag.name)).toSeq)
+            DataWrapper(fraudRiskReport.fraudRiskReportReasons.map(value => Seq(value.reason)).toSeq)
           )
         )
       )
