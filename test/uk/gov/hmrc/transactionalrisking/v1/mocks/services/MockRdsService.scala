@@ -22,6 +22,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, FraudRiskReport, Origin}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
@@ -44,16 +45,22 @@ trait MockRdsService extends MockFactory {
         .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(internalCorrelationIDImplicit, simpleAssessmentReport) )))
     }
 
-//
-//    def acknowlege(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
-//      (mockRdsService.acknowlege(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
-//        .expects(*, *, *, *, *)
-//    }
-//
+    def submitFail(request: AssessmentRequestForSelfAssessment,
+               fraudRiskReport: FraudRiskReport,
+               origin: Origin, error: MtdError): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
+      (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
+        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns (Future(Left(ErrorWrapper(internalCorrelationIDImplicit, error))))
+    }
+
 
     def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[NewRdsAssessmentReport]]] = {
       (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
         .expects(*, *, *, *, *).anyNumberOfTimes().returns( Future( Right(ResponseWrapper( simpleRDSCorrelationID, simpleAcknowledgeNewRdsAssessmentReport ) ) ) )
+    }
+
+    def acknowlegeRdsFail(request: AcknowledgeReportRequest, error: MtdError): CallHandler[Future[ServiceOutcome[NewRdsAssessmentReport]]] = {
+      (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
+        .expects(*, *, *, *, *).anyNumberOfTimes().returns(Future(Left(ErrorWrapper(simpleRDSCorrelationID, error))))
     }
 
   }

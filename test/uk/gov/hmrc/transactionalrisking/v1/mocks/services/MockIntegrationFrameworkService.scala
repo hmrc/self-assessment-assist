@@ -20,6 +20,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.CalculationInfo
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
@@ -39,6 +40,13 @@ trait MockIntegrationFrameworkService extends MockFactory {
       (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String)(_: ExecutionContext, _:String))
         .expects(*, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(ResponseWrapper(internalCorrelationIDImplicit, CalculationInfo(simpleCalculationID, simpleNino, "2021-22")))))
+    }
+
+    //TODO: To be completed
+    def getCalculationInfoFail(id: UUID, nino: String, error: MtdError): CallHandler[Future[ServiceOutcome[CalculationInfo]]] = {
+      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String)(_: ExecutionContext, _: String))
+        .expects(*, *, *, *).anyNumberOfTimes()
+        .returns(Future.successful(Left(ErrorWrapper(internalCorrelationIDImplicit, error))))
     }
   }
 }

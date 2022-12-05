@@ -33,11 +33,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class UserRequest[A](userDetails: UserDetails, request: Request[A]) extends WrappedRequest[A](request)
 
-abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
+abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with BaseController with Logging {
 
   val authService: EnrolmentsAuthService
 
-  def authorisedAction(nino: String, correlationID: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
+  def authorisedAction(nino: String, nrsRequired: Boolean = false) (implicit correlationID:String): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
     logger.info(s"$correlationID::[authorisedAction] Check we have authority to do the required work and do it if possible.")
 
     override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
@@ -68,20 +68,20 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
             block(UserRequest(userDetails.copy(clientID = clientID), request))
           case Left(ClientOrAgentNotAuthorisedError) =>
             logger.warn(s"$correlationID::[invokeBlock]Unable to authorise client or agent")
-            Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
+            Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationID))
           case Left(ForbiddenDownstreamError) =>
             logger.warn(s"$correlationID::[invokeBlock]Forbidden downstream error")
-            Future.successful(Forbidden(Json.toJson(DownstreamError)))
+            Future.successful(Forbidden(Json.toJson(DownstreamError)).withApiHeaders(correlationID))
           case Left(_) =>
             logger.warn(s"$correlationID::[invokeBlock]Downstream")
-            Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+            Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationID))
           case _ =>
             logger.error(s"$correlationID::[invokeBlock]Unknown error")
-            Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+            Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationID))
         }
       } else {
         logger.warn(s"$correlationID::[invokeBlock]Error in nino format")
-        Future.successful(BadRequest(Json.toJson(NinoFormatError)))
+        Future.successful(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationID))
       }
     }
   }

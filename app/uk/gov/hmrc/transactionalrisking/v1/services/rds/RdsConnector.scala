@@ -39,12 +39,13 @@ import scala.concurrent.{ExecutionContext, Future}
 //TODO Revisit implicits at class level, correaltionId is definetly not needed, its present in function
 @Singleton
 class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
-                             appConfig: AppConfig)(implicit val ec: ExecutionContext, correlationID: String) extends Logging {
+                             appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext,correlationID: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
     logger.info(s"$correlationID::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+    logger.info(s"temporary $rdsAuthHeaders")
 
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
@@ -63,10 +64,6 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         }
       }
       .recover {
-        case ex: HttpException =>
-          logger.error(s"$correlationID::[RdsConnector:submit] HttpException $ex")
-          Left(ErrorWrapper(correlationID, ServiceUnavailableError))
-
         case ex: BadRequestException =>
           logger.error(s"$correlationID::[RdsConnector:submit] BadRequestException $ex")
           Left(ErrorWrapper(correlationID, DownstreamError))
@@ -75,9 +72,14 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
           logger.error(s"$correlationID::[RdsConnector:submit] UpstreamErrorResponse $ex")
           Left(ErrorWrapper(correlationID, ForbiddenDownstreamError))
 
-        case ex: _ =>
-          logger.error(s"$correlationID::[RdsConnector:submit] Unknown exception $ex")
+        case ex: HttpException =>
+          logger.error(s"$correlationID::[RdsConnector:submit] HttpException $ex")
           Left(ErrorWrapper(correlationID, ServiceUnavailableError))
+
+
+        case ex@_ =>
+          logger.error(s"$correlationID::[RdsConnector:submit] Unknown exception $ex")
+          Left(ErrorWrapper(correlationID, ServiceUnavailableError))          
       }
   }
 

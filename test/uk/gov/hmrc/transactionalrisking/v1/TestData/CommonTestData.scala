@@ -75,24 +75,25 @@ class CommonTestData  {
 
   val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
-  val simpleNotableEventType: NotableEventType = AssistReportGenerated
 
   val reportSubmissionID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000010").toString
+  val simpleReportNotableEventType: NotableEventType = AssistReportGenerated
   val simpleNRSResponseReportSubmission = new NrsResponse(reportSubmissionID)
 
   val simpleAcknowledgeNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleAcknowledgedSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue, 1, 12, 0, 0, 0, ZoneOffset.UTC)
   val simpleAcknowledgedNotableEventType: NotableEventType = AssistReportAcknowledged
 
-  val simpleBodyAcknowledge: RequestBody = null
-  val simpleAcknowledgeReportRequestData = RequestData(nino = simpleNino, body = simpleBody)
+  val simpleRequestBodyAcknowledge: RequestBody = RequestBody(s""""{"reportID":"$simpleReportID"}"""", simpleReportID.toString)
+  val simpleAcknowledgeReportRequestData = RequestData(nino = simpleNino, body = simpleRequestBodyAcknowledge)
 
-  val acknowledgeSubmissionIdString = ""
+  //val acknowledgeSubmissionIdString = ""
   val acknowledgeSubmissionID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
+  val simpleNotableAcknowledgeEventType: NotableEventType = AssistReportAcknowledged
   val simpleNRSResponseAcknowledgeSubmission = new NrsResponse(acknowledgeSubmissionID)
 
   val simpleAcknowledgeReportRawData:AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
-  val simpleAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID:String)
+  val simpleAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
 
 
   val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationID.toString, simpleReportID.toString, simpleRDSCorrelationID )
@@ -110,6 +111,13 @@ class CommonTestData  {
   val simpleReportIDStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"
+
+  val simpleCode = "code"
+  val simpleMessage = "message"
+  val simpleCustomJson: Option[JsValue] = None
+
+
+
 }
 
 object CommonTestData {
