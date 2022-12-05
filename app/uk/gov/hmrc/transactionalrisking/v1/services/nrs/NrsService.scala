@@ -18,12 +18,10 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController.ninoKey
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
 
 import java.time.OffsetDateTime
 import javax.inject.{Inject, Singleton}

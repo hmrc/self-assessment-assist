@@ -19,13 +19,10 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleAcknowledgedNotableEventType, simpleNRSResponseAcknowledgeSubmission, simpleNRSResponseReportSubmission, simpleReportNotableEventType}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global

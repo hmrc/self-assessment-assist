@@ -21,7 +21,6 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.DesTaxYear
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
@@ -50,7 +49,8 @@ class AcknowledgeReportController @Inject()(
     val body = s"""{"reportID":"${reportId}"}"""
     val reportAcknowledgementContent = RequestData(nino, RequestBody(body, reportId))
 
-    authorisedAction(nino, correlationID, nrsRequired = true).async { implicit request =>
+    authorisedAction(nino, nrsRequired = true).async {
+      implicit request =>
 
       val processRequest: EitherT[Future, ErrorWrapper, NewRdsAssessmentReport] = for {
         parsedRequest   <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
@@ -66,7 +66,6 @@ class AcknowledgeReportController @Inject()(
             case code@Some(ACCEPTED) =>
               assessmentReport.taxYear match {
                 case Some(taxYear) =>
-                  val taxYearFromResponse: String = DesTaxYear.fromDesIntToString(taxYear)
                   logger.debug(s"$correlationID::[acknowledgeReport] ... submitting acknowledgement to NRS")
                   //Submit asynchronously to NRS
                   nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
@@ -98,7 +97,6 @@ class AcknowledgeReportController @Inject()(
     case FormatReportIdError => Future(BadRequest(Json.toJson(FormatReportIdError)).withApiHeaders(correlationId))
     case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
     case ResourceNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
-    case FormatReportIdError => Future(BadRequest(Json.toJson(FormatReportIdError)).withApiHeaders(correlationId))
     case ClientOrAgentNotAuthorisedError => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId))
 //    case InvalidCredentialsError => Future(Unauthorized(Json.toJson(InvalidCredentialsError)).withApiHeaders(correlationId))
     case NinoFormatError => Future(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))

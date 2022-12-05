@@ -24,7 +24,7 @@ import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestDat
 import uk.gov.hmrc.transactionalrisking.v1.controllers.GenerateReportController
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, CalculationIdFormatError, ClientOrAgentNotAuthorisedError, DownstreamError, ForbiddenDownstreamError, InvalidCredentialsError, MatchingResourcesNotFoundError, MtdError, NinoFormatError, ServerError, ServiceUnavailableError, UnsupportedVersionError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -59,7 +59,6 @@ class GenerateReportControllerSpec
       currentDateTime = mockCurrentDateTime,
       idGenerator = mockIdGenerator
     )
-    //override authorisedAction(nino: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent]
 
   }
 
@@ -81,6 +80,55 @@ class GenerateReportControllerSpec
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
       }
+    }
+
+    "a request fails due to failed authorisedAction that gives a NinoFormatError" should {
+
+      s"return the NinoFormatError error  to indicate that the nino is  invalid. " in new Test {
+
+        MockCurrentDateTime.getDateTime()
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationID.toString)(fakeGetRequest)
+
+        status(result) shouldBe BAD_REQUEST
+        Thread.sleep(1000)
+
+        contentAsJson(result) shouldBe NinoFormatError.toJson
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+
+      }
+    }
+
+
+    "a request fails due to failed EnrolmentsAuthService.authorised failure" should {
+
+      def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
+        s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to EnrolmentsAuthService.authorised returning an error." in new Test {
+
+          MockEnrolmentsAuthService.authoriseUserFail(mtdError)
+          MockCurrentDateTime.getDateTime()
+          MockProvideRandomCorrelationId.IdGenerator
+
+          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
+
+          status(result) shouldBe expectedStatus
+          contentAsJson(result) shouldBe expectedBody
+          contentType(result) shouldBe Some("application/json")
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+
+        }
+      }
+
+      val errorInErrorOut =
+        Seq(
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
+          (ForbiddenDownstreamError, FORBIDDEN, DownstreamError.toJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson)
+        )
+
+      errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
     "a request fails due to a failed getCalculationInfo" should {
@@ -185,7 +233,7 @@ class GenerateReportControllerSpec
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
-
+//TODO Add nrs test.
 //    "a request fails due to a failed NRSService.submit " should {
 //
 //      def runTest( expectedStatus: Int, expectedBody: JsValue): Unit = {

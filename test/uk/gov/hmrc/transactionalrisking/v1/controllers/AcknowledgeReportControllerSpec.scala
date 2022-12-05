@@ -40,8 +40,6 @@ class AcknowledgeReportControllerSpec
     with MockIdGenerator {
 
 
-  implicit val correlationId: String = "X-ID"
-
   trait Test {
     val hc: HeaderCarrier = HeaderCarrier()
 
@@ -82,6 +80,55 @@ class AcknowledgeReportControllerSpec
         header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
 
       }
+    }
+
+
+    "a request fails due to failed authorisedAction that gives a NinoFormatError" should {
+
+      s"return the NinoFormatError error  to indicate that the nino is  invalid. " in new Test {
+
+        MockCurrentDateTime.getDateTime()
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result = controller.acknowledgeReportForSelfAssessment(simpleNinoInvalid, simpleReportID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+
+        status(result) shouldBe BAD_REQUEST
+
+        contentAsJson(result) shouldBe NinoFormatError.toJson
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+
+      }
+    }
+
+
+    "a request fails due to failed authorisedAction failure" should {
+
+      def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
+        s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to authorisedAction returning an error." in new Test {
+
+          MockEnrolmentsAuthService.authoriseUserFail(mtdError)
+          MockCurrentDateTime.getDateTime()
+          MockProvideRandomCorrelationId.IdGenerator
+
+          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+
+          status(result) shouldBe expectedStatus
+          contentAsJson(result) shouldBe expectedBody
+          contentType(result) shouldBe Some("application/json")
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+
+        }
+      }
+
+      val errorInErrorOut =
+        Seq(
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
+          (ForbiddenDownstreamError, FORBIDDEN, DownstreamError.toJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson)
+        )
+
+      errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
     "a request fails due to failed parseRequest failure" should {
@@ -158,6 +205,7 @@ class AcknowledgeReportControllerSpec
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
+    //TODO NRS test.
     //    "a request fails due to failed NRSService submit" should {
     //      "return the expected error to indicate that the data has not been accepted and saved due to failed NRSService submit. " in new Test {
     //
