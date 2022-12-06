@@ -30,7 +30,6 @@ import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.NrsSubmission
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.ExceptionThrown
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.{FullRequestTestData, NrsConnector}
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 

@@ -28,7 +28,6 @@ trait MockAuthorisedController extends MockFactory {
   object MockAuthorisedController {
 
     def authorisedAction(nino: String, nrsRequired: Boolean = false) (implicit correlationId:String): CallHandler[ActionBuilder[UserRequest, AnyContent]] = {
-
       (mockAuthorisedController.authorisedAction(_: String, _: Boolean)( _:String ) )
         .expects(*, *, *)
     }
