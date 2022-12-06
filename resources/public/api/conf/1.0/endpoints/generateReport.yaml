@@ -20,7 +20,7 @@ responses:
     description: Success
     headers:
       X-CorrelationId:
-        $ref: './header.yaml#/components/parameters/correlationId'
+        $ref: '../header.yaml#/components/parameters/correlationId'
     content:
       application/json:
         schema:

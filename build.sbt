@@ -2,6 +2,7 @@ import sbt.Keys.testOptions
 import sbt.Test
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
+import scala.sys.process._
 
 val appName = "self-assessment-assist"
 
@@ -43,3 +44,24 @@ lazy val microservice = Project(appName, file("."))
   .settings(PlayKeys.playDefaultPort := 8342)
   .settings(CodeCoverageSettings.settings: _*)
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "resources")
+  .settings(
+    Compile / compile := ((Compile / compile) dependsOn oasMergeVerbose).value
+  )
+
+lazy val oasMerge = taskKey[Unit]("""Runs './run_oas_merge.sh 2.0 <<scala_version>>' to merge OpenAPI spec files""")
+oasMerge := {
+  val version =  scalaVersion.value.split("\\.").take(2).mkString(".")
+  val exitCode = (s"./run_oas_merge.sh 2.0 $version").!
+  if (exitCode != 0) {
+    throw new MessageOnlyException("OpenAPI merge failed, run using verbose: sbt oasMergeVerbose")
+  }
+}
+
+lazy val oasMergeVerbose = taskKey[Unit](s"""Runs './run_oas_merge.sh 2.0 <<scala_version>> -v' to merge OpenAPI spec files in verbose""")
+oasMergeVerbose := {
+  val version =  scalaVersion.value.split("\\.").take(2).mkString(".")
+  val exitCode = (s"./run_oas_merge.sh 2.0 $version -v").!
+  if (exitCode != 0) {
+    throw new MessageOnlyException("OpenAPI merge failed!")
+  }
+}
