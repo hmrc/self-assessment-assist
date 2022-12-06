@@ -27,7 +27,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AssistReportAcknowledged, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -52,7 +52,7 @@ class AcknowledgeReportController @Inject()(
     authorisedAction(nino, nrsRequired = true).async {
       implicit request =>
 
-      val processRequest: EitherT[Future, ErrorWrapper, NewRdsAssessmentReport] = for {
+      val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
         parsedRequest   <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
         serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
       } yield {

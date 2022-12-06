@@ -31,7 +31,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -84,7 +84,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
 
     "return the expected result in Welsh if it's selected as preferred Language" in new Test {
       MockRdsAuthConnector.retrieveAuthorisedBearer()
-      val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationId, rdsNewSubmissionReport))
+      val rdsAssessmentReportSO: ServiceOutcome[RdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationId, rdsNewSubmissionReport))
       MockRdsConnector.submit(rdsRequest) returns Future.successful(rdsAssessmentReportSO)
 
       private val assementReportSO: ServiceOutcome[AssessmentReport] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
@@ -101,7 +101,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
           )
         )
 
-        val expectedResult:ServiceOutcome[NewRdsAssessmentReport] = Right( ResponseWrapper( internalCorrelationId, simpleAcknowledgeNewRdsAssessmentReport)  )
+        val expectedResult:ServiceOutcome[RdsAssessmentReport] = Right( ResponseWrapper( internalCorrelationId, simpleAcknowledgeNewRdsAssessmentReport)  )
         MockRdsConnector.acknowledgeRds(request) returns Future.successful(expectedResult)
 
         val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)

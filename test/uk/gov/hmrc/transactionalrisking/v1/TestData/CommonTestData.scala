@@ -21,7 +21,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
 import java.time.{Month, OffsetDateTime, ZoneOffset}
@@ -97,10 +97,10 @@ class CommonTestData  {
 
 
   val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId )
-  val rdsNewSubmissionReport: NewRdsAssessmentReport = rdsSubmissionReportJson.as[NewRdsAssessmentReport]
+  val rdsNewSubmissionReport: RdsAssessmentReport = rdsSubmissionReportJson.as[RdsAssessmentReport]
 
   val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
-  val rdsAssessmentAck: NewRdsAssessmentReport = rdsAssessmentAckJson.as[NewRdsAssessmentReport]
+  val rdsAssessmentAck: RdsAssessmentReport = rdsAssessmentAckJson.as[RdsAssessmentReport]
   val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentAck
 
 

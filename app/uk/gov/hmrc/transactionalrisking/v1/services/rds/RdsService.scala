@@ -23,13 +23,13 @@ import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, FormatReportIdError, ResourceNotFoundError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, FormatReportIdError, ResourceNotFoundError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -94,46 +94,55 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     }
   }
 
-  private def toAssessmentReport(report: NewRdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationId: String): ServiceOutcome[AssessmentReport] = {
+  private def toAssessmentReport(report: RdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationId: String): ServiceOutcome[AssessmentReport] = {
     logger.info(s"$correlationId::[toAssessmentReport]Generated assessment report")
 
-    val feedbackIDOption = report.feedbackId
-    feedbackIDOption match {
-      case Some(reportID) =>
-        val rdsCorrelationIdOption = report.rdsCorrelationId
-        rdsCorrelationIdOption match {
-          case Some(rdsCorrelationID) =>
-            logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
-            Right(ResponseWrapper(correlationId,
-              AssessmentReport(reportId = reportID,
-                risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
-                taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
-                calculationId = request.calculationId, rdsCorrelationID)))
+    (report.calculationID, report.feedbackId) match {
+      case (Some(calculationId), Some(reportID)) =>
+        if(calculationId.equals(request.calculationId)) {
+          val rdsCorrelationIdOption = report.rdsCorrelationId
+          rdsCorrelationIdOption match {
+            case Some(rdsCorrelationID) =>
+              logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
+              Right(ResponseWrapper(correlationId,
+                AssessmentReport(reportId = reportID,
+                  risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
+                  taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
+                  calculationId = request.calculationId, rdsCorrelationID)))
 
-          case None =>
-            logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
-            Left(ErrorWrapper(correlationId, ResourceNotFoundError)): ServiceOutcome[AssessmentReport]
+            case None =>
+              logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
+              Left(ErrorWrapper(correlationId, ResourceNotFoundError)): ServiceOutcome[AssessmentReport]
+          }
+        }else{
+          logger.warn(s"$correlationId::[RdsService][toAssessmentReport] calculationId from request doesn't " +
+            s"match with calculationId in RDS response")
+          Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
         }
 
-      case None =>
+      case (Some(_), None) =>
         logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find reportId")
         Left(ErrorWrapper(correlationId, FormatReportIdError)): ServiceOutcome[AssessmentReport]
+
+      case (None, Some(_)) =>
+        logger.warn(s"$correlationId::[RdsService][toAssessmentReport] calculationId missing in RDS response")
+        Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
     }
   }
 
-  private def risks(report: NewRdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationID: String): Seq[Risk] = {
+  private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationID: String): Seq[Risk] = {
     logger.info(s"$correlationID::[risks]Create risk for $preferredLanguage.Value")
     report.outputs.collect {
-      case elm: NewRdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
+      case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
     }.flatMap(_.value).collect {
-      case value: NewRdsAssessmentReport.DataWrapper => value
+      case value: RdsAssessmentReport.DataWrapper => value
     }.flatMap(_.data)
       .map(toRisk)
   }
 
   private def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage) = preferredLanguage match {
-    case PreferredLanguage.English if language == "englishActions" => true
-    case PreferredLanguage.Welsh if language == "welshActions" => true
+    case PreferredLanguage.English if language == "EnglishActions" => true
+    case PreferredLanguage.Welsh if language == "WelshActions" => true
     case _ => false
   }
 
@@ -185,7 +194,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                                                      ec: ExecutionContext,
                                                      //logContext: EndpointLogContext,
                                                      userRequest: UserRequest[_],
-                                                     correlationId: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+                                                     correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[acknowledge]acknowledge")
     if (appConfig.rdsAuthRequiredForThisEnv) {
       rdsAuthConnector

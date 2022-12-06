@@ -72,8 +72,9 @@ class NrsService @Inject()(
     correlationId: String
   ): Future[Option[NrsResponse]] = {
     logger.info(s"$correlationId::[submit]submit the data to nrs")
-
+    //TODO this has to come outside of this method, as failure in building NRS Request should fail the transaction
     val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType)
+
     logger.info(s"$correlationId::[submit]Request initiated to store report content to NRS")
     connector.submit(nrsSubmission).map { response =>
       val ret = response.toOption

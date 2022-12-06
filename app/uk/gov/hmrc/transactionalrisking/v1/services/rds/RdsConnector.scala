@@ -31,7 +31,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,7 +41,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
-  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
@@ -54,7 +54,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         response.status match {
           case Status.CREATED =>
             logger.info(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response is ${response.body}")
-            Right(ResponseWrapper(correlationId, response.json.validate[NewRdsAssessmentReport].get))
+            Right(ResponseWrapper(correlationId, response.json.validate[RdsAssessmentReport].get))
           case Status.NOT_FOUND =>
             logger.warn(s"$correlationId::[RdsConnector:submit]Unable to submit the report")
             Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError))
@@ -86,7 +86,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
   def acknowledgeRds(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier,
                                                                                                ec: ExecutionContext,
                                                                                                correlationId: String
-  ): Future[ServiceOutcome[NewRdsAssessmentReport]] = {
+  ): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[acknowledgeRds]acknowledge the report")
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
@@ -101,7 +101,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
             //            response.json.validate[RdsAcknowledgementResponse].getOrElse(throw new RuntimeException("failed to validate "))
             //Right(ResponseWrapper( correlationId, AcknowledgeReport( NO_CONTENT, 2022 ) ) )
 
-            response.json.validate[NewRdsAssessmentReport] match {
+            response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
                 logger.info(s"$correlationId::[acknowledgeRds]the results return are ok")
                 Right(ResponseWrapper(correlationId, newRdsAssessmentReport))
