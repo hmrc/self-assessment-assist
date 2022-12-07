@@ -45,8 +45,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
-    logger.info(s"temporary $rdsAuthHeaders")
-
+    logger.info(s"$correlationId::[RdsConnector:submit]======= invoking url ${appConfig.rdsBaseUrlForSubmit}")
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
@@ -96,11 +95,6 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         response.status match {
           case code@CREATED =>
             logger.debug(s"$correlationId::[acknowledgeRds] submitting acknowledgement to RDS success")
-            //no need to validate as we are interested only in OK response.if validation is required then
-            // we need separate class, as the structure is different, ignore response as only report id needs to go into the body of nrs
-            //            response.json.validate[RdsAcknowledgementResponse].getOrElse(throw new RuntimeException("failed to validate "))
-            //Right(ResponseWrapper( correlationId, AcknowledgeReport( NO_CONTENT, 2022 ) ) )
-
             response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
                 logger.info(s"$correlationId::[acknowledgeRds]the results return are ok")

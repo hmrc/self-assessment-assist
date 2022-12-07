@@ -131,7 +131,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   }
 
   private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationID: String): Seq[Risk] = {
-    logger.info(s"$correlationID::[risks]Create risk for $preferredLanguage.Value")
     report.outputs.collect {
       case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
     }.flatMap(_.value).collect {

@@ -64,7 +64,7 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
       "Accept" -> "application/json",
       "Authorization" -> s"Basic $base64EncodedCredentials")
 
-    logger.info(s"$correlationId::[retrieveAuthorisedBearer] request info url=$url body=$body")
+    logger.info(s"$correlationId::[retrieveAuthorisedBearer] request info url=$url")
     EitherT {
       http
         .POSTString(url, body, headers = reqHeaders)
