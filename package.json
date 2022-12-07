@@ -1,0 +1,13 @@
+{
+  "name": "self-assessment-assist",
+  "version": "1.0.0",
+  "description": "self-assessment-assist using speccy to merge modular OAS spec files.",
+  "scripts": {
+    "oasMerge": "speccy resolve resources/public/api/conf/1.0/application_modular.yaml -o target/scala-$SCALA_VERSION/classes/public/api/conf/1.0/application.yaml",
+    "oasMergeVerbose": "speccy resolve resources/public/api/conf/1.0/application_modular.yaml -o target/scala-$SCALA_VERSION/classes/public/api/conf/1.0/application.yaml -v"
+  },
+  "preferGlobal": true,
+  "devDependencies": {
+    "speccy": "^0.11.0"
+  }
+}
