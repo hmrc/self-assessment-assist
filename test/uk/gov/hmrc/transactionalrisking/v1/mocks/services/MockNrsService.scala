@@ -36,7 +36,7 @@ trait MockNrsService extends MockFactory {
 
     def buildNrsSubmission(selfAssessmentSubmission: RequestData,
                            submissionTimestamp: OffsetDateTime,
-                           request: UserRequest[_], notableEventType: NotableEventType, taxYear: String)(corrrelationID: String): CallHandler[NrsSubmission] = {
+                           request: UserRequest[_], notableEventType: NotableEventType, taxYear: String)(corrrelationId: String): CallHandler[NrsSubmission] = {
       (mockNrsService.buildNrsSubmission(_: RequestData,
         _: OffsetDateTime,
         _: UserRequest[_], _: NotableEventType)(_: String))

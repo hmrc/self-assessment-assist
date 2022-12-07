@@ -49,18 +49,18 @@ class GenerateReportController @Inject()(
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] = {
 
-    implicit val correlationID: String = idGenerator.getUid
-    logger.info(s"$correlationID::[generateReportInternal] Received request to generate an assessment report")
+    implicit val correlationId: String = idGenerator.getUid
+    logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
 
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       val customerType = deriveCustomerType(request)
       val submissionTimestamp = currentDateTime.getDateTime
 
-      toId(calculationId).map { calculationIDUuid =>
+      toId(calculationId).map { calculationIdUuid =>
 
         val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
-          calculationInfo                     <- EitherT(getCalculationInfo(calculationIDUuid, nino))
-          assessmentRequestForSelfAssessment  = AssessmentRequestForSelfAssessment(calculationIDUuid,
+          calculationInfo                     <- EitherT(getCalculationInfo(calculationIdUuid, nino))
+          assessmentRequestForSelfAssessment  = AssessmentRequestForSelfAssessment(calculationIdUuid,
                                                 nino,
                                                 PreferredLanguage.English,
                                                 customerType,
@@ -72,7 +72,7 @@ class GenerateReportController @Inject()(
         } yield {
           rdsAssessmentReportResponse.map { assessmentReportResponse: AssessmentReport =>
             val rdsReportContent = RequestData(nino = nino, RequestBody(assessmentReportResponse.toString,
-              assessmentReportResponse.reportID.toString))
+              assessmentReportResponse.reportId.toString))
 
             nonRepudiationService.submit(requestData = rdsReportContent,
               submissionTimestamp,
@@ -82,11 +82,11 @@ class GenerateReportController @Inject()(
         }
 
         responseData.fold(
-          errorWrapper => errorHandler(errorWrapper, correlationID), report =>
-            Future(Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationID))
+          errorWrapper => errorHandler(errorWrapper, correlationId), report =>
+            Future(Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationId))
         ).flatten
 
-      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationID)))
+      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
     }
   }
 

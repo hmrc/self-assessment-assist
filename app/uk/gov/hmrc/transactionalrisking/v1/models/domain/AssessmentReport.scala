@@ -22,7 +22,7 @@ import play.api.libs.json.{JsPath, Writes}
 import java.util.UUID
 
 // At this point, we don't expect that the report will differ according to the context.
-case class AssessmentReport(reportID: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationID:UUID, rdsCorrelationId:String)
+case class AssessmentReport(reportId: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationId:UUID, rdsCorrelationId:String)
 
 object AssessmentReport {
 

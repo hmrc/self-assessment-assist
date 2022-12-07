@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DefaultRdsAuthConnector])
 trait RdsAuthConnector[F[_]] {
-  def retrieveAuthorisedBearer()(implicit hc: HeaderCarrier, correlationID: String): EitherT[F, MtdError, RdsAuthCredentials]
+  def retrieveAuthorisedBearer()(implicit hc: HeaderCarrier, correlationId: String): EitherT[F, MtdError, RdsAuthCredentials]
 }
 
 class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: HttpClient)(implicit
@@ -44,7 +44,7 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
 ) extends RdsAuthConnector[Future] with Logging {
 
   override def retrieveAuthorisedBearer()(implicit
-                                          hc: HeaderCarrier, correlationID: String
+                                          hc: HeaderCarrier, correlationId: String
   ): EitherT[Future, MtdError, RdsAuthCredentials] = {
 
     val url = s"${appConfig.rdsSasBaseUrlForAuth}"
@@ -64,28 +64,28 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
       "Accept" -> "application/json",
       "Authorization" -> s"Basic $base64EncodedCredentials")
 
-    logger.info(s"$correlationID::[retrieveAuthorisedBearer] request info url=$url body=$body")
+    logger.info(s"$correlationId::[retrieveAuthorisedBearer] request info url=$url")
     EitherT {
       http
         .POSTString(url, body, headers = reqHeaders)
         .map { response =>
-          logger.info(s"$correlationID::[retrieveAuthorisedBearer] response is $response}")
+          logger.info(s"$correlationId::[retrieveAuthorisedBearer] response is $response}")
           response.status match {
             case ACCEPTED =>
-              logger.info(s"$correlationID::[retrieveAuthorisedBearer] ACCEPTED reponse")
+              logger.info(s"$correlationId::[retrieveAuthorisedBearer] ACCEPTED reponse")
               handleResponse(response)
-            case OK => logger.info(s"$correlationID::[retrieveAuthorisedBearer] Ok reponse")
+            case OK => logger.info(s"$correlationId::[retrieveAuthorisedBearer] Ok reponse")
               handleResponse(response)
             case errorStatusCode => Left(RdsAuthError)
           }
         }
         .recover {
           case ex: HttpException =>
-            logger.error(s"$correlationID::[retrieveAuthorisedBearer] HttpException=$ex")
+            logger.error(s"$correlationId::[retrieveAuthorisedBearer] HttpException=$ex")
             Left(RdsAuthError)
           case ex: UpstreamErrorResponse =>
-            logger.error(s"$correlationID::[RdsAuthConnector:retrieveAuthorisedBearer] UpstreamErrorResponse")
-            logger.error(s"$correlationID::[retrieveAuthorisedBearer] UpstreamErrorResponse=$ex")
+            logger.error(s"$correlationId::[RdsAuthConnector:retrieveAuthorisedBearer] UpstreamErrorResponse")
+            logger.error(s"$correlationId::[retrieveAuthorisedBearer] UpstreamErrorResponse=$ex")
             Left(RdsAuthError)
         }
     }

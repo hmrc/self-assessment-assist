@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.controllers
+package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import akka.util.ByteString
 import play.api.http.HttpEntity
@@ -23,8 +23,7 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID}
-import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationId
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
@@ -43,7 +42,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     class TestController extends AuthorisedController(cc) {
       override val authService: EnrolmentsAuthService = mockEnrolmentsAuthService
 
-      def authorisedActionAysncSUT(nino: String, nrsRequired: Boolean = true): Action[AnyContent] = authorisedAction(nino, nrsRequired)(internalCorrelationID).async {
+      def authorisedActionAysncSUT(nino: String, nrsRequired: Boolean = true): Action[AnyContent] = authorisedAction(nino, nrsRequired)(internalCorrelationId).async {
         Future.successful(Ok(Json.obj()))
       }
     }

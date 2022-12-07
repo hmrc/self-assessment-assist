@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.controllers
+package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 
 import play.api.libs.json.JsValue
@@ -67,18 +67,18 @@ class GenerateReportControllerSpec
       "return the expected data when controller is called" in new Test {
 
         MockEnrolmentsAuthService.authoriseUser()
-        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
+        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()
         MockNrsService.submit(simpleGenerateReportControllerRequestData, simpleSubmissionTimestamp, simpleReportNotableEventType, simpleNRSResponseReportSubmission)
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
+        val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
-        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
       }
     }
 
@@ -89,14 +89,14 @@ class GenerateReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationID.toString)(fakeGetRequest)
+        val result = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString)(fakeGetRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
 
         contentAsJson(result) shouldBe NinoFormatError.toJson
         contentType(result) shouldBe Some("application/json")
-        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
 
       }
     }
@@ -111,12 +111,12 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
+          val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
 
         }
       }
@@ -137,16 +137,16 @@ class GenerateReportControllerSpec
         s"return the expected error ${mtdError.code} when controller is set to return error from getCalculationInfo " in new Test {
 
           MockEnrolmentsAuthService.authoriseUser()
-          MockIntegrationFrameworkService.getCalculationInfoFail(simpleCalculationID, simpleNino, mtdError)
+          MockIntegrationFrameworkService.getCalculationInfoFail(simpleCalculationId, simpleNino, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
+          val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
         }
       }
 
@@ -170,17 +170,17 @@ class GenerateReportControllerSpec
         s"return the expected error ${mtdError.code} when controller is set to return error from InsightService.assess " in new Test {
 
           MockEnrolmentsAuthService.authoriseUser()
-          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
+          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
           MockInsightService.assessFail(simpleFraudRiskRequest, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
+          val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
         }
       }
 
@@ -204,18 +204,18 @@ class GenerateReportControllerSpec
         s"return the expected error ${mtdError.code} when controller is set to return error from RDSService.submit " in new Test {
 
           MockEnrolmentsAuthService.authoriseUser()
-          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
+          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
           MockInsightService.assess(simpleFraudRiskRequest)
           MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
+          val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
         }
       }
 

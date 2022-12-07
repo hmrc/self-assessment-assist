@@ -31,7 +31,7 @@ import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationID}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationId}
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, ForbiddenDownstreamError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
@@ -108,7 +108,7 @@ class RdsConnectorSpec extends ConnectorSpec
               .withBody(rdsSubmissionReportJson.toString)
               .withStatus(CREATED)))
 
-       await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationID, rdsNewSubmissionReport))
+       await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsNewSubmissionReport))
       }
 
       "fail when the bearer token is invalid" in new Test {
@@ -119,7 +119,7 @@ class RdsConnectorSpec extends ConnectorSpec
             .willReturn(aResponse()
               .withStatus(UNAUTHORIZED)))
 
-        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(simpleRDSCorrelationID, ForbiddenDownstreamError))
+        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(simpleRDSCorrelationId, ForbiddenDownstreamError))
       }
     }
 

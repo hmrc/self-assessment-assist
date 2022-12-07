@@ -28,13 +28,13 @@ object RdsTestData {
 
   val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq( ))
 
-  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationIDImplicit,MtdError(code = "", message = "")))
+  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationIdImplicit,MtdError(code = "", message = "")))
 
   var rdsRequestBody: String = """
                                  |{
                                  |  "inputs": [
                                  |    {
-                                 |      "name": "calculationID",
+                                 |      "name": "calculationId",
                                  |      "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
                                  |    },
                                  |    {
@@ -387,7 +387,7 @@ object RdsTestData {
 
 
   val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationID = simpleCalculationID,
+    calculationId = simpleCalculationId,
     nino = "AA00000B",
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
@@ -404,7 +404,7 @@ object RdsTestData {
   def rdsRequest: RdsRequest =
       RdsRequest(
         Seq(
-          RdsRequest.InputWithString("calculationID", assessmentRequestForSelfAssessment.calculationID.toString),
+          RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
           RdsRequest.InputWithString("nino", assessmentRequestForSelfAssessment.nino),
           RdsRequest.InputWithString("taxYear", assessmentRequestForSelfAssessment.taxYear),
           RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
@@ -451,11 +451,11 @@ object RdsTestData {
   )
 
   val assessmentReport = AssessmentReport(
-    reportID =  simpleReportID,
+    reportId =  simpleReportId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
     taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
-    calculationID = simpleCalculationID,
+    calculationId = simpleCalculationId,
     rdsCorrelationId = "5fht738957jfjf845jgjf855"
   )
 }
