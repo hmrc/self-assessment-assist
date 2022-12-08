@@ -54,7 +54,7 @@ class DocumentationIntegrationSpec
               .futureValue
           response.status shouldBe 200
           response.contentType shouldBe "application/octet-stream"
-          response.body should include("openapi: \"3.0.3\"")
+          response.body should include("3.0.3")
           response.body should include(s"version: $knownVersion")
         }
       }
@@ -63,7 +63,7 @@ class DocumentationIntegrationSpec
       "the version is unknown" in {
         val response =
           wsClient
-            .url(s"$baseUrl/api/conf/4.4.42/application.yaml")
+            .url(s"$baseUrl/api/conf/4.4.42/applicationHelloWorld.yaml")
             .get()
             .futureValue
         response.status shouldBe 404
