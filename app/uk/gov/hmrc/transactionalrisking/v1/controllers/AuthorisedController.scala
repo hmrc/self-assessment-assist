@@ -33,12 +33,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class UserRequest[A](userDetails: UserDetails, request: Request[A]) extends WrappedRequest[A](request)
 
-abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
+abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with BaseController with Logging {
 
   val authService: EnrolmentsAuthService
 
-  def authorisedAction(nino: String, correlationID: String, nrsRequired: Boolean = false): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
-    logger.info(s"$correlationID::[authorisedAction] Check we have authority to do the required work and do it if possible.")
+  def authorisedAction(nino: String, nrsRequired: Boolean = false) (implicit correlationId:String): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
+    logger.info(s"$correlationId::[authorisedAction] Check we have authority to do the required work and do it if possible.")
 
     override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
 
@@ -56,32 +56,32 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
     .withDelegatedAuthRule("sa-auth")
 
     override def invokeBlock[A](request: Request[A], block: UserRequest[A] => Future[Result]): Future[Result] = {
-      logger.info(s"$correlationID::[invokeBlock]Check authorisation and continue if ok otherwise some sort of error: $correlationID")
+      logger.info(s"$correlationId::[invokeBlock]Check authorisation and continue if ok otherwise some sort of error: $correlationId")
 
       implicit val headerCarrier: HeaderCarrier = hc(request)
       val clientID = request.headers.get("X-Client-Id").getOrElse("N/A")
 
       if (NinoChecker.isValid(nino)) {
-        authService.authorised(predicate(nino), correlationID, nrsRequired).flatMap[Result] {
+        authService.authorised(predicate(nino), correlationId, nrsRequired).flatMap[Result] {
           case Right(userDetails) =>
-            logger.info(s"$correlationID::[invokeBlock]Nino correct and authorised")
+            logger.info(s"$correlationId::[invokeBlock]Nino correct and authorised")
             block(UserRequest(userDetails.copy(clientID = clientID), request))
           case Left(ClientOrAgentNotAuthorisedError) =>
-            logger.warn(s"$correlationID::[invokeBlock]Unable to authorise client or agent")
-            Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
+            logger.warn(s"$correlationId::[invokeBlock]Unable to authorise client or agent")
+            Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId))
           case Left(ForbiddenDownstreamError) =>
-            logger.warn(s"$correlationID::[invokeBlock]Forbidden downstream error")
-            Future.successful(Forbidden(Json.toJson(DownstreamError)))
+            logger.warn(s"$correlationId::[invokeBlock]Forbidden downstream error")
+            Future.successful(Forbidden(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
           case Left(_) =>
-            logger.warn(s"$correlationID::[invokeBlock]Downstream")
-            Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+            logger.warn(s"$correlationId::[invokeBlock]Downstream")
+            Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
           case _ =>
-            logger.error(s"$correlationID::[invokeBlock]Unknown error")
-            Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+            logger.error(s"$correlationId::[invokeBlock]Unknown error")
+            Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
         }
       } else {
-        logger.warn(s"$correlationID::[invokeBlock]Error in nino format")
-        Future.successful(BadRequest(Json.toJson(NinoFormatError)))
+        logger.warn(s"$correlationId::[invokeBlock]Error in nino format")
+        Future.successful(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
       }
     }
   }

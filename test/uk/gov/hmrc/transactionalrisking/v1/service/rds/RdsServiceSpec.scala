@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import play.api.test.FakeRequest
 import uk.gov.hmrc.transactionalrisking.support.{MockAppConfig, ServiceSpec}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, rdsNewSubmissionReport, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationID, simpleReportID}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationId, rdsNewSubmissionReport, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationId, simpleReportId}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockRdsAuthConnector
@@ -31,7 +31,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -75,20 +75,20 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
     "the submit method is called" must {
       "return the expected result" in new Test {
         MockRdsAuthConnector.retrieveAuthorisedBearer()
-        MockRdsConnector.submit(rdsRequest) returns Future.successful(Right(ResponseWrapper(internalCorrelationID, rdsNewSubmissionReport)))
+        MockRdsConnector.submit(rdsRequest) returns Future.successful(Right(ResponseWrapper(internalCorrelationId, rdsNewSubmissionReport)))
 
         val assessmentReportSO:ServiceOutcome[AssessmentReport] = await(service.submit( assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
-        assessmentReportSO shouldBe Right(ResponseWrapper(internalCorrelationID,  assessmentReport))
+        assessmentReportSO shouldBe Right(ResponseWrapper(internalCorrelationId,  assessmentReport))
       }
     }
 
     "return the expected result in Welsh if it's selected as preferred Language" in new Test {
       MockRdsAuthConnector.retrieveAuthorisedBearer()
-      val rdsAssessmentReportSO: ServiceOutcome[NewRdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationID, rdsNewSubmissionReport))
+      val rdsAssessmentReportSO: ServiceOutcome[RdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationId, rdsNewSubmissionReport))
       MockRdsConnector.submit(rdsRequest) returns Future.successful(rdsAssessmentReportSO)
 
       private val assementReportSO: ServiceOutcome[AssessmentReport] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
-      assementReportSO shouldBe Right(ResponseWrapper(internalCorrelationID, assessmentReport))
+      assementReportSO shouldBe Right(ResponseWrapper(internalCorrelationId, assessmentReport))
     }
 
     "the acknowledged method is called" must {
@@ -96,15 +96,15 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         MockRdsAuthConnector.retrieveAuthorisedBearer()
         val request: RdsRequest = RdsRequest(
           Vector(
-            RdsRequest.InputWithString("feedbackID", simpleReportID.toString),
+            RdsRequest.InputWithString("feedbackId", simpleReportId.toString),
             RdsRequest.InputWithString("nino", simpleNino)
           )
         )
 
-        val expectedResult:ServiceOutcome[NewRdsAssessmentReport] = Right( ResponseWrapper( internalCorrelationID, simpleAcknowledgeNewRdsAssessmentReport)  )
+        val expectedResult:ServiceOutcome[RdsAssessmentReport] = Right( ResponseWrapper( internalCorrelationId, simpleAcknowledgeNewRdsAssessmentReport)  )
         MockRdsConnector.acknowledgeRds(request) returns Future.successful(expectedResult)
 
-        val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
+        val acknowledgeReportRequest: AcknowledgeReportRequest =  AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
         await(service.acknowledge(acknowledgeReportRequest)) shouldBe expectedResult
       }

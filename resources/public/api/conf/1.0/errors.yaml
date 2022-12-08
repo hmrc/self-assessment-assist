@@ -47,7 +47,7 @@ components:
         Invalid Authentication information provided.
       value:
         code: INVALID_CREDENTIALS
-        message: Invalid Authentication information provided.
+        message: Invalid Authentication information provided."
 
 
 

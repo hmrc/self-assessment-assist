@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.controllers
+package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import akka.util.ByteString
 import play.api.http.HttpEntity
@@ -23,8 +23,7 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationID
-import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationId
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
@@ -43,7 +42,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     class TestController extends AuthorisedController(cc) {
       override val authService: EnrolmentsAuthService = mockEnrolmentsAuthService
 
-      def authorisedActionAysncSUT(nino: String, correlationID:String, nrsRequired: Boolean = true): Action[AnyContent] = authorisedAction(nino, correlationID, nrsRequired).async {
+      def authorisedActionAysncSUT(nino: String, nrsRequired: Boolean = true): Action[AnyContent] = authorisedAction(nino, nrsRequired)(internalCorrelationId).async {
         Future.successful(Ok(Json.obj()))
       }
     }
@@ -59,7 +58,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "a user is properly authorised and has a correct nino" should {
       "return a 200 success response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
-        private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, internalCorrelationID )(fakeGetRequest)
+        private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakeGetRequest)
         val result = Await.result(resultFuture, defaultTimeout)
         result.header.status shouldBe OK
       }
@@ -70,7 +69,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "a user is properly authorised and has an incorrect nino" should {
       "return a 400 success response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
-        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, internalCorrelationID, false)(fakeGetRequest)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, false)(fakeGetRequest)
         val result = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe BAD_REQUEST
@@ -87,8 +86,6 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     }
   }
 
-  //TODO uncomment me and fix me, issue might be because itmp_birthdate was removed from enrollmenta
-  // revisit if still broken.
   "the enrolments auth service returns an error" must {
     "map to the correct result" when {
 
@@ -101,7 +98,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
           MockEnrolmentsAuthService.authorised(predicate)
             .returns(Future.successful(Left(mtdError)))
 
-          private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, internalCorrelationID)(fakeGetRequest)
+          private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakeGetRequest)
           status(actualResult) shouldBe expectedStatus
           contentAsJson(actualResult) shouldBe expectedBody
         }

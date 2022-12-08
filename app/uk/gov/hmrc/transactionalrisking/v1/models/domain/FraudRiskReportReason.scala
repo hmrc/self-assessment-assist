@@ -18,14 +18,14 @@ package uk.gov.hmrc.transactionalrisking.v1.models.domain
 
 import play.api.libs.json.{JsPath, Reads, Writes}
 
-case class WatchlistFlag(name: String)
+case class FraudRiskReportReason(reason: String)
 
-object WatchlistFlag {
+object FraudRiskReportReason {
 
-  implicit val reads: Reads[WatchlistFlag] =
-    (JsPath \ "name").read[String].map(WatchlistFlag.apply)
+  implicit val reads: Reads[FraudRiskReportReason] =
+    (JsPath \ "reason").read[String].map(FraudRiskReportReason.apply)
 
-  implicit val writes: Writes[WatchlistFlag] =
-    (JsPath \ "name").write[String].contramap(_.name)
+  implicit val writes: Writes[FraudRiskReportReason] =
+    (JsPath \ "reason").write[String].contramap(_.reason)
 
 }

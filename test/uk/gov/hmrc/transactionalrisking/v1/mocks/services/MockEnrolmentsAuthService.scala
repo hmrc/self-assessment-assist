@@ -21,6 +21,7 @@ import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.MtdError
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,6 +37,13 @@ trait MockEnrolmentsAuthService extends MockFactory {
         .expects(*, *, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(UserDetails("Individual", None, "client-Id"))))
     }
+
+    def authoriseUserFail( mtdError: MtdError ): Unit = {
+      (mockEnrolmentsAuthService.authorised(_: Predicate, _: String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *, *, *).anyNumberOfTimes()
+        .returns( Future.successful(Left(mtdError)) )
+    }
+
 
     def authorised(predicate: Predicate): CallHandler[Future[AuthOutcome]] = {
       (mockEnrolmentsAuthService.authorised(_: Predicate, _:String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))

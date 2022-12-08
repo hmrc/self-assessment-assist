@@ -28,13 +28,13 @@ object RdsTestData {
 
   val acknowledgeReportRequest: RdsRequest = RdsRequest(Seq( ))
 
-  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationIDImplicit,MtdError(code = "", message = "")))
+  val rdsRequestError: ServiceOutcome[RdsRequest] = Left(ErrorWrapper(internalCorrelationIdImplicit,MtdError(code = "", message = "")))
 
   var rdsRequestBody: String = """
                                  |{
                                  |  "inputs": [
                                  |    {
-                                 |      "name": "calculationID",
+                                 |      "name": "calculationId",
                                  |      "value": "537490b4-06e3-4fef-a555-6fd0877dc7ca"
                                  |    },
                                  |    {
@@ -387,7 +387,7 @@ object RdsTestData {
 
 
   val assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationID = simpleCalculationID,
+    calculationId = simpleCalculationId,
     nino = "AA00000B",
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
@@ -396,22 +396,20 @@ object RdsTestData {
   )
 
   val fraudRiskReport = FraudRiskReport(
-    decision = FraudDecision.Accept,
     score = 10,
     headers = Set(FraudRiskHeader("key", "value")),
-    watchlistFlags = Set(WatchlistFlag("flag"))
+    fraudRiskReportReasons = Set(FraudRiskReportReason("flag"))
   )
 
   def rdsRequest: RdsRequest =
       RdsRequest(
         Seq(
-          RdsRequest.InputWithString("calculationID", assessmentRequestForSelfAssessment.calculationID.toString),
+          RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
           RdsRequest.InputWithString("nino", assessmentRequestForSelfAssessment.nino),
           RdsRequest.InputWithString("taxYear", assessmentRequestForSelfAssessment.taxYear),
           RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
           RdsRequest.InputWithString("agentRef", assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
           RdsRequest.InputWithString("preferredLanguage", assessmentRequestForSelfAssessment.preferredLanguage.toString),
-          RdsRequest.InputWithString("fraudRiskReportDecision", fraudRiskReport.decision.toString),
           RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
           RdsRequest.InputWithObject("fraudRiskReportHeaders",
             Seq(
@@ -423,13 +421,13 @@ object RdsTestData {
               DataWrapper(fraudRiskReport.headers.map(header => Seq(header.key, header.value)).toSeq)
             )
           ),
-          RdsRequest.InputWithObject("fraudRiskReportWatchlistFlags",
+          RdsRequest.InputWithObject("reason",
             Seq(
               MetadataWrapper(
                 Seq(
-                  Map("NAME" -> "string")
+                  Map("Reason" -> "string")
                 )),
-              DataWrapper(fraudRiskReport.watchlistFlags.map(flag => Seq(flag.name)).toSeq)
+              DataWrapper(fraudRiskReport.fraudRiskReportReasons.map(value => Seq(value.reason)).toSeq)
             )
           )
         )
@@ -453,11 +451,11 @@ object RdsTestData {
   )
 
   val assessmentReport = AssessmentReport(
-    reportID =  simpleReportID,
+    reportId =  simpleReportId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
     taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
-    calculationID = simpleCalculationID,
+    calculationId = simpleCalculationId,
     rdsCorrelationId = "5fht738957jfjf845jgjf855"
   )
 }
