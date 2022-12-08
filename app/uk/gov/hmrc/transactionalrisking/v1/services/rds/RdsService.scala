@@ -146,8 +146,8 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   }
 
   private def toRisk(riskParts: Seq[String]) =
-    Risk(title = riskParts(0),
-      body = riskParts(1), action = riskParts(2),
+    Risk(title = riskParts(2),
+      body = riskParts(0), action = riskParts(1),
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
