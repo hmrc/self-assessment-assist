@@ -34,6 +34,7 @@ info:
     Errors specific to each API are shown in the Endpoints section, under Response. See our 
     [reference guide](/api-documentation/docs/reference-guide#errors) for more on errors.
   
+
 servers:
 - url: https://test-api.service.hmrc.gov.uk
   description: Sandbox
