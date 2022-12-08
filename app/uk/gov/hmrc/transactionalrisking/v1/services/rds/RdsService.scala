@@ -213,9 +213,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   = {
     RdsRequest(
       Seq(
-        RdsRequest.InputWithString("feedbackID", request.feedbackId),
+        RdsRequest.InputWithString("feedbackId", request.feedbackId),
         RdsRequest.InputWithString("nino", request.nino),
-        RdsRequest.InputWithString("correlationID", request.rdsCorrelationId)
+        RdsRequest.InputWithString("correlationId", request.rdsCorrelationId)
       )
     )
   }
