@@ -37,3 +37,5 @@ target
 test-result
 tmp
 .vscode/
+node_modules
+

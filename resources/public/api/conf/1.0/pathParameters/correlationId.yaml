@@ -1,0 +1,11 @@
+components:
+  parameters:
+    correlationId:
+      name: correlationId
+      in: path
+      description: |
+        The alphanumeric correlation ID of the report.
+      schema:
+        type: string
+        example: 7X57CKG72JVNSSS9SALT
+      required: true
