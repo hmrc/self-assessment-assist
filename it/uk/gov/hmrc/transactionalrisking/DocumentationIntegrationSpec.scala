@@ -63,7 +63,7 @@ class DocumentationIntegrationSpec
       "the version is unknown" in {
         val response =
           wsClient
-            .url(s"$baseUrl/api/conf/4.4.42/applicationHelloWorld.yaml")
+            .url(s"$baseUrl/api/conf/4.4.42/application.yaml")
             .get()
             .futureValue
         response.status shouldBe 404
