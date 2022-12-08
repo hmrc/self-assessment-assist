@@ -25,7 +25,7 @@ import java.io.{File, FileInputStream}
 
 trait StubResourceBase extends Results with ContentTypes with Logging {
 
-  def loadSubmitResponseTemplate(calculationID: String, replaceFeedbackID: String, replaceCorrelationID: String) = {
+  def loadSubmitResponseTemplate(calculationId: String, replaceFeedbackId: String, replaceCorrelationId: String) = {
     val fileName = s"response/submit/$calculationId-response.json"
     val templateContent =
       findResource(fileName).map(

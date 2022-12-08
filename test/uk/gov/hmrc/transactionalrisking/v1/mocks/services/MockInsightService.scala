@@ -44,11 +44,6 @@ trait MockInsightService extends MockFactory {
         .expects(*, *, *).returns(Future(Left(ErrorWrapper(internalCorrelationIdImplicit, error))))
     }
 
-    def assessFail(fraudRiskRequest: FraudRiskRequest, error: MtdError): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
-      (mockInsightService.assess(_: FraudRiskRequest)(_: ExecutionContext, _: String))
-        .expects(*, *, *).returns(Future(Left(ErrorWrapper(internalCorrelationIDImplicit, error))))
-    }
-
   }
 
 }

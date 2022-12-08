@@ -43,11 +43,6 @@ trait MockAcknowledgeRequestParser extends MockFactory {
       (mockAcknowledgeRequestParser.parseRequest(_: AcknowledgeReportRawData)(_: ExecutionContext, _: String)).expects(*, *, *).anyNumberOfTimes() returns
         (Future(Left(ErrorWrapper(simpleRDSCorrelationId, error))))
     }
-
-    def parseRequestFail(rawData: AcknowledgeReportRawData, error: MtdError): CallHandler[Future[ParseOutcome[AcknowledgeReportRequest]]] = {
-      (mockAcknowledgeRequestParser.parseRequest(_: AcknowledgeReportRawData)(_: ExecutionContext, _: String)).expects(*, *, *).anyNumberOfTimes() returns
-        (Future(Left(ErrorWrapper(simpleRDSCorrelationID, error))))
-    }
   }
 
 }
