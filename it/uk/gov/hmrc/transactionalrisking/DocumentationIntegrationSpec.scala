@@ -54,7 +54,7 @@ class DocumentationIntegrationSpec
               .futureValue
           response.status shouldBe 200
           response.contentType shouldBe "application/octet-stream"
-          response.body should include("openapi: \"3.0.3\"")
+          response.body should include("3.0.3")
           response.body should include(s"version: $knownVersion")
         }
       }
@@ -71,4 +71,3 @@ class DocumentationIntegrationSpec
     }
   }
 }
-
