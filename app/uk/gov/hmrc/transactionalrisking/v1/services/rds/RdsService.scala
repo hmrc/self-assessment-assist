@@ -97,15 +97,15 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   private def toAssessmentReport(report: RdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationId: String): ServiceOutcome[AssessmentReport] = {
     logger.info(s"$correlationId::[toAssessmentReport]Generated assessment report")
 
-    (report.calculationID, report.feedbackId) match {
-      case (Some(calculationId), Some(reportID)) =>
+    (report.calculationId, report.feedbackId) match {
+      case (Some(calculationId), Some(reportId)) =>
         if(calculationId.equals(request.calculationId)) {
           val rdsCorrelationIdOption = report.rdsCorrelationId
           rdsCorrelationIdOption match {
             case Some(rdsCorrelationID) =>
               logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
               Right(ResponseWrapper(correlationId,
-                AssessmentReport(reportId = reportID,
+                AssessmentReport(reportId = reportId,
                   risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
                   taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
                   calculationId = request.calculationId, rdsCorrelationID)))
@@ -130,7 +130,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     }
   }
 
-  private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationID: String): Seq[Risk] = {
+  private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationId: String): Seq[Risk] = {
     report.outputs.collect {
       case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
     }.flatMap(_.value).collect {
@@ -151,11 +151,11 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
-                                           fraudRiskReport: FraudRiskReport)(implicit correlationID: String): ServiceOutcome[RdsRequest]
+                                           fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
-    logger.info(s"$correlationID::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
+    logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
     //TODO Errors need to be dealt looked at.
-    Right(ResponseWrapper(correlationID, RdsRequest(
+    Right(ResponseWrapper(correlationId, RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationId", request.calculationId.toString),
         RdsRequest.InputWithString("nino", request.nino),
@@ -213,9 +213,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   = {
     RdsRequest(
       Seq(
-        RdsRequest.InputWithString("feedbackID", request.feedbackId),
+        RdsRequest.InputWithString("feedbackId", request.feedbackId),
         RdsRequest.InputWithString("nino", request.nino),
-        RdsRequest.InputWithString("correlationID", request.rdsCorrelationId)
+        RdsRequest.InputWithString("correlationId", request.rdsCorrelationId)
       )
     )
   }

@@ -129,18 +129,18 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     .flatMap(_.getIdentifier("AgentReferenceNumber"))
     .map(_.value)
 
-  private def unauthorisedError(correlationID: String): PartialFunction[Throwable, Future[AuthOutcome]] = {
+  private def unauthorisedError(correlationId: String): PartialFunction[Throwable, Future[AuthOutcome]] = {
     case _: InsufficientEnrolments =>
-      logger.warn(s"$correlationID::[unauthorisedError] Client authorisation failed due to unsupported insufficient enrolments.")
+      logger.warn(s"$correlationId::[unauthorisedError] Client authorisation failed due to unsupported insufficient enrolments.")
       Future.successful(Left(LegacyUnauthorisedError))
     case _: InsufficientConfidenceLevel =>
-      logger.warn(s"$correlationID::[unauthorisedError] Client authorisation failed due to unsupported insufficient confidenceLevels.")
+      logger.warn(s"$correlationId::[unauthorisedError] Client authorisation failed due to unsupported insufficient confidenceLevels.")
       Future.successful(Left(LegacyUnauthorisedError))
     case _: JsResultException =>
-      logger.warn(s"$correlationID::[unauthorisedError] - Did not receive minimum data from Auth required for NRS Submission")
+      logger.warn(s"$correlationId::[unauthorisedError] - Did not receive minimum data from Auth required for NRS Submission")
       Future.successful(Left(ForbiddenDownstreamError))
     case exception@_ =>
-      logger.warn(s"$correlationID::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
+      logger.warn(s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
       Future.successful(Left(DownstreamError))
   }
 }
