@@ -30,7 +30,7 @@ case class RdsAssessmentReport(links: Seq[String],
                                  ) {
 
   //we read calculationid and compare it with the one we passed it.TRDT-697
-  def calculationID: Option[UUID] =
+  def calculationId: Option[UUID] =
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
