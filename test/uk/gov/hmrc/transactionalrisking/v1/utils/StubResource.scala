@@ -26,12 +26,12 @@ import java.io.{File, FileInputStream}
 trait StubResourceBase extends Results with ContentTypes with Logging {
 
   def loadSubmitResponseTemplate(calculationID: String, replaceFeedbackID: String, replaceCorrelationID: String) = {
-    val fileName = s"response/submit/$calculationID-response.json"
+    val fileName = s"response/submit/$calculationId-response.json"
     val templateContent =
       findResource(fileName).map(
-        _.replace("replaceFeedbackID", replaceFeedbackID)
-          .replace("replaceCalculationID", calculationID)
-          .replace("replaceCorrelationID", replaceCorrelationID))
+        _.replace("replaceFeedbackId", replaceFeedbackId)
+          .replace("replaceCalculationId", calculationId)
+          .replace("replaceCorrelationId", replaceCorrelationId))
 
 
     val parsedContent = templateContent
@@ -40,11 +40,11 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
     parsedContent
   }
 
-  def loadAckResponseTemplate(replaceFeedbackID: String, replaceNino: String,  replaceResponseCode:String) = {
+  def loadAckResponseTemplate(replaceFeedbackId: String, replaceNino: String,  replaceResponseCode:String) = {
     val fileName = s"response/acknowledge/feedback-ack.json"
     val templateContent =
       findResource(fileName).map(
-        _.replace("replaceFeedbackID", replaceFeedbackID)
+        _.replace("replaceFeedbackId", replaceFeedbackId)
           .replace("replaceNino", replaceNino)
           .replace(s""""replaceResponseCode"""", replaceResponseCode))
 

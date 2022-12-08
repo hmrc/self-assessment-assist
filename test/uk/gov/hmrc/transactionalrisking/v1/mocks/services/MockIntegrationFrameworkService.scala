@@ -39,7 +39,14 @@ trait MockIntegrationFrameworkService extends MockFactory {
     def getCalculationInfo(id: UUID, nino: String): CallHandler[Future[ServiceOutcome[CalculationInfo]]] = {
       (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String)(_: ExecutionContext, _:String))
         .expects(*, *, *, *).anyNumberOfTimes()
-        .returns(Future.successful(Right(ResponseWrapper(internalCorrelationIDImplicit, CalculationInfo(simpleCalculationID, simpleNino, "2021-22")))))
+        .returns(Future.successful(Right(ResponseWrapper(internalCorrelationIdImplicit, CalculationInfo(simpleCalculationId, simpleNino, "2021-22")))))
+    }
+
+    //TODO: To be completed
+    def getCalculationInfoFail(id: UUID, nino: String, error: MtdError): CallHandler[Future[ServiceOutcome[CalculationInfo]]] = {
+      (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String)(_: ExecutionContext, _: String))
+        .expects(*, *, *, *).anyNumberOfTimes()
+        .returns(Future.successful(Left(ErrorWrapper(internalCorrelationIdImplicit, error))))
     }
 
     //TODO: To be completed

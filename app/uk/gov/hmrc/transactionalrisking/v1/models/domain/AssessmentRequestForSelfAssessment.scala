@@ -23,7 +23,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.Prefe
 
 import java.util.UUID
 
-case class AssessmentRequestForSelfAssessment(calculationID: UUID,
+case class AssessmentRequestForSelfAssessment(calculationId: UUID,
                                               nino: String,
                                               preferredLanguage: PreferredLanguage,
                                               customerType: CustomerType,
@@ -34,7 +34,7 @@ case class AssessmentRequestForSelfAssessment(calculationID: UUID,
 object AssessmentRequestForSelfAssessment {
 
   implicit val reads: Reads[AssessmentRequestForSelfAssessment] =
-    (JsPath \ "calculation_id").read[UUID]
+    (JsPath \ "calculationId").read[UUID]//TODO check why this has underscode
       .and((JsPath \ "nino").read[String])
       .and((JsPath \ "preferred_language").read[PreferredLanguage])
       .and((JsPath \ "customer_type").read[CustomerType])

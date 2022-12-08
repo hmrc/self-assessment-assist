@@ -61,7 +61,7 @@ class AcknowledgeReportControllerSpec
     "a valid request is supplied" should {
       "return 204 to indicate that the data has been accepted and saved and that nothing else needs to be return in the body." in new Test {
 
-        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
+        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
         MockEnrolmentsAuthService.authoriseUser()
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
@@ -71,13 +71,13 @@ class AcknowledgeReportControllerSpec
 
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+        val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
 
         status(result) shouldBe NO_CONTENT
         //val ret = contentAsJson(result)
         //contentAsJson(result) shouldBe expectedBody
         //contentType(result) shouldBe Some("application/json")
-        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
 
       }
     }
@@ -90,13 +90,13 @@ class AcknowledgeReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.acknowledgeReportForSelfAssessment(simpleNinoInvalid, simpleReportID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+        val result = controller.acknowledgeReportForSelfAssessment(simpleNinoInvalid, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
 
         status(result) shouldBe BAD_REQUEST
 
         contentAsJson(result) shouldBe NinoFormatError.toJson
         contentType(result) shouldBe Some("application/json")
-        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+        header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
 
       }
     }
@@ -111,12 +111,12 @@ class AcknowledgeReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
 
         }
       }
@@ -136,19 +136,19 @@ class AcknowledgeReportControllerSpec
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to parseRequest returning an error. " in new Test {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
           MockEnrolmentsAuthService.authoriseUser()
           MockAcknowledgeRequestParser.parseRequestFail(acknowledgeReportRawData, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
 
         }
       }
@@ -172,7 +172,7 @@ class AcknowledgeReportControllerSpec
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to RdsService.acknowlege " in new Test {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
           MockEnrolmentsAuthService.authoriseUser()
           MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
@@ -181,12 +181,12 @@ class AcknowledgeReportControllerSpec
 
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationID.toString, simpleRDSCorrelationID)(fakeGetRequest)
+          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, simpleRDSCorrelationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
 
         }
       }

@@ -10,8 +10,8 @@
   },
   "outputs": [
     {
-      "name": "feedbackID",
-      "value": "replaceFeedbackID"
+      "name": "feedbackId",
+      "value": "replaceFeedbackId"
     },
     {
       "name": "nino",

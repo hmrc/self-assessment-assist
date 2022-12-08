@@ -27,7 +27,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AssistReportAcknowledged, RequestBody, RequestData}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,17 +42,17 @@ class AcknowledgeReportController @Inject()(
                                              idGenerator:IdGenerator
                                            )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
-    implicit val correlationID: String = idGenerator.getUid
-    logger.info(s"$correlationID::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
+    implicit val correlationId: String = idGenerator.getUid
+    logger.info(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
 
     val submissionTimestamp = currentDateTime.getDateTime
-    val body = s"""{"reportID":"${reportId}"}"""
+    val body = s"""{"reportId":"${reportId}"}"""
     val reportAcknowledgementContent = RequestData(nino, RequestBody(body, reportId))
 
     authorisedAction(nino, nrsRequired = true).async {
       implicit request =>
 
-      val processRequest: EitherT[Future, ErrorWrapper, NewRdsAssessmentReport] = for {
+      val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
         parsedRequest   <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
         serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
       } yield {
@@ -60,31 +60,31 @@ class AcknowledgeReportController @Inject()(
       }
 
       val result = processRequest.fold(
-        errorWrapper => errorHandler(errorWrapper, correlationID),
+        errorWrapper => errorHandler(errorWrapper, correlationId),
         assessmentReport => {
           assessmentReport.responseCode match {
             case code@Some(ACCEPTED) =>
               assessmentReport.taxYear match {
                 case Some(taxYear) =>
-                  logger.debug(s"$correlationID::[acknowledgeReport] ... submitting acknowledgement to NRS")
+                  logger.debug(s"$correlationId::[acknowledgeReport] ... submitting acknowledgement to NRS")
                   //Submit asynchronously to NRS
                   nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
 
-                  logger.info(s"$correlationID::[acknowledgeReport] ... report submitted to NRS")
-                  Future(NoContent.withApiHeaders(correlationID))
+                  logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                  Future(NoContent.withApiHeaders(correlationId))
                 case None =>
-                  logger.error(s"$correlationID::[acknowledgeReport]Unable to get tax year")
-                  Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationID))
+                  logger.error(s"$correlationId::[acknowledgeReport]Unable to get tax year")
+                  Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
               }
             case code@Some(NO_CONTENT) =>
-              logger.warn(s"$correlationID::[acknowledgeReport] Place Holder: rds ack response is ${code}")
-              Future(NoContent.withApiHeaders(correlationID))
+              logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is ${code}")
+              Future(NoContent.withApiHeaders(correlationId))
             case code@Some(BAD_REQUEST) =>
-              logger.warn(s"$correlationID::[acknowledgeReport] rds ack response is ${code}")
-              Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationID))
+              logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code}")
+              Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
             case None =>
-              logger.error(s"$correlationID::[acknowledgeReport] rds ack response code is empty")
-              Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationID))
+              logger.error(s"$correlationId::[acknowledgeReport] rds ack response code is empty")
+              Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
           }
         })
       result.flatten
