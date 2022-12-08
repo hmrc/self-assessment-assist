@@ -94,7 +94,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
       .map { response =>
         response.status match {
           case code@CREATED =>
-            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement to RDS successful with response $response")
+            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement to RDS successful with response ${response.body}")
             response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
                 logger.info(s"$correlationId::[acknowledgeRds]the results return are ok")
