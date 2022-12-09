@@ -17,12 +17,13 @@
 package uk.gov.hmrc.transactionalrisking.v1.services.rds
 
 import play.api.http.Status
-import play.api.http.Status.{CREATED, NOT_FOUND}
+import play.api.http.Status.{CREATED, NOT_FOUND, OK}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, ResourceNotFoundError}
+
 import javax.inject.Named
 //import uk.gov.hmrc.http.{HttpClient}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
@@ -93,6 +94,16 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
         response.status match {
+          case code@OK =>
+            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement OK response ${response.body}")
+            response.json.validate[RdsAssessmentReport] match {
+              case JsSuccess(newRdsAssessmentReport, _) =>
+                logger.info(s"$correlationId::[acknowledgeRds] OK the results return are ok")
+                Right(ResponseWrapper(correlationId, newRdsAssessmentReport))
+              case JsError(e) =>
+                logger.warn(s"$correlationId::[acknowledgeRds] OK Unable to validate the returned results failed with $e")
+                Left(ErrorWrapper(correlationId, DownstreamError))
+            }
           case code@CREATED =>
             logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement to RDS successful with response ${response.body}")
             response.json.validate[RdsAssessmentReport] match {
