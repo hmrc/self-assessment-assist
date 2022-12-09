@@ -86,28 +86,29 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
                                                                                                ec: ExecutionContext,
                                                                                                correlationId: String
   ): Future[ServiceOutcome[RdsAssessmentReport]] = {
-    logger.info(s"$correlationId::[acknowledgeRds]acknowledge the report")
+    logger.info(s"$correlationId::[acknowledgeRds]acknowledge the report ${appConfig.rdsBaseUrlForAcknowledge}")
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
+        logger.debug(s"$correlationId::[acknowledgeRds] response body ${response.body}")
         response.status match {
           case code@OK =>
-            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement OK response ${response.body}")
+            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement OK response ")
             response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
-                logger.info(s"$correlationId::[acknowledgeRds] OK the results return are ok")
+                logger.info(s"$correlationId::[acknowledgeRds] OK")
                 Right(ResponseWrapper(correlationId, newRdsAssessmentReport))
               case JsError(e) =>
-                logger.warn(s"$correlationId::[acknowledgeRds] OK Unable to validate the returned results failed with $e")
+                logger.warn(s"$correlationId::[acknowledgeRds] OK results validation failed with $e")
                 Left(ErrorWrapper(correlationId, DownstreamError))
             }
           case code@CREATED =>
-            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement to RDS successful with response ${response.body}")
+            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement to RDS successful with response $code")
             response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
-                logger.info(s"$correlationId::[acknowledgeRds]the results return are ok")
+                logger.info(s"$correlationId::[acknowledgeRds] response $code ")
                 Right(ResponseWrapper(correlationId, newRdsAssessmentReport))
               case JsError(e) =>
                 logger.warn(s"$correlationId::[acknowledgeRds]Unable to validate the returned results failed with $e")
