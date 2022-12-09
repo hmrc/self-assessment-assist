@@ -40,7 +40,6 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
   }
 
   def authorised(predicate: Predicate, correlationId: String, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
-    logger.info(s"$correlationId::[authorised]Performing authorisation check")
 
     if (!nrsRequired) {
       logger.info(s"$correlationId::[authorised]Performing nrs not required")
@@ -68,7 +67,6 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
           ~ mdtpInfo ~ credStrength ~ logins
           ~ itmpName ~ itmpAddress
           if affGroup.contains(AffinityGroup.Organisation) || affGroup.contains(AffinityGroup.Individual) || affGroup.contains(AffinityGroup.Agent) =>
-          logger.info(s"$correlationId::[authorised]authorisation is ok create userDetails .")
 
           val emptyItmpName: ItmpName = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
@@ -97,8 +95,6 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
                                            correlationId: String,
                                            identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
     //TODO Fixme clientReference is coming as none in logs
-    logger.info(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded")
-
     val clientReference = getClientReferenceFromEnrolments(enrolments)
     logger.debug(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
       s"fully-authorised organisation with reference $clientReference.")

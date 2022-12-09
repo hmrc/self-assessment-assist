@@ -38,7 +38,6 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
   val authService: EnrolmentsAuthService
 
   def authorisedAction(nino: String, nrsRequired: Boolean = false) (implicit correlationId:String): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
-    logger.info(s"$correlationId::[authorisedAction] Check we have authority to do the required work and do it if possible.")
 
     override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
 
@@ -56,18 +55,14 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
     .withDelegatedAuthRule("sa-auth")
 
     override def invokeBlock[A](request: Request[A], block: UserRequest[A] => Future[Result]): Future[Result] = {
-      logger.info(s"$correlationId::[invokeBlock]Check authorisation and continue if ok otherwise some sort of error: $correlationId")
-
       implicit val headerCarrier: HeaderCarrier = hc(request)
       val clientID = request.headers.get("X-Client-Id").getOrElse("N/A")
 
       if (NinoChecker.isValid(nino)) {
         authService.authorised(predicate(nino), correlationId, nrsRequired).flatMap[Result] {
           case Right(userDetails) =>
-            logger.info(s"$correlationId::[invokeBlock]Nino correct and authorised")
             block(UserRequest(userDetails.copy(clientID = clientID), request))
           case Left(ClientOrAgentNotAuthorisedError) =>
-            logger.warn(s"$correlationId::[invokeBlock]Unable to authorise client or agent")
             Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId))
           case Left(ForbiddenDownstreamError) =>
             logger.warn(s"$correlationId::[invokeBlock]Forbidden downstream error")
