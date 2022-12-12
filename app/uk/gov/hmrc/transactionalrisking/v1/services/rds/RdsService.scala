@@ -49,15 +49,15 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None) = {
       val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
       rdsRequestSO match {
-        case Right(ResponseWrapper(correlationIdResponse, rdsRequest)) =>
+        case Right(ResponseWrapper(_, rdsRequest)) =>
           logger.info(s"$correlationId::[RdsService submit ] RdsAssessmentRequest Created")
           val submit = connector.submit(rdsRequest, rdsAuthCredentials)
           val ret = submit.map {
             _ match {
-              case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) =>
+              case Right(ResponseWrapper(_, rdsResponse)) =>
                 val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
                 assessmentReportSO match {
-                  case Right(ResponseWrapper(correlationIdResponse, assessmentReport)) =>
+                  case Right(ResponseWrapper(_, assessmentReport)) =>
                     logger.debug(s"$correlationId::[submit]submit request for report successful returning it")
                     Right(ResponseWrapper(correlationId, assessmentReport))
 

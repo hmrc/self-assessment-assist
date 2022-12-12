@@ -1,0 +1,119 @@
+{
+  "links": [],
+  "version": 2,
+  "moduleId": "rbf_dgl_int_tst",
+  "stepId": "execute",
+  "executionState": "completed",
+  "metadata": {
+    "module_id": "rbf_dgl_int_tst",
+    "step_id": "execute"
+  },
+  "outputs": [
+    {
+      "name": "Created_dttm",
+      "value": "2022-12-05T17:08:25.857"
+    },
+    {
+      "name": "EnglishActions",
+      "value": [
+        {
+          "metadata": [
+            {
+              "MESSAGE": "string"
+            },
+            {
+              "ACTION": "string"
+            },
+            {
+              "TITLE": "string"
+            },
+            {
+              "LINKTITLE": "string"
+            },
+            {
+              "LINKURL": "string"
+            },
+            {
+              "PATH": "string"
+            }
+          ]
+        },
+        {
+          "data": [
+            [
+              "This is the message for AA065213C",
+              "Action for customer AA065213C relating to calculation 111190b4-06e3-4fef-a555-6fd0877dc7ca",
+              "Title for AA065213C and calculation 111190b4-06e3-4fef-a555-6fd0877dc7ca",
+              "[link title]",
+              "[link url]",
+              "/itsa/path/"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WelshActions",
+      "value": [
+        {
+          "metadata": [
+            {
+              "MESSAGE": "string"
+            },
+            {
+              "ACTION": "string"
+            },
+            {
+              "TITLE": "string"
+            },
+            {
+              "LINKTITLE": "string"
+            },
+            {
+              "LINKURL": "string"
+            },
+            {
+              "PATH": "string"
+            }
+          ]
+        },
+        {
+          "data": [
+            [
+              "Dymar neges ar gyfer AA065213C",
+              "Gweithredu ar gyfer cwsmer AA065213C yn ymwneud \u00E2 chyfrifo 111190b4-06e3-4fef-a555-6fd0877dc7ca",
+              "Teitl ar gyfer AA065213C a chyfrifo 111190b4-06e3-4fef-a555-6fd0877dc7ca",
+              "[link title]",
+              "[link url]",
+              "/itsa/path/cym/"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "calculationId",
+      "value": "666690b4-06e3-4fef-a555-6fd0877dc7ca"
+    },
+    {
+      "name": "correlationId",
+      "value": "replaceCorrelationId"
+    },
+    {
+      "name": "feedbackId",
+      "value": "replaceFeedbackId"
+    },
+    {
+      "name": "nino",
+      "value": "AA065213C"
+    },
+    {
+      "name": "responseCode",
+      "value": "201"
+    },
+    {
+      "name": "responseMessage",
+      "value": "Feedback Generated"
+    }
+  ]
+}
