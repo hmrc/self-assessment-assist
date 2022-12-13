@@ -25,7 +25,6 @@ import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials.rdsAut
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, ResourceNotFoundError}
 
 import javax.inject.Named
-//import uk.gov.hmrc.http.{HttpClient}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
@@ -37,7 +36,6 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAsses
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-//TODO Revisit implicits at class level, correaltionId is definetly not needed, its present in function
 @Singleton
 class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
@@ -46,13 +44,12 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
-    logger.info(s"$correlationId::[RdsConnector:submit]======= invoking url ${appConfig.rdsBaseUrlForSubmit}")
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
         response.status match {
           case Status.CREATED =>
-            logger.debug(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response is ${response.body}")
+            logger.debug(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
             Right(ResponseWrapper(correlationId, response.json.validate[RdsAssessmentReport].get))
           case Status.NOT_FOUND =>
             logger.warn(s"$correlationId::[RdsConnector:submit]Unable to submit the report - not found")
@@ -92,7 +89,6 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[acknowledgeRds] response is")
         logger.info(s"$correlationId::[acknowledgeRds] response body is ${response} ${response.body}")
         logger.info(s"$correlationId::[acknowledgeRds] response headers ${response.headers}")
         logger.info(s"$correlationId::[acknowledgeRds] response json ${response.json}")
