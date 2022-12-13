@@ -49,35 +49,33 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None) = {
       val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
       rdsRequestSO match {
-        case Right(ResponseWrapper(correlationIdResponse, rdsRequest)) =>
+        case Right(ResponseWrapper(_, rdsRequest)) =>
           logger.info(s"$correlationId::[RdsService submit ] RdsAssessmentRequest Created")
           val submit = connector.submit(rdsRequest, rdsAuthCredentials)
           val ret = submit.map {
             _ match {
-              case Right(ResponseWrapper(correlationIdResponse, rdsResponse)) =>
+              case Right(ResponseWrapper(_, rdsResponse)) =>
                 val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
                 assessmentReportSO match {
-                  case Right(ResponseWrapper(correlationIdResponse, assessmentReport)) =>
-                    logger.info(s"$correlationId::[submit]submit request for report successful returning it")
+                  case Right(ResponseWrapper(_, assessmentReport)) =>
+                    logger.debug(s"$correlationId::[submit]submit request for report successful returning it")
                     Right(ResponseWrapper(correlationId, assessmentReport))
 
                   case Left(errorWrapper) =>
-                    logger.warn(s"$correlationId::[RdsService][submit]submit request for report error from service ${errorWrapper.error}")
+                    logger.error(s"$correlationId::[RdsService][submit]submit request for report error from service ${errorWrapper.error}")
                     Left(errorWrapper)
                 }
               case Left(errorWrapper) =>
-                logger.warn(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
+                logger.error(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
                 Left(errorWrapper)
             }
           }
           ret
         case Left(errorWrapper) =>
-          logger.warn(s"$correlationId::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request ${errorWrapper.error}")
+          logger.error(s"$correlationId::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request ${errorWrapper.error}")
           Future(Left(errorWrapper): ServiceOutcome[AssessmentReport])
       }
     }
-
-    logger.info(s"$correlationId::[submit]submit request for report}")
 
     if (appConfig.rdsAuthRequiredForThisEnv) {
       logger.info(s"$correlationId::[submit]RDS Auth Required}")
