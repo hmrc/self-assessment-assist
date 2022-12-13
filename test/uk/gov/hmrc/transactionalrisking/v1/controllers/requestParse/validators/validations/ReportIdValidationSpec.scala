@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators.validations
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{invalidUUIDString, simpleReportID, simpleReportIDStrangeCharsString}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{invalidUUIDString, simpleReportId, simpleReportIdStrangeCharsString}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.ReportIdValidation
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.FormatReportIdError
 
@@ -27,7 +27,7 @@ class ReportIdValidationSpec extends UnitSpec {
   "running a validation" should {
     "return no errors" when {
       "a valid request" in {
-        validator.validate(simpleReportID.toString) shouldBe Nil
+        validator.validate(simpleReportId.toString) shouldBe Nil
       }
 
       "return errors" when {
@@ -38,7 +38,7 @@ class ReportIdValidationSpec extends UnitSpec {
 
         "an actual invalid request. Strange characters in string" in {
 
-          validator.validate(simpleReportIDStrangeCharsString) shouldBe Seq(FormatReportIdError)
+          validator.validate(simpleReportIdStrangeCharsString) shouldBe Seq(FormatReportIdError)
         }
       }
 

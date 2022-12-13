@@ -18,8 +18,9 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationIDImplicit, simpleFraudRiskReport}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationIdImplicit, simpleFraudRiskReport}
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{FraudRiskReport, FraudRiskRequest}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
@@ -35,7 +36,12 @@ trait MockInsightService extends MockFactory {
 
     def assess(fraudRiskRequest: FraudRiskRequest): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
       (mockInsightService.assess(_: FraudRiskRequest)(_: ExecutionContext,_: String))
-        .expects(*,*,*).returns(Future(Right(ResponseWrapper(internalCorrelationIDImplicit, simpleFraudRiskReport))))
+        .expects(*,*,*).returns(Future(Right(ResponseWrapper(internalCorrelationIdImplicit, simpleFraudRiskReport))))
+    }
+
+    def assessFail(fraudRiskRequest: FraudRiskRequest, error: MtdError): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
+      (mockInsightService.assess(_: FraudRiskRequest)(_: ExecutionContext, _: String))
+        .expects(*, *, *).returns(Future(Left(ErrorWrapper(internalCorrelationIdImplicit, error))))
     }
 
   }

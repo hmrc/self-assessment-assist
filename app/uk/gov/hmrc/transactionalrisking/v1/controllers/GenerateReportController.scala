@@ -49,18 +49,18 @@ class GenerateReportController @Inject()(
 
   def generateReportInternal(nino: String, calculationId: String): Action[AnyContent] = {
 
-    implicit val correlationID: String = idGenerator.getUid
-    logger.info(s"$correlationID::[generateReportInternal] Received request to generate an assessment report")
+    implicit val correlationId: String = idGenerator.getUid
+    logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
 
-    authorisedAction(nino, correlationID, nrsRequired = true).async { implicit request =>
+    authorisedAction(nino, nrsRequired = true).async { implicit request =>
       val customerType = deriveCustomerType(request)
       val submissionTimestamp = currentDateTime.getDateTime
 
-      toId(calculationId).map { calculationIDUuid =>
+      toId(calculationId).map { calculationIdUuid =>
 
         val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
-          calculationInfo                     <- EitherT(getCalculationInfo(calculationIDUuid, nino))
-          assessmentRequestForSelfAssessment  = AssessmentRequestForSelfAssessment(calculationIDUuid,
+          calculationInfo                     <- EitherT(getCalculationInfo(calculationIdUuid, nino))
+          assessmentRequestForSelfAssessment  = AssessmentRequestForSelfAssessment(calculationIdUuid,
                                                 nino,
                                                 PreferredLanguage.English,
                                                 customerType,
@@ -72,29 +72,42 @@ class GenerateReportController @Inject()(
         } yield {
           rdsAssessmentReportResponse.map { assessmentReportResponse: AssessmentReport =>
             val rdsReportContent = RequestData(nino = nino, RequestBody(assessmentReportResponse.toString,
-              assessmentReportResponse.reportID.toString))
+              assessmentReportResponse.reportId.toString))
 
             nonRepudiationService.submit(requestData = rdsReportContent,
               submissionTimestamp,
-              notableEventType = AssistReportGenerated,
-              assessmentReportResponse.taxYear)
+              notableEventType = AssistReportGenerated)
             assessmentReportResponse
           }
         }
 
         responseData.fold(
-          errorWrapper => errorHandler(errorWrapper, correlationID), report =>
-            Future(Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationID))
+          errorWrapper => errorHandler(errorWrapper, correlationId), report =>
+            Future(Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationId))
         ).flatten
 
-      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationID)))
+      }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
     }
   }
 
   def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = errorWrapper.error match {
-    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
+    case ServerError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+    case ServiceUnavailableError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+    case NinoFormatError => Future(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
+    case CalculationIdFormatError => Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId))
+    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))      // RDS 3 (201 CREATED 404 NOT_FOUND) =>404 NOT_FOUND (MatchingResourcesNotFoundError)
+    case MatchingResourcesNotFoundError => Future(ServiceUnavailable(Json.toJson(ServiceUnavailableError)).withApiHeaders(correlationId))   // RDS 5 (404 NOT_FOUND)) =>503(ServiceUnavailableError)(ServiceUnavailableError)
+
+   // case  => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 6 ??? => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
+
+    // case  => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 7 408 => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
+
+    // case  => Future(ServiceUnavailable(Json.toJson(ServiceUnavailable)).withApiHeaders(correlationId))                                       // RDS 8 ?  => 503 SERVICE_UNAVAILABLE (ServiceUnavailableError)
+
+    case ClientOrAgentNotAuthorisedError => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId))
+    case InvalidCredentialsError => Future(Unauthorized(Json.toJson(InvalidCredentialsError)).withApiHeaders(correlationId))
     case RdsAuthError => Future(InternalServerError(Json.toJson(ForbiddenDownstreamError)).withApiHeaders(correlationId))
-    case DownstreamError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+    case DownstreamError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                         // RDS 4 (400 ) =>500(INTERNAL_SERVER_ERROR)(MatchingResourcesNotFoundError)
     case ServiceUnavailableError => Future(InternalServerError(Json.toJson(ServiceUnavailableError)).withApiHeaders(correlationId))
     case error@_ =>
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")

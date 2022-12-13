@@ -18,12 +18,10 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController.ninoKey
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
 
 import java.time.OffsetDateTime
 import javax.inject.{Inject, Singleton}
@@ -38,10 +36,9 @@ class NrsService @Inject()(
 
   def buildNrsSubmission(requestData: RequestData,
                          submissionTimestamp: OffsetDateTime,
-                         request: UserRequest[_], notableEventType: NotableEventType, taxYear: String)(implicit correlationID: String): NrsSubmission = {
-    logger.info(s"$correlationID::[buildNrsSubmission]Build the NRS submission")
+                         request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationId: String): NrsSubmission = {
+    logger.info(s"$correlationId::[buildNrsSubmission]Build the NRS submission")
 
-    //RequestData(nino = nino, RequestBody(newRdsAssessmentReportResponse.toString, calculationID))
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
     val payloadString = Json.toJson(requestData.body).toString()
     val encodedPayload = hashUtil.encode(payloadString)
@@ -62,32 +59,31 @@ class NrsService @Inject()(
         headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }),
         searchKeys =
           SearchKeys(
-            nino = ninoKey,
-            taxYear = taxYear,
-            reportId = requestData.body.reportId,
+            reportId = requestData.body.reportId
           )
       )
     )
   }
 
-  def submit(requestData: RequestData, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType, taxYear: String)(
+  def submit(requestData: RequestData, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType)(
     implicit request: UserRequest[_],
     hc: HeaderCarrier,
     ec: ExecutionContext,
-    correlationID: String
+    correlationId: String
   ): Future[Option[NrsResponse]] = {
-    logger.info(s"$correlationID::[submit]submit the data to nrs")
+    logger.info(s"$correlationId::[submit]submit the data to nrs")
+    //TODO this has to come outside of this method, as failure in building NRS Request should fail the transaction
+    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType)
 
-    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType, taxYear)
-    logger.info(s"$correlationID::[submit]Request initiated to store report content to NRS")
+    logger.info(s"$correlationId::[submit]Request initiated to store report content to NRS")
     connector.submit(nrsSubmission).map { response =>
       val ret = response.toOption
       ret match {
           case Some(response) =>
-            logger.info(s"$correlationID::[submit]Succesful submission")
+            logger.info(s"$correlationId::[submit]Successful submission")
             response
           case None =>
-            logger.info(s"$correlationID::[submit]Nothing submitted")
+            logger.info(s"$correlationId::[submit]Nothing submitted")
             None
       }
       ret

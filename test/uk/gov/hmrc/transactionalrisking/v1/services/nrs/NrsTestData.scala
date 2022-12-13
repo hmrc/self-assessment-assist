@@ -20,7 +20,7 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, User}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleReportID, simpleTaxYear}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.simpleReportId
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{IdentityData, Metadata, NrsSubmission, SearchKeys}
 
 import java.time.{Instant, LocalDate}
@@ -111,9 +111,7 @@ object MetadataTestData {
        |      "Gov-Client-Colour-Depth": "24"
        |    },
        |    "searchKeys": {
-       |      "nino": "AA000000B",
-       |      "taxYear": "${simpleTaxYear}",
-       |      "reportId": "${simpleReportID.toString}"
+       |      "reportId": "${simpleReportId.toString}"
        |    }
        |}
       """.stripMargin
@@ -140,9 +138,7 @@ object MetadataTestData {
     )),
     searchKeys =
       SearchKeys(
-        nino = "AA000000B",
-        taxYear = simpleTaxYear,
-        reportId = simpleReportID.toString
+        reportId = simpleReportId.toString
       )
   )
 }

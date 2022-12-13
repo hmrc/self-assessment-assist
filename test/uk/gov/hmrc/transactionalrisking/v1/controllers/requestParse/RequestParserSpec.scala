@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationID, simpleNino}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationId, simpleNino}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.RequestParser
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.Validator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, NinoFormatError}
@@ -30,7 +30,7 @@ class RequestParserSpec extends UnitSpec {
   private val nino = simpleNino
   case class Raw(nino: String) extends RawData
   case class Request(nino: String)
-  implicit val correlationId: String = internalCorrelationID
+  implicit val correlationId: String = internalCorrelationId
 
   trait Test {
     test =>

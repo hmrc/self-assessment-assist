@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.controllers
+package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import play.api.http.{HeaderNames, MimeTypes, Status}
 import play.api.mvc.{AnyContentAsEmpty, ControllerComponents, Result}

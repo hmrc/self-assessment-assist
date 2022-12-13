@@ -21,10 +21,7 @@ import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 
 import java.time.LocalDate
 
-case class SearchKeys(nino: String,
-                      taxYear: String,
-                      reportId: String
-                     )
+case class SearchKeys( reportId: String )
 
 object SearchKeys {
   implicit val dateReads: Reads[LocalDate] = DateUtils.dateReads

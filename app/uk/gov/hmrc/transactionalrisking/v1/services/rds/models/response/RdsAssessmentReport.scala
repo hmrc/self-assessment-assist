@@ -18,33 +18,32 @@ package uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response
 
 import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps, unlift}
 import play.api.libs.json._
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.NewRdsAssessmentReport.{KeyValueWrapper, Output}
-
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport.{KeyValueWrapper, Output}
 import java.util.UUID
 
-case class NewRdsAssessmentReport(links: Seq[String],
-                                  version: Int,
-                                  moduleId: String,
-                                  stepId: String,
-                                  executionState: String,
-                                  outputs: Seq[Output]
+case class RdsAssessmentReport(links: Seq[String],
+                               version: Int,
+                               moduleId: String,
+                               stepId: String,
+                               executionState: String,
+                               outputs: Seq[Output]
                                  ) {
 
-  //TODO fix me we need to read calculationid and compare it with the one we passed it.TRDT-697
-//  def calculationID: Option[UUID] =
-//    outputs
-//      .filter(_.isInstanceOf[KeyValueWrapper])
-//      .map(_.asInstanceOf[KeyValueWrapper])
-//      .find(_.name=="calculationID")
-//      .map(_.value)
-//      .map(x=>Some(UUID.fromString(x)))
-//      .getOrElse(None)
+  //we read calculationid and compare it with the one we passed it.TRDT-697
+  def calculationId: Option[UUID] =
+    outputs
+      .filter(_.isInstanceOf[KeyValueWrapper])
+      .map(_.asInstanceOf[KeyValueWrapper])
+      .find(_.name=="calculationId")
+      .map(_.value)
+      .map(x=>Some(UUID.fromString(x)))
+      .getOrElse(None)
 
   def rdsCorrelationId: Option[String] = {
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="correlationID")
+      .find(_.name=="correlationId")
       .map( x=>Some(x.value))
       .getOrElse(None)
   }
@@ -53,7 +52,7 @@ case class NewRdsAssessmentReport(links: Seq[String],
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="feedbackID")
+      .find(_.name=="feedbackId")
       .map(_.value)
       .map( x=>Some(UUID.fromString(x)))
       .getOrElse(None)
@@ -79,12 +78,12 @@ case class NewRdsAssessmentReport(links: Seq[String],
 
 }
 
-object NewRdsAssessmentReport {
+object RdsAssessmentReport {
 
   trait Output
 
   object Output {
-    val specialKeys = List("correlationID","feedbackID","calculationID","nino","taxYear","responseCode","response")
+    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","responseCode","response","responseMessage","Created_dttm")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {
@@ -100,7 +99,6 @@ object NewRdsAssessmentReport {
       case o@IdentifiersWrapper(_) => IdentifiersWrapper.writes.writes(o)
 
     }
-
   }
 
   case class KeyValueWrapper(name:String,value:String) extends Output
@@ -112,7 +110,6 @@ object NewRdsAssessmentReport {
       ((JsPath \ "name").read[String] and
         ((JsPath \ "value").read[String] or
           (JsPath \ "value").read[String](convertIntToString)))(KeyValueWrapper.apply _)
-
 
     val writes: Writes[KeyValueWrapper] =
       (JsPath \ "name").write[String]
@@ -181,19 +178,16 @@ object NewRdsAssessmentReport {
   case class DataWrapper(data: Seq[Seq[String]]) extends ObjectPart
 
   object DataWrapper {
-
     val reads: Reads[DataWrapper] =
       (JsPath \ "data").read[Seq[Seq[String]]].map(DataWrapper.apply)
 
     val writes: Writes[DataWrapper] =
       (JsPath \ "data").write[Seq[Seq[String]]].contramap(_.data)
-
   }
 
   case class Identifier(name: String, value: String)
 
   object Identifier {
-
     implicit val reads: Reads[Identifier] =
       (JsPath \ "name").read[String]
         .and((JsPath \ "value").read[String])(Identifier.apply _)
@@ -201,24 +195,22 @@ object NewRdsAssessmentReport {
     implicit val writes: Writes[Identifier] =
       (JsPath \ "name").write[String]
         .and((JsPath \ "value").write[String])(unlift(Identifier.unapply))
-
-
   }
 
-  implicit val reads: Reads[NewRdsAssessmentReport] =
+  implicit val reads: Reads[RdsAssessmentReport] =
     (JsPath \ "links").read[Seq[String]]
       .and((JsPath \ "version").read[Int])
       .and((JsPath \ "moduleId").read[String])
       .and((JsPath \ "stepId").read[String])
       .and((JsPath \ "executionState").read[String])
-      .and((JsPath \ "outputs").read[Seq[Output]])(NewRdsAssessmentReport.apply _)
+      .and((JsPath \ "outputs").read[Seq[Output]])(RdsAssessmentReport.apply _)
 
-  implicit val writes: Writes[NewRdsAssessmentReport] =
+  implicit val writes: Writes[RdsAssessmentReport] =
     (JsPath \ "links").write[Seq[String]]
       .and((JsPath \ "version").write[Int])
       .and((JsPath \ "moduleId").write[String])
       .and((JsPath \ "stepId").write[String])
       .and((JsPath \ "executionState").write[String])
-      .and((JsPath \ "outputs").write[Seq[Output]])(unlift(NewRdsAssessmentReport.unapply))
+      .and((JsPath \ "outputs").write[Seq[Output]])(unlift(RdsAssessmentReport.unapply))
 
 }
