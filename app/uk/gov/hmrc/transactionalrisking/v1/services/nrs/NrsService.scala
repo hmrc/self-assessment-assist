@@ -56,7 +56,7 @@ class NrsService @Inject()(
         userSubmissionTimestamp = formattedDate,
         identityData = request.userDetails.identityData,
         userAuthToken = request.headers.get("Authorization").get,  //TODO:Fix error handling for get throws. Maybe build NRS should be moved out of class.
-        headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }),
+        headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }),//TODO remove auth header
         searchKeys =
           SearchKeys(
             reportId = requestData.body.reportId
