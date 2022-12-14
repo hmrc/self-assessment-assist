@@ -76,6 +76,14 @@ case class RdsAssessmentReport(links: Seq[String],
       .map(x=>Some(x.toInt))
       .getOrElse(None)
 
+  def responseMessage: Option[Int] =
+    outputs
+      .filter(_.isInstanceOf[KeyValueWrapper])
+      .map(_.asInstanceOf[KeyValueWrapper])
+      .find(_.name == "responseMessage")
+      .map(_.value)
+      .map(x=>Some(x.toInt))
+      .getOrElse(None)
 }
 
 object RdsAssessmentReport {

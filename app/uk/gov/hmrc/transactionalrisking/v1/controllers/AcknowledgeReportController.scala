@@ -76,6 +76,9 @@ class AcknowledgeReportController @Inject()(
               case code@Some(BAD_REQUEST) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+              case code@Some(UNAUTHORIZED) =>
+                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code} ${assessmentReport.responseMessage.map(_)}")
+                Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
               case None =>
                 logger.error(s"$correlationId::[acknowledgeReport] rds ack response code is empty")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
