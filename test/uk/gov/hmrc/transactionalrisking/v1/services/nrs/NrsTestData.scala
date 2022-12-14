@@ -161,7 +161,7 @@ object NrsResponseTestData {
   val correctJson: JsValue = Json.parse(
     """
       |{
-      |  "reportSubmissionId": "anId",
+      |  "nrSubmissionId": "anId",
       |  "cadesTSignature": "aSignature",
       |  "timestamp": "aTimeStamp"
       |}
