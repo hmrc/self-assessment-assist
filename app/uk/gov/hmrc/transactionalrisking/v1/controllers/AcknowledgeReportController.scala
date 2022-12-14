@@ -77,7 +77,8 @@ class AcknowledgeReportController @Inject()(
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
               case code@Some(UNAUTHORIZED) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code} ${assessmentReport.responseMessage.map(_)}")
+                val responseMessage = assessmentReport.responseMessage.getOrElse("")
+                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code} ${responseMessage}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
               case None =>
                 logger.error(s"$correlationId::[acknowledgeReport] rds ack response code is empty")
