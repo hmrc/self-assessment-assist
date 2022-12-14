@@ -23,6 +23,9 @@ object ReportIdValidation {
     "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
 
   def validate(reportId: String): List[MtdError] = {
-    if (reportId != null && reportId.matches(reportIdRegex)) NoValidationErrors else List(FormatReportIdError)
+    //if (reportId != null && reportId.matches(reportIdRegex)) NoValidationErrors else List(FormatReportIdError)
+   /* TODO temporarily removed regular expression check, as the feedback id from RDS is failing this and it is
+    blocking us move further*/
+    if (reportId != null) NoValidationErrors else List(FormatReportIdError)
   }
 }
