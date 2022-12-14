@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response
 
 import play.api.libs.json.{Json, Reads}
 
-case class NrsResponse(reportSubmissionId: String)
+case class NrsResponse(nrSubmissionId: String)
 
 object NrsResponse {
 

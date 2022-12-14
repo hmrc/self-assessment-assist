@@ -26,7 +26,7 @@ class HashUtil @Inject()() {
 
   private def sha256: MessageDigest = MessageDigest.getInstance("SHA-256")
 
-  def encode(value: String): String = Base64.getEncoder.encodeToString(value.getBytes(StandardCharsets.UTF_8))
+  def encode(value: String): String = Base64.getUrlEncoder.encodeToString(value.getBytes(StandardCharsets.UTF_8))
   def getHash(value: String): String = sha256.digest(value.getBytes()).map("%02x" format _).mkString
 
 }
