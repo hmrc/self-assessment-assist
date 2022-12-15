@@ -49,7 +49,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
       .map { response =>
         response.status match {
           case Status.CREATED =>
-            logger.debug(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status} - ${response.body}")
+            logger.debug(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
             Right(ResponseWrapper(correlationId, response.json.validate[RdsAssessmentReport].get))
           case Status.NOT_FOUND =>
             logger.warn(s"$correlationId::[RdsConnector:submit]Unable to submit the report - not found")
@@ -86,10 +86,11 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     logger.info(s"$correlationId::[acknowledgeRds]acknowledge the report ${appConfig.rdsBaseUrlForAcknowledge}")
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
+    logger.info(s"$correlationId::[acknowledgeRds] request was  ${request}")
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[acknowledgeRds] response body is ${response} ${response.body}")
+        logger.info(s"$correlationId::[acknowledgeRds] response body is ${response.status} ")
         response.status match {
           case code@OK =>
             logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement OK response ")
