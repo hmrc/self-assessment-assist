@@ -21,7 +21,6 @@ import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
-import uk.gov.hmrc.transactionalrisking.v1.controllers.GenerateReportController
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._

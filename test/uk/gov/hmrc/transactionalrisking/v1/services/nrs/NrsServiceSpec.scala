@@ -40,10 +40,11 @@ class NrsServiceSpec extends ServiceSpec {
   private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
   private val newRdsReport = "AReport"
 
-  private val generateReportBodyRequest: RequestBody = RequestBody(newRdsReport, reportId)
-  private val selfAssessmentSubmission: RequestData = RequestData(nino, generateReportBodyRequest)
+  private val generateReportBodyRequest: RequestBody = RequestBodyReport(newRdsReport, reportId)
+  private val selfAssessmentSubmission: RequestData = RequestData(nino, reportId, generateReportBodyRequest)
 
-  private val generateReportBodyRequestString = Json.toJson(generateReportBodyRequest).toString
+//  private val generateReportBodyRequestString = Json.toJson(generateReportBodyRequest).toString // TODO
+  private val generateReportBodyRequestString = generateReportBodyRequest.toOutput.toString
 
   private val nrsSubmission: NrsSubmission =
     NrsSubmission(

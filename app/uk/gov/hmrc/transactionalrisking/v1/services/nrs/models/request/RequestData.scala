@@ -16,4 +16,4 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request
 
-case class RequestData(nino: String, body: RequestBody)
+case class RequestData(nino: String, reportId:String, body: RequestBody)

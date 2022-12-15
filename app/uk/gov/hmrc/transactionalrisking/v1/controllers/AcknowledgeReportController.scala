@@ -25,7 +25,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AssistReportAcknowledged, RequestBody, RequestData}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AssistReportAcknowledged, RequestBodyAcknowledge, RequestData}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
@@ -47,7 +47,7 @@ class AcknowledgeReportController @Inject()(
 
     val submissionTimestamp = currentDateTime.getDateTime
     val body = s"""{"reportId":"${reportId}"}"""
-    val reportAcknowledgementContent = RequestData(nino, RequestBody(body, reportId))
+    val reportAcknowledgementContent = RequestData(nino, reportId, RequestBodyAcknowledge(body))
 
     authorisedAction(nino, nrsRequired = true).async {
       implicit request =>

@@ -40,7 +40,7 @@ class NrsService @Inject()(
     logger.info(s"$correlationId::[buildNrsSubmission]Build the NRS submission")
 
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
-    val payloadString = Json.toJson(requestData.body).toString()
+    val payloadString = requestData.body.toOutput
     val encodedPayload = hashUtil.encode(payloadString)
     val sha256Checksum = hashUtil.getHash(payloadString)
     val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)
@@ -59,7 +59,7 @@ class NrsService @Inject()(
         headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }),//TODO remove auth header
         searchKeys =
           SearchKeys(
-            reportId = requestData.body.reportId
+            reportId = requestData.reportId
           )
       )
     )

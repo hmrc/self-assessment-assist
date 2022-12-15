@@ -70,8 +70,9 @@ class CommonTestData  {
   val simpleMetadata: Metadata = null
   val simplePayload: String = ""
 
-  val simpleBody: RequestBody = null
-  val simpleGenerateReportControllerRequestData = RequestData(nino = simpleNino, body = simpleBody)
+  val simpleBody: RequestBody = RequestBodyReport(s""""{"reportId":"$simpleReportId"}"""", reportId=simpleReportId.toString) // TODO Check this.
+  val simpleGenerateReportControllerRequestData = RequestData(nino = simpleNino, reportId=simpleReportId.toString, body = simpleBody)
+  val simpleGenerateAcknowledgeControllerRequestData = RequestData(nino = simpleNino, reportId=simpleReportId.toString, body = simpleBody)
 
   val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
@@ -84,8 +85,8 @@ class CommonTestData  {
   val simpleAcknowledgedSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue, 1, 12, 0, 0, 0, ZoneOffset.UTC)
   val simpleAcknowledgedNotableEventType: NotableEventType = AssistReportAcknowledged
 
-  val simpleRequestBodyAcknowledge: RequestBody = RequestBody(s""""{"reportId":"$simpleReportId"}"""", simpleReportId.toString)
-  val simpleAcknowledgeReportRequestData = RequestData(nino = simpleNino, body = simpleRequestBodyAcknowledge)
+  val simpleRequestBodyAcknowledge: RequestBody = RequestBodyAcknowledge(s""""{"reportId":"$simpleReportId"}"""")
+  val simpleAcknowledgeReportRequestData = RequestData(nino = simpleNino, reportId=simpleReportId.toString, body = simpleRequestBodyAcknowledge)
 
   //val acknowledgeSubmissionIdString = ""
   val acknowledgeSubmissionId = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
