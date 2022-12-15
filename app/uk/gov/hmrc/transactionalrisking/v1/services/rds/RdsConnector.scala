@@ -86,12 +86,11 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     logger.info(s"$correlationId::[acknowledgeRds]acknowledge the report ${appConfig.rdsBaseUrlForAcknowledge}")
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
+    logger.info(s"$correlationId::[acknowledgeRds] request was  ${request}")
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[acknowledgeRds] response body is ${response} ${response.body}")
-        logger.info(s"$correlationId::[acknowledgeRds] response headers ${response.headers}")
-        logger.info(s"$correlationId::[acknowledgeRds] response json ${response.json}")
+        logger.info(s"$correlationId::[acknowledgeRds] response body is ${response.status} ")
         response.status match {
           case code@OK =>
             logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement OK response ")

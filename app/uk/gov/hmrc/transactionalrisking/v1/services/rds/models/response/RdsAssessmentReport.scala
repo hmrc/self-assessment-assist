@@ -58,14 +58,14 @@ case class RdsAssessmentReport(links: Seq[String],
       .getOrElse(None)
 
 
-  def taxYear: Option[Int] =
+/*  def taxYear: Option[Int] =
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
       .find(_.name == "taxYear")
       .map(_.value)
       .map(x=>Some(x.toInt))
-      .getOrElse(None)
+      .getOrElse(None)*/
 
   def responseCode: Option[Int] =
     outputs
@@ -76,6 +76,14 @@ case class RdsAssessmentReport(links: Seq[String],
       .map(x=>Some(x.toInt))
       .getOrElse(None)
 
+  def responseMessage: Option[String] =
+    outputs
+      .filter(_.isInstanceOf[KeyValueWrapper])
+      .map(_.asInstanceOf[KeyValueWrapper])
+      .find(_.name == "responseMessage")
+      .map(_.value)
+      .map(x=>Some(x.toString))
+      .getOrElse(None)
 }
 
 object RdsAssessmentReport {
@@ -83,7 +91,7 @@ object RdsAssessmentReport {
   trait Output
 
   object Output {
-    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","responseCode","response","responseMessage","Created_dttm")
+    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","responseCode","response","responseMessage","Created_dttm","createdDttm")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {
