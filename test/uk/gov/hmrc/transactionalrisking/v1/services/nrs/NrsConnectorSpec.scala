@@ -52,7 +52,7 @@ class NrsConnectorSpec extends ConnectorSpec
   val successResponseJson: JsValue =
     Json.parse(
       """{
-        |   "reportSubmissionId": "submissionId"
+        |   "nrSubmissionId": "submissionId"
         |}""".stripMargin)
 
   private val nrsSubmission: NrsSubmission = FullRequestTestData.correctModel
