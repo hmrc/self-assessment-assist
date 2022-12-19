@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.routing
 
 import com.google.inject.ImplementedBy
 import play.api.routing.Router
-import uk.gov.hmrc.transactionalrisking.config.{AppConfig, FeatureSwitch}
+import uk.gov.hmrc.transactionalrisking.config.{AppConfig, AuthFeature, FeatureSwitch}
 import uk.gov.hmrc.transactionalrisking.definitions.Versions.VERSION_1
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 
@@ -45,15 +45,12 @@ case class VersionRoutingMapImpl @Inject()(appConfig: AppConfig,
 
   val featureSwitch: FeatureSwitch = FeatureSwitch(appConfig.featureSwitch)
 
-  println(Console.YELLOW)
-  println("***********************************************")
-  println(s"${}")
-  println("***********************************************")
-  println(Console.RESET)
+  logger.info(s"[VersionRoutingMapImpl] Using feature-switch version-1::${featureSwitch.isVersionEnabled("version-1")}")
+  logger.info(s"[VersionRoutingMapImpl] Using feature-switch auth::${featureSwitch.isEnabled(AuthFeature)}")
 
   val map: Map[String, Router] = Map(
     VERSION_1 -> {
-        logger.info("[VersionRoutingMap][map] using v1Router - pointing to new packages")
+        logger.info("[VersionRoutingMapImpl][map] using v1Router - pointing to new packages")
         v1Router
       }
   )
