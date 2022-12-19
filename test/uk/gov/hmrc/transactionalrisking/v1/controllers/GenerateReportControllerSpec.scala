@@ -17,6 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
@@ -131,7 +132,8 @@ class GenerateReportControllerSpec
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
-    "a request fails due to a failed getCalculationInfo" should {
+    //TODO remove this, as this service wont be invoked based on new architectural decision
+/*    "a request fails due to a failed getCalculationInfo" should {
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} when controller is set to return error from getCalculationInfo " in new Test {
@@ -154,15 +156,13 @@ class GenerateReportControllerSpec
         Seq(
           (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
           (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
           (CalculationIdFormatError, BAD_REQUEST, CalculationIdFormatError.toJson),
           (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
           (InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
-    }
+    }*/
 
     "a request fails due to a failed InsightService.assess " should {
 
@@ -187,12 +187,7 @@ class GenerateReportControllerSpec
       val errorInErrorOut =
         Seq(
           (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
-          //(CalculationIdFormatError, BAD_REQUEST, CalculationIdFormatError.toJson),
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
-          (InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, ServiceUnavailableError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -222,11 +217,8 @@ class GenerateReportControllerSpec
       val errorInErrorOut =
         Seq(
           (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
-          (CalculationIdFormatError, BAD_REQUEST, CalculationIdFormatError.toJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, ServiceUnavailableError.toJson),
           (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
           (InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
         )
 

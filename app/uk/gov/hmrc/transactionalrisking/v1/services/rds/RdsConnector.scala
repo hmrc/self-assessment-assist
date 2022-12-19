@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.services.rds
 import play.api.http.Status
 import play.api.http.Status.{CREATED, NOT_FOUND, OK}
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, RequestTimeoutException, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, ResourceNotFoundError}
@@ -50,10 +50,24 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         response.status match {
           case Status.CREATED =>
             logger.debug(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
-            Right(ResponseWrapper(correlationId, response.json.validate[RdsAssessmentReport].get))
+            val assessmentReport = response.json.validate[RdsAssessmentReport].get
+            assessmentReport.responseCode match {
+              case Some(201) | Some(204) => Right(ResponseWrapper(correlationId,assessmentReport))
+              case Some(404) =>
+                val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
+                logger.warn(s"$correlationId::[RdsService][submit] $errorMessage")
+                Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError,Some(Seq(MtdError("404",errorMessage)))))
+              case Some(_) | None =>
+                logger.warn(s"$correlationId::[RdsService][submit] unexpected response")
+                Left(ErrorWrapper(correlationId, DownstreamError,Some(Seq(MtdError(DownstreamError.code,"unexpected response from downstream")))))
+            }
+
+          case Status.BAD_REQUEST =>
+            logger.warn(s"$correlationId::[RdsConnector:submit] RDS response : BAD request")
+            Left(ErrorWrapper(correlationId, DownstreamError))
           case Status.NOT_FOUND =>
-            logger.warn(s"$correlationId::[RdsConnector:submit]Unable to submit the report - not found")
-            Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError))
+            logger.warn(s"$correlationId::[RdsConnector:submit] RDS not reachable")
+            Left(ErrorWrapper(correlationId, ServiceUnavailableError))
           case unexpectedStatus@_ =>
             logger.error(s"$correlationId::[RdsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
             Left(ErrorWrapper(correlationId, ServiceUnavailableError))
@@ -66,7 +80,12 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
 
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationId::[RdsConnector:submit] UpstreamErrorResponse $ex")
-          Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+          ex.statusCode match {
+            case 408 => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+            case 401 => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case 403 => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case _ => Left(ErrorWrapper(correlationId, DownstreamError))
+          }
 
         case ex: HttpException =>
           logger.error(s"$correlationId::[RdsConnector:submit] HttpException $ex")
@@ -113,8 +132,8 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
                 Left(ErrorWrapper(correlationId, DownstreamError))
             }
           case code@NOT_FOUND =>
-            logger.error(s"$correlationId::[acknowledgeRds]not found error during rds acknowledgement $code")
-            Left(ErrorWrapper(correlationId, ResourceNotFoundError))
+            logger.error(s"$correlationId::[acknowledgeRds] not found error during rds acknowledgement $code")
+            Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError))
           case _@errorCode =>
             logger.error(s"$correlationId::[acknowledgeRds]error during rds acknowledgement $errorCode")
             Left(ErrorWrapper(correlationId, DownstreamError))

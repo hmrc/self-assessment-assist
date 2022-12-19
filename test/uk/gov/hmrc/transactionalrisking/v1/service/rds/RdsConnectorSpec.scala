@@ -84,18 +84,6 @@ class RdsConnectorSpec extends ConnectorSpec
     MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
     val connector = new RdsConnector(httpClient, mockAppConfig)
   }
-//TODO move this to RDSAuthConnectorStub
-//  class RDSAuthConnectorStub(
-//                               result: Either[MtdError, RdsAuthCredentials] = Right(
-//                                 RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
-//                               )
-//                             ) extends RdsAuthConnector[Future] {
-//    override def retrieveAuthorisedBearer()(implicit
-//                                            hc: HeaderCarrier
-//    ): EitherT[Future, MtdError, RdsAuthCredentials] =
-//      EitherT[Future, MtdError, RdsAuthCredentials](Future(result))
-//  }
-
 
   "RDSConnector" when {
     "submit method is called" must {
