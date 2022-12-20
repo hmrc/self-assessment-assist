@@ -64,7 +64,7 @@ class AcknowledgeReportController @Inject()(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
             assessmentReport.responseCode match {
-              case Some(CREATED) =>
+              case Some(ACCEPTED) =>
                 logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
                 nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)

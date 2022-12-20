@@ -31,16 +31,16 @@ import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationId,simpleTaxYearEndInt}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{noCalculationFound, rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationId, simpleTaxYearEndInt}
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, FormatReportIdError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, FormatReportIdError, MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.rdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.loadSubmitResponseTemplate
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{calculationIdWithNoFeedback, simpleCalculationId, simpleReportId}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{calculationIdWithNoFeedback, simpleReportId}
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, Link, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, DesTaxYear, Link, PreferredLanguage, Risk}
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
@@ -89,56 +89,50 @@ class RdsConnectorSpec extends ConnectorSpec
     MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
     MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
     val connector = new RdsConnector(httpClient, mockAppConfig)
+
+    def stubRDSResponse(body:Option[String]=None,status:Int) = {
+      body match {
+        case Some(data) =>
+          wireMockServer.stubFor(
+          post(urlPathEqualTo("/submit"))
+            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
+            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
+            .willReturn(aResponse()
+              .withBody(data)
+              .withStatus(status)))
+        case None =>
+          wireMockServer.stubFor(
+            post(urlPathEqualTo("/submit"))
+              .withHeader("Content-Type", equalTo(MimeTypes.JSON))
+              .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
+              .willReturn(aResponse()
+                .withStatus(status)))
+      }
+
+    }
   }
 
   "RDSConnector" when {
     "submit method is called" must {
       "return the response if successful" in new Test {
-        wireMockServer.stubFor(
-          post(urlPathEqualTo("/submit"))
-            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
-            .willReturn(aResponse()
-              .withBody(rdsSubmissionReportJson.toString)
-              .withStatus(CREATED)))
-
-       await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsNewSubmissionReport))
+        stubRDSResponse(Some(rdsSubmissionReportJson.toString),CREATED)
+        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsNewSubmissionReport))
       }
 
       "fail when the bearer token is invalid" in new Test {
-        wireMockServer.stubFor(
-          post(urlPathEqualTo("/submit"))
-            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
-            .willReturn(aResponse()
-              .withStatus(UNAUTHORIZED)))
-
+        stubRDSResponse(status=UNAUTHORIZED)
         await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(simpleRDSCorrelationId, ForbiddenDownstreamError))
       }
 
       "return the feedback, if RDS returns http status 201 and and feedback with responsecode 201" in new Test{
-        wireMockServer.stubFor(
-          post(urlPathEqualTo("/submit"))
-            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
-            .willReturn(aResponse()
-              .withBody(rdsSubmissionReportJson.toString)
-              .withStatus(CREATED)))
-
+        stubRDSResponse(Some(rdsSubmissionReportJson.toString),status=CREATED)
         await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsNewSubmissionReport))
 
       }
 
       "return the empty feedback, if RDS returns http status 201 and no feedback with responsecode 204" in new Test{
         val rdsReportJson = loadSubmitResponseTemplate(calculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId,"204")
-        wireMockServer.stubFor(
-          post(urlPathEqualTo("/submit"))
-            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
-            .willReturn(aResponse()
-              .withBody(rdsReportJson.toString)
-              .withStatus(CREATED)))
-
+        stubRDSResponse(Some(rdsReportJson.toString),status=CREATED)
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
 
         feedbackReport shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsReportJson.as[RdsAssessmentReport]))
@@ -150,24 +144,36 @@ class RdsConnectorSpec extends ConnectorSpec
 
 
       "return MatchingResourcesNotFoundError, if RDS returns http status 201 and no calculationId found with responsecode 404" in new Test{
+        val rdsReportJson = loadSubmitResponseTemplate(noCalculationFound.toString, simpleReportId.toString, simpleRDSCorrelationId,"404")
+        stubRDSResponse(Some(rdsReportJson.toString),status=CREATED)
 
+        val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError,Some(Seq(MtdError("404","No feedback applicable")))))
       }
 
-    /*  "return 500 status code, if RDS returns http status 400" in new Test{
-
+      "return 500 status code, if RDS returns http status 400" in new Test{
+        stubRDSResponse(status=BAD_REQUEST)
+        val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
 
       "return 503 status code, if RDS is (unavailable) http status code 404" in new Test{
-
+        stubRDSResponse(status=NOT_FOUND)
+        val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
 
       "return 500 status code, if RDS fails with 503" in new Test{
-
+        stubRDSResponse(status=SERVICE_UNAVAILABLE)
+        val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
 
       "return 503 status code, if RDS request Timesout" in new Test{
-
-      }*/
+        stubRDSResponse(status=REQUEST_TIMEOUT)
+        val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+      }
     }
 
     //    "acknowledge method is called" must {
@@ -259,6 +265,9 @@ class RdsConnectorSpec extends ConnectorSpec
         Left(ErrorWrapper(correlationId, FormatReportIdError)): ServiceOutcome[AssessmentReport]
 
       case (None, Some(_)) =>
+        Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
+
+      case (None, None) =>
         Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
     }
   }
