@@ -21,6 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport.{KeyValueWrapper, Output}
 
 import java.util.UUID
+import scala.util.Try
 
 case class RdsAssessmentReport(links: Seq[String],
                                version: Int,
