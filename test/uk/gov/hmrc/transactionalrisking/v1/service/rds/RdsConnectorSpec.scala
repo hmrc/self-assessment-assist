@@ -31,12 +31,18 @@ import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationId}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{rdsNewSubmissionReport, rdsSubmissionReportJson, simpleRDSCorrelationId,simpleTaxYearEndInt}
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, ForbiddenDownstreamError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, FormatReportIdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.rdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsConnector
+import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.loadSubmitResponseTemplate
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{calculationIdWithNoFeedback, simpleCalculationId, simpleReportId}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, Link, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
 import java.util.UUID
 import scala.concurrent.Await
@@ -109,6 +115,59 @@ class RdsConnectorSpec extends ConnectorSpec
 
         await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(simpleRDSCorrelationId, ForbiddenDownstreamError))
       }
+
+      "return the feedback, if RDS returns http status 201 and and feedback with responsecode 201" in new Test{
+        wireMockServer.stubFor(
+          post(urlPathEqualTo("/submit"))
+            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
+            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
+            .willReturn(aResponse()
+              .withBody(rdsSubmissionReportJson.toString)
+              .withStatus(CREATED)))
+
+        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsNewSubmissionReport))
+
+      }
+
+      "return the empty feedback, if RDS returns http status 201 and no feedback with responsecode 204" in new Test{
+        val rdsReportJson = loadSubmitResponseTemplate(calculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId,"204")
+        wireMockServer.stubFor(
+          post(urlPathEqualTo("/submit"))
+            .withHeader("Content-Type", equalTo(MimeTypes.JSON))
+            .withHeader("Authorization" , equalTo(s"Bearer ${rdsAuthCredentials.access_token}"))
+            .willReturn(aResponse()
+              .withBody(rdsReportJson.toString)
+              .withStatus(CREATED)))
+
+        val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
+
+        feedbackReport shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsReportJson.as[RdsAssessmentReport]))
+        val assessmentReport = toAssessmentReport(feedbackReport.right.get.responseData,calculationIdWithNoFeedback.toString,simpleRDSCorrelationId,
+  "AA065213C",simpleTaxYearEndInt)
+
+        assessmentReport.right.get.responseData.risks shouldBe Seq.empty
+      }
+
+
+      "return MatchingResourcesNotFoundError, if RDS returns http status 201 and no calculationId found with responsecode 404" in new Test{
+
+      }
+
+    /*  "return 500 status code, if RDS returns http status 400" in new Test{
+
+      }
+
+      "return 503 status code, if RDS is (unavailable) http status code 404" in new Test{
+
+      }
+
+      "return 500 status code, if RDS fails with 503" in new Test{
+
+      }
+
+      "return 503 status code, if RDS request Timesout" in new Test{
+
+      }*/
     }
 
     //    "acknowledge method is called" must {
@@ -151,4 +210,56 @@ class RdsConnectorSpec extends ConnectorSpec
         urlPathEqualTo("/prweb/PRRestService/oauth2/v1/token")
       ).willReturn(aResponse().withStatus(statusCode).withBody(Json.toJson(response).toString()))
     )
+
+  private def toAssessmentReport(report: RdsAssessmentReport, calculationId: String, correlationId: String,nino:String,taxYear:Int): ServiceOutcome[AssessmentReport] = {
+
+    def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage) = preferredLanguage match {
+      case PreferredLanguage.English if language == "EnglishActions" => true
+      case PreferredLanguage.Welsh if language == "WelshActions" => true
+      case _ => false
+    }
+
+    def toRisk(riskParts: Seq[String]):Option[Risk] = {
+      if(riskParts.isEmpty) None
+      else
+        Some(Risk(title = riskParts(2),
+          body = riskParts(0), action = riskParts(1),
+          links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5)))
+    }
+
+    def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationId: String): Seq[Risk] = {
+      report.outputs.collect {
+        case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
+      }.flatMap(_.value).collect {
+        case value: RdsAssessmentReport.DataWrapper => value
+      }.flatMap(_.data)
+        .map(toRisk).flatten
+    }
+
+    (report.calculationId, report.feedbackId) match {
+      case (Some(calculationId), Some(reportId)) =>
+        if(calculationId.equals(calculationId)) {
+          val rdsCorrelationIdOption = report.rdsCorrelationId
+          rdsCorrelationIdOption match {
+            case Some(rdsCorrelationID) =>
+              Right(ResponseWrapper(correlationId,
+                AssessmentReport(reportId = reportId,
+                  risks = risks(report, PreferredLanguage.English, correlationId), nino = nino,
+                  taxYear = DesTaxYear.fromDesIntToString(taxYear),
+                  calculationId = calculationId, rdsCorrelationID)))
+
+            case None =>
+              Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
+          }
+        }else{
+          Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
+        }
+
+      case (Some(_), None) =>
+        Left(ErrorWrapper(correlationId, FormatReportIdError)): ServiceOutcome[AssessmentReport]
+
+      case (None, Some(_)) =>
+        Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
+    }
+  }
 }

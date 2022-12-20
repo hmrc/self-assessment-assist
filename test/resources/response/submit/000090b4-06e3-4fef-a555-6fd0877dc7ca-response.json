@@ -40,14 +40,6 @@
         },
         {
           "data": [
-            [
-              "This is the message for AA065213C",
-              "Action for customer AA065213C relating to calculation 111190b4-06e3-4fef-a555-6fd0877dc7ca",
-              "Title for AA065213C and calculation 111190b4-06e3-4fef-a555-6fd0877dc7ca",
-              "[link title]",
-              "[link url]",
-              "/itsa/path/"
-            ]
           ]
         }
       ]
@@ -79,14 +71,6 @@
         },
         {
           "data": [
-            [
-              "Dymar neges ar gyfer AA065213C",
-              "Gweithredu ar gyfer cwsmer AA065213C yn ymwneud \u00E2 chyfrifo 111190b4-06e3-4fef-a555-6fd0877dc7ca",
-              "Teitl ar gyfer AA065213C a chyfrifo 111190b4-06e3-4fef-a555-6fd0877dc7ca",
-              "[link title]",
-              "[link url]",
-              "/itsa/path/cym/"
-            ]
           ]
         }
       ]

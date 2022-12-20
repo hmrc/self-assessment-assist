@@ -139,7 +139,7 @@
     },
     {
       "name": "responseCode",
-      "value": "201"
+      "value": "replaceResponseCode"
     },
     {
       "name": "responseMessage",

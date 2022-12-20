@@ -63,8 +63,8 @@ class AcknowledgeReportController @Inject()(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
             assessmentReport.responseCode match {
-              case code@Some(ACCEPTED) =>
-                logger.debug(s"$correlationId::[acknowledgeReport] ... submitting acknowledgement to NRS")
+              case code@Some(CREATED) =>
+                logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
                 nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
                 logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
@@ -73,6 +73,7 @@ class AcknowledgeReportController @Inject()(
               case code@Some(NO_CONTENT) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is ${code}")
                 Future(NoContent.withApiHeaders(correlationId))
+
               case code@Some(BAD_REQUEST) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
@@ -80,6 +81,7 @@ class AcknowledgeReportController @Inject()(
                 val responseMessage = assessmentReport.responseMessage.getOrElse("")
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code} ${responseMessage}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+
               case None =>
                 logger.error(s"$correlationId::[acknowledgeReport] rds ack response code is empty")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
