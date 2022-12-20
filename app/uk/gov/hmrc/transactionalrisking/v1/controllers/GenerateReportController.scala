@@ -20,7 +20,6 @@ import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType.CustomerType
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
@@ -60,11 +59,10 @@ class GenerateReportController @Inject()(
 
         val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
           calculationInfo                     <- EitherT(getCalculationInfo(calculationIdUuid, nino))
-          cusType                             = customerType
           assessmentRequestForSelfAssessment  = AssessmentRequestForSelfAssessment(calculationIdUuid,
                                                 nino,
                                                 PreferredLanguage.English,
-                                                cusType,
+                                                customerType,
                                                 None,
                                                 DesTaxYear.fromMtd(calculationInfo.responseData.taxYear).toString)
 
