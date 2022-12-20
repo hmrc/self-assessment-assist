@@ -18,8 +18,6 @@ package uk.gov.hmrc.transactionalrisking.v1.services
 
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 
-//import javax.xml.ws.ResponseWrapper
-
 package object nrs {
   type NrsOutcome = Either[NrsFailure, NrsResponse]
 }

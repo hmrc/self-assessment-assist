@@ -18,7 +18,6 @@ package uk.gov.hmrc.transactionalrisking.v1.models.domain
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsPath, Reads, Writes}
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.FraudDecision.FraudRiskDecision
 
 
 // This is still being determined; please see TRDT-85.

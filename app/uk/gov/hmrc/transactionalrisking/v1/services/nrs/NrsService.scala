@@ -49,7 +49,7 @@ class NrsService @Inject()(
     NrsSubmission(
       payload = encodedPayload,
       Metadata(
-        businessId = "self-assessment-assist",
+        businessId = "saa",
         notableEvent = notableEventType.value, //assist-report-generated,assist-report-acknowledged
         payloadContentType = "application/json",
         payloadSha256Checksum = sha256Checksum,
@@ -75,18 +75,16 @@ class NrsService @Inject()(
     //TODO this has to come outside of this method, as failure in building NRS Request should fail the transaction
     val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType)
 
-    logger.info(s"$correlationId::[submit]Request initiated to store report content to NRS")
+    logger.info(s"$correlationId::[submit] Request initiated to store report content to NRS")
     connector.submit(nrsSubmission).map { response =>
-      val ret = response.toOption
-      ret match {
-          case Some(response) =>
-            logger.info(s"$correlationId::[submit]Successful submission")
-            response
+      response.toOption match {
+          case r @ Some(_) =>
+            logger.info(s"$correlationId::[submit] Successful submission")
+            r
           case None =>
-            logger.info(s"$correlationId::[submit]Nothing submitted")
+            logger.info(s"$correlationId::[submit] Nothing submitted")
             None
       }
-      ret
     }
 
   }

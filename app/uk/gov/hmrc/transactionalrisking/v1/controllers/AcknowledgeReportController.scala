@@ -45,7 +45,8 @@ class AcknowledgeReportController @Inject()(
     implicit val correlationId: String = idGenerator.getUid
     logger.info(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
 
-    val submissionTimestamp = currentDateTime.getDateTime
+    val submissionTimestamp = currentDateTime.getDateTime()
+
     val body = s"""{"reportId":"${reportId}"}"""
     val reportAcknowledgementContent = RequestData(nino, RequestBody(body, reportId))
 
