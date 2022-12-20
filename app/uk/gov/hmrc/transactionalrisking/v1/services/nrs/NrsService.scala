@@ -50,7 +50,7 @@ class NrsService @Inject()(
       payload = encodedPayload,
       Metadata(
         businessId = "saa",
-        notableEvent = notableEventType.value, //assist-report-generated,assist-report-acknowledged
+        notableEvent = notableEventType.value,
         payloadContentType = "application/json",
         payloadSha256Checksum = sha256Checksum,
         userSubmissionTimestamp = formattedDate,
