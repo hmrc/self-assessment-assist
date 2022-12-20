@@ -151,25 +151,25 @@ class RdsConnectorSpec extends ConnectorSpec
         feedbackReport shouldBe Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError,Some(Seq(MtdError("404","No feedback applicable")))))
       }
 
-      "return 500 status code, if RDS returns http status 400" in new Test{
+      "return Internal Server Error, if RDS returns http status 400" in new Test{
         stubRDSResponse(status=BAD_REQUEST)
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
         feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
 
-      "return 503 status code, if RDS is (unavailable) http status code 404" in new Test{
+      "return Service Unavailable, if RDS is (unavailable) http status code 404" in new Test{
         stubRDSResponse(status=NOT_FOUND)
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
         feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
 
-      "return 500 status code, if RDS fails with 503" in new Test{
+      "return Internal Server Error, if RDS fails with 503" in new Test{
         stubRDSResponse(status=SERVICE_UNAVAILABLE)
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
         feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
 
-      "return 503 status code, if RDS request Timesout" in new Test{
+      "return Service Unavailable, if RDS request Timesout" in new Test{
         stubRDSResponse(status=REQUEST_TIMEOUT)
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
         feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
