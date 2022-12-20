@@ -51,7 +51,7 @@ class NrsServiceSpec extends ServiceSpec {
       payload = encodedString,
       metadata = Metadata(
         businessId = "saa",
-        notableEvent = AssistReportGenerated.value,
+        notableEvent = "saa-report-generated",
         payloadContentType = "application/json",
         payloadSha256Checksum = checksum,
         userSubmissionTimestamp = formattedDate,

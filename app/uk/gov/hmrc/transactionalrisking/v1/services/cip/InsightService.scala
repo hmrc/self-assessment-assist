@@ -17,13 +17,12 @@
 package uk.gov.hmrc.transactionalrisking.v1.services.cip
 
 import play.api.Logger
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{FraudDecision, FraudRiskReport, FraudRiskRequest}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
 
 @Singleton
 class InsightService @Inject()() {

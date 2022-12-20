@@ -51,9 +51,8 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
       rdsRequestSO match {
         case Right(ResponseWrapper(_, rdsRequest)) =>
           logger.info(s"$correlationId::[RdsService submit ] RdsAssessmentRequest Created")
-          val submit = connector.submit(rdsRequest, rdsAuthCredentials)
-          val ret = submit.map {
-            _ match {
+
+          connector.submit(rdsRequest, rdsAuthCredentials).map {
               case Right(ResponseWrapper(_, rdsResponse)) =>
                 val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
                 assessmentReportSO match {
@@ -68,9 +67,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
               case Left(errorWrapper) =>
                 logger.error(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
                 Left(errorWrapper)
-            }
           }
-          ret
         case Left(errorWrapper) =>
           logger.error(s"$correlationId::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request ${errorWrapper.error}")
           Future(Left(errorWrapper): ServiceOutcome[AssessmentReport])
@@ -145,7 +142,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
 
   private def toRisk(riskParts: Seq[String]) =
     Risk(title = riskParts(2),
-      body = riskParts(0), action = riskParts(1),
+      body = riskParts.head, action = riskParts(1),
       links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,

@@ -32,7 +32,7 @@ class CommonTestData  {
   val simpleNino: String = "AA000000B"
   val simpleCalculationId: UUID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000001")
   val simpleRDSCorrelationId: String = "5fht738957jfjf845jgjf855"
-  val simpleReportId = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000011111")
+  val simpleReportId: UUID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000011111")
   val simpleRiskTitle = "title"
   val simpleRiskBody = "body"
   val simpleRiskAction = "action"
@@ -55,7 +55,7 @@ class CommonTestData  {
     agentRef = None,
     taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString)
 
-  val simpleAssessmentReport = AssessmentReport(reportId = simpleReportId
+  val simpleAssessmentReport: AssessmentReport = AssessmentReport(reportId = simpleReportId
     , risks = Seq(Risk(title = simpleRiskTitle, body = simpleRiskBody, action = simpleRiskAction
       , links = Seq(Link(simpleLinkTitle, simpleLinkUrl)), path = simplePath))
     , nino = simpleNino
@@ -71,12 +71,12 @@ class CommonTestData  {
   val simplePayload: String = ""
 
   val simpleBody: RequestBody = null
-  val simpleGenerateReportControllerRequestData = RequestData(nino = simpleNino, body = simpleBody)
+  val simpleGenerateReportControllerRequestData: RequestData = RequestData(nino = simpleNino, body = simpleBody)
 
   val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
 
-  val reportSubmissionId = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000010").toString
+  val reportSubmissionId: String = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000010").toString
   val simpleReportNotableEventType: NotableEventType = AssistReportGenerated
   val simpleNRSResponseReportSubmission = new NrsResponse(reportSubmissionId)
 
@@ -85,10 +85,9 @@ class CommonTestData  {
   val simpleAcknowledgedNotableEventType: NotableEventType = AssistReportAcknowledged
 
   val simpleRequestBodyAcknowledge: RequestBody = RequestBody(s""""{"reportId":"$simpleReportId"}"""", simpleReportId.toString)
-  val simpleAcknowledgeReportRequestData = RequestData(nino = simpleNino, body = simpleRequestBodyAcknowledge)
+  val simpleAcknowledgeReportRequestData: RequestData = RequestData(nino = simpleNino, body = simpleRequestBodyAcknowledge)
 
-  //val acknowledgeSubmissionIdString = ""
-  val acknowledgeSubmissionId = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
+  val acknowledgeSubmissionId: String = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
   val simpleNotableAcknowledgeEventType: NotableEventType = AssistReportAcknowledged
   val simpleNRSResponseAcknowledgeSubmission = new NrsResponse(acknowledgeSubmissionId)
 
@@ -96,12 +95,12 @@ class CommonTestData  {
   val simpleAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
 
-  val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId )
+  val rdsSubmissionReportJson: JsValue = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId )
   val rdsNewSubmissionReport: RdsAssessmentReport = rdsSubmissionReportJson.as[RdsAssessmentReport]
 
-  val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
+  val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
   val rdsAssessmentAck: RdsAssessmentReport = rdsAssessmentAckJson.as[RdsAssessmentReport]
-  val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentAck
+  val simpleAcknowledgeNewRdsAssessmentReport: RdsAssessmentReport = rdsAssessmentAck
 
 
   val invalidUUID: UUID = new UUID(0, 1)

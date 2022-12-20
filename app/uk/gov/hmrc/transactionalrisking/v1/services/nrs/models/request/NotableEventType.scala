@@ -19,8 +19,9 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request
 sealed trait NotableEventType{
   def value:String
 }
-object AssistReportGenerated extends NotableEventType{
-  val value ="saa-report-generated"
+
+object AssistReportGenerated extends NotableEventType {
+  val value = "saa-report-generated"
 }
 
 object AssistReportAcknowledged extends NotableEventType{
