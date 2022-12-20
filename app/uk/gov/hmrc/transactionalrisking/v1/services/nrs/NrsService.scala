@@ -49,7 +49,7 @@ class NrsService @Inject()(
     NrsSubmission(
       payload = encodedPayload,
       Metadata(
-        businessId = "self-assessment-assist",
+        businessId = "saa",
         notableEvent = notableEventType.value, //assist-report-generated,assist-report-acknowledged
         payloadContentType = "application/json",
         payloadSha256Checksum = sha256Checksum,
