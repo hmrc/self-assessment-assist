@@ -17,9 +17,8 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators.validations
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{invalidUUIDString, simpleReportId, simpleReportIdStrangeCharsString}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{ simpleReportId}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.ReportIdValidation
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.FormatReportIdError
 
 class ReportIdValidationSpec extends UnitSpec {
   val validator = ReportIdValidation

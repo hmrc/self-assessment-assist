@@ -83,9 +83,7 @@ class GenerateReportController @Inject()(
 
             assessmentReportResponse
           }
-        }).recoverWith {
-        case e: Exception => EitherT.fromEither(Left(ErrorWrapper(correlationId, ServiceUnavailableError)))
-      }
+        })
 
         responseData.fold(
           errorWrapper => errorHandler(errorWrapper, correlationId), report =>
