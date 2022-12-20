@@ -60,33 +60,33 @@ class AcknowledgeReportController @Inject()(
           serviceResponse.responseData
         }
 
-        val result = processRequest.fold(
+        processRequest.fold(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
             assessmentReport.responseCode match {
-              case code@Some(ACCEPTED) =>
+              case Some(ACCEPTED) =>
                 logger.debug(s"$correlationId::[acknowledgeReport] ... submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
                 nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
                 logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
                 Future(NoContent.withApiHeaders(correlationId))
 
-              case code@Some(NO_CONTENT) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is ${code}")
+              case Some(NO_CONTENT) =>
+                logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is ${NO_CONTENT}")
                 Future(NoContent.withApiHeaders(correlationId))
-              case code@Some(BAD_REQUEST) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code}")
+              case Some(BAD_REQUEST) =>
+                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${BAD_REQUEST}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
-              case code@Some(UNAUTHORIZED) =>
-                val responseMessage = assessmentReport.responseMessage.getOrElse("")
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${code} ${responseMessage}")
+              case Some(UNAUTHORIZED) =>
+                val responseMessage = assessmentReport.responseMessage
+                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${UNAUTHORIZED} ${responseMessage}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
-              case None =>
+              case _ =>
                 logger.error(s"$correlationId::[acknowledgeReport] rds ack response code is empty")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
             }
-          })
-        result.flatten
+          }
+        ).flatten
     }
   }
 
