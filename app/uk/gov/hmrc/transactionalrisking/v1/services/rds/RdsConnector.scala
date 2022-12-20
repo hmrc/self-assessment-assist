@@ -40,10 +40,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
-  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
+  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
@@ -52,14 +53,14 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
             logger.debug(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
             assessmentReport.responseCode match {
-              case Some(201) | Some(204) => Right(ResponseWrapper(correlationId,assessmentReport))
+              case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
               case Some(404) =>
                 val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
                 logger.warn(s"$correlationId::[RdsService][submit] $errorMessage")
-                Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError,Some(Seq(MtdError("404",errorMessage)))))
+                Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
               case Some(_) | None =>
                 logger.warn(s"$correlationId::[RdsService][submit] unexpected response")
-                Left(ErrorWrapper(correlationId, DownstreamError,Some(Seq(MtdError(DownstreamError.code,"unexpected response from downstream")))))
+                Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
             }
 
           case Status.BAD_REQUEST =>
@@ -98,11 +99,12 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
   }
 
 
-  def acknowledgeRds(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials]=None)(implicit hc: HeaderCarrier,
-                                                                                               ec: ExecutionContext,
-                                                                                               correlationId: String
+  def acknowledgeRds(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier,
+                                                                                                 ec: ExecutionContext,
+                                                                                                 correlationId: String
   ): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[acknowledgeRds]acknowledge the report ${appConfig.rdsBaseUrlForAcknowledge}")
+
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
     logger.info(s"$correlationId::[acknowledgeRds] request was  ${request}")
