@@ -47,7 +47,7 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
       findResource(fileName).map(
         _.replace("replaceFeedbackId", replaceFeedbackId)
           .replace("replaceNino", replaceNino)
-          .replace(s""""replaceResponseCode"""", replaceResponseCode))
+          .replace("replaceResponseCode", replaceResponseCode))
 
     val parsedContent = templateContent
       .map(Json.parse)
@@ -57,10 +57,10 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
   }
 
   def findResource(path: String): Option[String] = {
-    val classLoader = getClass().getClassLoader()
+    val classLoader = getClass.getClassLoader
     val resourcePath = classLoader.getResource(path)
 
-    val file = new File(resourcePath.getFile())
+    val file = new File(resourcePath.getFile)
     val absolutePath = file.getAbsolutePath
     val stream = new FileInputStream(absolutePath)
     val json = try {

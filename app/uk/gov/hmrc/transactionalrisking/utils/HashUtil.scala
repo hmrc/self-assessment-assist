@@ -18,7 +18,6 @@ package uk.gov.hmrc.transactionalrisking.utils
 
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.codec.digest.DigestUtils
-import play.api.libs.json.{JsValue, Json}
 
 import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Singleton}
@@ -28,8 +27,6 @@ class HashUtil @Inject()() {
 
   def encode(value: String): String =
     Base64.encodeBase64String(value.getBytes(StandardCharsets.UTF_8))
-  def decode(payload: String): JsValue =
-    Json.parse(new String(Base64.decodeBase64(payload)))
   def getHash(value: String): String = DigestUtils.sha256Hex(value)
 
 }
