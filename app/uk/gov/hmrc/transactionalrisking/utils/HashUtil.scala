@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.transactionalrisking.utils
 
+import org.apache.commons.codec.binary.Base64
+import org.apache.commons.codec.digest.DigestUtils
+
 import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-import java.util.Base64
 import javax.inject.{Inject, Singleton}
 
 @Singleton
 class HashUtil @Inject()() {
 
-  private def sha256: MessageDigest = MessageDigest.getInstance("SHA-256")
-
-  def encode(value: String): String = Base64.getEncoder.encodeToString(value.getBytes(StandardCharsets.UTF_8))
-  def getHash(value: String): String = sha256.digest(value.getBytes()).map("%02x" format _).mkString
+  def encode(value: String): String =
+    Base64.encodeBase64String(value.getBytes(StandardCharsets.UTF_8))
+  def getHash(value: String): String = DigestUtils.sha256Hex(value)
 
 }
+

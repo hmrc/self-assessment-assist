@@ -24,7 +24,6 @@ import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-
 @Singleton
 class InsightService @Inject()() {
 

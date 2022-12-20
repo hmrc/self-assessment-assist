@@ -19,7 +19,9 @@ package uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response
 import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps, unlift}
 import play.api.libs.json._
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport.{KeyValueWrapper, Output}
+
 import java.util.UUID
+import scala.util.Try
 
 case class RdsAssessmentReport(links: Seq[String],
                                version: Int,
@@ -30,51 +32,36 @@ case class RdsAssessmentReport(links: Seq[String],
                                  ) {
 
   //we read calculationid and compare it with the one we passed it.TRDT-697
-  def calculationId: Option[UUID] =
-    outputs
-      .filter(_.isInstanceOf[KeyValueWrapper])
-      .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="calculationId")
-      .map(_.value)
-      .map(x=>Some(UUID.fromString(x)))
-      .getOrElse(None)
 
-  def rdsCorrelationId: Option[String] = {
-    outputs
-      .filter(_.isInstanceOf[KeyValueWrapper])
-      .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="correlationId")
-      .map( x=>Some(x.value))
-      .getOrElse(None)
+  def calculationId: Option[UUID] = outputs.collectFirst {
+    case KeyValueWrapper("calculationId", value) => UUID.fromString(value)
   }
 
-  def feedbackId: Option[UUID] =
-    outputs
-      .filter(_.isInstanceOf[KeyValueWrapper])
-      .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name=="feedbackId")
-      .map(_.value)
-      .map( x=>Some(UUID.fromString(x)))
-      .getOrElse(None)
+  def rdsCorrelationId: Option[String] = outputs.collectFirst {
+      case KeyValueWrapper("correlationId", value) => value
+    }
 
+  def feedbackId: Option[UUID] = outputs.collectFirst {
+    case KeyValueWrapper("feedbackId", value) => UUID.fromString(value)
+  }
 
-  def taxYear: Option[Int] =
+/*  def taxYear: Option[Int] =
     outputs
       .filter(_.isInstanceOf[KeyValueWrapper])
       .map(_.asInstanceOf[KeyValueWrapper])
       .find(_.name == "taxYear")
       .map(_.value)
       .map(x=>Some(x.toInt))
-      .getOrElse(None)
+      .getOrElse(None)*/
 
-  def responseCode: Option[Int] =
-    outputs
-      .filter(_.isInstanceOf[KeyValueWrapper])
-      .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name == "responseCode")
-      .map(_.value)
-      .map(x=>Some(x.toInt))
-      .getOrElse(None)
+  def responseCode: Option[Int] = outputs.collectFirst {
+    case KeyValueWrapper("responseCode", value) => value.toInt
+  }
+
+  def responseMessage: Option[String] = outputs.collectFirst {
+    case KeyValueWrapper("responseMessage", value) => value
+  }
+
 
 }
 
@@ -83,7 +70,7 @@ object RdsAssessmentReport {
   trait Output
 
   object Output {
-    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","responseCode","response","responseMessage","Created_dttm")
+    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","responseCode","response","responseMessage","Created_dttm","createdDttm")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {

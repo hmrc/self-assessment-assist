@@ -19,12 +19,14 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
+import uk.gov.hmrc.play.audit.EventKeys.RequestBody
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
+//import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 
 import java.time.OffsetDateTime
 import scala.concurrent.Future
@@ -46,12 +48,12 @@ class NrsServiceSpec extends ServiceSpec {
 //  private val generateReportBodyRequestString = Json.toJson(generateReportBodyRequest).toString // TODO
   private val generateReportBodyRequestString = generateReportBodyRequest.toOutput.toString
 
-  private val nrsSubmission: NrsSubmission =
+  private val nrsSubmissionAssistReportGenerated: NrsSubmission =
     NrsSubmission(
       payload = encodedString,
       metadata = Metadata(
-        businessId = "self-assessment-assist",
-        notableEvent = "assist-report-generated",
+        businessId = "saa",
+        notableEvent = "saa-report-generated",
         payloadContentType = "application/json",
         payloadSha256Checksum = checksum,
         userSubmissionTimestamp = formattedDate,
@@ -69,6 +71,8 @@ class NrsServiceSpec extends ServiceSpec {
           )
       )
     )
+
+
 
   class Test extends MockNrsConnector with MockHashUtil {
 
@@ -91,11 +95,11 @@ class NrsServiceSpec extends ServiceSpec {
    val service = new NrsService(mockNrsConnector, mockHashUtil)
   }
 
-  "service" when {
+  "service using report generated" when {
     "service call successful" must {
       "return the expected result" in new Test {
 
-        MockNrsConnector.submitNrs(nrsSubmission, reportId)
+        MockNrsConnector.submitNrs(nrsSubmissionAssistReportGenerated, reportId)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
 
         MockedHashUtil.encode(generateReportBodyRequestString).returns(encodedString)
@@ -106,16 +110,78 @@ class NrsServiceSpec extends ServiceSpec {
     }
   }
 
-  "service call unsuccessful" must {
+  "service call unsuccessful report generated" must {
     "map 4xx errors correctly" in new Test {
 
       MockedHashUtil.encode(generateReportBodyRequestString).returns(encodedString)
       MockedHashUtil.getHash(generateReportBodyRequestString).returns(checksum)
 
-      MockNrsConnector.submitNrs(nrsSubmission, reportId)
+      MockNrsConnector.submitNrs(nrsSubmissionAssistReportGenerated, reportId)
         .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
 
       await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated)) shouldBe None
     }
   }
+
+
+  private val acknowledgeRdsReport =  s"""{"reportId":"${reportId}"}"""
+
+  private val acknowledgeReportBodyRequest: RequestBody = RequestBodyAcknowledge(acknowledgeRdsReport)
+  private val selfAssessmentAcknowledgeSubmission: RequestData = RequestData(nino, reportId, acknowledgeReportBodyRequest)
+
+  private val acknowledgeReportBodyRequestString =  acknowledgeReportBodyRequest.toOutput.toString
+
+  private val nrsSubmissionAssistReportAcknowledged: NrsSubmission =
+    NrsSubmission(
+      payload = encodedString,
+      metadata = Metadata(
+        businessId = "saa",
+        notableEvent = AssistReportAcknowledged.value,
+        payloadContentType = "application/json",
+        payloadSha256Checksum = checksum,
+        userSubmissionTimestamp = formattedDate,
+        identityData = Some(IdentityDataTestData.correctModel),
+        userAuthToken = "Bearer aaaa",
+        headerData = Json.toJson(Map(
+          "Host" -> "localhost",
+          "dummyHeader1" -> "dummyValue1",
+          "dummyHeader2" -> "dummyValue2",
+          "Authorization" -> "Bearer aaaa"
+        )),
+        searchKeys =
+          SearchKeys(
+            reportId = "12345"
+          )
+      )
+    )
+
+  "service using acknowledged generated" when {
+    "service call successful" must {
+      "return the expected result" in new Test {
+
+        MockNrsConnector.submitNrs(nrsSubmissionAssistReportAcknowledged, reportId)
+          .returns(Future.successful(Right(NrsResponse(nrsId))))
+
+        MockedHashUtil.encode(acknowledgeReportBodyRequestString).returns(encodedString)
+        MockedHashUtil.getHash(acknowledgeReportBodyRequestString).returns(checksum)
+
+        await(service.submit(selfAssessmentAcknowledgeSubmission, timestamp, AssistReportAcknowledged)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+      }
+    }
+  }
+
+  "service call unsuccessful acknowledged generated" must {
+    "map 4xx errors correctly" in new Test {
+
+      MockedHashUtil.encode(acknowledgeReportBodyRequestString).returns(encodedString)
+      MockedHashUtil.getHash(acknowledgeReportBodyRequestString).returns(checksum)
+
+      MockNrsConnector.submitNrs(nrsSubmissionAssistReportAcknowledged, reportId)
+        .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
+
+      await(service.submit(selfAssessmentAcknowledgeSubmission, timestamp, AssistReportAcknowledged)) shouldBe None
+    }
+  }
+
+
 }

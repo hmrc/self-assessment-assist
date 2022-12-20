@@ -1,5 +1,3 @@
-import sbt.Keys.testOptions
-import sbt.Test
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
@@ -19,13 +17,7 @@ lazy val microservice = Project(appName, file("."))
 
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full,
-      "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0" % Test,
-
-      // NOTE: See https://github.com/vsch/flexmark-java to understand that
-      //       versions 0.62.2 or below, Java 8 or above, Java 9+ compatible.
-      //       while for Versions 0.64.0 or above, Java 11 or above.
-      "com.vladsch.flexmark" % "flexmark-profile-pegdown" % "0.62.2" % Test
+      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
     )
 
     //

@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.mvc.Result
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
@@ -26,7 +26,7 @@ import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
+import scala.concurrent.Future
 
 class GenerateReportControllerSpec
   extends ControllerBaseSpec
@@ -38,13 +38,9 @@ class GenerateReportControllerSpec
     with MockCurrentDateTime
     with MockIdGenerator {
 
-
-  object unexpectedError extends MtdError(code = "UNEXPECTED_ERROR", message = "This is an unexpected error")
-
   implicit val correlationId: String = "X-ID"
 
   trait Test {
-    val hc: HeaderCarrier = HeaderCarrier()
 
     val controller: TestController = new TestController()
 
@@ -73,7 +69,7 @@ class GenerateReportControllerSpec
         MockNrsService.submit(simpleGenerateReportControllerRequestData, simpleSubmissionTimestamp, simpleReportNotableEventType, simpleNRSResponseReportSubmission)
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -88,7 +84,7 @@ class GenerateReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString)(fakeGetRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString)(fakeGetRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
@@ -110,7 +106,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -140,7 +136,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -174,7 +170,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -209,7 +205,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody

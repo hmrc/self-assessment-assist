@@ -88,7 +88,7 @@ class CommonTestData  {
   val simpleRequestBodyAcknowledge: RequestBody = RequestBodyAcknowledge(s""""{"reportId":"$simpleReportId"}"""")
   val simpleAcknowledgeReportRequestData = RequestData(nino = simpleNino, reportId=simpleReportId.toString, body = simpleRequestBodyAcknowledge)
 
-  //val acknowledgeSubmissionIdString = ""
+ 
   val acknowledgeSubmissionId = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
   val simpleNotableAcknowledgeEventType: NotableEventType = AssistReportAcknowledged
   val simpleNRSResponseAcknowledgeSubmission = new NrsResponse(acknowledgeSubmissionId)
@@ -97,12 +97,12 @@ class CommonTestData  {
   val simpleAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
 
-  val rdsSubmissionReportJson = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId )
+  val rdsSubmissionReportJson: JsValue = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId )
   val rdsNewSubmissionReport: RdsAssessmentReport = rdsSubmissionReportJson.as[RdsAssessmentReport]
 
-  val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
+  val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
   val rdsAssessmentAck: RdsAssessmentReport = rdsAssessmentAckJson.as[RdsAssessmentReport]
-  val simpleAcknowledgeNewRdsAssessmentReport = rdsAssessmentAck
+  val simpleAcknowledgeNewRdsAssessmentReport: RdsAssessmentReport = rdsAssessmentAck
 
 
   val invalidUUID: UUID = new UUID(0, 1)

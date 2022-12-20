@@ -54,7 +54,7 @@ class GenerateReportController @Inject()(
 
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       val customerType = deriveCustomerType(request)
-      val submissionTimestamp = currentDateTime.getDateTime
+      val submissionTimestamp = currentDateTime.getDateTime()
 
       toId(calculationId).map { calculationIdUuid =>
 
@@ -74,9 +74,12 @@ class GenerateReportController @Inject()(
             val rdsReportContent = RequestData(nino = nino, assessmentReportResponse.reportId.toString, RequestBodyReport(assessmentReportResponse.toString,
               assessmentReportResponse.reportId.toString))
 
-            nonRepudiationService.submit(requestData = rdsReportContent,
+            nonRepudiationService.submit(
+              requestData = rdsReportContent,
               submissionTimestamp,
-              notableEventType = AssistReportGenerated)
+              notableEventType = AssistReportGenerated
+            )
+
             assessmentReportResponse
           }
         }
