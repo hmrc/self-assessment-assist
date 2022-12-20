@@ -17,6 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import play.api.test.FakeRequest
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.transactionalrisking.support.{MockAppConfig, ServiceSpec}
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationId, rdsNewSubmissionReport, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationId, simpleReportId}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
@@ -37,8 +38,8 @@ import java.util.UUID
 import scala.concurrent.Future
 
 class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppConfig {
-  var port: Int = _
 
+  var port: Int = _
 
   class Test extends MockRdsConnector {
     val submitBaseUrl:String = s"http://localhost:$port/submit"
@@ -54,7 +55,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
       UserRequest(
         userDetails =
           UserDetails(
-            userType = "Individual",
+            userType = AffinityGroup.Individual,
             agentReferenceNumber = None,
             clientID = "aClientID",
             identityData = Some(IdentityDataTestData.correctModel)
@@ -87,8 +88,8 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
       val rdsAssessmentReportSO: ServiceOutcome[RdsAssessmentReport] = Right(ResponseWrapper(internalCorrelationId, rdsNewSubmissionReport))
       MockRdsConnector.submit(rdsRequest) returns Future.successful(rdsAssessmentReportSO)
 
-      private val assementReportSO: ServiceOutcome[AssessmentReport] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
-      assementReportSO shouldBe Right(ResponseWrapper(internalCorrelationId, assessmentReport))
+      private val assessmentReportSO: ServiceOutcome[AssessmentReport] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
+      assessmentReportSO shouldBe Right(ResponseWrapper(internalCorrelationId, assessmentReport))
     }
 
     "the acknowledged method is called" must {
