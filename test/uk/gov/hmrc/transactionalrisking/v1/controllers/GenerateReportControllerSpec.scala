@@ -17,7 +17,6 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 
-import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.JsValue
 import play.api.mvc.Result
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
@@ -127,38 +126,6 @@ class GenerateReportControllerSpec
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
-    //TODO remove this, as this service wont be invoked based on new architectural decision
-/*    "a request fails due to a failed getCalculationInfo" should {
-
-      def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
-        s"return the expected error ${mtdError.code} when controller is set to return error from getCalculationInfo " in new Test {
-
-          MockEnrolmentsAuthService.authoriseUser()
-          MockIntegrationFrameworkService.getCalculationInfoFail(simpleCalculationId, simpleNino, mtdError)
-          MockCurrentDateTime.getDateTime()
-          MockProvideRandomCorrelationId.IdGenerator
-
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
-
-          status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe expectedBody
-          contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
-        }
-      }
-
-      val errorInErrorOut =
-        Seq(
-          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (CalculationIdFormatError, BAD_REQUEST, CalculationIdFormatError.toJson),
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
-          (InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
-        )
-
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
-    }*/
-
     "a request fails due to a failed InsightService.assess " should {
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
@@ -219,38 +186,5 @@ class GenerateReportControllerSpec
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
-
-//TODO Add nrs test.
-//    "a request fails due to a failed NRSService.submit " should {
-//
-//      def runTest( expectedStatus: Int, expectedBody: JsValue): Unit = {
-//        s"return the expected error ${expectedStatus} when controller is set to return error from NRSService.submit " in new Test {
-//
-//          MockEnrolmentsAuthService.authoriseUser()
-//          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationID, simpleNino)
-//          MockInsightService.assess(simpleFraudRiskRequest)
-//          MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
-//          MockCurrentDateTime.getDateTime()
-//          MockNrsService.submitFail(simpleGenerateReportControllerRequestData, simpleGenerateReportControllerNrsID, simpleSubmissionTimestamp, simpleNotableEventType)
-//          MockProvideRandomCorrelationId.IdGenerator
-//
-//          val result = controller.generateReportInternal(simpleNino, simpleCalculationID.toString)(fakeGetRequest)
-//
-//          status(result) shouldBe expectedStatus
-//          contentAsJson(result) shouldBe expectedBody
-//          contentType(result) shouldBe Some("application/json")
-//          //        header("X-CorrelationId", result) shouldBe Some(correlationID)
-//        }
-//      }
-//
-//      // Only one thing to test. May change later.
-//      val errorInErrorOut =
-//        Seq(
-//          (NOT_FOUND, MatchingResourcesNotFoundError.toJson)
-//        )
-//
-//      errorInErrorOut.foreach(args => (runTest _).tupled(args))
-//
-//    }
   }
 }
