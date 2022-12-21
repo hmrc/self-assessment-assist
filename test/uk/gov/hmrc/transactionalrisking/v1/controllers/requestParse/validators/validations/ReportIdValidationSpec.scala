@@ -17,8 +17,9 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators.validations
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{ simpleReportId}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleReportId,invalidUUIDString,simpleReportIdStrangeCharsString}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.ReportIdValidation
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.FormatReportIdError
 
 class ReportIdValidationSpec extends UnitSpec {
   val validator = ReportIdValidation
@@ -30,15 +31,15 @@ class ReportIdValidationSpec extends UnitSpec {
       }
 
       "return errors" when {
-       /* "an actual invalid request. No UUID format specifier" in {
+        "an actual invalid request. No UUID format specifier" in {
 
           validator.validate(invalidUUIDString) shouldBe Seq(FormatReportIdError)
-        }*/
+        }
 
-       /* "an actual invalid request. Strange characters in string" in {
+        "an actual invalid request. Strange characters in string" in {
 
           validator.validate(simpleReportIdStrangeCharsString) shouldBe Seq(FormatReportIdError)
-        }*/
+        }
       }
 
     }
