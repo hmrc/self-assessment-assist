@@ -23,7 +23,7 @@ import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, FormatReportIdError, ResourceNotFoundError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, FormatReportIdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
@@ -37,7 +37,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector: RdsConnector, appConfig: AppConfig) extends Logging {
 
-
+//TODO Refactor this code
   def submit(request: AssessmentRequestForSelfAssessment,
              fraudRiskReport: FraudRiskReport,
              origin: Origin)(implicit hc: HeaderCarrier,
@@ -54,16 +54,16 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
 
           connector.submit(rdsRequest, rdsAuthCredentials).map {
               case Right(ResponseWrapper(_, rdsResponse)) =>
-                val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
-                assessmentReportSO match {
-                  case Right(ResponseWrapper(_, assessmentReport)) =>
-                    logger.debug(s"$correlationId::[submit]submit request for report successful returning it")
-                    Right(ResponseWrapper(correlationId, assessmentReport))
+                    val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
+                    assessmentReportSO match {
+                      case Right(ResponseWrapper(_, assessmentReport)) =>
+                        logger.debug(s"$correlationId::[submit]submit request for report successful returning it")
+                        Right(ResponseWrapper(correlationId, assessmentReport))
 
-                  case Left(errorWrapper) =>
-                    logger.error(s"$correlationId::[RdsService][submit]submit request for report error from service ${errorWrapper.error}")
-                    Left(errorWrapper)
-                }
+                      case Left(errorWrapper) =>
+                        logger.error(s"$correlationId::[RdsService][submit]submit request for report error from service ${errorWrapper.error}")
+                        Left(errorWrapper)
+                    }
               case Left(errorWrapper) =>
                 logger.error(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
                 Left(errorWrapper)
@@ -107,7 +107,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
 
             case None =>
               logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
-              Left(ErrorWrapper(correlationId, ResourceNotFoundError)): ServiceOutcome[AssessmentReport]
+              Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
           }
         }else{
           logger.warn(s"$correlationId::[RdsService][toAssessmentReport] calculationId from request doesn't " +
@@ -131,7 +131,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     }.flatMap(_.value).collect {
       case value: RdsAssessmentReport.DataWrapper => value
     }.flatMap(_.data)
-      .map(toRisk)
+      .map(toRisk).flatten
   }
 
   private def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage) = preferredLanguage match {
@@ -140,10 +140,13 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     case _ => false
   }
 
-  private def toRisk(riskParts: Seq[String]) =
-    Risk(title = riskParts(2),
+  private def toRisk(riskParts: Seq[String]):Option[Risk] = {
+   if(riskParts.isEmpty) None
+    else
+    Some(Risk(title = riskParts(2),
       body = riskParts.head, action = riskParts(1),
-      links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5))
+      links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5)))
+  }
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]

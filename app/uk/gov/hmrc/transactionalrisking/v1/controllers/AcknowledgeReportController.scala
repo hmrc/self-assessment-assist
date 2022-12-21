@@ -65,7 +65,7 @@ class AcknowledgeReportController @Inject()(
           assessmentReport => {
             assessmentReport.responseCode match {
               case Some(ACCEPTED) =>
-                logger.debug(s"$correlationId::[acknowledgeReport] ... submitting acknowledgement to NRS")
+                logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
                 nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
 
@@ -75,6 +75,7 @@ class AcknowledgeReportController @Inject()(
               case Some(NO_CONTENT) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is ${NO_CONTENT}")
                 Future(NoContent.withApiHeaders(correlationId))
+
               case Some(BAD_REQUEST) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${BAD_REQUEST}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
@@ -82,6 +83,7 @@ class AcknowledgeReportController @Inject()(
                 val responseMessage = assessmentReport.responseMessage
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${UNAUTHORIZED} ${responseMessage}")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+
               case _ =>
                 logger.error(s"$correlationId::[acknowledgeReport] rds ack response code is empty")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
