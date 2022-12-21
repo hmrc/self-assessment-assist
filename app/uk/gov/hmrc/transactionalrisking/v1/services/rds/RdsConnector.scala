@@ -111,10 +111,9 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[acknowledgeRds] response body is ${response.status} ")
+        logger.info(s"$correlationId::[acknowledgeRds] response is ${response.status} ")
         response.status match {
           case OK =>
-            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement OK response ")
             response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
                 logger.info(s"$correlationId::[acknowledgeRds] OK")
@@ -124,7 +123,6 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
                 Left(ErrorWrapper(correlationId, DownstreamError))
             }
           case CREATED =>
-            logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement to RDS successful with response $code")
             response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
                 logger.info(s"$correlationId::[acknowledgeRds] response CREATED ")
@@ -134,10 +132,8 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
                 Left(ErrorWrapper(correlationId, DownstreamError))
             }
           case NOT_FOUND =>
-            logger.error(s"$correlationId::[acknowledgeRds] not found error during rds acknowledgement NOT_FOUND")
             Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError))
           case _@errorCode =>
-            logger.error(s"$correlationId::[acknowledgeRds]error during rds acknowledgement $errorCode")
             Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
