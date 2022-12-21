@@ -20,7 +20,6 @@ import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
-import uk.gov.hmrc.transactionalrisking.v1.models.auth.AffinityGroupType
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
@@ -53,7 +52,7 @@ class GenerateReportController @Inject()(
     logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
 
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      val customerType = deriveCustomerType(request)
+      val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
 
       toId(calculationId).map { calculationIdUuid =>
@@ -116,15 +115,6 @@ class GenerateReportController @Inject()(
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
       Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
 
-  }
-
-
-  private def deriveCustomerType(request: Request[AnyContent]) = {
-    request.asInstanceOf[UserRequest[_]].userDetails.userType match {
-      case AffinityGroupType.individual => CustomerType.TaxPayer
-      case AffinityGroupType.organisation => CustomerType.Agent
-      case AffinityGroupType.agent => CustomerType.Agent
-    }
   }
 
   //TODO Revisit Check headers as pending

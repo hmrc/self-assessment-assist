@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
@@ -35,7 +36,7 @@ trait MockEnrolmentsAuthService extends MockFactory {
     def authoriseUser(): Unit = {
       (mockEnrolmentsAuthService.authorised(_: Predicate,  _:String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
         .expects(*, *, *, *, *).anyNumberOfTimes()
-        .returns(Future.successful(Right(UserDetails("Individual", None, "client-Id"))))
+        .returns(Future.successful(Right(UserDetails(AffinityGroup.Individual, None, "client-Id"))))
     }
 
     def authoriseUserFail( mtdError: MtdError ): Unit = {

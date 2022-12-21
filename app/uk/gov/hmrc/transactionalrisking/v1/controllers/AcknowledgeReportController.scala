@@ -68,6 +68,7 @@ class AcknowledgeReportController @Inject()(
                 logger.debug(s"$correlationId::[acknowledgeReport] ... submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
                 nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
+
                 logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
                 Future(NoContent.withApiHeaders(correlationId))
 
