@@ -22,6 +22,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 
 trait UnitSpec extends AnyWordSpecLike
@@ -29,7 +30,8 @@ trait UnitSpec extends AnyWordSpecLike
   with EitherValues
   with Matchers
   with FutureAwaits
-  with DefaultAwaitTimeout {
+  with DefaultAwaitTimeout
+  with GuiceOneAppPerSuite {
 
 
   //lifted from hmrctest UnitSpec.  Should find a way to use their UnitSpec in future iterations

@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request
 
-sealed trait NotableEventType{
-  def value:String
+import play.api.libs.json.{Format, Json}
+case class AcknowledgeReportId(reportId: String) {
+  override def toString: String = Json.stringify(Json.toJson(this))
 }
 
-object AssistReportGenerated extends NotableEventType {
-  val value = "saa-report-generated"
-}
-
-object AssistReportAcknowledged extends NotableEventType {
-  val value = "saa-report-acknowledged"
+object AcknowledgeReportId {
+  implicit val formats: Format[AcknowledgeReportId] = Json.format[AcknowledgeReportId]
 }

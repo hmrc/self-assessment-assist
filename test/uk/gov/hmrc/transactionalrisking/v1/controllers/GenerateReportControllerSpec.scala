@@ -66,7 +66,7 @@ class GenerateReportControllerSpec
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit(simpleGenerateReportControllerRequestData, simpleSubmissionTimestamp, simpleReportNotableEventType, simpleNRSResponseReportSubmission)
+        MockNrsService.submit(simpleRequestBodyAcknowledge, simpleSubmissionTimestamp, simpleReportNotableEventType, simpleNRSResponseReportSubmission) // TODO change this to a new model
         MockProvideRandomCorrelationId.IdGenerator
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)

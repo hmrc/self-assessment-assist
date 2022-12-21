@@ -26,7 +26,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AssistReportGenerated, RequestBodyReport, RequestData}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, AssistReportGenerated, RequestBodyReport, RequestData}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService, ServiceOutcome}
 
@@ -75,8 +75,8 @@ class GenerateReportController @Inject()(
               assessmentReportResponse.reportId.toString))
 
             nonRepudiationService.submit(
-              requestData = rdsReportContent,
-              submissionTimestamp,
+              reportId = AcknowledgeReportId(""), // TODO replace
+              submissionTimestamp = submissionTimestamp,
               notableEventType = AssistReportGenerated
             )
 

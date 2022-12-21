@@ -16,21 +16,18 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 //TODO RdsAssessmentReport will be populated using RdsAssessmentReport class, as of now String because common
 // class is used for generate report and acknowledge
-
 
 trait RequestBody {
   def toOutput:String
 }
 
-
-object RequestBodyReport{
-  implicit val formatter = Json.format[RequestBodyReport]
+object RequestBodyReport {
+  implicit val formatter: OFormat[RequestBodyReport] = Json.format[RequestBodyReport]
 }
-
 
 case class RequestBodyReport(bodyContent:String, reportId:String) extends RequestBody
 {
@@ -40,17 +37,8 @@ case class RequestBodyReport(bodyContent:String, reportId:String) extends Reques
   }
 }
 
-
-
-
-case class RequestBodyAcknowledge(bodyContent:String)  extends RequestBody
-{
-  //import RequestBodyAcknowledge.formatter._
+case class RequestBodyAcknowledge(bodyContent:String) extends RequestBody {
   def toOutput: String = {
     bodyContent
   }
 }
-
-//object RequestBodyAcknowledge{
-//  implicit val formatter = Json.toString
-//}

@@ -21,7 +21,7 @@ import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{NotableEventType, NrsSubmission, RequestData}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, NotableEventType, NrsSubmission, RequestData}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
 
 import java.time.OffsetDateTime
@@ -34,26 +34,26 @@ trait MockNrsService extends MockFactory {
 
   object MockNrsService {
 
-    def buildNrsSubmission(selfAssessmentSubmission: RequestData,
+    def buildNrsSubmission(reportId: AcknowledgeReportId,
                            submissionTimestamp: OffsetDateTime,
                            request: UserRequest[_], notableEventType: NotableEventType, taxYear: String)(corrrelationId: String): CallHandler[NrsSubmission] = {
-      (mockNrsService.buildNrsSubmission(_: RequestData,
+      (mockNrsService.buildNrsSubmission(_: AcknowledgeReportId,
         _: OffsetDateTime,
         _: UserRequest[_], _: NotableEventType)(_: String))
         .expects(*, *, *, *, *).anyNumberOfTimes()
     }
 
-    def submit(generateReportRequest: RequestData, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType, retNrsResponse: NrsResponse):
+    def submit(generateReportRequest: AcknowledgeReportId, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType, retNrsResponse: NrsResponse):
     CallHandler[Future[Option[NrsResponse]]] = {
-      (mockNrsService.submit(_: RequestData, _: OffsetDateTime, _: NotableEventType)
+      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime, _: NotableEventType)
       (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
         .expects(*, *, *, *, *, *, *).anyNumberOfTimes()
         .returns(Future(Some(retNrsResponse)))
     }
 
-    def submitFail(generateReportRequest: RequestData, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType):
+    def submitFail(generateReportRequest: AcknowledgeReportId, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType):
     CallHandler[Future[Option[NrsResponse]]] = {
-      (mockNrsService.submit(_: RequestData, _: OffsetDateTime, _: NotableEventType)
+      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime, _: NotableEventType)
       (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
         .expects(*, *, *, *, *, *, *).anyNumberOfTimes()
         .returns(Future(None))

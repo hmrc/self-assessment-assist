@@ -66,7 +66,7 @@ class AcknowledgeReportControllerSpec
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit(simpleAcknowledgeReportRequestData, simpleSubmissionTimestamp, simpleReportNotableEventType, simpleNRSResponseAcknowledgeSubmission)
+        MockNrsService.submit(simpleRequestBodyAcknowledge, simpleSubmissionTimestamp, simpleReportNotableEventType, simpleNRSResponseAcknowledgeSubmission)
 
         MockProvideRandomCorrelationId.IdGenerator
 
@@ -99,7 +99,6 @@ class AcknowledgeReportControllerSpec
 
       }
     }
-
 
     "a request fails due to failed authorisedAction failure" should {
 

@@ -88,9 +88,7 @@ class CommonTestData  {
   val simpleAcknowledgedSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue, 1, 12, 0, 0, 0, ZoneOffset.UTC)
   val simpleAcknowledgedNotableEventType: NotableEventType = AssistReportAcknowledged
 
-  val simpleRequestBodyAcknowledge: RequestBody = RequestBodyAcknowledge(s""""{"reportId":"$simpleReportId"}"""")
-  val simpleAcknowledgeReportRequestData = RequestData(nino = simpleNino, reportId=simpleReportId.toString, body = simpleRequestBodyAcknowledge)
-
+  val simpleRequestBodyAcknowledge: AcknowledgeReportId = AcknowledgeReportId(simpleReportId.toString)
  
   val acknowledgeSubmissionId = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000011").toString
   val simpleNotableAcknowledgeEventType: NotableEventType = AssistReportAcknowledged

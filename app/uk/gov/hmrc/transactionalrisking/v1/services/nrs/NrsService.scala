@@ -34,13 +34,13 @@ class NrsService @Inject()(
                             hashUtil: HashUtil) extends Logging {
   //                           override val metrics: Metrics) extends Timer with Logging { TODO include metrics later
 
-  def buildNrsSubmission(requestData: RequestData,
-                         submissionTimestamp: OffsetDateTime,
-                         request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationId: String): NrsSubmission = {
+  def buildNrsSubmission(reportId: AcknowledgeReportId,
+                                 submissionTimestamp: OffsetDateTime,
+                                 request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationId: String): NrsSubmission = {
     logger.info(s"$correlationId::[buildNrsSubmission]Build the NRS submission")
 
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
-    val payloadString = requestData.body.toOutput
+    val payloadString = reportId.toString
     val encodedPayload = hashUtil.encode(payloadString)
     val sha256Checksum = hashUtil.getHash(payloadString)
     val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)
@@ -59,13 +59,13 @@ class NrsService @Inject()(
         headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }),//TODO remove auth header
         searchKeys =
           SearchKeys(
-            reportId = requestData.reportId
+            reportId = reportId.reportId
           )
       )
     )
   }
 
-  def submit(requestData: RequestData, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType)(
+  def submit(reportId: AcknowledgeReportId, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType)(
     implicit request: UserRequest[_],
     hc: HeaderCarrier,
     ec: ExecutionContext,
@@ -73,7 +73,7 @@ class NrsService @Inject()(
   ): Future[Option[NrsResponse]] = {
     logger.info(s"$correlationId::[submit]submit the data to nrs")
     //TODO this has to come outside of this method, as failure in building NRS Request should fail the transaction
-    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType)
+    val nrsSubmission = buildNrsSubmission(reportId, submissionTimestamp, request, notableEventType)
 
     logger.info(s"$correlationId::[submit] Request initiated to store report content to NRS")
     connector.submit(nrsSubmission).map { response =>
