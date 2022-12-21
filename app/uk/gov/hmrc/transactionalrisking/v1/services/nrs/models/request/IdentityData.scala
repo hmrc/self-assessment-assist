@@ -40,7 +40,7 @@ case class IdentityData(internalId: Option[String] = None,
                         itmpName: ItmpName,
                         itmpDateOfBirth: Option[LocalDate] = None,
                         itmpAddress: ItmpAddress,
-                        affinityGroup: Option[AffinityGroup],
+                        affinityGroup: Option[AffinityGroup], // TODO does this need to be an Option?
                         credentialStrength: Option[String] = None,
                         loginTimes: LoginTimes,
                        //TODO below data is missing, in our response, need to add

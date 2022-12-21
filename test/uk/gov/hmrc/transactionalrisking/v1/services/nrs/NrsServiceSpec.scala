@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import uk.gov.hmrc.play.audit.EventKeys.RequestBody
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
@@ -80,7 +80,7 @@ class NrsServiceSpec extends ServiceSpec {
       UserRequest(
         userDetails =
           UserDetails(
-            userType = "Individual",
+            userType = AffinityGroup.Individual,
             agentReferenceNumber = None,
             clientID = "aClientID",
             identityData = Some(IdentityDataTestData.correctModel)
