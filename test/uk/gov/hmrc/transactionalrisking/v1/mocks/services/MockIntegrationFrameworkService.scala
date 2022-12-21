@@ -42,7 +42,6 @@ trait MockIntegrationFrameworkService extends MockFactory {
         .returns(Future.successful(Right(ResponseWrapper(internalCorrelationIdImplicit, CalculationInfo(simpleCalculationId, simpleNino, "2021-22")))))
     }
 
-    //TODO: To be completed
     def getCalculationInfoFail(id: UUID, nino: String, error: MtdError): CallHandler[Future[ServiceOutcome[CalculationInfo]]] = {
       (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String)(_: ExecutionContext, _: String))
         .expects(*, *, *, *).anyNumberOfTimes()

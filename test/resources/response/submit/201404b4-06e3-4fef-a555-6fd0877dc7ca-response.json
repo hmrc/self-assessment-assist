@@ -10,7 +10,7 @@
   },
   "outputs": [
     {
-      "name": "Created_dttm",
+      "name": "createdDttm",
       "value": "2022-12-05T17:08:25.857"
     },
     {
@@ -40,14 +40,7 @@
         },
         {
           "data": [
-            [
-              "This is the message for AA065213C",
-              "Action for customer AA065213C relating to calculation 111190b4-06e3-4fef-a555-6fd0877dc7ca",
-              "Title for AA065213C and calculation 111190b4-06e3-4fef-a555-6fd0877dc7ca",
-              "[link title]",
-              "[link url]",
-              "/itsa/path/"
-            ]
+            []
           ]
         }
       ]
@@ -79,21 +72,14 @@
         },
         {
           "data": [
-            [
-              "Dymar neges ar gyfer AA065213C",
-              "Gweithredu ar gyfer cwsmer AA065213C yn ymwneud \u00E2 chyfrifo 111190b4-06e3-4fef-a555-6fd0877dc7ca",
-              "Teitl ar gyfer AA065213C a chyfrifo 111190b4-06e3-4fef-a555-6fd0877dc7ca",
-              "[link title]",
-              "[link url]",
-              "/itsa/path/cym/"
-            ]
+            []
           ]
         }
       ]
     },
     {
       "name": "calculationId",
-      "value": "666690b4-06e3-4fef-a555-6fd0877dc7ca"
+      "value": "replaceCalculationId"
     },
     {
       "name": "correlationId",
@@ -101,7 +87,7 @@
     },
     {
       "name": "feedbackId",
-      "value": "replaceFeedbackId"
+      "value": "b365c0b4-06e3-4fef-a555-16fd0877dc7c"
     },
     {
       "name": "nino",
@@ -113,7 +99,7 @@
     },
     {
       "name": "responseMessage",
-      "value": "Feedback Generated"
+      "value": "No feedback applicable"
     }
   ]
 }
