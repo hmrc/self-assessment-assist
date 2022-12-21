@@ -113,7 +113,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
       .map { response =>
         logger.info(s"$correlationId::[acknowledgeRds] response body is ${response.status} ")
         response.status match {
-          case code@OK =>
+          case OK =>
             logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement OK response ")
             response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
@@ -123,18 +123,18 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
                 logger.warn(s"$correlationId::[acknowledgeRds] OK results validation failed with $e")
                 Left(ErrorWrapper(correlationId, DownstreamError))
             }
-          case code@CREATED =>
+          case CREATED =>
             logger.debug(s"$correlationId::[acknowledgeRds] acknowledgement to RDS successful with response $code")
             response.json.validate[RdsAssessmentReport] match {
               case JsSuccess(newRdsAssessmentReport, _) =>
-                logger.info(s"$correlationId::[acknowledgeRds] response $code ")
+                logger.info(s"$correlationId::[acknowledgeRds] response CREATED ")
                 Right(ResponseWrapper(correlationId, newRdsAssessmentReport))
               case JsError(e) =>
                 logger.warn(s"$correlationId::[acknowledgeRds]Unable to validate the returned results failed with $e")
                 Left(ErrorWrapper(correlationId, DownstreamError))
             }
-          case code@NOT_FOUND =>
-            logger.error(s"$correlationId::[acknowledgeRds] not found error during rds acknowledgement $code")
+          case NOT_FOUND =>
+            logger.error(s"$correlationId::[acknowledgeRds] not found error during rds acknowledgement NOT_FOUND")
             Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError))
           case _@errorCode =>
             logger.error(s"$correlationId::[acknowledgeRds]error during rds acknowledgement $errorCode")
