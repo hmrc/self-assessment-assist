@@ -31,7 +31,16 @@ lazy val microservice = Project(appName, file("."))
   .settings(publishingSettings: _*)
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
+  .settings(inConfig(Test)(testSettings))
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(PlayKeys.playDefaultPort := 8342)
   .settings(CodeCoverageSettings.settings: _*)
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "resources")
+
+lazy val testSettings: Seq[Def.Setting[_]] = Seq(
+  parallelExecution            := false,
+  fork                         := true,
+  javaOptions                  ++= Seq(
+    "-Dconfig.resource=test.application.conf"
+  )
+)

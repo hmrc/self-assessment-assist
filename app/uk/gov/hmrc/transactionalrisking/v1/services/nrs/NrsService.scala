@@ -76,17 +76,14 @@ class NrsService @Inject()(
     val nrsSubmission = buildNrsSubmission(reportId, submissionTimestamp, request, notableEventType)
 
     logger.info(s"$correlationId::[submit] Request initiated to store report content to NRS")
-    connector.submit(nrsSubmission).map { response =>
-      response.toOption match {
-          case r @ Some(_) =>
-            logger.info(s"$correlationId::[submit] Successful submission")
-            r
-          case None =>
-            logger.info(s"$correlationId::[submit] Nothing submitted")
-            None
+    connector.submit(nrsSubmission).map {
+        case Right(value) =>
+          logger.info(s"$correlationId::[submit] Successful submission")
+          Some(value)
+        case Left(_) =>
+          logger.info(s"$correlationId::[submit] Error occurred when submitting NRS")
+          None
       }
-    }
-
   }
 
 }

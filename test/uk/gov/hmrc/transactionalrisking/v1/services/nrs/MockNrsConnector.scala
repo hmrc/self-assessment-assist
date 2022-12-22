@@ -29,11 +29,11 @@ trait MockNrsConnector extends MockFactory {
 
   object MockNrsConnector {
 
-    def submitNrs(expectedPayload: String): CallHandler[Future[NrsOutcome]] = {
+    def submitNrs(expectedPayload: NrsSubmission): CallHandler[Future[NrsOutcome]] = {
       (mockNrsConnector
         .submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
         .expects (where {
-          (nrsSubmission: NrsSubmission, _: HeaderCarrier, _: String) => nrsSubmission.payload == expectedPayload
+          (nrsSubmission: NrsSubmission, _: HeaderCarrier, _: String) => nrsSubmission == expectedPayload
         })
     }
   }

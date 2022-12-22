@@ -32,43 +32,13 @@ import scala.concurrent.Future
 
 class NrsServiceSpec extends ServiceSpec {
 
-  private val reportId = "12345"
-  private val encodedString: String = "encodedString"
-  private val checksum: String = "checksum"
   private val nrsId = "a5894863-9cd7-4d0d-9eee-301ae79cbae6"
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
-  private val newRdsReport = "AReport"
-
-  private val hasUtil = app.injector.instanceOf[HashUtil]
-
-  private val generateReportBodyRequest: RequestBody = RequestBodyReport(newRdsReport, reportId)
-
-  private val nrsSubmissionAssistReportGenerated: NrsSubmission =
-    NrsSubmission(
-      payload = encodedString,
-      metadata = Metadata(
-        businessId = "saa",
-        notableEvent = "saa-report-generated",
-        payloadContentType = "application/json",
-        payloadSha256Checksum = checksum,
-        userSubmissionTimestamp = formattedDate,
-        identityData = Some(IdentityDataTestData.correctModel),
-        userAuthToken = "Bearer aaaa",
-        headerData = Json.toJson(Map(
-          "Host" -> "localhost",
-          "dummyHeader1" -> "dummyValue1",
-          "dummyHeader2" -> "dummyValue2",
-          "Authorization" -> "Bearer aaaa"
-        )),
-        searchKeys =
-          SearchKeys(
-            reportId = "12345"
-          )
-      )
-    )
 
   class Test extends MockNrsConnector {
+
+    private val hasUtil = app.injector.instanceOf[HashUtil]
 
     implicit val userRequest: UserRequest[_] =
       UserRequest(
@@ -86,8 +56,33 @@ class NrsServiceSpec extends ServiceSpec {
         )
       )
 
-   val service = new NrsService(mockNrsConnector, hasUtil)
+    val service = new NrsService(mockNrsConnector, hasUtil)
   }
+
+  private val nrsSubmissionAssistReportGenerated: NrsSubmission =
+    NrsSubmission(
+      payload = "eyJyZXBvcnRJZCI6IjEyMzQ1In0=",
+      metadata = Metadata(
+        businessId = "saa",
+        notableEvent = "saa-report-generated",
+        payloadContentType = "application/json",
+        payloadSha256Checksum = "eb6b96e57239c4605bd34ab5ea3dec01707ae960794d647ca50818efcebe6429",
+        userSubmissionTimestamp = formattedDate,
+        identityData = Some(IdentityDataTestData.correctModel),
+        userAuthToken = "Bearer aaaa",
+        headerData = Json.toJson(Map(
+          "Host" -> "localhost",
+          "dummyHeader1" -> "dummyValue1",
+          "dummyHeader2" -> "dummyValue2",
+          "Authorization" -> "Bearer aaaa"
+        )),
+        searchKeys =
+          SearchKeys(
+            reportId = "12345"
+          )
+      )
+    )
+
 
 //  "service using report generated" when {
 //    "service call successful" must {
@@ -118,18 +113,16 @@ class NrsServiceSpec extends ServiceSpec {
 //  }
 
 
-  private val acknowledgeRdsReport = AcknowledgeReportId(reportId)
+  private val acknowledgeRdsReport = AcknowledgeReportId("12345")
 
-  private val acknowledgeReportBodyRequestString: String = acknowledgeRdsReport.toString
-
-  private val nrsSubmissionAssistReportAcknowledged: NrsSubmission =
+  private val expectedAcknowledgePayload: NrsSubmission =
     NrsSubmission(
-      payload = encodedString,
+      payload = "eyJyZXBvcnRJZCI6IjEyMzQ1In0=",
       metadata = Metadata(
         businessId = "saa",
         notableEvent = AssistReportAcknowledged.value,
         payloadContentType = "application/json",
-        payloadSha256Checksum = checksum,
+        payloadSha256Checksum = "eb6b96e57239c4605bd34ab5ea3dec01707ae960794d647ca50818efcebe6429",
         userSubmissionTimestamp = formattedDate,
         identityData = Some(IdentityDataTestData.correctModel),
         userAuthToken = "Bearer aaaa",
@@ -147,14 +140,13 @@ class NrsServiceSpec extends ServiceSpec {
     )
 
   "service using acknowledged generated" when {
+
     "service call successful" must {
+
       "return the expected result" in new Test {
 
-        MockNrsConnector.submitNrs(expectedPayload = encodedString)
+        MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
-
-//        MockedHashUtil.encode(acknowledgeReportBodyRequestString).returns(encodedString)
-//        MockedHashUtil.getHash(acknowledgeReportBodyRequestString).returns(checksum)
 
         await(service.submit(acknowledgeRdsReport, timestamp, AssistReportAcknowledged)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
       }
@@ -162,12 +154,10 @@ class NrsServiceSpec extends ServiceSpec {
   }
 
   "service call unsuccessful acknowledged generated" must {
+
     "map 4xx errors correctly" in new Test {
 
-//      MockedHashUtil.encode(acknowledgeReportBodyRequestString).returns(encodedString)
-//      MockedHashUtil.getHash(acknowledgeReportBodyRequestString).returns(checksum)
-
-      MockNrsConnector.submitNrs(expectedPayload = encodedString)
+      MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
         .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
 
       await(service.submit(acknowledgeRdsReport, timestamp, AssistReportAcknowledged)) shouldBe None
