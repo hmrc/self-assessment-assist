@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.support
 
 import play.api.http.{HeaderNames, MimeTypes, Status}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.simpleRDSCorrelationId
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData
 
 import scala.concurrent.ExecutionContext
 
@@ -29,7 +29,7 @@ trait ConnectorSpec extends UnitSpec
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  implicit val correlationId: String = simpleRDSCorrelationId
+  implicit val correlationId: String = CommonTestData.correlationId
   val otherHeaders: Seq[(String, String)] = Seq(
     "Gov-Test-Scenario" -> "DEFAULT",
     "AnotherHeader" -> "HeaderValue"

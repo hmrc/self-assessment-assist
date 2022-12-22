@@ -17,12 +17,13 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{internalCorrelationId, simpleNino}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.RequestParser
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.Validator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.v1.models.request.RawData
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RequestParserSpec extends UnitSpec {
@@ -30,7 +31,7 @@ class RequestParserSpec extends UnitSpec {
   private val nino = simpleNino
   case class Raw(nino: String) extends RawData
   case class Request(nino: String)
-  implicit val correlationId: String = internalCorrelationId
+  implicit val correlationId: String = correlationId
 
   trait Test {
     test =>
@@ -49,7 +50,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns no errors" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => Nil
 
-        await(parser.parseRequest(Raw(nino))) shouldBe Right(Request(nino))
+        await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Right(Request(nino))
       }
     }
 
@@ -57,7 +58,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns a single error" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError)
 
-        await(parser.parseRequest(Raw(nino))) shouldBe Left(ErrorWrapper(correlationId, NinoFormatError, None))
+        await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(ErrorWrapper(correlationId, NinoFormatError, None))
       }
     }
 
@@ -65,7 +66,7 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns multiple errors" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError , DownstreamError)
 
-        await(parser.parseRequest(Raw(nino))) shouldBe Left(ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
+        await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
       }
     }
   }

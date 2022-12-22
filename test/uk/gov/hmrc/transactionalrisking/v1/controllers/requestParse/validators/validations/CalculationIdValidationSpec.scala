@@ -17,12 +17,13 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators.validations
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{invalidUUIDString, simpleCalculationId, simpleCalculationIdStrangeCharsString}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.CalculationIdValidation
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.CalculationIdFormatError
 
 class CalculationIdValidationSpec extends UnitSpec {
-  val validator = CalculationIdValidation
+
+  val validator: CalculationIdValidation.type = CalculationIdValidation
 
   "running a validation" should {
     "return no errors" when {

@@ -18,17 +18,16 @@ package uk.gov.hmrc.transactionalrisking.support
 
 import play.api.http.{HeaderNames, MimeTypes, Status}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationIdImplicit
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData
 
 import scala.concurrent.ExecutionContext
-
 
 trait ServiceSpec extends UnitSpec
   with Status
   with MimeTypes
   with HeaderNames {
 
-  implicit val correlationId: String = internalCorrelationIdImplicit
+  implicit val correlationId: String = CommonTestData.correlationId
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 }

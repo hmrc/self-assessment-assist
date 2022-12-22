@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleNino, simpleNinoInvalid, simpleRDSCorrelationId, simpleReportId, simpleReportIdStrangeCharsString}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.AcknowledgeReportValidator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{FormatReportIdError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
@@ -28,7 +28,7 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
   "running a validation" should {
     "return no errors" when {
       "a valid request" in {
-        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
+        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
         validator.validate(acknowledgeReportRawData) shouldBe Nil
       }
 
@@ -36,14 +36,14 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
       "return errors" when {
         "an invalid nino." in {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportId.toString, simpleRDSCorrelationId)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportId.toString, correlationId)
 
           validator.validate(acknowledgeReportRawData) shouldBe Seq(NinoFormatError)
         }
 
         "an invalid reportId." in {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportIdStrangeCharsString, simpleRDSCorrelationId)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportIdStrangeCharsString, correlationId)
 
           validator.validate(acknowledgeReportRawData) shouldBe Seq(FormatReportIdError)
         }

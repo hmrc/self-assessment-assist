@@ -21,7 +21,7 @@ import uk.gov.hmrc.transactionalrisking.utils.HashUtil
 
 class HashUtilSpec extends UnitSpec {
 
-  val hashUtil:HashUtil = new HashUtil()
+  val hashUtil: HashUtil = app.injector.instanceOf[HashUtil]
 
   "HashUtil" when {
     "the encode method is called" must {

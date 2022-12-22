@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
@@ -60,7 +60,7 @@ class AcknowledgeReportControllerSpec
     "a valid request is supplied" should {
       "return 204 to indicate that the data has been accepted and saved and that nothing else needs to be return in the body." in new Test {
 
-        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
+        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
 
         MockEnrolmentsAuthService.authoriseUser()
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
@@ -70,10 +70,10 @@ class AcknowledgeReportControllerSpec
 
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
+        val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
 
         status(result) shouldBe NO_CONTENT
-        header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
 
       }
     }
@@ -86,13 +86,13 @@ class AcknowledgeReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.acknowledgeReportForSelfAssessment(simpleNinoInvalid, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
+        val result = controller.acknowledgeReportForSelfAssessment(simpleNinoInvalid, simpleReportId.toString, correlationId)(fakeGetRequest)
 
         status(result) shouldBe BAD_REQUEST
 
         contentAsJson(result) shouldBe NinoFormatError.toJson
         contentType(result) shouldBe Some("application/json")
-        header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
 
       }
     }
@@ -106,12 +106,12 @@ class AcknowledgeReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
+          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+          header("X-CorrelationId", result) shouldBe Some(correlationId)
 
         }
       }
@@ -131,19 +131,19 @@ class AcknowledgeReportControllerSpec
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to parseRequest returning an error. " in new Test {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
 
           MockEnrolmentsAuthService.authoriseUser()
           MockAcknowledgeRequestParser.parseRequestFail(acknowledgeReportRawData, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
+          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+          header("X-CorrelationId", result) shouldBe Some(correlationId)
 
         }
       }
@@ -167,7 +167,7 @@ class AcknowledgeReportControllerSpec
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to RdsService.acknowlege " in new Test {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
 
           MockEnrolmentsAuthService.authoriseUser()
           MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
@@ -176,12 +176,12 @@ class AcknowledgeReportControllerSpec
 
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, simpleRDSCorrelationId)(fakeGetRequest)
+          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, correlationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+          header("X-CorrelationId", result) shouldBe Some(correlationId)
 
         }
       }
@@ -221,7 +221,7 @@ class AcknowledgeReportControllerSpec
     //        //contentAsJson(result) shouldBe expectedBody
     //        contentType(result) shouldBe Some("application/json")
     //
-    //        header("X-CorrelationId", result) shouldBe Some(internalCorrelationID)
+    //        header("X-CorrelationId", result) shouldBe Some(correlationId)
     //
     //      }
     //    }

@@ -20,7 +20,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 import play.api.libs.json.JsValue
 import play.api.mvc.Result
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
@@ -37,8 +37,6 @@ class GenerateReportControllerSpec
     with MockRdsService
     with MockCurrentDateTime
     with MockIdGenerator {
-
-  implicit val correlationId: String = "X-ID"
 
   trait Test {
 
@@ -73,7 +71,7 @@ class GenerateReportControllerSpec
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
-        header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
       }
     }
 
@@ -91,7 +89,7 @@ class GenerateReportControllerSpec
 
         contentAsJson(result) shouldBe NinoFormatError.toJson
         contentType(result) shouldBe Some("application/json")
-        header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
 
       }
     }
@@ -111,7 +109,7 @@ class GenerateReportControllerSpec
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+          header("X-CorrelationId", result) shouldBe Some(correlationId)
 
         }
       }
@@ -142,7 +140,7 @@ class GenerateReportControllerSpec
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+          header("X-CorrelationId", result) shouldBe Some(correlationId)
         }
       }
 
@@ -172,7 +170,7 @@ class GenerateReportControllerSpec
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
           contentType(result) shouldBe Some("application/json")
-          header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
+          header("X-CorrelationId", result) shouldBe Some(correlationId)
         }
       }
 
