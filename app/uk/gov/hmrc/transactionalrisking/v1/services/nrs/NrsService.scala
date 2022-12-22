@@ -40,7 +40,7 @@ class NrsService @Inject()(
     logger.info(s"$correlationId::[buildNrsSubmission]Build the NRS submission")
 
     //TODO fix me later, body will be instance of class NewRdsAssessmentReport
-    val payloadString = reportId.toString
+    val payloadString = reportId.stringify
     val encodedPayload = hashUtil.encode(payloadString)
     val sha256Checksum = hashUtil.getHash(payloadString)
     val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)

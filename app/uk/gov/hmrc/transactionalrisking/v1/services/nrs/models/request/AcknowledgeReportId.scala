@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request
 
 import play.api.libs.json.{Format, Json}
 case class AcknowledgeReportId(reportId: String) {
-  override def toString: String = Json.stringify(Json.toJson(this))
+  def stringify: String = Json.stringify(Json.toJson(this))
 }
 
 object AcknowledgeReportId {
