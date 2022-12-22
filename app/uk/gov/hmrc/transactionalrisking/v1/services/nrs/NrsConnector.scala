@@ -69,7 +69,7 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
         .recover {
           case NonFatal(e) =>
             logger.error(s"$correlationId::[submit] RequestId:${hc.requestId}\nNRS submission failed with exception", e)
-            Left(NrsFailure.ExceptionThrown)
+            Left(NrsFailure.Exception(e.getMessage))
         }
     }
   }

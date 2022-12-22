@@ -59,13 +59,31 @@ class GenerateReportControllerSpec
     "a valid request is supplied" should {
       "return the expected data when controller is called" in new Test {
 
+        MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()
         MockNrsService.stubAssessmentReport(simpleNRSResponseReportSubmission)
+
+
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+        status(result) shouldBe OK
+        contentAsJson(result) shouldBe simpleAsssementReportMtdJson
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+      }
+
+      "return the expected data when controller is called even when NRS is unable to non repudiate the event" in new Test {
+
         MockProvideRandomCorrelationId.IdGenerator
+        MockEnrolmentsAuthService.authoriseUser()
+        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
+        MockInsightService.assess(simpleFraudRiskRequest)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
+        MockCurrentDateTime.getDateTime()
+        MockNrsService.stubFailureReportDueToException()
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
         status(result) shouldBe OK
@@ -183,6 +201,27 @@ class GenerateReportControllerSpec
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
+    }
+
+    "a request fails due to being unable to construct NRS event" should {
+      "return the expected error to indicate that the data has not been accepted or saved due to failed NRSService submit" in new Test {
+
+        MockEnrolmentsAuthService.authoriseUser()
+        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
+        MockInsightService.assess(simpleFraudRiskRequest)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
+        MockCurrentDateTime.getDateTime()
+        MockNrsService.stubUnableToConstructNRSEventForGenerateReport()
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+//        contentAsJson(result) shouldBe ??? // TODO what should the body be as per the spec?
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+      }
     }
   }
 }

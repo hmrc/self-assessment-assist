@@ -26,6 +26,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.UnableToAttempt
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService, ServiceOutcome}
 
@@ -73,13 +74,13 @@ class GenerateReportController @Inject()(
           errorWrapper =>
             errorHandler(errorWrapper, correlationId),
           report => {
-
-            nonRepudiationService.submit(
-              report = report.responseData, // TODO replace
-              submissionTimestamp = submissionTimestamp
-            )
-
-            Future.successful(Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationId))
+            nonRepudiationService.submit(report.responseData, submissionTimestamp).map {
+              case Left(UnableToAttempt(_)) =>
+                InternalServerError.withApiHeaders(correlationId)
+              case _ =>
+                logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationId)
+            }
           }
         ).flatten
 
@@ -100,7 +101,6 @@ class GenerateReportController @Inject()(
     case error@_ =>
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
       Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
-
   }
 
   //TODO Revisit Check headers as pending

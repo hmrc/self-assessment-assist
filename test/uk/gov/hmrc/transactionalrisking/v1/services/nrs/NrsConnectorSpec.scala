@@ -28,7 +28,7 @@ import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.NrsSubmission
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.ExceptionThrown
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.Exception
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
@@ -152,7 +152,7 @@ class NrsConnectorSpec extends ConnectorSpec
             .withHeader("X-API-Key", equalTo(apiKeyValue))
             .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)))
 
-        await(connector.submit(nrsSubmission)) shouldBe Left(ExceptionThrown)
+        await(connector.submit(nrsSubmission)) shouldBe Left(Exception("Connection reset by peer"))
       }
     }
 
@@ -169,7 +169,7 @@ class NrsConnectorSpec extends ConnectorSpec
                   |}""".stripMargin)
               .withStatus(ACCEPTED)))
 
-        await(connector.submit(nrsSubmission)) shouldBe Left(ExceptionThrown)
+        await(connector.submit(nrsSubmission)) shouldBe Left(Exception("JsResultException(errors:List((/nrSubmissionId,List(JsonValidationError(List(error.path.missing),WrappedArray())))))"))
       }
     }
   }

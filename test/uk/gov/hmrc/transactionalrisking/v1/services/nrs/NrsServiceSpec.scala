@@ -102,7 +102,6 @@ class NrsServiceSpec extends ServiceSpec {
       )
     )
 
-
   "service using report generated" when {
 
     "service call successful" must {
@@ -111,7 +110,7 @@ class NrsServiceSpec extends ServiceSpec {
         MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
 
-        await(service.submit(rdsReport, timestamp)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+        await(service.submit(rdsReport, timestamp)) shouldBe Right(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
       }
     }
   }
@@ -120,12 +119,11 @@ class NrsServiceSpec extends ServiceSpec {
     "map 4xx errors correctly" in new Test {
 
       MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
-        .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
+        .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
 
-      await(service.submit(rdsReport, timestamp)) shouldBe None
+      await(service.submit(rdsReport, timestamp)) shouldBe Left(NrsFailure.Exception("reason"))
     }
   }
-
 
   private val acknowledgeRdsReport = AcknowledgeReportId("12345")
 
@@ -162,7 +160,7 @@ class NrsServiceSpec extends ServiceSpec {
         MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
 
-        await(service.submit(acknowledgeRdsReport, timestamp)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+        await(service.submit(acknowledgeRdsReport, timestamp)) shouldBe Right(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
       }
     }
   }
@@ -172,9 +170,9 @@ class NrsServiceSpec extends ServiceSpec {
     "map 4xx errors correctly" in new Test {
 
       MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
-        .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
+        .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
 
-      await(service.submit(acknowledgeRdsReport, timestamp)) shouldBe None
+      await(service.submit(acknowledgeRdsReport, timestamp)) shouldBe Left(NrsFailure.Exception("reason"))
     }
   }
 

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import play.api.libs.json.JsValue
+import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
@@ -27,6 +28,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class AcknowledgeReportControllerSpec
   extends ControllerBaseSpec
@@ -57,7 +59,9 @@ class AcknowledgeReportControllerSpec
   }
 
   "acknowledgeReportForSelfAssessment" when {
+
     "a valid request is supplied" should {
+
       "return 204 to indicate that the data has been accepted and saved and that nothing else needs to be return in the body." in new Test {
 
         val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
@@ -70,7 +74,26 @@ class AcknowledgeReportControllerSpec
 
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
+        val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
+
+        status(result) shouldBe NO_CONTENT
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+      }
+
+      "return 204 even when NRS was unable to non repudiate the event" in new Test {
+
+        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
+
+        MockEnrolmentsAuthService.authoriseUser()
+        MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
+        MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
+        MockCurrentDateTime.getDateTime()
+        MockNrsService.stubFailureAcknowledgementDueToException()
+
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
 
         status(result) shouldBe NO_CONTENT
         header("X-CorrelationId", result) shouldBe Some(correlationId)
@@ -86,7 +109,7 @@ class AcknowledgeReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result = controller.acknowledgeReportForSelfAssessment(simpleNinoInvalid, simpleReportId.toString, correlationId)(fakeGetRequest)
+        val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNinoInvalid, simpleReportId.toString, correlationId)(fakeGetRequest)
 
         status(result) shouldBe BAD_REQUEST
 
@@ -106,7 +129,7 @@ class AcknowledgeReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
+          val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -138,7 +161,7 @@ class AcknowledgeReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
+          val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, correlationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -156,16 +179,15 @@ class AcknowledgeReportControllerSpec
           (FormatReportIdError, BAD_REQUEST, FormatReportIdError.toJson),
           (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson)
-          //(InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
-    "a request fails due to failed due to RdsService.acknowlege failure" should {
+    "a request fails due to failed due to RdsService.acknowledge failure" should {
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
-        s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to RdsService.acknowlege " in new Test {
+        s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to RdsService.acknowledge" in new Test {
 
           val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
 
@@ -176,7 +198,7 @@ class AcknowledgeReportControllerSpec
 
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, correlationId)(fakeGetRequest)
+          val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, correlationId)(fakeGetRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -194,36 +216,33 @@ class AcknowledgeReportControllerSpec
           (FormatReportIdError, BAD_REQUEST, FormatReportIdError.toJson),
           (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson)
-          //(InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
-    //TODO NRS test.
-    //    "a request fails due to failed NRSService submit" should {
-    //      "return the expected error to indicate that the data has not been accepted and saved due to failed NRSService submit. " in new Test {
-    //
-    //        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportID.toString, simpleRDSCorrelationID)
-    //
-    //        MockEnrolmentsAuthService.authoriseUser()
-    //        MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
-    //        MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
-    //        MockCurrentDateTime.getDateTime()
-    //
-    //        MockProvideRandomCorrelationId.IdGenerator
-    //        MockNrsService.submitFail(generateReportRequest = simpleAcknowledgeReportRequestData, generatedNrsId = simpleAcknowledgeNrsID,
-    //          submissionTimestamp = simpleSubmissionTimestamp, notableEventType = simpleNotableEventType)
-    //
-    //        val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationID.toString, simpleRDSCorrelationID)(fakeGetRequest)
-    //
-    //        status(result) shouldBe NOT_FOUND
-    //        //contentAsJson(result) shouldBe expectedBody
-    //        contentType(result) shouldBe Some("application/json")
-    //
-    //        header("X-CorrelationId", result) shouldBe Some(correlationId)
-    //
-    //      }
-    //    }
+      "a request fails due to being unable to construct NRS event" should {
+        "return the expected error to indicate that the data has not been accepted or saved due to failed NRSService submit" in new Test {
+
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
+
+          MockEnrolmentsAuthService.authoriseUser()
+          MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
+          MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
+          MockCurrentDateTime.getDateTime()
+
+          MockProvideRandomCorrelationId.IdGenerator
+
+          MockNrsService.stubUnableToConstructNRSEventForAcknowledge()
+
+          val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, correlationId)(fakeGetRequest)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+//          contentAsJson(result) shouldBe ??? // TODO what should the body be as per the spec?
+          contentType(result) shouldBe Some("application/json")
+          header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+        }
+      }
   }
 }

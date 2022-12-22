@@ -26,7 +26,11 @@ case object NrsFailure {
   case class ErrorResponse(status: Int) extends NrsFailure {
     override def retryable: Boolean = Status.isServerError(status)
   }
-  case object ExceptionThrown extends NrsFailure {
+  case class Exception(reason: String) extends NrsFailure {
+    override def retryable: Boolean = false
+  }
+
+  case class UnableToAttempt(reason: String) extends NrsFailure {
     override def retryable: Boolean = false
   }
 }
