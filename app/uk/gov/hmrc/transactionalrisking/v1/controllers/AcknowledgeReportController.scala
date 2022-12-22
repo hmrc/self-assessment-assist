@@ -64,6 +64,12 @@ class AcknowledgeReportController @Inject()(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
             assessmentReport.responseCode match {
+              case Some(CREATED) =>
+                logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created")
+                //Submit asynchronously to NRS
+                nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
+                logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                Future(NoContent.withApiHeaders(correlationId))
               case Some(ACCEPTED) =>
                 logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
@@ -84,7 +90,7 @@ class AcknowledgeReportController @Inject()(
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
 
               case _ =>
-                logger.error(s"$correlationId::[acknowledgeReport] rds ack response code is empty")
+                logger.error(s"$correlationId::[acknowledgeReport] unrecognised value for response code")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
             }
           }
