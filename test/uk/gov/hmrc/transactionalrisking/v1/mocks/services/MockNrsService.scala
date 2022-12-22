@@ -34,15 +34,6 @@ trait MockNrsService extends MockFactory {
 
   object MockNrsService {
 
-    def buildNrsSubmission(reportId: AcknowledgeReportId,
-                           submissionTimestamp: OffsetDateTime,
-                           request: UserRequest[_], notableEventType: NotableEventType, taxYear: String)(corrrelationId: String): CallHandler[NrsSubmission] = {
-      (mockNrsService.buildNrsSubmission(_: AcknowledgeReportId,
-        _: OffsetDateTime,
-        _: UserRequest[_], _: NotableEventType)(_: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
-    }
-
     def submit(generateReportRequest: AcknowledgeReportId, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType, retNrsResponse: NrsResponse):
     CallHandler[Future[Option[NrsResponse]]] = {
       (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime, _: NotableEventType)
@@ -51,12 +42,5 @@ trait MockNrsService extends MockFactory {
         .returns(Future(Some(retNrsResponse)))
     }
 
-    def submitFail(generateReportRequest: AcknowledgeReportId, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType):
-    CallHandler[Future[Option[NrsResponse]]] = {
-      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime, _: NotableEventType)
-      (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
-        .expects(*, *, *, *, *, *, *).anyNumberOfTimes()
-        .returns(Future(None))
-    }
   }
 }
