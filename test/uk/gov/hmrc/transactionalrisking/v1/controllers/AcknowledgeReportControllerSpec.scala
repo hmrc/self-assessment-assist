@@ -66,16 +66,13 @@ class AcknowledgeReportControllerSpec
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.submit(simpleRequestBodyAcknowledge, simpleSubmissionTimestamp, simpleReportNotableEventType, simpleNRSResponseAcknowledgeSubmission)
+        MockNrsService.stubAcknowledgement(simpleNRSResponseAcknowledgeSubmission)
 
         MockProvideRandomCorrelationId.IdGenerator
 
         val result = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakeGetRequest)
 
         status(result) shouldBe NO_CONTENT
-        //val ret = contentAsJson(result)
-        //contentAsJson(result) shouldBe expectedBody
-        //contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(internalCorrelationId)
 
       }

@@ -20,8 +20,9 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.AssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, NotableEventType, NrsSubmission, RequestData}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportId
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
 
 import java.time.OffsetDateTime
@@ -34,11 +35,15 @@ trait MockNrsService extends MockFactory {
 
   object MockNrsService {
 
-    def submit(generateReportRequest: AcknowledgeReportId, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType, retNrsResponse: NrsResponse):
-    CallHandler[Future[Option[NrsResponse]]] = {
-      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime, _: NotableEventType)
-      (_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
-        .expects(*, *, *, *, *, *, *).anyNumberOfTimes()
+    def stubAssessmentReport(retNrsResponse: NrsResponse) : CallHandler[Future[Option[NrsResponse]]] = {
+      (mockNrsService.submit(_: AssessmentReport, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
+        .expects(*, *, *, *, *, *).anyNumberOfTimes()
+        .returns(Future(Some(retNrsResponse)))
+    }
+
+    def stubAcknowledgement(retNrsResponse: NrsResponse): CallHandler[Future[Option[NrsResponse]]] = {
+      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: ExecutionContext, _: String))
+        .expects(*, *, *, *, *, *).anyNumberOfTimes()
         .returns(Future(Some(retNrsResponse)))
     }
 

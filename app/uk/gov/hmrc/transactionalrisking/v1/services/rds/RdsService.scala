@@ -131,7 +131,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     }.flatMap(_.value).collect {
       case value: RdsAssessmentReport.DataWrapper => value
     }.flatMap(_.data)
-      .map(toRisk).flatten
+      .flatMap(toRisk)
   }
 
   private def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage) = preferredLanguage match {

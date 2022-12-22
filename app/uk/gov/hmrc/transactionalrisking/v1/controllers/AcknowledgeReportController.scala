@@ -25,7 +25,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AssistReportAcknowledged, AcknowledgeReportId, RequestBodyAcknowledge, RequestData}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportId
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
@@ -53,9 +53,7 @@ class AcknowledgeReportController @Inject()(
         val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
           parsedRequest <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
           serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
-        } yield {
-          serviceResponse.responseData
-        }
+        } yield serviceResponse.responseData
 
         processRequest.fold(
           errorWrapper => errorHandler(errorWrapper, correlationId),
@@ -64,21 +62,21 @@ class AcknowledgeReportController @Inject()(
               case Some(ACCEPTED) =>
                 logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
-                nonRepudiationService.submit(AcknowledgeReportId(reportId), submissionTimestamp, AssistReportAcknowledged)
+                nonRepudiationService.submit(AcknowledgeReportId(reportId), submissionTimestamp)
 
                 logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
                 Future(NoContent.withApiHeaders(correlationId))
 
               case Some(NO_CONTENT) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is ${NO_CONTENT}")
+                logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is $NO_CONTENT")
                 Future(NoContent.withApiHeaders(correlationId))
 
               case Some(BAD_REQUEST) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${BAD_REQUEST}")
+                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $BAD_REQUEST")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
               case Some(UNAUTHORIZED) =>
                 val responseMessage = assessmentReport.responseMessage
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${UNAUTHORIZED} ${responseMessage}")
+                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $UNAUTHORIZED $responseMessage")
                 Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
 
               case _ =>

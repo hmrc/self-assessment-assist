@@ -24,10 +24,12 @@ import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, Link, Risk}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 
 import java.time.OffsetDateTime
+import java.util.UUID
 import scala.concurrent.Future
 
 class NrsServiceSpec extends ServiceSpec {
@@ -59,14 +61,31 @@ class NrsServiceSpec extends ServiceSpec {
     val service = new NrsService(mockNrsConnector, hasUtil)
   }
 
-  private val nrsSubmissionAssistReportGenerated: NrsSubmission =
+  private val rdsReport: AssessmentReport = AssessmentReport(
+    reportId = UUID.fromString("db741dff-4054-478e-88d2-5993e925c7ab"),
+    risks = Seq(
+      Risk(
+        title = "Turnover and cost of sales",
+        body = "Your cost of sales is greater than income",
+        action = "Please read our guidance",
+        links = Seq(Link(title = "Our guidance", url = "https://www.gov.uk/expenses-if-youre-self-employed")),
+        path = "general/total_declared_turnover"
+      )
+    ),
+    nino = "nino",
+    taxYear = "2021-2022",
+    calculationId = UUID.fromString("99d758f6-c4be-4339-804e-f79cf0610d4f"),
+    rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
+  )
+
+  private val expectedReportPayload: NrsSubmission =
     NrsSubmission(
-      payload = "eyJyZXBvcnRJZCI6IjEyMzQ1In0=",
+      payload = "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIwMjIiLCJjYWxjdWxhdGlvbklkIjoiOTlkNzU4ZjYtYzRiZS00MzM5LTgwNGUtZjc5Y2YwNjEwZDRmIiwiY29ycmVsYXRpb25JZCI6ImU0MzI2NGM1LTUzMDEtNGVjZS1iM2QzLTFlOGE4ZGQ5M2I0YiJ9",
       metadata = Metadata(
         businessId = "saa",
         notableEvent = "saa-report-generated",
         payloadContentType = "application/json",
-        payloadSha256Checksum = "eb6b96e57239c4605bd34ab5ea3dec01707ae960794d647ca50818efcebe6429",
+        payloadSha256Checksum = "acdf5c0add9e434375e81797ad21fd409bc55f6d4f264d7aa302ca1ef4a01058",
         userSubmissionTimestamp = formattedDate,
         identityData = Some(IdentityDataTestData.correctModel),
         userAuthToken = "Bearer aaaa",
@@ -78,39 +97,34 @@ class NrsServiceSpec extends ServiceSpec {
         )),
         searchKeys =
           SearchKeys(
-            reportId = "12345"
+            reportId = "db741dff-4054-478e-88d2-5993e925c7ab"
           )
       )
     )
 
 
-//  "service using report generated" when {
-//    "service call successful" must {
-//      "return the expected result" in new Test {
-//
-//        MockNrsConnector.submitNrs(nrsSubmissionAssistReportGenerated, reportId)
-//          .returns(Future.successful(Right(NrsResponse(nrsId))))
-//
-//        MockedHashUtil.encode(generateReportBodyRequestString).returns(encodedString)
-//        MockedHashUtil.getHash(generateReportBodyRequestString).returns(checksum)
-//
-//        await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
-//      }
-//    }
-//  }
-//
-//  "service call unsuccessful report generated" must {
-//    "map 4xx errors correctly" in new Test {
-//
-//      MockedHashUtil.encode(generateReportBodyRequestString).returns(encodedString)
-//      MockedHashUtil.getHash(generateReportBodyRequestString).returns(checksum)
-//
-//      MockNrsConnector.submitNrs(nrsSubmissionAssistReportGenerated, reportId)
-//        .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
-//
-//      await(service.submit(selfAssessmentSubmission, timestamp, AssistReportGenerated)) shouldBe None
-//    }
-//  }
+  "service using report generated" when {
+
+    "service call successful" must {
+      "return the expected result" in new Test {
+
+        MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
+          .returns(Future.successful(Right(NrsResponse(nrsId))))
+
+        await(service.submit(rdsReport, timestamp)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+      }
+    }
+  }
+
+  "service call unsuccessful report generated" must {
+    "map 4xx errors correctly" in new Test {
+
+      MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
+        .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
+
+      await(service.submit(rdsReport, timestamp)) shouldBe None
+    }
+  }
 
 
   private val acknowledgeRdsReport = AcknowledgeReportId("12345")
@@ -148,7 +162,7 @@ class NrsServiceSpec extends ServiceSpec {
         MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
 
-        await(service.submit(acknowledgeRdsReport, timestamp, AssistReportAcknowledged)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+        await(service.submit(acknowledgeRdsReport, timestamp)) shouldBe Some(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
       }
     }
   }
@@ -160,7 +174,7 @@ class NrsServiceSpec extends ServiceSpec {
       MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
         .returns(Future.successful(Left(NrsFailure.ExceptionThrown)))
 
-      await(service.submit(acknowledgeRdsReport, timestamp, AssistReportAcknowledged)) shouldBe None
+      await(service.submit(acknowledgeRdsReport, timestamp)) shouldBe None
     }
   }
 
