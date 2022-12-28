@@ -145,7 +145,7 @@ class RdsConnectorSpec extends ConnectorSpec
         await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(simpleRDSCorrelationId, ForbiddenDownstreamError))
       }
 
-      "return the feedback, if RDS returns http status 201 and and feedback with responsecode 201" in new Test{
+      "return the feedback, if RDS returns http status 201 and feedback with responsecode 201" in new Test{
         stubRDSGenerateReportResponse(Some(rdsSubmissionReportJson.toString),status=CREATED)
         await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsNewSubmissionReport))
 
@@ -211,7 +211,7 @@ class RdsConnectorSpec extends ConnectorSpec
         await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(simpleRDSCorrelationId, ForbiddenDownstreamError))
       }
 
-      "return the no content, if RDS returns http status 201 and with responsecode 202" in new Test{
+      "return no content, if RDS returns http status 201 and with responsecode 202" in new Test{
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
         await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(simpleRDSCorrelationId, rdsAssessmentAck))
       }
