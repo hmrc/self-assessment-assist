@@ -44,15 +44,6 @@ case class RdsAssessmentReport(links: Seq[String],
     case KeyValueWrapper("feedbackId", value) => UUID.fromString(value)
   }
 
-/*  def taxYear: Option[Int] =
-    outputs
-      .filter(_.isInstanceOf[KeyValueWrapper])
-      .map(_.asInstanceOf[KeyValueWrapper])
-      .find(_.name == "taxYear")
-      .map(_.value)
-      .map(x=>Some(x.toInt))
-      .getOrElse(None)*/
-
   def responseCode: Option[Int] = outputs.collectFirst {
     case KeyValueWrapper("responseCode", value) => value.toInt
   }
