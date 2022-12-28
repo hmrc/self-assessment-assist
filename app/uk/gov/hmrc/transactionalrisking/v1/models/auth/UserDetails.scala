@@ -16,9 +16,20 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.models.auth
 
+import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType.CustomerType
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.IdentityData
 
-case class UserDetails(userType: String,
+case class UserDetails(userType: AffinityGroup,
                        agentReferenceNumber: Option[String],
                        clientID: String,
-                       identityData: Option[IdentityData] = None)
+                       identityData: Option[IdentityData] = None) {
+
+  val toCustomerType: CustomerType = userType match {
+    case AffinityGroup.Individual => CustomerType.TaxPayer
+    case AffinityGroup.Organisation => CustomerType.Agent
+    case AffinityGroup.Agent => CustomerType.Agent
+  }
+
+}

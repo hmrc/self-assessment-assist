@@ -25,7 +25,7 @@ import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController
-import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AffinityGroupType, AuthOutcome, UserDetails}
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, LegacyUnauthorisedError, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.IdentityData
 
@@ -44,9 +44,9 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     if (!nrsRequired) {
       logger.info(s"$correlationId::[authorised]Performing nrs not required")
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
-        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.individual, enrolments, correlationId)
-        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.organisation, enrolments, correlationId)
-        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = AffinityGroupType.agent, enrolments, correlationId)
+        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Individual, enrolments, correlationId)
+        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Organisation, enrolments, correlationId)
+        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Agent, enrolments, correlationId)
         case _ =>
           logger.warn(s"$correlationId::[authorised]Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
@@ -61,12 +61,11 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
         and mdtpInformation and credentialStrength and loginTimes
         and itmpName and itmpAddress
       ) {
-        case affGroup ~ enrolments ~ inId ~ exId ~ agCode ~ creds
+        case Some(affGroup) ~ enrolments ~ inId ~ exId ~ agCode ~ creds
           ~ confLevel ~ ni ~ saRef ~ nme ~ dob
           ~ eml ~ agInfo ~ groupId ~ credRole
           ~ mdtpInfo ~ credStrength ~ logins
-          ~ itmpName ~ itmpAddress
-          if affGroup.contains(AffinityGroup.Organisation) || affGroup.contains(AffinityGroup.Individual) || affGroup.contains(AffinityGroup.Agent) =>
+          ~ itmpName ~ itmpAddress =>
 
           val emptyItmpName: ItmpName = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
@@ -77,10 +76,13 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
               confLevel, ni, saRef, nme, dob,
               eml, agInfo, groupId,
               credRole, mdtpInfo, itmpName.getOrElse(emptyItmpName), itmpDateOfBirth = None,
-              itmpAddress.getOrElse(emptyItmpAddress), affGroup, credStrength, logins
+              itmpAddress.getOrElse(emptyItmpAddress),
+              Some(affGroup),
+              credStrength,
+              logins
             )
 
-          createUserDetailsWithLogging(affinityGroup = affGroup.get.toString, enrolments, correlationId, Some(identityData))
+          createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData))
         case _ =>
           logger.warn(s"$correlationId::[EnrolmentsAuthService] [authorised with nrsRequired = true] Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
@@ -90,7 +92,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
   }
 
-  private def createUserDetailsWithLogging(affinityGroup: String,
+  private def createUserDetailsWithLogging(affinityGroup: AffinityGroup,
                                            enrolments: Enrolments,
                                            correlationId: String,
                                            identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
@@ -106,7 +108,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
       identityData
     )
 
-    if (affinityGroup != AffinityGroupType.agent) {
+    if (affinityGroup != AffinityGroup.Agent) {
       logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent not part of affinityGroup")
       Future.successful(Right(userDetails))
     } else {
@@ -115,12 +117,12 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     }
   }
 
-  def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
+  private def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
     .getEnrolment("IR-SA")
     .flatMap(_.getIdentifier(AuthorisedController.ninoKey))
     .map(_.value)
 
-  def getAgentReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
+  private def getAgentReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
     .getEnrolment("IR-SA")
     .flatMap(_.getIdentifier("AgentReferenceNumber"))
     .map(_.value)
