@@ -31,7 +31,6 @@ class RequestParserSpec extends UnitSpec {
   private val nino = simpleNino
   case class Raw(nino: String) extends RawData
   case class Request(nino: String)
-  implicit val correlationId: String = correlationId
 
   trait Test {
     test =>
