@@ -29,9 +29,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{
-  calculationIdWithNoFeedback, expectedCalculationIdWithNoFeedback, noCalculationFound, rdsNewSubmissionReport,
-  rdsSubmissionReportJson, simpleRDSCorrelationId, simpleReportId,simpleNino,rdsAssessmentAckJson,rdsAssessmentAck}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError,
   MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError}
