@@ -93,6 +93,6 @@ object RdsTestData {
     nino = assessmentRequestForSelfAssessment.nino,
     taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
     calculationId = simpleCalculationId,
-    rdsCorrelationId = correlationId
+    rdsCorrelationId = simpleRDSCorrelationId
   )
 }

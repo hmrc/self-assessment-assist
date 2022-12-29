@@ -128,8 +128,8 @@ class RdsConnectorSpec extends ConnectorSpec
       }
 
       "return the empty feedback, if RDS returns http status 201 and no feedback with responsecode 204" in new Test{
-        val expectedReportJson = loadSubmitResponseTemplate(expectedCalculationIdWithNoFeedback.toString, simpleReportId.toString, correlationId,"204")
-        val rdsReportJson = loadSubmitResponseTemplate(calculationIdWithNoFeedback.toString, simpleReportId.toString, correlationId,"204")
+        val expectedReportJson = loadSubmitResponseTemplate(expectedCalculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId,"204")
+        val rdsReportJson = loadSubmitResponseTemplate(calculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId,"204")
         stubRDSResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
@@ -138,7 +138,7 @@ class RdsConnectorSpec extends ConnectorSpec
 
 
       "return MatchingResourcesNotFoundError, if RDS returns http status 201 and no calculationId found with responsecode 404" in new Test{
-        val rdsReportJson = loadSubmitResponseTemplate(noCalculationFound.toString, simpleReportId.toString, correlationId,"404")
+        val rdsReportJson = loadSubmitResponseTemplate(noCalculationFound.toString, simpleReportId.toString, simpleRDSCorrelationId,"404")
         stubRDSResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))

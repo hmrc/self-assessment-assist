@@ -103,7 +103,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         val expectedResult: ServiceOutcome[RdsAssessmentReport] = Right(ResponseWrapper(correlationId, simpleAcknowledgeNewRdsAssessmentReport))
         MockRdsConnector.acknowledgeRds(request) returns Future.successful(expectedResult)
 
-        val acknowledgeReportRequest: AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, correlationId)
+        val acknowledgeReportRequest: AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
         await(service.acknowledge(acknowledgeReportRequest)) shouldBe expectedResult
       }

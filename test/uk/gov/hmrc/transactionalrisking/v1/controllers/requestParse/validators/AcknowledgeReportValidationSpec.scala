@@ -28,7 +28,7 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
   "running a validation" should {
     "return no errors" when {
       "a valid request" in {
-        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, correlationId)
+        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
         validator.validate(acknowledgeReportRawData) shouldBe Nil
       }
 
@@ -36,14 +36,14 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
       "return errors" when {
         "an invalid nino." in {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportId.toString, correlationId)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportId.toString, simpleRDSCorrelationId)
 
           validator.validate(acknowledgeReportRawData) shouldBe Seq(NinoFormatError)
         }
 
         "an invalid reportId." in {
 
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportIdStrangeCharsString, correlationId)
+          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportIdStrangeCharsString, simpleRDSCorrelationId)
 
           validator.validate(acknowledgeReportRawData) shouldBe Seq(FormatReportIdError)
         }
