@@ -69,54 +69,45 @@ class AcknowledgeReportController @Inject()(
                 //Submit asynchronously to NRS
                 nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
                 logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                Future(NoContent.withApiHeaders(correlationId))
+                Future(NoContent)
               case Some(ACCEPTED) =>
                 logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
                 nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
-
                 logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                Future(NoContent.withApiHeaders(correlationId))
+                Future(NoContent)
 
               case Some(NO_CONTENT) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is ${NO_CONTENT}")
-                Future(NoContent.withApiHeaders(correlationId))
+                Future(NoContent)
 
               case Some(BAD_REQUEST) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${BAD_REQUEST}")
-                Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+                Future(ServiceUnavailable(Json.toJson(DownstreamError)))
+
               case Some(UNAUTHORIZED) =>
                 val responseMessage = assessmentReport.responseMessage
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is ${UNAUTHORIZED} ${responseMessage}")
-                Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+                Future(ServiceUnavailable(Json.toJson(DownstreamError)))
 
               case _ =>
                 logger.error(s"$correlationId::[acknowledgeReport] unrecognised value for response code")
-                Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+                Future(ServiceUnavailable(Json.toJson(DownstreamError)))
             }
           }
-        ).flatten
+        ).flatten.map(_.withApiHeaders(correlationId))
+
     }
   }
 
   def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = errorWrapper.error match {
-    case ServerError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
-    case ServiceUnavailableError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
-    case FormatReportIdError => Future(BadRequest(Json.toJson(FormatReportIdError)).withApiHeaders(correlationId))
-    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
-    case ResourceNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
-    case ClientOrAgentNotAuthorisedError => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId)) //RDS 10 201 CREATED Rejected => 403 FOBBIDEN ( ClientOrAgentNotAuthorisedError)
-    //    case InvalidCredentialsError => Future(Unauthorized(Json.toJson(InvalidCredentialsError)).withApiHeaders(correlationId))
-    case NinoFormatError => Future(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
-    case DownstreamError => Future(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId)) // RDS 11 (400 ) =>500(INTERNAL_SERVER_ERROR)(MatchingResourcesNotFoundError)
-    case MatchingResourcesNotFoundError => Future(ServiceUnavailable(Json.toJson(ServiceUnavailableError)).withApiHeaders(correlationId)) // RDS 12 (404 NOT_FOUND)) =>503(ServiceUnavailableError)(ServiceUnavailableError)
-
-    // case  => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 13 ??? => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
-
-    // case  => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 14 408 => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
-
-    // case  => Future(ServiceUnavailable(Json.toJson(ServiceUnavailable)).withApiHeaders(correlationId))                                       // RDS 15 ?  => 503 SERVICE_UNAVAILABLE (ServiceUnavailableError)
-
-    case _ => Future(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+    case ServerError | DownstreamError |ServiceUnavailableError => Future(InternalServerError(Json.toJson(DownstreamError)))
+    case FormatReportIdError => Future(BadRequest(Json.toJson(FormatReportIdError)))
+    case ClientOrAgentNotAuthorisedError => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
+    case NinoFormatError => Future(BadRequest(Json.toJson(NinoFormatError)))
+    case MatchingResourcesNotFoundError | ResourceNotFoundError => Future(ServiceUnavailable(Json.toJson(ServiceUnavailableError)))
+    case error@_ =>
+      logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario $error")
+      Future(ServiceUnavailable(Json.toJson(DownstreamError)))
   }
 }
