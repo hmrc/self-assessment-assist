@@ -63,9 +63,13 @@ class AcknowledgeReportController @Inject()(
               case Some(CREATED) =>
                 logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created")
                 //Submit asynchronously to NRS
-                nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
-                logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                Future(NoContent)
+                nonRepudiationService.submit(AcknowledgeReportId(reportId), submissionTimestamp).map {
+                  case Left(UnableToAttempt(_)) =>
+                    InternalServerError
+                  case _ =>
+                    logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                    NoContent
+                }
               case Some(ACCEPTED) =>
                 logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
