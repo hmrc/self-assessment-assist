@@ -26,6 +26,7 @@ import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationIdImplicit
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.NrsSubmission
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.Exception

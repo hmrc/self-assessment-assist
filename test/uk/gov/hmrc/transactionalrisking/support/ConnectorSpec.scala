@@ -29,7 +29,7 @@ trait ConnectorSpec extends UnitSpec
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  implicit val correlationId: String = CommonTestData.correlationId
+  //implicit val correlationId: String = CommonTestData.correlationId
   val otherHeaders: Seq[(String, String)] = Seq(
     "Gov-Test-Scenario" -> "DEFAULT",
     "AnotherHeader" -> "HeaderValue"

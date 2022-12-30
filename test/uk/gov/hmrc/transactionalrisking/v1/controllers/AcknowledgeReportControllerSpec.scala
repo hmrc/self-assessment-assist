@@ -177,7 +177,7 @@ class AcknowledgeReportControllerSpec
           (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
           (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
           (FormatReportIdError, BAD_REQUEST, FormatReportIdError.toJson),
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
+          (MatchingResourcesNotFoundError, SERVICE_UNAVAILABLE, ServiceUnavailableError.toJson),
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson)
         )
 
@@ -214,7 +214,7 @@ class AcknowledgeReportControllerSpec
           (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
           (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
           (FormatReportIdError, BAD_REQUEST, FormatReportIdError.toJson),
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
+          (MatchingResourcesNotFoundError, SERVICE_UNAVAILABLE, ServiceUnavailableError.toJson),
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson)
         )
 

@@ -78,6 +78,7 @@ object UnexpectedFailure {
 object UnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised")
 object InvalidBearerTokenError extends MtdError("UNAUTHORIZED", "Bearer token is missing or not authorized")
 object InvalidCredentialsError extends MtdError("INVALID_CREDENTIALS", "Invalid Authentication information provided")
+object BearerTokenExpiredError extends MtdError("INVALID_CREDENTIALS", "Invalid Authentication information provided")
 
 // Legacy Authorisation Errors
 object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.")

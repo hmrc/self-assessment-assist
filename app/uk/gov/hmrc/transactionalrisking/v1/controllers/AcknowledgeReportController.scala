@@ -60,55 +60,52 @@ class AcknowledgeReportController @Inject()(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
             assessmentReport.responseCode match {
+              case Some(CREATED) =>
+                logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created")
+                //Submit asynchronously to NRS
+                nonRepudiationService.submit(reportAcknowledgementContent, submissionTimestamp, AssistReportAcknowledged)
+                logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                Future(NoContent)
               case Some(ACCEPTED) =>
                 logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
                 //Submit asynchronously to NRS
                 nonRepudiationService.submit(AcknowledgeReportId(reportId), submissionTimestamp).map {
                   case Left(UnableToAttempt(_)) =>
-                    InternalServerError.withApiHeaders(correlationId)
+                    InternalServerError
                   case _ =>
                     logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                    NoContent.withApiHeaders(correlationId)
+                    NoContent
                 }
               case Some(NO_CONTENT) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is $NO_CONTENT")
-                Future.successful(NoContent.withApiHeaders(correlationId))
+                Future.successful(NoContent)
 
               case Some(BAD_REQUEST) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $BAD_REQUEST")
-                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
               case Some(UNAUTHORIZED) =>
                 val responseMessage = assessmentReport.responseMessage
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $UNAUTHORIZED $responseMessage")
-                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
 
               case _ =>
-                logger.error(s"$correlationId::[acknowledgeReport] rds ack response code is empty")
-                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+                logger.error(s"$correlationId::[acknowledgeReport] unrecognised value for response code")
+                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
             }
           }
-        ).flatten
+        ).flatten.map(_.withApiHeaders(correlationId))
+
     }
   }
 
   def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = errorWrapper.error match {
-    case ServerError => Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
-    case ServiceUnavailableError => Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
-    case FormatReportIdError => Future.successful(BadRequest(Json.toJson(FormatReportIdError)).withApiHeaders(correlationId))
-    case MatchingResourcesNotFoundError => Future.successful(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
-    case ResourceNotFoundError => Future.successful(NotFound(Json.toJson(MatchingResourcesNotFoundError)).withApiHeaders(correlationId))
-    case ClientOrAgentNotAuthorisedError => Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId)) //RDS 10 201 CREATED Rejected => 403 FOBBIDEN ( ClientOrAgentNotAuthorisedError)
-    //    case InvalidCredentialsError => Future.successful(Unauthorized(Json.toJson(InvalidCredentialsError)).withApiHeaders(correlationId))
-    case NinoFormatError => Future.successful(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
-    case DownstreamError => Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId)) // RDS 11 (400 ) =>500(INTERNAL_SERVER_ERROR)(MatchingResourcesNotFoundError)
-    case MatchingResourcesNotFoundError => Future.successful(ServiceUnavailable(Json.toJson(ServiceUnavailableError)).withApiHeaders(correlationId)) // RDS 12 (404 NOT_FOUND)) =>503(ServiceUnavailableError)(ServiceUnavailableError)
-
-    // case  => Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 13 ??? => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
-
-    // case  => Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))                                       // RDS 14 408 => 500 INTERNAL_SERVER_ERROR (INTERNAL_SERVER_ERROR)
-
-    // case  => Future.successful(ServiceUnavailable(Json.toJson(ServiceUnavailable)).withApiHeaders(correlationId))                                       // RDS 15 ?  => 503 SERVICE_UNAVAILABLE (ServiceUnavailableError)
-
-    case _ => Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+    case ServerError | DownstreamError |ServiceUnavailableError => Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+    case FormatReportIdError => Future.successful(BadRequest(Json.toJson(FormatReportIdError)))
+    case ClientOrAgentNotAuthorisedError => Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
+    case NinoFormatError => Future.successful(BadRequest(Json.toJson(NinoFormatError)))
+    case MatchingResourcesNotFoundError | ResourceNotFoundError => Future.successful(ServiceUnavailable(Json.toJson(ServiceUnavailableError)))
+    case error@_ =>
+      logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario $error")
+      Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
   }
 }
