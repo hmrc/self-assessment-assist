@@ -26,7 +26,7 @@ import uk.gov.hmrc.transactionalrisking.utils.Logging
 import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController.ninoKey
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.NinoChecker
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ClientOrAgentNotAuthorisedError, DownstreamError, ForbiddenDownstreamError, NinoFormatError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BearerTokenExpiredError, ClientOrAgentNotAuthorisedError, DownstreamError, ForbiddenDownstreamError, InvalidBearerTokenError, InvalidCredentialsError, LegacyUnauthorisedError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -63,17 +63,23 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
           case Right(userDetails) =>
             block(UserRequest(userDetails.copy(clientID = clientID), request))
           case Left(ClientOrAgentNotAuthorisedError) =>
-            Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)).withApiHeaders(correlationId))
+            Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
           case Left(ForbiddenDownstreamError) =>
             logger.warn(s"$correlationId::[invokeBlock]Forbidden downstream error")
-            Future.successful(Forbidden(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+            Future.successful(Forbidden(Json.toJson(DownstreamError)))
+          case Left(InvalidBearerTokenError) =>
+            Future.successful(Forbidden(Json.toJson(InvalidCredentialsError)))
+          case Left(BearerTokenExpiredError) =>
+            Future.successful(Forbidden(Json.toJson(InvalidCredentialsError)))
+          case Left(LegacyUnauthorisedError) =>
+            Future.successful(Forbidden(Json.toJson(LegacyUnauthorisedError)))
           case Left(_) =>
             logger.warn(s"$correlationId::[invokeBlock]Downstream")
-            Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
+            Future.successful(InternalServerError(Json.toJson(DownstreamError)))
           case _ =>
             logger.error(s"$correlationId::[invokeBlock]Unknown error")
-            Future.successful(InternalServerError(Json.toJson(DownstreamError)).withApiHeaders(correlationId))
-        }
+            Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+        }.map(_.withApiHeaders(correlationId))
       } else {
         logger.warn(s"$correlationId::[invokeBlock]Error in nino format")
         Future.successful(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))

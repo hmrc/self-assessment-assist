@@ -26,7 +26,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, LegacyUnauthorisedError, MtdError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BearerTokenExpiredError, DownstreamError, ForbiddenDownstreamError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.IdentityData
 
 import javax.inject.{Inject, Singleton}
@@ -137,6 +137,12 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     case _: JsResultException =>
       logger.warn(s"$correlationId::[unauthorisedError] - Did not receive minimum data from Auth required for NRS Submission")
       Future.successful(Left(ForbiddenDownstreamError))
+    case _: InvalidBearerToken =>
+      logger.warn(s"$correlationId::[unauthorisedError] - Invalid Bearer token")
+      Future.successful(Left(InvalidBearerTokenError))
+    case _: BearerTokenExpired =>
+      logger.warn(s"$correlationId::[unauthorisedError] - BearerTokenExpired")
+      Future.successful(Left(BearerTokenExpiredError))
     case exception@_ =>
       logger.warn(s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
       Future.successful(Left(DownstreamError))
