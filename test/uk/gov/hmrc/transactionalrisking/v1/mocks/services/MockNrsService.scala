@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.AssessmentReport
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportId
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, Metadata, NotableEventType, NrsSubmission, SearchKeys}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.{NrsOutcome, NrsService}
 
@@ -34,7 +36,25 @@ trait MockNrsService extends MockFactory {
 
   object MockNrsService {
 
-    def stubAssessmentReport(retNrsResponse: NrsResponse) : CallHandler[Future[NrsOutcome]] = {
+    def stubBuildNrsSubmission(nrsSubmission: NrsSubmission): CallHandler[Either[NrsFailure, NrsSubmission]] = {
+      (mockNrsService.buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[_], _: NotableEventType)(_: String))
+        .expects(*, *, *, *, *, *).anyNumberOfTimes()
+        .returns((Right(nrsSubmission)))
+    }
+
+    def stubUnableToConstrucNrsSubmission(): CallHandler[Either[NrsFailure, NrsSubmission]] = {
+      (mockNrsService.buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[_], _: NotableEventType)(_: String))
+        .expects(*, *, *, *, *, *).anyNumberOfTimes()
+        .returns(Left(NrsFailure.UnableToAttempt("no beaker token for user")))
+    }
+
+    def stubNrsSubmit(retNrsResponse: NrsResponse): CallHandler[Future[NrsOutcome]] = {
+      (mockNrsService.submit(_: NrsSubmission, _: NotableEventType)(_:HeaderCarrier,_: String))
+        .expects(*, *, *, *).anyNumberOfTimes()
+        .returns(Future.successful(Right(retNrsResponse)))
+    }
+
+    def stubAssessmentReport(retNrsResponse: NrsResponse): CallHandler[Future[NrsOutcome]] = {
       (mockNrsService.submit(_: AssessmentReport, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: String))
         .expects(*, *, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(retNrsResponse)))
@@ -59,7 +79,7 @@ trait MockNrsService extends MockFactory {
     }
 
     def stubUnableToConstructNRSEventForAcknowledge(): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier,  _: String))
+      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: String))
         .expects(*, *, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Left(NrsFailure.UnableToAttempt("no beaker token for user"))))
     }
@@ -69,7 +89,5 @@ trait MockNrsService extends MockFactory {
         .expects(*, *, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Left(NrsFailure.Exception("GatewayTimeout"))))
     }
-
-
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
 
     retry(appConfig.nrsRetries, retryCondition) { attemptNumber =>
       logger.info(s"$correlationId::[submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
-
+      logger.info(s"content is $nrsSubmission")
       httpClient
         .POST[NrsSubmission, HttpResponse](s"$url", nrsSubmission, Seq("X-API-Key" -> apiKey))
         .map { response =>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AssistReportGenerated
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.UnableToAttempt
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService, ServiceOutcome}
@@ -74,16 +75,18 @@ class GenerateReportController @Inject()(
           errorWrapper =>
             errorHandler(errorWrapper, correlationId),
           report => {
-            nonRepudiationService.submit(report.responseData, submissionTimestamp).map {
-              case Left(UnableToAttempt(_)) =>
-                InternalServerError.withApiHeaders(correlationId)
-              case _ =>
-                logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                Ok(Json.toJson[AssessmentReport](report.responseData)).withApiHeaders(correlationId)
-            }
+            nonRepudiationService.buildNrsSubmission(report.responseData.stringify, report.responseData.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
+              .fold(
+                error => errorHandler(ErrorWrapper(correlationId,ServerError),correlationId),
+                success => {
+                  nonRepudiationService.submit(success, AssistReportGenerated)
+                  logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                  Future.successful(Ok(Json.toJson[AssessmentReport](report.responseData)))
+                }
+
+              )
           }
         ).flatten.map(_.withApiHeaders(correlationId))
-
       }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
     }
   }

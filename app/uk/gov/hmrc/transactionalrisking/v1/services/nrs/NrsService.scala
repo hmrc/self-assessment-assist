@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ class NrsService @Inject()(connector: NrsConnector,
                            hashUtil: HashUtil) extends Logging {
   //                           override val metrics: Metrics) extends Timer with Logging { TODO include metrics later
 
-  private def buildNrsSubmission(payload: String,
+  def buildNrsSubmission(payload: String,
                                  reportId: String,
                                  submissionTimestamp: OffsetDateTime,
                                  request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationId: String): Either[NrsFailure, NrsSubmission] = {
@@ -45,6 +45,7 @@ class NrsService @Inject()(connector: NrsConnector,
 
     userAuthToken match {
       case Some(token) =>
+        logger.info(s"payload before encoding $payload")
         Try {
           val encodedPayload = hashUtil.encode(payload)
           val sha256Checksum = hashUtil.getHash(payload)
@@ -85,7 +86,7 @@ class NrsService @Inject()(connector: NrsConnector,
 
   }
 
-  private def submit(submission: NrsSubmission,
+    def submit(submission: NrsSubmission,
                      key: NotableEventType)(implicit hc: HeaderCarrier,
                                             correlationId: String): Future[NrsOutcome] = {
     logger.info(s"$correlationId::[submit] Request initiated to store ${key.value} content to NRS")
