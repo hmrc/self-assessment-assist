@@ -67,7 +67,6 @@ object CalculationIdFormatError
 object ResourceNotFoundError extends MtdError("RESOURCE_NOT_FOUND", "Matching resource not found")
 object DownstreamError extends MtdError("INTERNAL_SERVER_ERROR", "An internal server error occurred")
 object BadRequestError extends MtdError("INVALID_REQUEST", "Invalid request")
-//object BVRError extends TRError("BUSINESS_ERROR", "Business validation error")
 object ServiceUnavailableError extends MtdError("SERVICE_UNAVAILABLE", "Internal server error")
 object InvalidJson extends MtdError("INVALID_JSON", "Invalid JSON received")
 object UnexpectedFailure {
@@ -83,7 +82,6 @@ object BearerTokenExpiredError extends MtdError("INVALID_CREDENTIALS", "Invalid 
 // Legacy Authorisation Errors
 object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.")
 object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client or agent is not authorised")
-//TODO check correct message
 object ForbiddenDownstreamError extends MtdError(
   code = "INTERNAL_SERVER_ERROR",
   message = "An internal server error occurred",

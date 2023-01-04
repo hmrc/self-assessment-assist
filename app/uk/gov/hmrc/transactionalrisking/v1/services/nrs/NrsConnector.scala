@@ -18,6 +18,8 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import akka.actor.Scheduler
 import play.api.http.Status
+import play.api.libs.json.Json
+import play.mvc.BodyParser.Json
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
@@ -52,7 +54,6 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
 
     retry(appConfig.nrsRetries, retryCondition) { attemptNumber =>
       logger.info(s"$correlationId::[submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
-      logger.info(s"content is $nrsSubmission")
       httpClient
         .POST[NrsSubmission, HttpResponse](s"$url", nrsSubmission, Seq("X-API-Key" -> apiKey))
         .map { response =>
