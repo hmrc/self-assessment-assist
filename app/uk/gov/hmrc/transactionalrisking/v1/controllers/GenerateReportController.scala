@@ -27,7 +27,6 @@ import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AssistReportGenerated
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.UnableToAttempt
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService, ServiceOutcome}
 
@@ -77,13 +76,13 @@ class GenerateReportController @Inject()(
           report => {
             nonRepudiationService.buildNrsSubmission(report.responseData.stringify, report.responseData.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
               .fold(
-                error => errorHandler(ErrorWrapper(correlationId,ServerError),correlationId),
+                error => Future.successful(InternalServerError(Json.toJson(DownstreamError))),
                 success => {
-                  nonRepudiationService.submit(success, AssistReportGenerated)
-                  logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                  logger.info(s"$correlationId::[submit] Request initiated to store ${AssistReportGenerated.value} content to NRS")
+                  nonRepudiationService.submit(success)
+                  logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
                   Future.successful(Ok(Json.toJson[AssessmentReport](report.responseData)))
                 }
-
               )
           }
         ).flatten.map(_.withApiHeaders(correlationId))

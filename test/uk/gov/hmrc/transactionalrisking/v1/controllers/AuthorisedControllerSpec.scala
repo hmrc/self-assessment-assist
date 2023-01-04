@@ -58,7 +58,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "a user is properly authorised and has a correct nino" should {
       "return a 200 success response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
-        private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakeGetRequest)
+        private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
         val result: Result = Await.result(resultFuture, defaultTimeout)
         result.header.status shouldBe OK
       }
@@ -69,7 +69,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "a user is properly authorised and has an incorrect nino" should {
       "return a 400 success response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
-        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, nrsRequired = false)(fakeGetRequest)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, nrsRequired = false)(fakePostRequest)
         val result: Result = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe BAD_REQUEST
@@ -98,7 +98,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
           MockEnrolmentsAuthService.authorised(predicate)
             .returns(Future.successful(Left(mtdError)))
 
-          private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakeGetRequest)
+          private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
           status(actualResult) shouldBe expectedStatus
           contentAsJson(actualResult) shouldBe expectedBody
         }

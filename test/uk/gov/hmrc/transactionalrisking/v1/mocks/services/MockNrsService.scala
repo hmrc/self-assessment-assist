@@ -18,12 +18,9 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.AssessmentReport
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, Metadata, NotableEventType, NrsSubmission, SearchKeys}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{NotableEventType, NrsSubmission}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.{NrsOutcome, NrsService}
 
@@ -49,44 +46,26 @@ trait MockNrsService extends MockFactory {
     }
 
     def stubNrsSubmit(retNrsResponse: NrsResponse): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: NrsSubmission, _: NotableEventType)(_:HeaderCarrier,_: String))
-        .expects(*, *, *, *).anyNumberOfTimes()
+      (mockNrsService.submit(_: NrsSubmission)(_:HeaderCarrier,_: String))
+        .expects(*, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(retNrsResponse)))
-    }
-
-    def stubAssessmentReport(retNrsResponse: NrsResponse): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: AssessmentReport, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
-        .returns(Future.successful(Right(retNrsResponse)))
-    }
-
-    def stubUnableToConstructNRSEventForGenerateReport(): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: AssessmentReport, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
-        .returns(Future.successful(Left(NrsFailure.UnableToAttempt("no beaker token for user"))))
     }
 
     def stubFailureReportDueToException(): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: AssessmentReport, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
+      (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *).anyNumberOfTimes()
         .returns(Future.successful(Left(NrsFailure.Exception("GatewayTimeout"))))
     }
 
     def stubAcknowledgement(retNrsResponse: NrsResponse): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
+      (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(retNrsResponse)))
     }
 
-    def stubUnableToConstructNRSEventForAcknowledge(): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
-        .returns(Future.successful(Left(NrsFailure.UnableToAttempt("no beaker token for user"))))
-    }
-
     def stubFailureAcknowledgementDueToException(): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: AcknowledgeReportId, _: OffsetDateTime)(_: UserRequest[_], _: HeaderCarrier, _: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
+      (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *).anyNumberOfTimes()
         .returns(Future.successful(Left(NrsFailure.Exception("GatewayTimeout"))))
     }
   }

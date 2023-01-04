@@ -75,7 +75,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -94,7 +94,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -109,7 +109,7 @@ class GenerateReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString)(fakeGetRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
@@ -131,7 +131,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -162,7 +162,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -192,7 +192,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -220,16 +220,16 @@ class GenerateReportControllerSpec
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
         MockCurrentDateTime.getDateTime()
-        MockNrsService.stubUnableToConstructNRSEventForGenerateReport()
+        MockNrsService.stubUnableToConstrucNrsSubmission()
         MockProvideRandomCorrelationId.IdGenerator
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakeGetRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
-//        contentAsJson(result) shouldBe ??? // TODO what should the body be as per the spec?
-        //contentType(result) shouldBe Some("application/json")
+        contentAsJson(result)  shouldBe DownstreamError.toJson // TODO what should the body be as per the spec?
+        contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
       }

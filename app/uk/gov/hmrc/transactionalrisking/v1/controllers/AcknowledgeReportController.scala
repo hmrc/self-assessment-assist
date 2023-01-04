@@ -25,8 +25,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportId
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure.UnableToAttempt
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, AssistReportAcknowledged}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
@@ -59,39 +58,29 @@ class AcknowledgeReportController @Inject()(
         processRequest.fold(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
+            logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge status ${assessmentReport.responseCode}")
             assessmentReport.responseCode match {
-              case Some(CREATED) =>
-                logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created")
-                //Submit asynchronously to NRS
-                nonRepudiationService.submit(AcknowledgeReportId(reportId), submissionTimestamp).map {
-                  case Left(UnableToAttempt(_)) =>
-                    InternalServerError
-                  case _ =>
-                    logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                    NoContent
-                }
-              case Some(ACCEPTED) =>
-                logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge created, submitting acknowledgement to NRS")
-                //Submit asynchronously to NRS
-                nonRepudiationService.submit(AcknowledgeReportId(reportId), submissionTimestamp).map {
-                  case Left(UnableToAttempt(_)) =>
-                    InternalServerError
-                  case _ =>
-                    logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                    NoContent
-                }
-              case Some(NO_CONTENT) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] Place Holder: rds ack response is $NO_CONTENT")
-                Future.successful(NoContent)
-
-              case Some(BAD_REQUEST) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $BAD_REQUEST")
-                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
+              case Some(CREATED) | Some(ACCEPTED)=>
+                nonRepudiationService.buildNrsSubmission(AcknowledgeReportId(reportId).stringify, reportId,
+                  submissionTimestamp, request, AssistReportAcknowledged).
+                  fold(
+                    error => {
+                      logger.error(s"$correlationId::[acknowledgeReport] NRS event generation failed")
+                      Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+                    },
+                    success => {
+                      logger.debug(s"$correlationId::[submit] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
+                      //Submit asynchronously to NRS
+                      nonRepudiationService.submit(success)
+                      logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
+                      Future.successful(NoContent)
+                    }
+                  )
+              case Some(NO_CONTENT) => Future.successful(NoContent)
+              case Some(BAD_REQUEST) => Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
               case Some(UNAUTHORIZED) =>
-                val responseMessage = assessmentReport.responseMessage
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $UNAUTHORIZED $responseMessage")
+                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $UNAUTHORIZED ${assessmentReport.responseMessage}")
                 Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
-
               case _ =>
                 logger.error(s"$correlationId::[acknowledgeReport] unrecognised value for response code")
                 Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))

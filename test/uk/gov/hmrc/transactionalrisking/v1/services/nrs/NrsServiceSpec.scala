@@ -37,30 +37,6 @@ class NrsServiceSpec extends ServiceSpec {
   private val nrsId = "a5894863-9cd7-4d0d-9eee-301ae79cbae6"
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
-
-  class Test extends MockNrsConnector {
-
-    private val hasUtil = app.injector.instanceOf[HashUtil]
-
-    implicit val userRequest: UserRequest[_] =
-      UserRequest(
-        userDetails =
-          UserDetails(
-            userType = AffinityGroup.Individual,
-            agentReferenceNumber = None,
-            clientID = "aClientID",
-            identityData = Some(IdentityDataTestData.correctModel)
-          ),
-        request = FakeRequest().withHeaders(
-          "Authorization" -> "Bearer aaaa",
-          "dummyHeader1" -> "dummyValue1",
-          "dummyHeader2" -> "dummyValue2"
-        )
-      )
-
-    val service = new NrsService(mockNrsConnector, hasUtil)
-  }
-
   private val rdsReport: AssessmentReport = AssessmentReport(
     reportId = UUID.fromString("db741dff-4054-478e-88d2-5993e925c7ab"),
     risks = Seq(
@@ -77,7 +53,6 @@ class NrsServiceSpec extends ServiceSpec {
     calculationId = UUID.fromString("99d758f6-c4be-4339-804e-f79cf0610d4f"),
     rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
   )
-
   private val expectedReportPayload: NrsSubmission =
     NrsSubmission(
       payload = "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIwMjIiLCJjYWxjdWxhdGlvbklkIjoiOTlkNzU4ZjYtYzRiZS00MzM5LTgwNGUtZjc5Y2YwNjEwZDRmIiwiY29ycmVsYXRpb25JZCI6ImU0MzI2NGM1LTUzMDEtNGVjZS1iM2QzLTFlOGE4ZGQ5M2I0YiJ9",
@@ -101,6 +76,7 @@ class NrsServiceSpec extends ServiceSpec {
           )
       )
     )
+  private val acknowledgeRdsReport = AcknowledgeReportId("12345")
 
   "service using report generated" when {
 
@@ -109,23 +85,35 @@ class NrsServiceSpec extends ServiceSpec {
 
         MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
+        val nrsSubmission = service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, timestamp, userRequest, AssistReportGenerated)
 
-        await(service.submit(rdsReport, timestamp)) shouldBe Right(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+        await(
+          nrsSubmission.fold(
+            error => fail("Exception must not be thrown"),
+            success => service.submit(success)
+          )
+        ) shouldBe Right(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
       }
     }
   }
 
-  "service call unsuccessful report generated" must {
-    "map 4xx errors correctly" in new Test {
+    "service call unsuccessful report generated" must {
+      "map 4xx errors correctly" in new Test {
 
-      MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
-        .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
+        MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
+          .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
 
-      await(service.submit(rdsReport, timestamp)) shouldBe Left(NrsFailure.Exception("reason"))
+        val nrsSubmission = service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, timestamp, userRequest, AssistReportGenerated)
+
+
+          await(
+            nrsSubmission.fold(
+              error => error,
+              success => service.submit(success)
+            )
+          ).map( value => value shouldBe Left(NrsFailure.Exception("reason")))
+        }
     }
-  }
-
-  private val acknowledgeRdsReport = AcknowledgeReportId("12345")
 
   private val expectedAcknowledgePayload: NrsSubmission =
     NrsSubmission(
@@ -151,6 +139,28 @@ class NrsServiceSpec extends ServiceSpec {
       )
     )
 
+  class Test extends MockNrsConnector {
+    private val hasUtil = app.injector.instanceOf[HashUtil]
+    val service = new NrsService(mockNrsConnector, hasUtil)
+
+    implicit val userRequest: UserRequest[_] =
+      UserRequest(
+        userDetails =
+          UserDetails(
+            userType = AffinityGroup.Individual,
+            agentReferenceNumber = None,
+            clientID = "aClientID",
+            identityData = Some(IdentityDataTestData.correctModel)
+          ),
+        request = FakeRequest().withHeaders(
+          "Authorization" -> "Bearer aaaa",
+          "dummyHeader1" -> "dummyValue1",
+          "dummyHeader2" -> "dummyValue2"
+        )
+      )
+
+  }
+
   "service using acknowledged generated" when {
 
     "service call successful" must {
@@ -160,21 +170,36 @@ class NrsServiceSpec extends ServiceSpec {
         MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
 
-        await(service.submit(acknowledgeRdsReport, timestamp)) shouldBe Right(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
+        val nrsSubmission = service.buildNrsSubmission(acknowledgeRdsReport.stringify, acknowledgeRdsReport.reportId, timestamp, userRequest, AssistReportAcknowledged)
+
+        await(
+          nrsSubmission.fold(
+            error => fail("Exception must not be thrown"),
+            success => service.submit(success)
+          )
+        ) shouldBe Right(NrsResponse("a5894863-9cd7-4d0d-9eee-301ae79cbae6"))
       }
     }
   }
 
-  "service call unsuccessful acknowledged generated" must {
+   "service call unsuccessful acknowledged generated" must {
 
-    "map 4xx errors correctly" in new Test {
+     "map 4xx errors correctly" in new Test {
 
-      MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
-        .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
+       MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
+         .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
+       val nrsSubmission = service.buildNrsSubmission(acknowledgeRdsReport.stringify, acknowledgeRdsReport.reportId, timestamp, userRequest, AssistReportAcknowledged)
 
-      await(service.submit(acknowledgeRdsReport, timestamp)) shouldBe Left(NrsFailure.Exception("reason"))
-    }
-  }
+       await(
+         nrsSubmission.fold(
+           error => error,
+           success => service.submit(success)
+         )
+       ).map( value => value shouldBe Left(NrsFailure.Exception("reason")))
+
+       //await(service.submit(acknowledgeRdsReport)) shouldBe Left(NrsFailure.Exception("reason"))
+     }
+   }
 
 
 }

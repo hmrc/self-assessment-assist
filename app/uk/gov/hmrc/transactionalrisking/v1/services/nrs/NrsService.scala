@@ -20,7 +20,6 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.AssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure
 
@@ -86,38 +85,10 @@ class NrsService @Inject()(connector: NrsConnector,
 
   }
 
-    def submit(submission: NrsSubmission,
-                     key: NotableEventType)(implicit hc: HeaderCarrier,
-                                            correlationId: String): Future[NrsOutcome] = {
-    logger.info(s"$correlationId::[submit] Request initiated to store ${key.value} content to NRS")
-    connector.submit(submission)
-  }
+    def submit(submission: NrsSubmission)(implicit hc: HeaderCarrier,
+                                            correlationId: String): Future[NrsOutcome] = connector.submit(submission)
 
-  def submit(report: AssessmentReport, submissionTimestamp: OffsetDateTime)(
-    implicit request: UserRequest[_],
-    hc: HeaderCarrier,
-    correlationId: String
-  ): Future[NrsOutcome] = {
-    val payload = report.stringify
-    buildNrsSubmission(payload, report.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
-      .fold(
-        error => Future.successful(Left(error)),
-        success => submit(success, AssistReportGenerated)
-      )
-  }
 
-  def submit(reportId: AcknowledgeReportId, submissionTimestamp: OffsetDateTime)(
-    implicit request: UserRequest[_],
-    hc: HeaderCarrier,
-    correlationId: String
-  ): Future[NrsOutcome] = {
-    //TODO this has to come outside of this method, as failure in building NRS Request should fail the transaction
-    val payload = reportId.stringify
-    buildNrsSubmission(payload, reportId.reportId, submissionTimestamp, request, AssistReportAcknowledged)
-      .fold(
-        error => Future.successful(Left(error)),
-        success => submit(success, AssistReportAcknowledged)
-      )
-  }
+
 
 }
