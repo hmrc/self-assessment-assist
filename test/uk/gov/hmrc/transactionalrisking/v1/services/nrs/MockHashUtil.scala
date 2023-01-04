@@ -37,3 +37,5 @@ trait MockHashUtil extends MockFactory {
         .getHash(_: String))
         .expects(string)
     }
+  }
+}
