@@ -38,3 +38,4 @@ test-result
 tmp
 .vscode/
 .node_modules
+/node_modules/
