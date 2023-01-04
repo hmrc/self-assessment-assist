@@ -18,8 +18,6 @@ package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import akka.actor.Scheduler
 import play.api.http.Status
-import play.api.libs.json.Json
-import play.mvc.BodyParser.Json
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
