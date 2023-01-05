@@ -191,7 +191,7 @@ components:
 
 tags:
   - name: Generate Report
-    description: request a HMRC Assist report to be generated for a customer or their agent
+    description: Produce a HMRC Self Assessment Assist Report
   - name: Acknowledge Report
     description: allow the customer or agent to acknowledge the report
 
@@ -212,7 +212,7 @@ paths:
 
       security:
         - User-Restricted:
-            - read:self-assessment
+            - read:self-assessment-assist
 
       responses:
         "200":
@@ -391,8 +391,7 @@ paths:
 
       security:
         - User-Restricted:
-            - read:self-assessment
-
+            - write:self-assessment-assist
       responses:
         "204":
           description: HTTP status 204 (No Content)
