@@ -191,7 +191,7 @@ components:
 
 tags:
   - name: Generate Report
-    description: Produce a HMRC Self Assessment Assist Report
+    description: request a HMRC Assist report to be generated for a customer or their agent
   - name: Acknowledge Report
     description: allow the customer or agent to acknowledge the report
 
