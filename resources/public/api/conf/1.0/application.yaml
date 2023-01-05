@@ -56,7 +56,7 @@ servers:
 
 components:
   securitySchemes:
-    User-Restricted:
+    userScheme:
       type: oauth2
       description: HMRC supports OAuth 2.0 for authenticating User-restricted API requests
       flows:
@@ -65,8 +65,8 @@ components:
           tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
           refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
           scopes:
-            write:self-assessment: Grant write access
-            read:self-assessment: Grant read access
+            write:self-assessment-assist: Grant write access
+            read:self-assessment-assist: Grant read access
   parameters:
     nino:
       name: nino
@@ -390,7 +390,7 @@ paths:
         - $ref: '#/components/parameters/authorizationReadScopeHeader'
 
       security:
-        - User-Restricted:
+        - userScheme:
             - write:self-assessment-assist
       responses:
         "204":
