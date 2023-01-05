@@ -392,7 +392,6 @@ paths:
       security:
         - User-Restricted:
             - write:self-assessment-assist
-
       responses:
         "204":
           description: HTTP status 204 (No Content)
