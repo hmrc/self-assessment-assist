@@ -211,7 +211,7 @@ paths:
         - $ref: '#/components/parameters/authorizationReadScopeHeader'
 
       security:
-        - User-Restricted:
+        - userScheme:
             - read:self-assessment-assist
 
       responses:
