@@ -62,7 +62,7 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
   val rdsBaseUrlForAcknowledge:String = config.baseUrl("rds")+rdsConfig.get[String]("acknowledge-url")
 
   val rdsSasBaseUrlForAuth:String = config.baseUrl("rds.sas")+rdsConfig.get[String]("sas.auth-url")
-  val rdsAuthRequiredForThisEnv = rdsConfig.get[Boolean]("rdsAuthRequiredForThisEnv")
+  val rdsAuthRequiredForThisEnv: Boolean = rdsConfig.get[Boolean]("rdsAuthRequiredForThisEnv")
 
   def rdsAuthCredential: AuthCredential =
     AuthCredential(

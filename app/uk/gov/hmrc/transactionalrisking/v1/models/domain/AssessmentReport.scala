@@ -17,12 +17,14 @@
 package uk.gov.hmrc.transactionalrisking.v1.models.domain
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{JsPath, Writes}
+import play.api.libs.json.{JsPath, Json, Writes}
 
 import java.util.UUID
 
 // At this point, we don't expect that the report will differ according to the context.
-case class AssessmentReport(reportId: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationId:UUID, rdsCorrelationId:String)
+case class AssessmentReport(reportId: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationId:UUID, rdsCorrelationId:String) {
+  def stringify: String = Json.stringify(Json.toJson(this))
+}
 
 object AssessmentReport {
 
@@ -30,7 +32,7 @@ object AssessmentReport {
     (JsPath \ "reportId").write[UUID]
       .and((JsPath \ "messages").write[Seq[Risk]])
       .and((JsPath \ "nino").write[String])
-      .and((JsPath \ "taxyear").write[String])
+      .and((JsPath \ "taxYear").write[String])
       .and((JsPath \ "calculationId").write[UUID])
       .and((JsPath \ "correlationId").write[String])(unlift(AssessmentReport.unapply))
 

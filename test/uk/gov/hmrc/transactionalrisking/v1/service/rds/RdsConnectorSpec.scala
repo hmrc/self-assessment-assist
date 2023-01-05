@@ -29,7 +29,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError,
   MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError}
@@ -132,18 +132,18 @@ class RdsConnectorSpec extends ConnectorSpec
       "return the response if successful" in new Test {
         stubRDSGenerateReportResponse(Some(rdsSubmissionReportJson.toString),CREATED)
 
-        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(internalCorrelationId, rdsNewSubmissionReport))
+        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(correlationId, rdsNewSubmissionReport))
       }
 
       "fail when the bearer token is invalid" in new Test {
         stubRDSGenerateReportResponse(status=UNAUTHORIZED)
 
-        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(internalCorrelationId, ForbiddenDownstreamError))
+        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
       }
 
       "return the feedback, if RDS returns http status 201 and feedback with responsecode 201" in new Test{
         stubRDSGenerateReportResponse(Some(rdsSubmissionReportJson.toString),status=CREATED)
-        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(internalCorrelationId, rdsNewSubmissionReport))
+        await(connector.submit(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(correlationId, rdsNewSubmissionReport))
 
       }
 
@@ -153,7 +153,7 @@ class RdsConnectorSpec extends ConnectorSpec
         stubRDSGenerateReportResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Right(ResponseWrapper(internalCorrelationId, expectedReportJson.as[RdsAssessmentReport]))
+        feedbackReport shouldBe Right(ResponseWrapper(correlationId, expectedReportJson.as[RdsAssessmentReport]))
       }
 
 
@@ -162,35 +162,35 @@ class RdsConnectorSpec extends ConnectorSpec
         stubRDSGenerateReportResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, MatchingResourcesNotFoundError,Some(Seq(MtdError("404","No feedback applicable")))))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError,Some(Seq(MtdError("404","No feedback applicable")))))
       }
 
       "return Internal Server Error, if RDS returns http status 400" in new Test{
         stubRDSGenerateReportResponse(status=BAD_REQUEST)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, DownstreamError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
 
       "return Service Unavailable, if RDS is (unavailable) http status code 404" in new Test{
         stubRDSGenerateReportResponse(status=NOT_FOUND)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, ServiceUnavailableError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
 
       "return Internal Server Error, if RDS fails with 503" in new Test{
         stubRDSGenerateReportResponse(status=SERVICE_UNAVAILABLE)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, DownstreamError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
 
       "return Service Unavailable, if RDS request Timesout" in new Test{
         stubRDSGenerateReportResponse(status=REQUEST_TIMEOUT)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, ServiceUnavailableError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
     }
 
@@ -199,17 +199,17 @@ class RdsConnectorSpec extends ConnectorSpec
         val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
 
-        await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(internalCorrelationId, rdsAssessmentAckJson.as[RdsAssessmentReport]))
+        await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(correlationId, rdsAssessmentAckJson.as[RdsAssessmentReport]))
       }
 
       "fail when the bearer token is invalid" in new Test {
         stubRDSAcknowledgeReportResponse(status=UNAUTHORIZED)
-        await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(internalCorrelationId, ForbiddenDownstreamError))
+        await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
       }
 
       "return no content, if RDS returns http status 201 and with responsecode 202" in new Test{
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
-        await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(internalCorrelationId, rdsAssessmentAck))
+        await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(correlationId, simpleAcknowledgeNewRdsAssessmentReport))
       }
 
       "return MatchingResourcesNotFoundError, if RDS returns http status 201 and no calculationId found with responsecode 401" in new Test{
@@ -217,35 +217,35 @@ class RdsConnectorSpec extends ConnectorSpec
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, ForbiddenDownstreamError,None))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ForbiddenDownstreamError,None))
       }
 
       "return Internal Server Error, if RDS returns http status 400" in new Test{
         stubRDSAcknowledgeReportResponse(status=BAD_REQUEST)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, DownstreamError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
 
       "return Service Unavailable, if RDS is (unavailable) http status code 404" in new Test{
         stubRDSAcknowledgeReportResponse(status=NOT_FOUND)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, ServiceUnavailableError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
 
       "return Internal Server Error, if RDS fails with 503" in new Test{
         stubRDSAcknowledgeReportResponse(status=SERVICE_UNAVAILABLE)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, DownstreamError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
 
       "return Service Unavailable, if RDS request Timesout" in new Test{
         stubRDSAcknowledgeReportResponse(status=REQUEST_TIMEOUT)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(internalCorrelationId, ServiceUnavailableError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
     }
   }

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleCalculationId, simpleCalculationIdStrangeCharsString, simpleNino, simpleNinoInvalid}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.GenerateReportValidator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData

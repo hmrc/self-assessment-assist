@@ -17,76 +17,78 @@
 package uk.gov.hmrc.transactionalrisking.v1.services.nrs
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, HashUtil, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsFailure
 
 import java.time.OffsetDateTime
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.Try
 
 @Singleton
-class NrsService @Inject()(
-                            //                            auditService: AuditService,
-                            connector: NrsConnector,
-                            hashUtil: HashUtil) extends Logging {
+class NrsService @Inject()(connector: NrsConnector,
+                           hashUtil: HashUtil) extends Logging {
   //                           override val metrics: Metrics) extends Timer with Logging { TODO include metrics later
 
-  def buildNrsSubmission(requestData: RequestData,
-                         submissionTimestamp: OffsetDateTime,
-                         request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationId: String): NrsSubmission = {
-    logger.info(s"$correlationId::[buildNrsSubmission]Build the NRS submission")
+  def buildNrsSubmission(payload: String,
+                                 reportId: String,
+                                 submissionTimestamp: OffsetDateTime,
+                                 request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationId: String): Either[NrsFailure, NrsSubmission] = {
 
-    //TODO fix me later, body will be instance of class NewRdsAssessmentReport
-    val payloadString = Json.toJson(requestData.body).toString()
-    val encodedPayload = hashUtil.encode(payloadString)
-    val sha256Checksum = hashUtil.getHash(payloadString)
-    val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)
-    //TODO refer https://confluence.tools.tax.service.gov.uk/display/NR/Transactional+Risking+Service+-+API+-+NRS+Assessment
+    logger.info(s"$correlationId::[buildNrsSubmission] Building the NRS submission")
 
-    NrsSubmission(
-      payload = encodedPayload,
-      Metadata(
-        businessId = "saa",
-        notableEvent = notableEventType.value,
-        payloadContentType = "application/json",
-        payloadSha256Checksum = sha256Checksum,
-        userSubmissionTimestamp = formattedDate,
-        identityData = request.userDetails.identityData,
-        userAuthToken = request.headers.get("Authorization").get,  //TODO:Fix error handling for get throws. Maybe build NRS should be moved out of class.
-        headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }),//TODO remove auth header
-        searchKeys =
-          SearchKeys(
-            reportId = requestData.body.reportId
+    val userAuthToken = request.headers.get(HeaderNames.authorisation)
+
+    userAuthToken match {
+      case Some(token) =>
+        logger.info(s"payload before encoding $payload")
+        Try {
+          val encodedPayload = hashUtil.encode(payload)
+          val sha256Checksum = hashUtil.getHash(payload)
+          val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)
+
+          NrsSubmission(
+            payload = encodedPayload,
+            Metadata(
+              businessId = "saa",
+              notableEvent = notableEventType.value,
+              payloadContentType = "application/json",
+              payloadSha256Checksum = sha256Checksum,
+              userSubmissionTimestamp = formattedDate,
+              identityData = request.userDetails.identityData,
+              userAuthToken = token,
+              headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }), //TODO remove auth header
+              searchKeys =
+                SearchKeys(
+                  reportId = reportId
+                )
+            )
           )
-      )
-    )
-  }
-
-  def submit(requestData: RequestData, submissionTimestamp: OffsetDateTime, notableEventType: NotableEventType)(
-    implicit request: UserRequest[_],
-    hc: HeaderCarrier,
-    ec: ExecutionContext,
-    correlationId: String
-  ): Future[Option[NrsResponse]] = {
-    logger.info(s"$correlationId::[submit]submit the data to nrs")
-    //TODO this has to come outside of this method, as failure in building NRS Request should fail the transaction
-    val nrsSubmission = buildNrsSubmission(requestData, submissionTimestamp, request, notableEventType)
-
-    logger.info(s"$correlationId::[submit] Request initiated to store report content to NRS")
-    connector.submit(nrsSubmission).map { response =>
-      response.toOption match {
-          case r @ Some(_) =>
-            logger.info(s"$correlationId::[submit] Successful submission")
-            r
-          case None =>
-            logger.info(s"$correlationId::[submit] Nothing submitted")
-            None
-      }
+        }.fold(
+          error => {
+            logger.error(s"$correlationId::[buildNrsSubmission] unable to build NRS event due to ${error.getMessage}")
+            Left(NrsFailure.UnableToAttempt(error.getMessage))
+          },
+          event => {
+            logger.info(s"$correlationId::[buildNrsSubmission] successfully built NRS event for submission")
+            Right(event)
+          }
+        )
+      case None =>
+        logger.error(s"$correlationId::[buildNrsSubmission] unable to build NRS event, no user bearer token")
+        Left(NrsFailure.UnableToAttempt("no beaker token for user"))
     }
 
+
   }
+
+    def submit(submission: NrsSubmission)(implicit hc: HeaderCarrier,
+                                            correlationId: String): Future[NrsOutcome] = connector.submit(submission)
+
+
+
 
 }

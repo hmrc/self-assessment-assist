@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.CalculationInfo
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
@@ -28,24 +28,22 @@ import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkServ
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-
 trait MockIntegrationFrameworkService extends MockFactory {
 
   val mockIntegrationFrameworkService: IntegrationFrameworkService = mock[IntegrationFrameworkService]
-
 
   object MockIntegrationFrameworkService {
 
     def getCalculationInfo(id: UUID, nino: String): CallHandler[Future[ServiceOutcome[CalculationInfo]]] = {
       (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String)(_: ExecutionContext, _:String))
         .expects(*, *, *, *).anyNumberOfTimes()
-        .returns(Future.successful(Right(ResponseWrapper(internalCorrelationIdImplicit, CalculationInfo(simpleCalculationId, simpleNino, "2021-22")))))
+        .returns(Future.successful(Right(ResponseWrapper(correlationId, CalculationInfo(simpleCalculationId, simpleNino, "2021-22")))))
     }
 
     def getCalculationInfoFail(id: UUID, nino: String, error: MtdError): CallHandler[Future[ServiceOutcome[CalculationInfo]]] = {
       (mockIntegrationFrameworkService.getCalculationInfo(_: UUID, _: String)(_: ExecutionContext, _: String))
         .expects(*, *, *, *).anyNumberOfTimes()
-        .returns(Future.successful(Left(ErrorWrapper(internalCorrelationIdImplicit, error))))
+        .returns(Future.successful(Left(ErrorWrapper(correlationId, error))))
     }
   }
 }

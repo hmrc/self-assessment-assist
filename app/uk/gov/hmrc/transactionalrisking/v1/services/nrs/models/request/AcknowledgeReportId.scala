@@ -16,4 +16,11 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request
 
-case class RequestData(nino: String, body: RequestBody)
+import play.api.libs.json.{Format, Json}
+case class AcknowledgeReportId(reportId: String) {
+  def stringify: String = Json.stringify(Json.toJson(this))
+}
+
+object AcknowledgeReportId {
+  implicit val formats: Format[AcknowledgeReportId] = Json.format[AcknowledgeReportId]
+}

@@ -23,7 +23,7 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.{Enrolment, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.internalCorrelationId
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
@@ -42,7 +42,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     class TestController extends AuthorisedController(cc) {
       override val authService: EnrolmentsAuthService = mockEnrolmentsAuthService
 
-      def authorisedActionAysncSUT(nino: String, nrsRequired: Boolean = true): Action[AnyContent] = authorisedAction(nino, nrsRequired)(internalCorrelationId).async {
+      def authorisedActionAysncSUT(nino: String, nrsRequired: Boolean = true): Action[AnyContent] = authorisedAction(nino, nrsRequired)(correlationId).async {
         Future.successful(Ok(Json.obj()))
       }
     }
@@ -58,8 +58,8 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "a user is properly authorised and has a correct nino" should {
       "return a 200 success response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
-        private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakeGetRequest)
-        val result = Await.result(resultFuture, defaultTimeout)
+        private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
+        val result: Result = Await.result(resultFuture, defaultTimeout)
         result.header.status shouldBe OK
       }
     }
@@ -69,8 +69,8 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "a user is properly authorised and has an incorrect nino" should {
       "return a 400 success response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
-        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, false)(fakeGetRequest)
-        val result = Await.result(resultFuture, defaultTimeout)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, nrsRequired = false)(fakePostRequest)
+        val result: Result = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe BAD_REQUEST
 
@@ -79,7 +79,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         val returnedError: String = returnedErrorJSon.utf8String
 
         val ninoErrorJSon: JsValue = Json.toJson(NinoFormatError)
-        val ninoError = ninoErrorJSon.toString()
+        val ninoError: String = ninoErrorJSon.toString()
 
         returnedError shouldBe ninoError
       }
@@ -98,7 +98,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
           MockEnrolmentsAuthService.authorised(predicate)
             .returns(Future.successful(Left(mtdError)))
 
-          private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakeGetRequest)
+          private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
           status(actualResult) shouldBe expectedStatus
           contentAsJson(actualResult) shouldBe expectedBody
         }

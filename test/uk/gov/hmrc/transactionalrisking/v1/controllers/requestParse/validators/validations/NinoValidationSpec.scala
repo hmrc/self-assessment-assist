@@ -17,18 +17,18 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators.validations
 
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData.{simpleNino, simpleNinoInvalid}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.NinoValidation
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.NinoFormatError
 
 class NinoValidationSpec extends UnitSpec {
-  val validator = NinoValidation
+
+  private val validator: NinoValidation.type = NinoValidation
 
   "running a validation" should {
       "a valid request" in {
         validator.validate(simpleNino) shouldBe Nil
       }
-
 
     "return errors" when {
       "an invalid nino." in {

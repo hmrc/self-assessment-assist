@@ -19,17 +19,18 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.utils
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.transactionalrisking.utils.IdGenerator
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.commonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 
 trait MockIdGenerator extends MockFactory {
-  val mockIdGenerator = mock[IdGenerator ]
+
+  val mockIdGenerator: IdGenerator = mock[IdGenerator ]
 
   object MockProvideRandomCorrelationId {
 
     def IdGenerator: CallHandler[String] = {
       (mockIdGenerator.getUid _)
         .expects
-        .returns( internalCorrelationId )
+        .returns(correlationId)
     }
   }
 }

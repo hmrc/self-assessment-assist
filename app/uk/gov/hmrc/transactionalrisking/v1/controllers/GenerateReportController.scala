@@ -26,7 +26,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AssistReportGenerated, RequestBody, RequestData}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AssistReportGenerated
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService, ServiceOutcome}
 
@@ -57,8 +57,7 @@ class GenerateReportController @Inject()(
 
       toId(calculationId).map { calculationIdUuid =>
 
-        val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = (
-          for {
+        val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
           calculationInfo                       <- EitherT(getCalculationInfo(calculationIdUuid, nino))
           assessmentRequestForSelfAssessment    = AssessmentRequestForSelfAssessment(calculationIdUuid,
                                                   nino,
@@ -68,27 +67,25 @@ class GenerateReportController @Inject()(
                                                   DesTaxYear.fromMtd(calculationInfo.responseData.taxYear).toString)
 
           fraudRiskReport                       <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment)))
-          rdsAssessmentReportResponse           <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
-        } yield {
-          rdsAssessmentReportResponse.map { assessmentReportResponse: AssessmentReport =>
-            val rdsReportContent = RequestData(nino = nino, RequestBody(assessmentReportResponse.toString,
-              assessmentReportResponse.reportId.toString))
-
-            nonRepudiationService.submit(
-              requestData = rdsReportContent,
-              submissionTimestamp,
-              notableEventType = AssistReportGenerated
-            )
-
-            assessmentReportResponse
-          }
-        })
+          rdsAssessmentReport                   <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+        } yield rdsAssessmentReport
 
         responseData.fold(
-          errorWrapper => errorHandler(errorWrapper, correlationId), report =>
-            Future(Ok(Json.toJson[AssessmentReport](report.responseData)))
+          errorWrapper =>
+            errorHandler(errorWrapper, correlationId),
+          report => {
+            nonRepudiationService.buildNrsSubmission(report.responseData.stringify, report.responseData.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
+              .fold(
+                error => Future.successful(InternalServerError(Json.toJson(DownstreamError))),
+                success => {
+                  logger.info(s"$correlationId::[submit] Request initiated to store ${AssistReportGenerated.value} content to NRS")
+                  nonRepudiationService.submit(success)
+                  logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
+                  Future.successful(Ok(Json.toJson[AssessmentReport](report.responseData)))
+                }
+              )
+          }
         ).flatten.map(_.withApiHeaders(correlationId))
-
       }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
     }
   }
@@ -105,7 +102,6 @@ class GenerateReportController @Inject()(
     case error@_ =>
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
       Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)))
-
   }
 
   //TODO Revisit Check headers as pending
