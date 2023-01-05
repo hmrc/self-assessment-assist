@@ -191,14 +191,14 @@ components:
 
 tags:
   - name: Generate Report
-    description: Produce a HMRC Self Assessment Assist Report
+    description: request a HMRC Assist report to be generated for a customer or their agent
   - name: Acknowledge Report
     description: allow the customer or agent to acknowledge the report
 
 paths:
   /individuals/self-assessment/assist/reports/{nino}/{calculationId}:
     post:
-      summary: Request a HMRC Assist report to be generated for a customer or their agent
+      summary: Produce a HMRC Self Assessment Assist Report
       description: |
         This endpoint allows a developer to request a HMRC Assist report to be generated for a customer or their agent
       tags:
