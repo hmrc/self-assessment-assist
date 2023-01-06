@@ -22,7 +22,8 @@ import uk.gov.hmrc.transactionalrisking.v1.models.domain.FraudRiskRequest.FraudR
 abstract class AtLeastOneNonEmptyOption[T] { self: T with Product =>
 
   def nonEmpty: Boolean = this.productIterator.exists {
-    case Some(_) => true
+    case Some(value) => println(value)
+      true
     case _ => false
   }
 
@@ -30,17 +31,17 @@ abstract class AtLeastOneNonEmptyOption[T] { self: T with Product =>
 
 // This is still being determined; please see TRDT-85.//TODO revisit me later
 case class FraudRiskRequest(
-                             nino: Option[String],
-                             taxYear: Option[String],
-                             utr:Option[UTR],
-                             deviceId:Option[String],
-                             userId:Option[UserId],
-                             ipAddress:Option[String],
-                             bankAccountSortCode:Option[BankAccountSortCode],
-                             bankAccountNumber:Option[BankAccountNumber],
-                             email:Option[String],
-                             submissionId:Option[String],
-                             fraudRiskHeaders: FraudRiskHeaders){
+                             nino: Option[String]=None,
+                             taxYear: Option[String]=None,
+                             utr:Option[UTR]=None,
+                             deviceId:Option[String]=None,
+                             userId:Option[UserId]=None,
+                             ipAddress:Option[String]=None,
+                             bankAccountSortCode:Option[BankAccountSortCode]=None,
+                             bankAccountNumber:Option[BankAccountNumber]=None,
+                             email:Option[String]=None,
+                             submissionId:Option[String]=None,
+                             fraudRiskHeaders: FraudRiskHeaders) extends AtLeastOneNonEmptyOption[FraudRiskRequest]{
 
 
 

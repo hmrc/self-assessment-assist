@@ -107,11 +107,12 @@ class GenerateReportController @Inject()(
   //TODO Revisit Check headers as pending
   private def generateFraudRiskRequest(request: AssessmentRequestForSelfAssessment): FraudRiskRequest = {
     val fraudRiskHeaders = Map.empty[String, String]
-    new FraudRiskRequest(
-      request.nino,
-      request.taxYear,
-      fraudRiskHeaders
+    val fraudRiskRequest =new FraudRiskRequest(
+      nino= Some(request.nino),
+      taxYear = Some(request.taxYear),
+      fraudRiskHeaders=fraudRiskHeaders
     )
+    fraudRiskRequest
   }
 
   private def toId(rawId: String): Option[UUID] =
