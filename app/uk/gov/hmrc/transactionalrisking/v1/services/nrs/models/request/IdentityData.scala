@@ -25,17 +25,12 @@ import java.time.LocalDate
 
 case class IdentityData(internalId: Option[String] = None,
                         externalId: Option[String] = None,
-                       // agentCode: Option[String] = None,//TODO revisit : this is not required as its alreay there in AgentInformation so removed
-                       // credentials: Option[Credentials] = None,//TODO revist:  not present in documentation so removed
                         confidenceLevel: ConfidenceLevel,
-                       // nino: Option[String] = None,//TODO revist:  not present in documentation so removed
                         dateOfBirth: Option[LocalDate] = None,
                         agentInformation: AgentInformation,
                         saUtr: Option[String] = None,
-                        //name: Option[Name] = None,//TODO revist:  not present in documentation so removed
-                       // email: Option[String] = None,//TODO revist:  not present in documentation so removed
                         groupIdentifier: Option[String] = None,
-                        credentialRole: Option[CredentialRole],//This is coming as none
+                        credentialRole: Option[CredentialRole],
                         mdtpInformation: Option[MdtpInformation] = None,
                         itmpName: ItmpName,
                         itmpAddress: ItmpAddress,
