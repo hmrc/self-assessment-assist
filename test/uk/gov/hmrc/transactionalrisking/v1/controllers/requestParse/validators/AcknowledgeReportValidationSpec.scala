@@ -31,23 +31,12 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
         val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
         validator.validate(acknowledgeReportRawData) shouldBe Nil
       }
+    }
 
-
-      "return errors" when {
-        "an invalid nino." in {
-
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportId.toString, simpleRDSCorrelationId)
-
-          validator.validate(acknowledgeReportRawData) shouldBe Seq(NinoFormatError)
-        }
-
-/*        "an invalid reportId." in {
-
-          val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportIdStrangeCharsString, simpleRDSCorrelationId)
-
-          validator.validate(acknowledgeReportRawData) shouldBe Seq(FormatReportIdError)
-        }*/
-
+    "return errors" when {
+      "an invalid nino." in {
+        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportId.toString, simpleRDSCorrelationId)
+        validator.validate(acknowledgeReportRawData) shouldBe Seq(NinoFormatError)
       }
     }
   }
