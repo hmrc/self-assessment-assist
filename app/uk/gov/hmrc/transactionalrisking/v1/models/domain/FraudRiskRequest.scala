@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.models.domain
 
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.auth.core.Nino
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.FraudRiskRequest.FraudRiskHeaders
 
@@ -49,6 +50,10 @@ case class FraudRiskRequest(
 
 object FraudRiskRequest {
   type FraudRiskHeaders = Map[String, String]
+  implicit val utrFormat: OFormat[UTR] = UTR.format
+  implicit val bascFormat: OFormat[BankAccountSortCode] = BankAccountSortCode.format
+  implicit val banFormat: OFormat[BankAccountNumber] = BankAccountNumber.format
+  implicit val format: OFormat[FraudRiskRequest] = Json.format[FraudRiskRequest]
 }
 
 final case class UTR private(value:String){
@@ -56,6 +61,7 @@ final case class UTR private(value:String){
 }
 
 object UTR{
+  implicit val format: OFormat[UTR] = Json.format[UTR]
   private def apply(value: String): Either[String, UTR] =
     Either.cond(
       value.length == 10 && value.startsWith("0"),
@@ -72,6 +78,7 @@ final case class UserId private(value:String){
 
 
 object UserId{
+  implicit val format: OFormat[UserId] = Json.format[UserId]
   private def apply(value: String): Either[String, UserId] =
     Either.cond(
       value.length == 16 && value.startsWith("0"),
@@ -89,6 +96,7 @@ final case class BankAccountSortCode private(value:String){
 
 
 object BankAccountSortCode{
+  implicit val format: OFormat[BankAccountSortCode] = Json.format[BankAccountSortCode]
   private def apply(value: String): Either[String, BankAccountSortCode] =
     Either.cond(
       value.length == 6 && value.startsWith("0"),
@@ -106,6 +114,7 @@ final case class BankAccountNumber private(value:String){
 
 
 object BankAccountNumber{
+  implicit val format: OFormat[BankAccountNumber] = Json.format[BankAccountNumber]
   private def apply(value: String): Either[String, BankAccountNumber] =
     Either.cond(
       value.length == 8 && value.startsWith("0"),
