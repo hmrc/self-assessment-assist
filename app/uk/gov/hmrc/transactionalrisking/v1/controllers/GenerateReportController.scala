@@ -50,13 +50,11 @@ class GenerateReportController @Inject()(
 
     implicit val correlationId: String = idGenerator.getUid
     logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
-    logger.info(s"::[generateReportInternal] yy")
 
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
-      logger.info(s"::[generateReportInternal] test") //last log for correlationid
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
-      if (taxYearChecker(taxYear)) {
+      if (taxYearChecker2(taxYear)) {
         toId(calculationId).map { calculationIdUuid =>
           val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
             calculationInfo <- EitherT(getCalculationInfo(calculationIdUuid, nino))
@@ -70,7 +68,7 @@ class GenerateReportController @Inject()(
             fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment)))
             rdsAssessmentReport <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
           } yield rdsAssessmentReport
-          logger.info(s"::[generateReportInternal] 2")
+
           responseData.fold(
             errorWrapper =>
               errorHandler(errorWrapper, correlationId),
@@ -127,8 +125,24 @@ class GenerateReportController @Inject()(
 
   def taxYearChecker(inputTaxYear: String): Boolean = {
     val correctRegex = inputTaxYear.matches("^20[0-9]{2}-[0-9]{2}$")
-    val yearCheck1: Int = inputTaxYear.slice(2, 4).toInt
-    val yearCheck2: Int = inputTaxYear.drop(5).toInt
+    val yearCheck1 = inputTaxYear.slice(2, 4).toInt
+    val yearCheck2 = inputTaxYear.drop(5).toInt
     (correctRegex && yearCheck2.equals(yearCheck1 + 1))
   }
+
+  def taxYearChecker2(inputTaxYear: String): Boolean = {
+    val correctRegex = inputTaxYear.matches("^20[0-9]{2}-[0-9]{2}$")
+    if(correctRegex){
+      val yearCheck1 = inputTaxYear.slice(2, 4).toInt
+      val yearCheck2 = inputTaxYear.drop(5).toInt
+      if(yearCheck2.equals(yearCheck1 + 1)){
+        true
+      } else {
+        false
+      }
+    } else {
+      false
+    }
+  }
+
 }
