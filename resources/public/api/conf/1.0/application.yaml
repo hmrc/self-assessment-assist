@@ -81,7 +81,7 @@ components:
       name: reportId
       in: path
       description: |
-        The unique identifier for the report. Must conform to the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
+        The unique identifier for the report.
       schema:
         type: string
         example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
@@ -90,7 +90,7 @@ components:
       name: calculationId
       in: path
       description: |
-        The unique identifier for the calculation. Must conform the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
+        The unique identifier for the calculation. Must conform to the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
       schema:
         type: string
         example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
@@ -153,12 +153,7 @@ components:
       value:
         code: FORMAT_CALC_ID
         message: The provided Calculation ID is invalid.
-    formatReportId:
-      description: |
-        The format of the supplied reportId is not valid.
-      value:
-        code: FORMAT_REPORT_ID
-        message: The provided Report ID is invalid.
+
 
     # 403
 
@@ -405,8 +400,7 @@ paths:
               examples:
                 FORMAT_NINO:
                   $ref: '#/components/examples/formatNino'
-                FORMAT_REPORT_ID:
-                  $ref: '#/components/examples/formatReportId'
+
 
         "403":
           description: Forbidden
@@ -417,13 +411,3 @@ paths:
               examples:
                 CLIENT_OR_AGENT_NOT_AUTHORISED:
                   $ref: '#/components/examples/clientOrAgentNotAuthorised'
-
-        "404":
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-              examples:
-                MATCHING_RESOURCE_NOT_FOUND:
-                  $ref: '#/components/examples/matchingResourceNotFound'
