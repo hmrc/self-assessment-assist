@@ -17,20 +17,23 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, __}
 import play.api.mvc.Result
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
-import uk.gov.hmrc.transactionalrisking.utils.{DateUtils}
+import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{Metadata, NrsSubmission, SearchKeys}
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
+import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class GenerateReportControllerSpec
   extends ControllerBaseSpec
@@ -75,7 +78,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -94,11 +97,30 @@ class GenerateReportControllerSpec
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
+      }
+    }
+
+    "a request fails due to an incorrect tax year format" should {
+      s"return the tax year format error to indicate the taxYear is invalid" in new Test {
+
+        MockCurrentDateTime.getDateTime()
+        MockProvideRandomCorrelationId.IdGenerator
+        MockEnrolmentsAuthService.authoriseUser()
+
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid)(fakePostRequest)
+
+        status(result) shouldBe BAD_REQUEST
+        Thread.sleep(1000)
+
+        contentAsJson(result) shouldBe TaxYearFormatError.toJson
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+
       }
     }
 
@@ -109,7 +131,7 @@ class GenerateReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
@@ -131,7 +153,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -162,7 +184,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -192,7 +214,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe expectedBody
@@ -225,7 +247,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
         contentAsJson(result)  shouldBe DownstreamError.toJson // TODO what should the body be as per the spec?

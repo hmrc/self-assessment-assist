@@ -94,4 +94,5 @@ object CommonTestData  {
   val simpleReportIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"
+  val simpleTaxYearInvalid: String = "2020-00"
 }
