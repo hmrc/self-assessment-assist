@@ -25,10 +25,10 @@ import java.time.LocalDate
 
 case class IdentityData(internalId: Option[String] = None,
                         externalId: Option[String] = None,
-                        agentCode: Option[String] = None,//TODO this is not required as its alreay there in AgentInformation
-                        credentials: Option[Credentials] = None,//TODO not present in documentation
+                        agentCode: Option[String] = None,
+                        credentials: Option[Credentials] = None,
                         confidenceLevel: ConfidenceLevel,
-                        nino: Option[String] = None,//TODO below 3 rows may be need to move under search keys
+                        nino: Option[String] = None,
                         saUtr: Option[String] = None,
                         name: Option[Name] = None,
                         dateOfBirth: Option[LocalDate] = None,
@@ -40,14 +40,9 @@ case class IdentityData(internalId: Option[String] = None,
                         itmpName: ItmpName,
                         itmpDateOfBirth: Option[LocalDate] = None,
                         itmpAddress: ItmpAddress,
-                        affinityGroup: Option[AffinityGroup], // TODO does this need to be an Option?
+                        affinityGroup: Option[AffinityGroup],
                         credentialStrength: Option[String] = None,
-                        loginTimes: LoginTimes,
-                       //TODO below data is missing, in our response, need to add
-                       // userAuthToken: String,
-                       // headerData:HeaderData
-                       //searchKeys
-
+                        loginTimes: LoginTimes
                        )
 
 object IdentityData {
