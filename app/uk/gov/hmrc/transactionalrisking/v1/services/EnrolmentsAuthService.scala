@@ -59,13 +59,13 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
         and confidenceLevel and nino and saUtr and name and dateOfBirth
         and email and agentInformation and groupIdentifier and credentialRole
         and mdtpInformation and credentialStrength and loginTimes
-        and itmpName and itmpAddress
+        and itmpName and itmpDateOfBirth and itmpAddress
       ) {
         case Some(affGroup) ~ enrolments ~ inId ~ exId ~ agCode ~ creds
           ~ confLevel ~ ni ~ saRef ~ nme ~ dob
           ~ eml ~ agInfo ~ groupId ~ credRole
           ~ mdtpInfo ~ credStrength ~ logins
-          ~ itmpName ~ itmpAddress =>
+          ~ itmpName ~ itmpDateOfBirth ~ itmpAddress =>
 
           val emptyItmpName: ItmpName = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
@@ -75,7 +75,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
               inId, exId, agCode, creds,
               confLevel, ni, saRef, nme, dob,
               eml, agInfo, groupId,
-              credRole, mdtpInfo, itmpName.getOrElse(emptyItmpName), itmpDateOfBirth = None,
+              credRole, mdtpInfo, itmpName.getOrElse(emptyItmpName), itmpDateOfBirth,
               itmpAddress.getOrElse(emptyItmpAddress),
               Some(affGroup),
               credStrength,
