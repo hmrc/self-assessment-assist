@@ -139,6 +139,22 @@ class GenerateReportControllerSpec
 
       }
 
+      s"return the tax year format error to indicate the taxYear format is an invalid string" in new Test {
+
+        MockCurrentDateTime.getDateTime()
+        MockProvideRandomCorrelationId.IdGenerator
+        MockEnrolmentsAuthService.authoriseUser()
+
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid3)(fakePostRequest)
+
+        status(result) shouldBe BAD_REQUEST
+        Thread.sleep(1000)
+
+        contentAsJson(result) shouldBe TaxYearFormatError.toJson
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+      }
     }
 
     "a request fails due to failed authorisedAction that gives a NinoFormatError" should {

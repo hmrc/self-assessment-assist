@@ -96,4 +96,5 @@ object CommonTestData  {
   val simpleNinoInvalid: String = "AA000000Z"
   val simpleTaxYearInvalid1: String = "2020-00"
   val simpleTaxYearInvalid2: String = "200-1"
+  val simpleTaxYearInvalid3: String = "sjdhakjd"
 }
