@@ -94,7 +94,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
 
     (report.calculationId, report.feedbackId) match {
       case (Some(calculationId), Some(reportId)) =>
-        if(calculationId.equals(request.calculationId)) {
           val rdsCorrelationIdOption = report.rdsCorrelationId
           rdsCorrelationIdOption match {
             case Some(rdsCorrelationID) =>
@@ -109,11 +108,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
               logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
               Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
           }
-        }else{
-          logger.warn(s"$correlationId::[RdsService][toAssessmentReport] calculationId from request doesn't " +
-            s"match with calculationId in RDS response")
-          Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
-        }
 
       case (Some(_), None) =>
         logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find reportId")
