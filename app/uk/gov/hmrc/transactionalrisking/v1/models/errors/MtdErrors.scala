@@ -62,6 +62,7 @@ object CalculationIdFormatError
   extends MtdError(code = "FORMAT_CALC_ID",
   message = "The provided Calculation ID is invalid"
   )
+object TaxYearFormatError extends MtdError("FORMAT_TAX_Year", "The provided tax year is invalid")
 
 // Standard Errors
 object ResourceNotFoundError extends MtdError("RESOURCE_NOT_FOUND", "Matching resource not found")
