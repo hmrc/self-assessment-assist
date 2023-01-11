@@ -54,7 +54,7 @@ class GenerateReportController @Inject()(
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
-      if (taxYearChecker2(taxYear)) {
+      if (taxYearChecker(taxYear)) {
         toId(calculationId).map { calculationIdUuid =>
           val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
             calculationInfo <- EitherT(getCalculationInfo(calculationIdUuid, nino))
@@ -124,13 +124,6 @@ class GenerateReportController @Inject()(
   }
 
   def taxYearChecker(inputTaxYear: String): Boolean = {
-    val correctRegex = inputTaxYear.matches("^20[0-9]{2}-[0-9]{2}$")
-    val yearCheck1 = inputTaxYear.slice(2, 4).toInt
-    val yearCheck2 = inputTaxYear.drop(5).toInt
-    (correctRegex && yearCheck2.equals(yearCheck1 + 1))
-  }
-
-  def taxYearChecker2(inputTaxYear: String): Boolean = {
     val correctRegex = inputTaxYear.matches("^20[0-9]{2}-[0-9]{2}$")
     if(correctRegex){
       val yearCheck1 = inputTaxYear.slice(2, 4).toInt
