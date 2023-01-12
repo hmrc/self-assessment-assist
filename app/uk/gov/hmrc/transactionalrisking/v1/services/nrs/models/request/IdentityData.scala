@@ -25,16 +25,21 @@ import java.time.LocalDate
 
 case class IdentityData(internalId: Option[String] = None,
                         externalId: Option[String] = None,
+                        agentCode: Option[String] = None,//TODO this is not required as its alreay there in AgentInformation
+                        credentials: Option[Credentials] = None,//TODO not present in documentation
                         confidenceLevel: ConfidenceLevel,
-                        dateOfBirth: Option[LocalDate] = None,
-                        agentInformation: AgentInformation,
+                        nino: Option[String] = None,//TODO below 3 rows may be need to move under search keys
                         saUtr: Option[String] = None,
+                        name: Option[Name] = None,
+                        dateOfBirth: Option[LocalDate] = None,
+                        email: Option[String] = None,
+                        agentInformation: AgentInformation,
                         groupIdentifier: Option[String] = None,
                         credentialRole: Option[CredentialRole],
                         mdtpInformation: Option[MdtpInformation] = None,
                         itmpName: ItmpName,
-                        itmpAddress: ItmpAddress,
                         itmpDateOfBirth: Option[LocalDate] = None,
+                        itmpAddress: ItmpAddress,
                         affinityGroup: Option[AffinityGroup], // TODO does this need to be an Option?
                         credentialStrength: Option[String] = None,
                         loginTimes: LoginTimes
