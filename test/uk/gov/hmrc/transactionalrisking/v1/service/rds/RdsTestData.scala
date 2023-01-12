@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
-import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskHeader, FraudRiskReport, FraudRiskReportReason}
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskReport}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 
