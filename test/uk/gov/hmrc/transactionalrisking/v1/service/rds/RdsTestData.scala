@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.service.rds
 
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskReport}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 
@@ -34,8 +35,8 @@ object RdsTestData {
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(
     score = 10,
-    headers = Set(FraudRiskHeader("key", "value")),
-    fraudRiskReportReasons = Set(FraudRiskReportReason("flag"))
+    riskCorrelationId= correlationId,
+    reasons = Seq("flag")
   )
 
   def rdsRequest: RdsRequest =
@@ -55,7 +56,7 @@ object RdsTestData {
                   Map("KEY" -> "string"),
                   Map("VALUE" -> "string")
                 )),
-              DataWrapper(fraudRiskReport.headers.map(header => Seq(header.key, header.value)).toSeq)
+              DataWrapper(Seq(Seq.empty))
             )
           ),
           RdsRequest.InputWithObject("reason",
@@ -64,7 +65,7 @@ object RdsTestData {
                 Seq(
                   Map("Reason" -> "string")
                 )),
-              DataWrapper(fraudRiskReport.fraudRiskReportReasons.map(value => Seq(value.reason)).toSeq)
+              DataWrapper(fraudRiskReport.reasons.map(value => Seq(value)).toSeq)
             )
           )
         )
