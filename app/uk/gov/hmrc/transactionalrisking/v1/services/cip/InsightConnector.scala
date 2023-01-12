@@ -16,22 +16,16 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.cip
 
-import play.api.http.Status.{BAD_REQUEST, CREATED, NOT_FOUND, REQUEST_TIMEOUT}
-import play.api.libs.json.Json
+import play.api.http.Status.{OK,BAD_REQUEST, CREATED, NOT_FOUND, REQUEST_TIMEOUT}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
-import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.NrsSubmission
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskReport, FraudRiskRequest}
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -42,15 +36,13 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
     logger.info(s"$correlationId::[InsightConnector:submit] Before requesting report")
 
     httpClient
-      .POST[FraudRiskRequest, HttpResponse](s"${appConfig.rdsBaseUrlForSubmit}", fraudRiskRequest)
-//    httpClient
-//      .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(fraudRiskRequest))
+      .POST[FraudRiskRequest, HttpResponse](s"${appConfig.cipFraudServiceBaseUrl}", fraudRiskRequest)
       .map { response =>
         response.status match {
-          case CREATED =>
+          case OK =>
             logger.debug(s"$correlationId::[InsightConnector:submit]Successfully submitted the report response status is ${response.status}")
-            //TODO Fix me to read from response
-            val fraudRiskReport = FraudRiskReport(1, Set.empty, Set.empty)
+            logger.info(s"####### response is ${response.json}")
+            val fraudRiskReport = response.json.validate[FraudRiskReport].get
             Right(ResponseWrapper(correlationId,fraudRiskReport))
           case BAD_REQUEST =>
             logger.warn(s"$correlationId::[InsightConnector:submit] RDS response : BAD request")

@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.models.domain
+package uk.gov.hmrc.transactionalrisking.v1.services.cip.models
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.auth.core.Nino
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.FraudRiskRequest.FraudRiskHeaders
-
-abstract class AtLeastOneNonEmptyOption[T] { self: T with Product =>
-
-  def nonEmpty: Boolean = this.productIterator.exists {
-    case Some(value) => println(value)
-      true
-    case _ => false
-  }
-
-}
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.FraudRiskRequest.FraudRiskHeaders
 
 // This is still being determined; please see TRDT-85.//TODO revisit me later
 case class FraudRiskRequest(
@@ -42,11 +31,7 @@ case class FraudRiskRequest(
                              bankAccountNumber:Option[BankAccountNumber]=None,
                              email:Option[String]=None,
                              submissionId:Option[String]=None,
-                             fraudRiskHeaders: FraudRiskHeaders) extends AtLeastOneNonEmptyOption[FraudRiskRequest]{
-
-
-
-}
+                             fraudRiskHeaders: FraudRiskHeaders)
 
 object FraudRiskRequest {
   type FraudRiskHeaders = Map[String, String]
@@ -56,71 +41,67 @@ object FraudRiskRequest {
   implicit val format: OFormat[FraudRiskRequest] = Json.format[FraudRiskRequest]
 }
 
-final case class UTR private(value:String){
-  private def copy: Unit = ()
-}
+case class UTR private(value:String)
 
 object UTR{
   implicit val format: OFormat[UTR] = Json.format[UTR]
-  private def apply(value: String): Either[String, UTR] =
+/*  private def apply(value: String): Either[InitializationError, UTR] =
     Either.cond(
       value.length == 10 && value.startsWith("0"),
       new UTR(value),
-      "Invalid value should be 10 characters long and start with 0"
+      InvalidValueOrFormat("Invalid value should be 10 characters long and start with 0")
     )
 
-  def fromString(value: String): Either[String, UTR] = apply(value)
+  def fromString(value: String): Either[InitializationError, UTR] = apply(value)*/
 }
 
-final case class UserId private(value:String){
+case class UserId(value:String)
+/*{
   private def copy: Unit = ()
-}
+}*/
 
 
 object UserId{
   implicit val format: OFormat[UserId] = Json.format[UserId]
-  private def apply(value: String): Either[String, UserId] =
+/*  private def apply(value: String): Either[InitializationError, UserId] =
     Either.cond(
       value.length == 16 && value.startsWith("0"),
       new UserId(value),
-      "Invalid value should be 16 characters long and start with 0"
+      InvalidValueOrFormat("Invalid value should be 16 characters long and start with 0")
     )
 
-  def fromString(value: String): Either[String, UserId] = apply(value)
+  def fromString(value: String): Either[String, UserId] = apply(value)*/
 }
 
 
-final case class BankAccountSortCode private(value:String){
-  private def copy: Unit = ()
-}
+case class BankAccountSortCode private(value:String)
+
 
 
 object BankAccountSortCode{
   implicit val format: OFormat[BankAccountSortCode] = Json.format[BankAccountSortCode]
-  private def apply(value: String): Either[String, BankAccountSortCode] =
+/*  private def apply(value: String): Either[InitializationError, BankAccountSortCode] =
     Either.cond(
       value.length == 6 && value.startsWith("0"),
       new BankAccountSortCode(value),
-      "Invalid value should be 6 characters long and start with 0"
+      InvalidValueOrFormat("Invalid value should be 6 characters long and start with 0")
     )
 
-  def fromString(value: String): Either[String, BankAccountSortCode] = apply(value)
+  def fromString(value: String): Either[InitializationError, BankAccountSortCode] = apply(value)*/
 }
 
 
-final case class BankAccountNumber private(value:String){
-  private def copy: Unit = ()
-}
+case class BankAccountNumber private(value:String)
 
 
 object BankAccountNumber{
   implicit val format: OFormat[BankAccountNumber] = Json.format[BankAccountNumber]
-  private def apply(value: String): Either[String, BankAccountNumber] =
+/*  private def apply(value: String): Either[InitializationError, BankAccountNumber] =
     Either.cond(
       value.length == 8 && value.startsWith("0"),
       new BankAccountNumber(value),
-      "Invalid value should be 6 characters long and start with 0"
+      InvalidValueOrFormat("Invalid value should be 6 characters long and start with 0")
     )
 
-  def fromString(value: String): Either[String, BankAccountNumber] = apply(value)
+  def fromString(value: String): Either[InitializationError, BankAccountNumber] = apply(value)*/
 }

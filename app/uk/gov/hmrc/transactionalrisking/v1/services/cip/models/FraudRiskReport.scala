@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.models.domain
+package uk.gov.hmrc.transactionalrisking.v1.services.cip.models
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsPath, Reads, Writes}
 
-
-// This is still being determined; please see TRDT-85.
-case class FraudRiskReport( score: Int, headers: Set[FraudRiskHeader], fraudRiskReportReasons: Set[FraudRiskReportReason])
+case class FraudRiskReport( score: Int,
+                            riskCorrelationId:String,
+                            reasons: Seq[String])
 
 object FraudRiskReport {
 
   implicit val reads: Reads[FraudRiskReport] =
-    (JsPath \ "score").read[Int]
-      .and((JsPath \ "headers").readWithDefault[Set[FraudRiskHeader]](Set.empty))
-      .and((JsPath \ "fraudRiskReportReasons").readWithDefault[Set[FraudRiskReportReason]](Set.empty))(FraudRiskReport.apply _)
+    (JsPath \ "riskScore").read[Int]
+      .and((JsPath \ "riskCorrelationId").read[String])
+      .and((JsPath \ "reasons").readWithDefault[Seq[String]](Seq.empty))(FraudRiskReport.apply _)
 
   implicit val writes: Writes[FraudRiskReport] =
-   (JsPath \ "score").write[Int]
-      .and((JsPath \ "headers").write[Set[FraudRiskHeader]])
-      .and((JsPath \ "fraudRiskReportReasons").write[Set[FraudRiskReportReason]])(unlift(FraudRiskReport.unapply))
+   (JsPath \ "riskScore").write[Int]
+      .and((JsPath \ "riskCorrelationId").write[String])
+      .and((JsPath \ "reasons").write[Seq[String]])(unlift(FraudRiskReport.unapply))
 
 }

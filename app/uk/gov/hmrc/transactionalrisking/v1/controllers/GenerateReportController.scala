@@ -24,6 +24,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.FraudRiskRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AssistReportGenerated
@@ -66,7 +67,7 @@ class GenerateReportController @Inject()(
                                                   None,
                                                   DesTaxYear.fromMtd(calculationInfo.responseData.taxYear).toString)
 
-          fraudRiskReport                       <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment)))
+          fraudRiskReport                       <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment,request.headers.toMap.map { h => h._1 -> h._2.head })))
           rdsAssessmentReport                   <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
         } yield rdsAssessmentReport
 
@@ -104,9 +105,9 @@ class GenerateReportController @Inject()(
       Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)))
   }
 
-  //TODO Revisit Check headers as pending
-  private def generateFraudRiskRequest(request: AssessmentRequestForSelfAssessment): FraudRiskRequest = {
-    val fraudRiskHeaders = Map.empty[String, String]
+
+  private def generateFraudRiskRequest(request: AssessmentRequestForSelfAssessment,fraudRiskHeaders:FraudRiskRequest.FraudRiskHeaders): FraudRiskRequest = {
+    //val fraudRiskHeaders = Map.empty[String, String]   //TODO Revisit Check headers as pending
     val fraudRiskRequest =new FraudRiskRequest(
       nino= Some(request.nino),
       taxYear = Some(request.taxYear),

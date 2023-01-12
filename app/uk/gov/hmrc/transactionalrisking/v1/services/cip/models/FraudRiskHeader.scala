@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.models.domain
+package uk.gov.hmrc.transactionalrisking.v1.services.cip.models
 
+import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsPath, Reads, Writes}
 
-case class FraudRiskReportReason(reason: String)
+case class FraudRiskHeader(key: String, value: String)
 
-object FraudRiskReportReason {
+object FraudRiskHeader {
 
-  implicit val reads: Reads[FraudRiskReportReason] =
-    (JsPath \ "reason").read[String].map(FraudRiskReportReason.apply)
+  implicit val reads: Reads[FraudRiskHeader] =
+    (JsPath \ "key").read[String]
+      .and((JsPath \ "value").read[String])(FraudRiskHeader.apply _)
 
-  implicit val writes: Writes[FraudRiskReportReason] =
-    (JsPath \ "reason").write[String].contramap(_.reason)
+  implicit val writes: Writes[FraudRiskHeader] =
+    (JsPath \ "key").write[String]
+      .and((JsPath \ "value").write[String])(unlift(FraudRiskHeader.unapply))
 
 }

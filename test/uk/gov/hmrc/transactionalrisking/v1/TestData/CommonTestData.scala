@@ -17,7 +17,9 @@
 package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskHeader, FraudRiskReport, FraudRiskReportReason, FraudRiskRequest}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
@@ -34,6 +36,7 @@ object CommonTestData  {
   val calculationIdWithNoFeedback: UUID = UUID.fromString("000090b4-06e3-4fef-a555-6fd0877dc7ca")
   val noCalculationFound: UUID = UUID.fromString("201404b4-06e3-4fef-a555-6fd0877dc7ca")
   val simpleRDSCorrelationId: String = "5fht738957jfjf845jgjf855"
+  val simpleCIPCorrelationId: String = "5fht738957jfjf845jgjf855"
   val correlationId: String = "f2fb30e5-4ab6-4a29-b3c1-c00000011111"
   val simpleReportId: UUID = UUID.fromString(correlationId)
 
@@ -66,8 +69,8 @@ object CommonTestData  {
 
   val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
 
-  val simpleFraudRiskRequest: FraudRiskRequest = new FraudRiskRequest(nino = simpleNino, taxYear = simpleTaxYear, fraudRiskHeaders = Map.empty[String, String])
-  val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(0, Set.empty[FraudRiskHeader], Set.empty[FraudRiskReportReason].empty)
+  val simpleFraudRiskRequest: FraudRiskRequest = new FraudRiskRequest(nino = Some(simpleNino), taxYear = Some(simpleTaxYear), fraudRiskHeaders = Map.empty[String, String])
+  val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(0, simpleCIPCorrelationId, Seq.empty)
 
   val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
@@ -94,4 +97,5 @@ object CommonTestData  {
   val simpleReportIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"
+
 }
