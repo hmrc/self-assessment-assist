@@ -44,7 +44,6 @@ class NrsService @Inject()(connector: NrsConnector,
 
     userAuthToken match {
       case Some(token) =>
-        logger.info(s"payload before encoding $payload")
         Try {
           val encodedPayload = hashUtil.encode(payload)
           val sha256Checksum = hashUtil.getHash(payload)
