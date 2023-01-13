@@ -22,10 +22,11 @@ import uk.gov.hmrc.transactionalrisking.utils.Logging
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, FraudRiskReport, Link, Origin, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, Link, Origin, PreferredLanguage, Risk}
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, FormatReportIdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.FraudRiskReport
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
@@ -143,7 +144,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   }
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
-                                           fraudRiskReport: FraudRiskReport)(implicit correlationId: String): ServiceOutcome[RdsRequest]
+                                           fraudRiskReport: FraudRiskReport)(implicit correlationId: String,userRequest: UserRequest[_]): ServiceOutcome[RdsRequest]
   = {
     logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
     //TODO Errors need to be dealt looked at.
@@ -163,7 +164,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                 Map("KEY" -> "string"),
                 Map("VALUE" -> "string")
               )),
-            DataWrapper(fraudRiskReport.headers.map(header => Seq(header.key, header.value)).toSeq)
+            DataWrapper(userRequest.headers.toMap.map(header => Seq(header._1, header._2.head)).toSeq)
           )
         ),
         RdsRequest.InputWithObject("fraudRiskReportReasons",
@@ -172,7 +173,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
               Seq(
                 Map("Reason" -> "string")
               )),
-            DataWrapper(fraudRiskReport.fraudRiskReportReasons.map(value => Seq(value.reason)).toSeq)
+            DataWrapper(fraudRiskReport.reasons.map(value => Seq(value)))
           )
         )
       )

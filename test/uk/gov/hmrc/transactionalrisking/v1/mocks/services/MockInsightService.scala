@@ -18,15 +18,16 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskReport, FraudRiskRequest}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait MockInsightService extends MockFactory {
 
@@ -35,12 +36,12 @@ trait MockInsightService extends MockFactory {
   object MockInsightService {
 
     def assess(fraudRiskRequest: FraudRiskRequest): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
-      (mockInsightService.assess(_: FraudRiskRequest)(_: ExecutionContext,_: String))
+      (mockInsightService.assess(_: FraudRiskRequest)(_: HeaderCarrier,_: String))
         .expects(*,*,*).returns(Future(Right(ResponseWrapper(correlationId, simpleFraudRiskReport))))
     }
 
     def assessFail(fraudRiskRequest: FraudRiskRequest, error: MtdError): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
-      (mockInsightService.assess(_: FraudRiskRequest)(_: ExecutionContext, _: String))
+      (mockInsightService.assess(_: FraudRiskRequest)(_: HeaderCarrier, _: String))
         .expects(*, *, *).returns(Future(Left(ErrorWrapper(correlationId, error))))
     }
 
