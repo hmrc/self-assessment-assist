@@ -16,5 +16,16 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.models.request
 
-case class GenerateReportRawData(nino: String, calculationId: String) extends RawData
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType.CustomerType
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
+
+import java.util.UUID
+
+case class GenerateReportRawData(calculationId: UUID,
+  nino: String,
+  preferredLanguage: PreferredLanguage,
+  customerType: CustomerType,
+  agentRef: Option[String],
+  taxYear: String
+  ) extends RawData
 case class AcknowledgeReportRawData(nino: String, reportId: String, rdsCorrelationId:String) extends RawData

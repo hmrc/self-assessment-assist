@@ -28,25 +28,25 @@ class GenerateReportValidationSpec extends UnitSpec {
   "running a validation" should {
     "return no errors" when {
       "a valid request" in {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString)
+        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId,simpleNino,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYear)
         validator.validate(generateReportRawData) shouldBe Nil
       }
 
       "return errors" when {
         "an invalid nino." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationId.toString)
+          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId,simpleNino,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYear)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError)
         }
 
         "an invalid calculationId." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationIdStrangeCharsString)
+          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId,simpleNino,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYear)
 
           validator.validate(generateReportRawData) shouldBe Seq(CalculationIdFormatError)
         }
 
         "an invalid nino and calculationId." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationIdStrangeCharsString)
+          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId,simpleNino,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYear)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, CalculationIdFormatError)
         }

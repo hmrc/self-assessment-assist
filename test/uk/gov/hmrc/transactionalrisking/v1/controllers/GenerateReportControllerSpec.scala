@@ -30,6 +30,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{Metadata
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers.MockGenerateReportRequestParser
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -43,7 +44,8 @@ class GenerateReportControllerSpec
     with MockInsightService
     with MockRdsService
     with MockCurrentDateTime
-    with MockIdGenerator {
+    with MockIdGenerator
+    with MockGenerateReportRequestParser {
 
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
@@ -53,6 +55,7 @@ class GenerateReportControllerSpec
 
     class TestController extends GenerateReportController(
       cc = cc,
+      requestParser = mockGenerateReportRequestParser,
       integrationFrameworkService = mockIntegrationFrameworkService,
       authService = mockEnrolmentsAuthService,
       nonRepudiationService = mockNrsService,

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
@@ -48,6 +49,10 @@ object CommonTestData  {
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
+
+  val simpleCustomerType= CustomerType.TaxPayer
+  val simplePreferredLanguage = PreferredLanguage.English
+  val simpleAgentRef = None
 
   val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
     calculationId = simpleCalculationId,
@@ -90,7 +95,7 @@ object CommonTestData  {
   val invalidUUID: UUID = new UUID(0, 1)
   val invalidUUIDString: String = invalidUUID.toString
 
-  val simpleCalculationIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
+  val simpleCalculationIdStrangeCharsString: UUID= UUID.fromString( "f2fb30e5#4ab6#4a29-b3c1-c00000000001")
   val simpleReportIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"

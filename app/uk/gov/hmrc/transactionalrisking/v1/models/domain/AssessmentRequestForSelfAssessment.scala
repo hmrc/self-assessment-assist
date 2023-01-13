@@ -22,6 +22,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType.CustomerTy
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
 
 import java.util.UUID
+import scala.concurrent.ExecutionContext
 
 case class AssessmentRequestForSelfAssessment(calculationId: UUID,
                                               nino: String,

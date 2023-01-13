@@ -20,9 +20,11 @@ import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
@@ -37,6 +39,7 @@ import scala.util.Try
 
 class GenerateReportController @Inject()(
                                           val cc: ControllerComponents, //TODO add request parser
+                                          requestParser: GenerateReportRequestParser,
                                           val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
                                           nonRepudiationService: NrsService,
@@ -57,16 +60,11 @@ class GenerateReportController @Inject()(
       if (taxYearChecker(taxYear)) {
         toId(calculationId).map { calculationIdUuid =>
           val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
-            calculationInfo <- EitherT(getCalculationInfo(calculationIdUuid, nino))
-            assessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(calculationIdUuid,
-              nino,
-              PreferredLanguage.English,
-              customerType,
-              None,
-              DesTaxYear.fromMtd(taxYear).toString)
 
+            assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationIdUuid, nino, PreferredLanguage.English, customerType, None, DesTaxYear.fromMtd(taxYear).toString)))
             fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment)))
             rdsAssessmentReport <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+
           } yield rdsAssessmentReport
 
           responseData.fold(
