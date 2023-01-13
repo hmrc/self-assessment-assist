@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.service.rds
+package uk.gov.hmrc.transactionalrisking.v1.services.rds
 
 import akka.actor
 import akka.actor.ActorSystem
@@ -34,7 +34,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError,
   MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.rdsRequest
+import RdsTestData.rdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome

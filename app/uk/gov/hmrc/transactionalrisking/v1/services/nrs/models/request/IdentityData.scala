@@ -42,12 +42,7 @@ case class IdentityData(internalId: Option[String] = None,
                         itmpAddress: ItmpAddress,
                         affinityGroup: Option[AffinityGroup], // TODO does this need to be an Option?
                         credentialStrength: Option[String] = None,
-                        loginTimes: LoginTimes,
-                       //TODO below data is missing, in our response, need to add
-                       // userAuthToken: String,
-                       // headerData:HeaderData
-                       //searchKeys
-
+                        loginTimes: LoginTimes
                        )
 
 object IdentityData {

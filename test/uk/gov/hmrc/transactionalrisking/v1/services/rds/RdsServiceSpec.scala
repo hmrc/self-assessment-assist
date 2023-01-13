@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.service.rds
+package uk.gov.hmrc.transactionalrisking.v1.services.rds
 
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -26,7 +26,7 @@ import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockRdsAuthConnector
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.{RdsAuthCredentials, UserDetails}
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, Internal}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.transactionalrisking.v1.service.rds.RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
+import RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest

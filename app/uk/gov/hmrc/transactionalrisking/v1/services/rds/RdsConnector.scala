@@ -47,9 +47,9 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
+        logger.info(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
         response.status match {
           case CREATED =>
-            logger.debug(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
             assessmentReport.responseCode match {
               case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
@@ -111,7 +111,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] response is ${response}")
+        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] response is ${response.status}")
         response.status match {
           case CREATED =>
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
