@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations
 
-import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.NinoValidation.ninoRegex
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.NinoChecker
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{MtdError, TaxYearFormatError}
 
 object TaxYearValidation {

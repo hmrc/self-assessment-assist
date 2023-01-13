@@ -34,7 +34,7 @@ class CalculationIdValidationSpec extends UnitSpec {
       "return no errors" when {
         "an actual invalid request. No UUID format specifier" in {
 
-          validator.validate(invalidUUID) shouldBe Seq(CalculationIdFormatError)
+          validator.validate(invalidUUIDString) shouldBe Seq(CalculationIdFormatError)
         }
 
         "an actual invalid request. Strange characters in string" in {

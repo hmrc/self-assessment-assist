@@ -19,18 +19,16 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, MtdError}
 
 import java.util.UUID
+import scala.util.Try
 
 object CalculationIdValidation {
   private val calculationIdRegex = "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
 
+  private def toId(rawId: String): Option[UUID] =
+    Try(UUID.fromString(rawId)).toOption
 
-  def validate(calculationId: UUID): List[MtdError] = {
-    val calculationIdUuid = calculationId.toString
-    calculationIdUuid match {
-      case _ if calculationIdUuid matches calculationIdRegex => NoValidationErrors
-      case _ => List(CalculationIdFormatError)
-    }
+  def validate(calculationId: String): List[MtdError] = toId(calculationId) match {
+    case Some(_) => if (calculationId matches calculationIdRegex) NoValidationErrors else List(CalculationIdFormatError)
+    case None                                             => List(CalculationIdFormatError)
   }
-
-
 }

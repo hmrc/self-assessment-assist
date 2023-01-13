@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers
 
-import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.{GenerateReportValidator}
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentRequestForSelfAssessment}
-import uk.gov.hmrc.transactionalrisking.v1.models.request.{GenerateReportRawData}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.GenerateReportValidator
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.AssessmentRequestForSelfAssessment
+import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
-
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 @Singleton
@@ -28,6 +28,6 @@ class GenerateReportRequestParser @Inject()(val validator: GenerateReportValidat
   extends RequestParser[GenerateReportRawData, AssessmentRequestForSelfAssessment]{
 
   override protected def requestFor(data: GenerateReportRawData): AssessmentRequestForSelfAssessment = {
-    AssessmentRequestForSelfAssessment(data.calculationId, data.nino, data.preferredLanguage, data.customerType, data.agentRef, data.taxYear)
+    AssessmentRequestForSelfAssessment(UUID.fromString(data.calculationId), data.nino, data.preferredLanguage, data.customerType, data.agentRef, data.taxYear)
   }
 }

@@ -97,7 +97,7 @@ object CommonTestData  {
   val invalidUUID: UUID = new UUID(0, 1)
   val invalidUUIDString: String = invalidUUID.toString
 
-  val simpleCalculationIdStrangeCharsString: UUID= UUID.fromString( "f2fb30e5#4ab6#4a29-b3c1-c00000000001")
+  val simpleCalculationIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
   val simpleReportIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"

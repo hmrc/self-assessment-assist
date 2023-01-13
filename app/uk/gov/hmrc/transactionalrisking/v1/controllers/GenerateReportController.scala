@@ -58,11 +58,11 @@ class GenerateReportController @Inject()(
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
-      if (taxYearChecker(taxYear)) {
-        toId(calculationId).map { calculationIdUuid =>
+//      if (taxYearChecker(taxYear)) {
+       // toId(calculationId).map { calculationIdUuid =>
           val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
 
-            assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationIdUuid, nino, PreferredLanguage.English, customerType, None, DesTaxYear.fromMtd(taxYear).toString)))
+            assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, DesTaxYear.fromMtd(taxYear).toString)))
             fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment,request.headers.toMap.map { h => h._1 -> h._2.head })))
             rdsAssessmentReport <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
 
@@ -84,8 +84,8 @@ class GenerateReportController @Inject()(
                 )
             }
           ).flatten.map(_.withApiHeaders(correlationId))
-        }.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
-      }else{Future(BadRequest(Json.toJson(TaxYearFormatError)).withApiHeaders(correlationId))}
+        //}.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
+//      }else{Future(BadRequest(Json.toJson(TaxYearFormatError)).withApiHeaders(correlationId))}
     }
   }
 
@@ -98,6 +98,7 @@ class GenerateReportController @Inject()(
     case InvalidCredentialsError => Future(Unauthorized(Json.toJson(InvalidCredentialsError)))
     case RdsAuthError => Future(InternalServerError(Json.toJson(ForbiddenDownstreamError)))
     case ServiceUnavailableError => Future(InternalServerError(Json.toJson(ServiceUnavailableError)))
+    case BadRequestError@err => Future(BadRequest(err.toJson))//TODO test this scenario where multiple request parmeters are invalid
     case error@_ =>
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
       Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)))
