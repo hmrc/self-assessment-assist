@@ -61,7 +61,7 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
             logger.info(s"$correlationId::[submit] NRS submission successful")
             Right(response.json.as[NrsResponse])
           } else {
-            logger.warn(s"$correlationId::[submit] RequestId:${hc.requestId}\nNRS submission failed with error: ${response.body}")
+            logger.warn(s"$correlationId::[submit] RequestId:${hc.requestId}\nNRS submission failed with error: ${response.status}")
             Left(NrsFailure.ErrorResponse(status))
           }
         }

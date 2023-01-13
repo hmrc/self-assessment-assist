@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.cip
 
-import play.api.http.Status.{OK,BAD_REQUEST, CREATED, NOT_FOUND, REQUEST_TIMEOUT}
+import play.api.http.Status.{OK,BAD_REQUEST, NOT_FOUND, REQUEST_TIMEOUT}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
@@ -33,49 +33,45 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
                                  appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   def assess(fraudRiskRequest: FraudRiskRequest)(implicit hc: HeaderCarrier, correlationId: String): Future[ServiceOutcome[FraudRiskReport]] = {
-    logger.info(s"$correlationId::[InsightConnector:submit] Before requesting report")
+    logger.info(s"$correlationId::[InsightConnector:assess] Before requesting report")
 
     httpClient
       .POST[FraudRiskRequest, HttpResponse](s"${appConfig.cipFraudServiceBaseUrl}", fraudRiskRequest)
       .map { response =>
+        logger.info(s"$correlationId::[InsightConnector:assess]Successfully received fraudRiskreport and status is ${response.status}")
         response.status match {
           case OK =>
-            logger.debug(s"$correlationId::[InsightConnector:submit]Successfully submitted the report response status is ${response.status}")
-            logger.info(s"####### response is ${response.json}")
             val fraudRiskReport = response.json.validate[FraudRiskReport].get
             Right(ResponseWrapper(correlationId,fraudRiskReport))
           case BAD_REQUEST =>
-            logger.warn(s"$correlationId::[InsightConnector:submit] RDS response : BAD request")
             Left(ErrorWrapper(correlationId, DownstreamError))
           case NOT_FOUND =>
-            logger.warn(s"$correlationId::[InsightConnector:submit] RDS not reachable")
+            logger.warn(s"$correlationId::[InsightConnector:assess] CIP not reachable")
             Left(ErrorWrapper(correlationId, ServiceUnavailableError))
           case REQUEST_TIMEOUT =>  Left(ErrorWrapper(correlationId, DownstreamError))
           case unexpectedStatus@_ =>
-            logger.error(s"$correlationId::[InsightConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
+            logger.error(s"$correlationId::[InsightConnector:assess]Unable to get fraudrisk report unexpected status code returned $unexpectedStatus")
             Left(ErrorWrapper(correlationId, ServiceUnavailableError))
         }
       }
       .recover {
         case ex: BadRequestException =>
-          logger.error(s"$correlationId::[InsightConnector:submit] BadRequestException $ex")
+          logger.error(s"$correlationId::[InsightConnector:assess] BadRequestException $ex")
           Left(ErrorWrapper(correlationId, DownstreamError))
 
         case ex: UpstreamErrorResponse =>
-          logger.error(s"$correlationId::[InsightConnector:submit] UpstreamErrorResponse $ex")
+          logger.error(s"$correlationId::[InsightConnector:assess] UpstreamErrorResponse $ex")
           ex.statusCode match {
-            case 408 => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
-            case 401 => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case 403 => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case 400 => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
             case _ => Left(ErrorWrapper(correlationId, DownstreamError))
           }
 
         case ex: HttpException =>
-          logger.error(s"$correlationId::[InsightConnector:submit] HttpException $ex")
+          logger.error(s"$correlationId::[InsightConnector:assess] HttpException $ex")
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
 
         case ex@_ =>
-          logger.error(s"$correlationId::[InsightConnector:submit] Unknown exception $ex")
+          logger.error(s"$correlationId::[InsightConnector:assess] Unknown exception $ex")
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
   }
