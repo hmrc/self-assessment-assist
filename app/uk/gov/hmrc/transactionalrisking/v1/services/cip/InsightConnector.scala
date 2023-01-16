@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.cip
 
-import play.api.http.Status.{OK,BAD_REQUEST, NOT_FOUND, REQUEST_TIMEOUT}
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK, REQUEST_TIMEOUT}
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
@@ -41,6 +42,9 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
         logger.info(s"$correlationId::[InsightConnector:assess]Successfully received fraudRiskreport and status is ${response.status}")
         response.status match {
           case OK =>
+            logger.info("xxxxxxxxxxxxxxxxxxxx")
+            logger.info(s"${Json.prettyPrint(response.json)}")
+            println(s"${Json.prettyPrint(response.json)} look here")
             val fraudRiskReport = response.json.validate[FraudRiskReport].get
             Right(ResponseWrapper(correlationId,fraudRiskReport))
           case BAD_REQUEST =>
@@ -71,7 +75,7 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
 
         case ex@_ =>
-          logger.error(s"$correlationId::[InsightConnector:assess] Unknown exception $ex")
+          logger.error(s"$correlationId::[InsightConnector:assess] xxxxxxxxxx Unknown exception $ex")
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
   }

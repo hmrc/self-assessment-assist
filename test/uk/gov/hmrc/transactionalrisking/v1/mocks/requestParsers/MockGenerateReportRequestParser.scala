@@ -25,6 +25,8 @@ import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.GenerateR
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.AssessmentRequestForSelfAssessment
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError, TaxYearFormatError}
+import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,6 +40,11 @@ trait MockGenerateReportRequestParser extends MockFactory{
     def parseRequest(rawData: GenerateReportRawData): CallHandler[Future[ParseOutcome[AssessmentRequestForSelfAssessment]]] = {
       (mockGenerateReportRequestParser.parseRequest(_: GenerateReportRawData)(_:ExecutionContext, _:String)).expects(*,*,*).anyNumberOfTimes() returns
         (Future(Right(AssessmentRequestForSelfAssessment(simpleCalculationId,simpleNino,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYear))))
+    }
+
+    def parseRequestFail(rawData: GenerateReportRawData, mtdError: MtdError): CallHandler[Future[ParseOutcome[AssessmentRequestForSelfAssessment]]] = {
+      (mockGenerateReportRequestParser.parseRequest(_: GenerateReportRawData)(_:ExecutionContext, _:String)).expects(*,*,*).anyNumberOfTimes() returns
+        (Future(Left(ErrorWrapper(simpleTaxYear, mtdError))))
     }
   }
 

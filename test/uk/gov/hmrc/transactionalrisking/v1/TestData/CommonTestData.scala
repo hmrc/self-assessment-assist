@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
@@ -53,7 +54,7 @@ object CommonTestData  {
   val simpleInternalOrigin: Origin = Internal
 
   val simpleCustomerType= CustomerType.TaxPayer
-  val simplePreferredLanguage = PreferredLanguage.English
+  val simplePreferredLanguage: PreferredLanguage = PreferredLanguage.English
   val simpleAgentRef = None
 
   val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(

@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.GenerateReportValidator
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, NinoFormatError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, NinoFormatError, TaxYearFormatError}
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
 class GenerateReportValidationSpec extends UnitSpec {
@@ -46,9 +46,15 @@ class GenerateReportValidationSpec extends UnitSpec {
         }
 
         "an invalid nino and calculationId." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId.toString,simpleNinoInvalid,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYear)
+          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(invalidUUID.toString,simpleNinoInvalid,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYear)
 
-          validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, CalculationIdFormatError)
+          validator.validate(generateReportRawData) shouldBe Seq(CalculationIdFormatError, NinoFormatError)
+        }
+
+        "an invalid nino and tax year." in {
+          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId.toString,simpleNinoInvalid,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYearInvalid1)
+
+          validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, TaxYearFormatError)
         }
       }
     }

@@ -62,7 +62,7 @@ class GenerateReportController @Inject()(
        // toId(calculationId).map { calculationIdUuid =>
           val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
 
-            assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, DesTaxYear.fromMtd(taxYear).toString)))
+            assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
             fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment,request.headers.toMap.map { h => h._1 -> h._2.head })))
             rdsAssessmentReport <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
 
