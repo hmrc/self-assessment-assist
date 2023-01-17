@@ -102,7 +102,7 @@ object CommonTestData  {
   val simpleReportIdStrangeCharsString: String = "f2fb30e5#4ab6#4a29-b3c1-c00000000001"
 
   val simpleNinoInvalid: String = "AA000000Z"
-  val simpleTaxYearInvalid1: String = "2020-00"
+  val simpleTaxYearInvalid1: String = "2020-25"
   val simpleTaxYearInvalid2: String = "200-1"
   val simpleTaxYearInvalid3: String = "sjdhakjd"
 }

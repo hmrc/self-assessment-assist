@@ -116,12 +116,12 @@ class GenerateReportControllerSpec
     }
 
     "a request fails due to an incorrect tax year format" should {
-      s"return the tax year format error to indicate the taxYear is invalid if the tax years are not consecutive ss" in new Test {
+      s"return the tax year format error to indicate the taxYear is invalid if the tax years are not consecutive" in new Test {
         val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYearInvalid1)
 
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
-        MockGenerateReportRequestParser.parseRequestFail(generateReportRawData, TaxYearFormatError)
+        MockGenerateReportRequestParser.parseRequestFail(generateReportRawData, TaxYearRangeInvalid)
         MockEnrolmentsAuthService.authoriseUser()
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid1)(fakePostRequest)
@@ -129,7 +129,7 @@ class GenerateReportControllerSpec
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
 
-        contentAsJson(result) shouldBe TaxYearFormatError.toJson
+        contentAsJson(result) shouldBe TaxYearRangeInvalid.toJson
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -154,7 +154,7 @@ class GenerateReportControllerSpec
       }
 
       s"return the tax year format error to indicate the taxYear format is an invalid string" in new Test {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYearInvalid3)
+        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYearInvalid2)
 
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator

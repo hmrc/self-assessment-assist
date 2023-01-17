@@ -16,29 +16,22 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations
 
-import uk.gov.hmrc.transactionalrisking.utils.Logging
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{MtdError, TaxYearFormatError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{MtdError, TaxYearFormatError, TaxYearRangeInvalid}
 
 object TaxYearValidation {
 
-  private def taxYearChecker(inputTaxYear: String): Boolean = {
+  def validate(inputTaxYear: String): List[MtdError] = {
     val correctRegex = inputTaxYear.matches("^[0-9]{4}-[0-9]{2}$")
     if(correctRegex){
       val yearCheck1 = inputTaxYear.slice(2, 4).toInt
       val yearCheck2 = inputTaxYear.drop(5).toInt
       if(yearCheck2.equals(yearCheck1 + 1)){
-        true
+        NoValidationErrors
       } else {
-        false
+        List(TaxYearRangeInvalid)
       }
     } else {
-      false
+      List(TaxYearFormatError)
     }
   }
-
-  def validate(taxYear: String): List[MtdError] = {
-    if (taxYearChecker(taxYear).equals(true)) NoValidationErrors
-    else List(TaxYearFormatError)
-  }
-
 }
