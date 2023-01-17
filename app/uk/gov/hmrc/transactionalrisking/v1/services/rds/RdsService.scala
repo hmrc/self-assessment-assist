@@ -102,7 +102,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
               Right(ResponseWrapper(correlationId,
                 AssessmentReport(reportId = reportId,
                   risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
-                  taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
+                  taxYear = request.taxYear, //Todo check whether format is correct
                   calculationId = request.calculationId, rdsCorrelationID)))
 
             case None =>
