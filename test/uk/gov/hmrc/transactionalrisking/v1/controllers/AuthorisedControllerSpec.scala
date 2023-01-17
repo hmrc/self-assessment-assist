@@ -21,9 +21,11 @@ import play.api.http.HttpEntity
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.{Enrolment, Nino}
+import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
+import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
@@ -34,13 +36,14 @@ import scala.concurrent.{Await, Future}
 
 class AuthorisedControllerSpec extends ControllerBaseSpec {
 
-  trait Test extends MockEnrolmentsAuthService {
+  trait Test extends MockEnrolmentsAuthService with MockLookupConnector {
 
     val hc: HeaderCarrier = HeaderCarrier()
     val authorisedController: TestController = new TestController()
 
     class TestController extends AuthorisedController(cc) {
       override val authService: EnrolmentsAuthService = mockEnrolmentsAuthService
+      override val lookupConnector: MtdIdLookupConnector = mockLookupConnector
 
       def authorisedActionAysncSUT(nino: String, nrsRequired: Boolean = true): Action[AnyContent] = authorisedAction(nino, nrsRequired)(correlationId).async {
         Future.successful(Ok(Json.obj()))
@@ -58,6 +61,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "a user is properly authorised and has a correct nino" should {
       "return a 200 success response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
         val result: Result = Await.result(resultFuture, defaultTimeout)
         result.header.status shouldBe OK
@@ -67,8 +71,9 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     // Errors,
 
     "a user is properly authorised and has an incorrect nino" should {
-      "return a 400 success response" in new Test {
+      "return a 400 error response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, nrsRequired = false)(fakePostRequest)
         val result: Result = Await.result(resultFuture, defaultTimeout)
 
@@ -84,18 +89,41 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         returnedError shouldBe ninoError
       }
     }
+
+    "the mtd id lookup service returns an unauthorised error" should {
+      "return a 401 error response" in new Test {
+        MockLookupConnector.mockMtdIdLookupConnectorError(InvalidBearerTokenError)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, nrsRequired = false)(fakePostRequest)
+        val result: Result = Await.result(resultFuture, defaultTimeout)
+
+        (result.header.status) shouldBe UNAUTHORIZED
+
+        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
+        val returnedError: String = returnedErrorJSon.utf8String
+
+        val invalidBearerJson: JsValue = Json.toJson(InvalidBearerTokenError)
+        val ninoError: String = invalidBearerJson.toString()
+
+        returnedError shouldBe ninoError
+      }
+    }
   }
 
   "the enrolments auth service returns an error" must {
     "map to the correct result" when {
 
-      val predicate: Predicate =
-        Nino(hasNino = true, nino = Some(ninoIsCorrect)) or Enrolment("IR-SA").withIdentifier(AuthorisedController.ninoKey, ninoIsCorrect).withDelegatedAuthRule("sa-auth")
+      val predicate: String => Predicate = { mtdItId: String =>
+        Enrolment("HMRC-MTD-IT")
+          .withIdentifier("MTDITID", mtdItId)
+          .withDelegatedAuthRule("mtd-it-auth")
+      }
 
       def serviceErrors(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"a ${mtdError.code} error is returned from the enrolments auth service" in new Test {
 
-          MockEnrolmentsAuthService.authorised(predicate)
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
+          MockEnrolmentsAuthService.authorised(predicate("1234567890"))
             .returns(Future.successful(Left(mtdError)))
 
           private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)

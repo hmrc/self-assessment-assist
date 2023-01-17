@@ -22,6 +22,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
@@ -37,6 +38,7 @@ import scala.concurrent.Future
 class AcknowledgeReportControllerSpec
   extends ControllerBaseSpec
     with MockEnrolmentsAuthService
+    with MockLookupConnector
     with MockNrsService
     with MockInsightService
     with MockRdsService
@@ -56,6 +58,7 @@ class AcknowledgeReportControllerSpec
       cc = cc,
       requestParser = mockAcknowledgeRequestParser,
       authService = mockEnrolmentsAuthService,
+      lookupConnector = mockLookupConnector,
       nonRepudiationService = mockNrsService,
       rdsService = mockRdsService,
       currentDateTime = mockCurrentDateTime,
@@ -96,6 +99,7 @@ class AcknowledgeReportControllerSpec
         val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
         MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
@@ -116,6 +120,7 @@ class AcknowledgeReportControllerSpec
         val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
         MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
         MockCurrentDateTime.getDateTime()
@@ -157,6 +162,7 @@ class AcknowledgeReportControllerSpec
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to authorisedAction returning an error." in new Test {
 
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockEnrolmentsAuthService.authoriseUserFail(mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
@@ -189,6 +195,7 @@ class AcknowledgeReportControllerSpec
           val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
           MockEnrolmentsAuthService.authoriseUser()
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockAcknowledgeRequestParser.parseRequestFail(acknowledgeReportRawData, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
@@ -222,6 +229,7 @@ class AcknowledgeReportControllerSpec
           val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
           MockEnrolmentsAuthService.authoriseUser()
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
           MockRdsService.acknowlegeRdsFail(simpleAcknowledgeReportRequest, mtdError)
           MockCurrentDateTime.getDateTime()
@@ -255,6 +263,7 @@ class AcknowledgeReportControllerSpec
           val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
           MockEnrolmentsAuthService.authoriseUser()
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
           MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
           MockCurrentDateTime.getDateTime()
