@@ -50,6 +50,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         logger.info(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
         response.status match {
           case CREATED =>
+            logger.info(s"temporary ${response} ${response.body}")//TODO delete me
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
             assessmentReport.responseCode match {
               case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
