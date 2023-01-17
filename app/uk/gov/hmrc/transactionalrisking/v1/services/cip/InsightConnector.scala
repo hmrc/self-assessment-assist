@@ -42,9 +42,6 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
         logger.info(s"$correlationId::[InsightConnector:assess]Successfully received fraudRiskreport and status is ${response.status}")
         response.status match {
           case OK =>
-            logger.info("xxxxxxxxxxxxxxxxxxxx")
-            logger.info(s"${Json.prettyPrint(response.json)}")
-            println(s"${Json.prettyPrint(response.json)} look here")
             val fraudRiskReport = response.json.validate[FraudRiskReport].get
             Right(ResponseWrapper(correlationId,fraudRiskReport))
           case BAD_REQUEST =>
@@ -75,7 +72,7 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
 
         case ex@_ =>
-          logger.error(s"$correlationId::[InsightConnector:assess] xxxxxxxxxx Unknown exception $ex")
+          logger.error(s"$correlationId::[InsightConnector:assess] Unknown exception $ex")
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
   }

@@ -20,6 +20,7 @@ import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
+import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsResponse
@@ -71,6 +72,8 @@ object CommonTestData  {
     , nino = simpleNino
     , taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString
     , calculationId = simpleCalculationId,rdsCorrelationId = simpleRDSCorrelationId)
+
+  val simpleGenerateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId.toString,simpleNino, PreferredLanguage.English, CustomerType.TaxPayer, None, simpleTaxYear)
 
   val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
 

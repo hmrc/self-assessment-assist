@@ -50,7 +50,7 @@ class GenerateReportController @Inject()(
                                           idGenerator: IdGenerator
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
-  def generateReportInternal(nino: String, calculationId: String, taxYear: String): Action[AnyContent] = {
+  def generateReportInternal(nino: String, taxYear: String, calculationId:String): Action[AnyContent] = {
 
     implicit val correlationId: String = idGenerator.getUid
     logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
@@ -58,34 +58,30 @@ class GenerateReportController @Inject()(
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
-//      if (taxYearChecker(taxYear)) {
-       // toId(calculationId).map { calculationIdUuid =>
-          val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
+      val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
 
-            assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
-            fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment,request.headers.toMap.map { h => h._1 -> h._2.head })))
-            rdsAssessmentReport <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+        assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
+        fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head })))
+        rdsAssessmentReport <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
 
-          } yield rdsAssessmentReport
+      } yield rdsAssessmentReport
 
-          responseData.fold(
-            errorWrapper =>
-              errorHandler(errorWrapper, correlationId),
-            report => {
-              nonRepudiationService.buildNrsSubmission(report.responseData.stringify, report.responseData.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
-                .fold(
-                  error => Future.successful(InternalServerError(Json.toJson(DownstreamError))),
-                  success => {
-                    logger.info(s"$correlationId::[submit] Request initiated to store ${AssistReportGenerated.value} content to NRS")
-                    nonRepudiationService.submit(success)
-                    logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
-                    Future.successful(Ok(Json.toJson[AssessmentReport](report.responseData)))
-                  }
-                )
-            }
-          ).flatten.map(_.withApiHeaders(correlationId))
-        //}.getOrElse(Future(BadRequest(Json.toJson(CalculationIdFormatError)).withApiHeaders(correlationId)))
-//      }else{Future(BadRequest(Json.toJson(TaxYearFormatError)).withApiHeaders(correlationId))}
+      responseData.fold(
+        errorWrapper =>
+          errorHandler(errorWrapper, correlationId),
+        report => {
+          nonRepudiationService.buildNrsSubmission(report.responseData.stringify, report.responseData.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
+            .fold(
+              error => Future.successful(InternalServerError(Json.toJson(DownstreamError))),
+              success => {
+                logger.info(s"$correlationId::[submit] Request initiated to store ${AssistReportGenerated.value} content to NRS")
+                nonRepudiationService.submit(success)
+                logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
+                Future.successful(Ok(Json.toJson[AssessmentReport](report.responseData)))
+              }
+            )
+        }
+      ).flatten.map(_.withApiHeaders(correlationId))
     }
   }
 
@@ -123,20 +119,4 @@ class GenerateReportController @Inject()(
       calculationInfo <- integrationFrameworkService.getCalculationInfo(id, nino)
     } yield calculationInfo
   }
-
-  def taxYearChecker(inputTaxYear: String): Boolean = {
-    val correctRegex = inputTaxYear.matches("^20[0-9]{2}-[0-9]{2}$")
-    if(correctRegex){
-      val yearCheck1 = inputTaxYear.slice(2, 4).toInt
-      val yearCheck2 = inputTaxYear.drop(5).toInt
-      if(yearCheck2.equals(yearCheck1 + 1)){
-        true
-      } else {
-        false
-      }
-    } else {
-      false
-    }
-  }
-
 }

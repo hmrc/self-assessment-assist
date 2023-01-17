@@ -27,15 +27,10 @@ import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{Metadata, NrsSubmission, SearchKeys}
-import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers.MockGenerateReportRequestParser
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
 import java.time.OffsetDateTime
-import java.util.function.Predicate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -73,9 +68,8 @@ class GenerateReportControllerSpec
   "generateReport" when {
     "a valid request is supplied" should {
       "return the expected data when controller is called" in new Test {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYear)
 
-        MockGenerateReportRequestParser.parseRequest(generateReportRawData)
+        MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
         MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
@@ -94,9 +88,8 @@ class GenerateReportControllerSpec
       }
 
       "return the expected data when controller is called even when NRS is unable to non repudiate the event" in new Test {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYear)
 
-        MockGenerateReportRequestParser.parseRequest(generateReportRawData)
+        MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
         MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
@@ -117,11 +110,11 @@ class GenerateReportControllerSpec
 
     "a request fails due to an incorrect tax year format" should {
       s"return the tax year format error to indicate the taxYear is invalid if the tax years are not consecutive" in new Test {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYearInvalid1)
+        val rawDataNonSequentialTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(taxYear = simpleTaxYearInvalid1)
 
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
-        MockGenerateReportRequestParser.parseRequestFail(generateReportRawData, TaxYearRangeInvalid)
+        MockGenerateReportRequestParser.parseRequestFail(rawDataNonSequentialTaxYear, TaxYearRangeInvalid)
         MockEnrolmentsAuthService.authoriseUser()
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid1)(fakePostRequest)
@@ -135,11 +128,11 @@ class GenerateReportControllerSpec
 
       }
       s"return the tax year format error to indicate the taxYear format is invalid" in new Test {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYearInvalid2)
+        val rawDataInvalidTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(simpleTaxYearInvalid2)
 
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
-        MockGenerateReportRequestParser.parseRequestFail(generateReportRawData, TaxYearFormatError)
+        MockGenerateReportRequestParser.parseRequestFail(rawDataInvalidTaxYear, TaxYearFormatError)
         MockEnrolmentsAuthService.authoriseUser()
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid2)(fakePostRequest)
@@ -154,11 +147,11 @@ class GenerateReportControllerSpec
       }
 
       s"return the tax year format error to indicate the taxYear format is an invalid string" in new Test {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYearInvalid2)
+        val rawDataInvalidTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(simpleTaxYearInvalid3)
 
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
-        MockGenerateReportRequestParser.parseRequestFail(generateReportRawData, TaxYearFormatError)
+        MockGenerateReportRequestParser.parseRequestFail(rawDataInvalidTaxYear, TaxYearFormatError)
         MockEnrolmentsAuthService.authoriseUser()
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid3)(fakePostRequest)
@@ -197,12 +190,11 @@ class GenerateReportControllerSpec
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to EnrolmentsAuthService.authorised returning an error." in new Test {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYear)
 
           MockEnrolmentsAuthService.authoriseUserFail(mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
-          MockGenerateReportRequestParser.parseRequest(generateReportRawData)
+          MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
 
           val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
@@ -225,14 +217,13 @@ class GenerateReportControllerSpec
     }
 
     "a request fails due to a failed InsightService.assess " should {
-      val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYear)
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} when controller is set to return error from InsightService.assess " in new Test {
 
           MockEnrolmentsAuthService.authoriseUser()
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
-          MockGenerateReportRequestParser.parseRequest(generateReportRawData)
+          MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assessFail(simpleFraudRiskRequest, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
@@ -259,11 +250,10 @@ class GenerateReportControllerSpec
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} when controller is set to return error from RDSService.submit " in new Test {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYear)
 
           MockEnrolmentsAuthService.authoriseUser()
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
-          MockGenerateReportRequestParser.parseRequest(generateReportRawData)
+          MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assess(simpleFraudRiskRequest)
           MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, mtdError)
           MockCurrentDateTime.getDateTime()
@@ -291,8 +281,6 @@ class GenerateReportControllerSpec
 
     "a request fails due to being unable to construct NRS event" should {
       "return the expected error to indicate that the data has not been accepted or saved due to failed NRSService submit" in new Test {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString, simplePreferredLanguage, simpleCustomerType, None, simpleTaxYearInvalid2)
-
 
         MockEnrolmentsAuthService.authoriseUser()
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
@@ -303,7 +291,7 @@ class GenerateReportControllerSpec
         MockProvideRandomCorrelationId.IdGenerator
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
-        MockGenerateReportRequestParser.parseRequest(generateReportRawData)
+        MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
 
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)

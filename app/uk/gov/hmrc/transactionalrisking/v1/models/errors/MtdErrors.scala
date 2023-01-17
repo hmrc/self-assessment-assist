@@ -62,7 +62,7 @@ object CalculationIdFormatError
   extends MtdError(code = "FORMAT_CALC_ID",
   message = "The provided Calculation ID is invalid"
   )
-object TaxYearFormatError extends MtdError("FORMAT_TAX_Year", "The provided tax year is invalid")
+object TaxYearFormatError extends MtdError("FORMAT_TAX_YEAR", "The provided tax year is invalid")
 object TaxYearRangeInvalid extends MtdError("RULE_TAX_YEAR_RANGE_INVALID", "Tax year range invalid. A tax year range of one year is required.")
 
 // Standard Errors
