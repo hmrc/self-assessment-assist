@@ -33,13 +33,9 @@ trait MockInsightConnector extends MockFactory with MockAppConfig {
   val cipFraudServiceBaseUrl: String = s"http://localhost:$port/fraud"
 
   object MockInsightConnector {
-
-    //MockedAppConfig.cipFraudServiceBaseUrl returns cipFraudServiceBaseUrl
-
     def assess(fraudRiskRequest: FraudRiskRequest): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
       (mockInsightConnector.assess( _: FraudRiskRequest)( _:HeaderCarrier,_:String))
         .expects(*, *, *)
     }
   }
-
 }

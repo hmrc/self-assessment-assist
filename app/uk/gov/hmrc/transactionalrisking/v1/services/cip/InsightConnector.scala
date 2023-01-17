@@ -41,10 +41,14 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
         logger.info(s"$correlationId::[InsightConnector:assess]Successfully received fraudRiskreport and status is ${response.status}")
         response.status match {
           case OK =>
-            val fraudRiskReport = response.json.validate[FraudRiskReport].get
-            Right(ResponseWrapper(correlationId,fraudRiskReport))
+            response.json.validate[FraudRiskReport].fold(
+              e=> {
+                logger.error(s"$correlationId::[InsightConnector:assess] failed during validate $e")
+                Left(ErrorWrapper(correlationId, DownstreamError))
+              },
+              report => Right(ResponseWrapper(correlationId,report)))
           case _ =>
-            logger.error(s"$correlationId::[InsightConnector:assess]Unable to get fraudrisk report as unknown code returned ${response.status} returned, with message ${response.body}")
+            logger.error(s"$correlationId::[InsightConnector:assess]Unable to get fraudrisk report as unknown code returned ${response.status}")
             Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
