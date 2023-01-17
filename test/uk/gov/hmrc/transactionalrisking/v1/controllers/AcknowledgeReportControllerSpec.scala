@@ -265,7 +265,7 @@ class AcknowledgeReportControllerSpec
 
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
-          contentAsJson(result)  shouldBe DownstreamError.toJson // TODO Revist what should the body be as per the spec?
+          contentAsJson(result)  shouldBe DownstreamError.toJson
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 
