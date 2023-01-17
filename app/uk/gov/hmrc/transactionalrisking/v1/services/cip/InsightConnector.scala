@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.cip
 
-import play.api.http.Status.{OK,BAD_REQUEST, NOT_FOUND, REQUEST_TIMEOUT}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, REQUEST_TIMEOUT}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
@@ -43,36 +43,15 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
           case OK =>
             val fraudRiskReport = response.json.validate[FraudRiskReport].get
             Right(ResponseWrapper(correlationId,fraudRiskReport))
-          case BAD_REQUEST =>
+          case _ =>
+            logger.error(s"$correlationId::[InsightConnector:assess]Unable to get fraudrisk report as unknown code returned ${response.status} returned, with message ${response.body}")
             Left(ErrorWrapper(correlationId, DownstreamError))
-          case NOT_FOUND =>
-            logger.warn(s"$correlationId::[InsightConnector:assess] CIP not reachable")
-            Left(ErrorWrapper(correlationId, ServiceUnavailableError))
-          case REQUEST_TIMEOUT =>  Left(ErrorWrapper(correlationId, DownstreamError))
-          case unexpectedStatus@_ =>
-            logger.error(s"$correlationId::[InsightConnector:assess]Unable to get fraudrisk report unexpected status code returned $unexpectedStatus")
-            Left(ErrorWrapper(correlationId, ServiceUnavailableError))
         }
       }
       .recover {
-        case ex: BadRequestException =>
-          logger.error(s"$correlationId::[InsightConnector:assess] BadRequestException $ex")
-          Left(ErrorWrapper(correlationId, DownstreamError))
-
-        case ex: UpstreamErrorResponse =>
-          logger.error(s"$correlationId::[InsightConnector:assess] UpstreamErrorResponse $ex")
-          ex.statusCode match {
-            case 400 => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
-            case _ => Left(ErrorWrapper(correlationId, DownstreamError))
-          }
-
-        case ex: HttpException =>
-          logger.error(s"$correlationId::[InsightConnector:assess] HttpException $ex")
-          Left(ErrorWrapper(correlationId, ServiceUnavailableError))
-
         case ex@_ =>
           logger.error(s"$correlationId::[InsightConnector:assess] Unknown exception $ex")
-          Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+          Left(ErrorWrapper(correlationId, DownstreamError))
       }
   }
 
