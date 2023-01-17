@@ -21,7 +21,6 @@ import akka.actor.Scheduler
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
-//TODO replace this with some other library to add exponential delay
 trait Delayer {
 
   implicit val scheduler: Scheduler
