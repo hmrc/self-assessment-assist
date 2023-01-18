@@ -102,7 +102,6 @@ class GenerateReportController @Inject()(
 
 
   private def generateFraudRiskRequest(request: AssessmentRequestForSelfAssessment,fraudRiskHeaders:FraudRiskRequest.FraudRiskHeaders): FraudRiskRequest = {
-    //val fraudRiskHeaders = Map.empty[String, String]   //TODO Revisit Check headers as pending
     val fraudRiskRequest =new FraudRiskRequest(
       nino= Some(request.nino),
       taxYear = Some(request.taxYear),

@@ -297,7 +297,7 @@ class GenerateReportControllerSpec
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsJson(result)  shouldBe DownstreamError.toJson // TODO what should the body be as per the spec?
+        contentAsJson(result)  shouldBe DownstreamError.toJson
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 

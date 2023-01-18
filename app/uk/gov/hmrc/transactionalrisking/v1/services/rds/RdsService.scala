@@ -147,7 +147,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                                            fraudRiskReport: FraudRiskReport)(implicit correlationId: String,userRequest: UserRequest[_]): ServiceOutcome[RdsRequest]
   = {
     logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
-    //TODO Errors need to be dealt looked at.
     Right(ResponseWrapper(correlationId, RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationId", request.calculationId.toString),
