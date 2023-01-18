@@ -36,7 +36,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,//TODO this should be @Named("external-http-client")
+class RdsConnector @Inject()(@Named("external-http-client") val httpClient: HttpClient,//TODO this should be @Named("external-http-client")
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
   val requiredHeaderForRDS_Even_IfEmpty = List("Gov-Client-Connection-Method",
   "Gov-Client-Device-ID ",
