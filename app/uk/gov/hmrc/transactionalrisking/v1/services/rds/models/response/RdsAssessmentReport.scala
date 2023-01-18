@@ -52,6 +52,9 @@ case class RdsAssessmentReport(links: Seq[String],
     case KeyValueWrapper("responseMessage", value) => value
   }
 
+  def calculationTimestamp: Option[String] = outputs.collectFirst {
+    case KeyValueWrapper("calculationTimestamp", value) => value
+  }
 
 }
 
@@ -60,7 +63,8 @@ object RdsAssessmentReport {
   trait Output
 
   object Output {
-    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","responseCode","response","responseMessage","Created_dttm","createdDttm")
+    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","responseCode","response",
+      "responseMessage","Created_dttm","createdDttm","calculationTimestamp")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {

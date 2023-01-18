@@ -36,13 +36,35 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
+class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,//TODO this should be @Named("external-http-client")
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
+  val requiredHeaderForRDS_Even_IfEmpty = List("Gov-Client-Connection-Method",
+  "Gov-Client-Device-ID ",
+  "Gov-Client-Local-IPs",
+  "Gov-Client-Local-IPs-Timestamp",
+  "Gov-Client-MAC-Addresses",
+  "Gov-Client-Multi-Factor",
+  "Gov-Client-Screens",
+  "Gov-Client-Timezone",
+  "Gov-Client-User-Agent",
+  "Gov-Client-User-IDs",
+  "Gov-Client-Window-Size",
+  "Gov-Vendor-License-IDs",
+  "Gov-Vendor-Product-Name",
+  "Gov-Vendor-Version",
+  "Gov-Client-Public-IP",
+  "Gov-Client-Public-IP-Timestamp",
+  "Gov-Client-Public-Port",
+  "Gov-Vendor-Public-IP",
+  "Gov-Vendor-Forwarded",
+  "Gov-Client-Browser-Do-Not-Track",
+  "Gov-Client-Browser-JS-User-Agent")
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+   // def rdsRequestHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
@@ -50,17 +72,22 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         logger.info(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
         response.status match {
           case CREATED =>
-            val assessmentReport = response.json.validate[RdsAssessmentReport].get
-            assessmentReport.responseCode match {
-              case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
-              case Some(404) =>
-                val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
-                logger.warn(s"$correlationId::[RdsService][submit] $errorMessage")
-                Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
-              case Some(_) | None =>
-                logger.warn(s"$correlationId::[RdsService][submit] unexpected response")
+            response.json.validate[RdsAssessmentReport].fold(
+              e => {
+                logger.warn(s"$correlationId::[RdsService][submit] validation failed while transforming the response")
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
-            }
+              },
+              assessmentReport =>  assessmentReport.responseCode match {
+                case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
+                case Some(404) =>
+                  val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
+                  logger.warn(s"$correlationId::[RdsService][submit] $errorMessage")
+                  Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
+                case Some(_) | None =>
+                  logger.warn(s"$correlationId::[RdsService][submit] unexpected response")
+                  Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
+              }
+            )
 
           case BAD_REQUEST =>
             logger.warn(s"$correlationId::[RdsConnector:submit] RDS response : BAD request")
