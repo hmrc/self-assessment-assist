@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.TestData
 
-import java.time.LocalDate
+import java.time.{LocalDateTime, Month, OffsetDateTime, ZoneOffset}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
@@ -26,7 +26,6 @@ import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.response.NrsRespo
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
-import java.time.{LocalDate, Month, OffsetDateTime, ZoneOffset}
 import java.util.UUID
 
 object CommonTestData  {
@@ -77,7 +76,7 @@ object CommonTestData  {
 
   val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime = OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC)
-  val simpleCalulationTimestamp = LocalDate.parse("2019-02-15T09:35:15.094Z",DateUtils.dateTimePattern)
+  val simpleCalulationTimestamp = LocalDateTime.parse("2019-02-15T09:35:15.094Z",DateUtils.dateTimePattern)
 
   val reportSubmissionId: String = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c0000000010").toString
   val simpleNRSResponseReportSubmission: NrsResponse = NrsResponse(reportSubmissionId)

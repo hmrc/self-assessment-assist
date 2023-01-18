@@ -32,7 +32,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsReques
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -101,7 +101,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
             case Some(rdsCorrelationID) =>
               logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
 
-              Right(ResponseWrapper(correlationId,AssessmentReportWrapper(LocalDate.parse(calculationTimestamp,DateUtils.dateTimePattern),
+              Right(ResponseWrapper(correlationId,AssessmentReportWrapper(LocalDateTime.parse(calculationTimestamp,DateUtils.dateTimePattern),
                 AssessmentReport(reportId = reportId,
                   risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
                   taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
