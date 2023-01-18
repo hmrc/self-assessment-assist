@@ -65,14 +65,8 @@ components:
           tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
           refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
           scopes:
-            hello: access hello user
-    appScheme:
-      type: oauth2
-      description: HMRC supports OAuth 2.0 for authenticating app-restricted API requests
-      flows:
-        clientCredentials:
-          tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
-          scopes: { }
+            write:self-assessment-assist: Grant write access
+            read:self-assessment-assist: Grant read access
   parameters:
     nino:
       name: nino
