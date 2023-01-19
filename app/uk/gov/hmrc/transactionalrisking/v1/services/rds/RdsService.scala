@@ -18,12 +18,12 @@ package uk.gov.hmrc.transactionalrisking.v1.services.rds
 
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
-import uk.gov.hmrc.transactionalrisking.utils.Logging
+import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, DesTaxYear, Link, Origin, PreferredLanguage, Risk}
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, FormatReportIdError}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, AssessmentRequestForSelfAssessment, DesTaxYear, Link, Origin, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.FraudRiskReport
@@ -32,6 +32,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsReques
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
+import java.time.LocalDateTime
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -45,9 +46,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                              ec: ExecutionContext,
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
-                             correlationId: String): Future[ServiceOutcome[AssessmentReport]] = {
+                             correlationId: String): Future[ServiceOutcome[AssessmentReportWrapper]] = {
 
-    def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None) = {
+    def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None): Future[Either[ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]]] = {
       val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
       rdsRequestSO match {
         case Right(ResponseWrapper(_, rdsRequest)) =>
@@ -71,7 +72,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
           }
         case Left(errorWrapper) =>
           logger.error(s"$correlationId::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request ${errorWrapper.error}")
-          Future(Left(errorWrapper): ServiceOutcome[AssessmentReport])
+          Future(Left(errorWrapper))
       }
     }
 
@@ -90,33 +91,30 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     }
   }
 
-  private def toAssessmentReport(report: RdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationId: String): ServiceOutcome[AssessmentReport] = {
+  private def toAssessmentReport(report: RdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationId: String): ServiceOutcome[AssessmentReportWrapper] = {
     logger.info(s"$correlationId::[toAssessmentReport]Generated assessment report")
 
-    (report.calculationId, report.feedbackId) match {
-      case (Some(calculationId), Some(reportId)) =>
+    (report.calculationId, report.feedbackId,report.calculationTimestamp) match {
+      case (Some(calculationId), Some(reportId),Some(calculationTimestamp)) =>
           val rdsCorrelationIdOption = report.rdsCorrelationId
           rdsCorrelationIdOption match {
             case Some(rdsCorrelationID) =>
               logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
-              Right(ResponseWrapper(correlationId,
+
+              Right(ResponseWrapper(correlationId,AssessmentReportWrapper(LocalDateTime.parse(calculationTimestamp,DateUtils.dateTimePattern),
                 AssessmentReport(reportId = reportId,
                   risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
                   taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
-                  calculationId = request.calculationId, rdsCorrelationID)))
+                  calculationId = request.calculationId, rdsCorrelationID))))
 
             case None =>
               logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
-              Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
+              Left(ErrorWrapper(correlationId, DownstreamError))
           }
 
-      case (Some(_), None) =>
-        logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find reportId")
-        Left(ErrorWrapper(correlationId, FormatReportIdError)): ServiceOutcome[AssessmentReport]
-
-      case (None, Some(_)) =>
-        logger.warn(s"$correlationId::[RdsService][toAssessmentReport] calculationId missing in RDS response")
-        Left(ErrorWrapper(correlationId, DownstreamError)): ServiceOutcome[AssessmentReport]
+      case (_,_,_) =>
+        logger.warn(s"$correlationId::[RdsService][toAssessmentReport] Either calculationId or feedbackId or calculationTimestamp missing in RDS response")
+        Left(ErrorWrapper(correlationId, DownstreamError))
     }
   }
 

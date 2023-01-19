@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
+import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._

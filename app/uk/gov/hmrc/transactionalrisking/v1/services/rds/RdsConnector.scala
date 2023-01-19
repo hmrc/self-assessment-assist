@@ -36,7 +36,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: HttpClient,
+class RdsConnector @Inject()(@Named("external-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
@@ -50,17 +50,22 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
         logger.info(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
         response.status match {
           case CREATED =>
-            val assessmentReport = response.json.validate[RdsAssessmentReport].get
-            assessmentReport.responseCode match {
-              case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
-              case Some(404) =>
-                val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
-                logger.warn(s"$correlationId::[RdsService][submit] $errorMessage")
-                Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
-              case Some(_) | None =>
-                logger.warn(s"$correlationId::[RdsService][submit] unexpected response")
+            response.json.validate[RdsAssessmentReport].fold(
+              e => {
+                logger.warn(s"$correlationId::[RdsService][submit] validation failed while transforming the response")
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
-            }
+              },
+              assessmentReport =>  assessmentReport.responseCode match {
+                case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
+                case Some(404) =>
+                  val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
+                  logger.warn(s"$correlationId::[RdsService][submit] $errorMessage")
+                  Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
+                case Some(_) | None =>
+                  logger.warn(s"$correlationId::[RdsService][submit] unexpected response")
+                  Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
+              }
+            )
 
           case BAD_REQUEST =>
             logger.warn(s"$correlationId::[RdsConnector:submit] RDS response : BAD request")
@@ -126,7 +131,7 @@ class RdsConnector @Inject()(@Named("nohook-auth-http-client") val httpClient: H
           case BAD_REQUEST => Left(ErrorWrapper(correlationId,DownstreamError))
           case NOT_FOUND => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
           case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, DownstreamError))
-          case _@errorCode =>
+          case _ =>
             Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
