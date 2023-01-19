@@ -153,7 +153,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           case BAD_REQUEST => Left(ErrorWrapper(correlationId,DownstreamError))
           case NOT_FOUND => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
           case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, DownstreamError))
-          case _@errorCode =>
+          case _ =>
             Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
