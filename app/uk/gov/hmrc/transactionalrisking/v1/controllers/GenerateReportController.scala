@@ -31,12 +31,10 @@ import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkServ
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AssistReportGenerated
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
-import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService, ServiceOutcome}
+import uk.gov.hmrc.transactionalrisking.v1.services.{EnrolmentsAuthService}
 
-import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class GenerateReportController @Inject()(
                                           val cc: ControllerComponents, //TODO add request parser
@@ -85,19 +83,25 @@ class GenerateReportController @Inject()(
     }
   }
 
-  def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = errorWrapper.error match {
-    case ServerError | DownstreamError => Future(InternalServerError(Json.toJson(DownstreamError)))
-    case NinoFormatError => Future(BadRequest(Json.toJson(NinoFormatError)))
-    case CalculationIdFormatError => Future(BadRequest(Json.toJson(CalculationIdFormatError)))
-    case MatchingResourcesNotFoundError => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)))
-    case ClientOrAgentNotAuthorisedError => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
-    case InvalidCredentialsError => Future(Unauthorized(Json.toJson(InvalidCredentialsError)))
-    case RdsAuthError => Future(InternalServerError(Json.toJson(ForbiddenDownstreamError)))
-    case ServiceUnavailableError => Future(InternalServerError(Json.toJson(ServiceUnavailableError)))
-    case BadRequestError@err => Future(BadRequest(err.toJson))//TODO test this scenario where multiple request parmeters are invalid
-    case error@_ =>
+  def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = (errorWrapper.error,errorWrapper.errors) match {
+    case (ServerError | DownstreamError,_) => Future(InternalServerError(Json.toJson(DownstreamError)))
+    case (NinoFormatError,_) => Future(BadRequest(Json.toJson(NinoFormatError)))
+    case (TaxYearRangeInvalid,_) => Future(BadRequest(Json.toJson(TaxYearRangeInvalid)))
+    case (TaxYearFormatError,_) => Future(BadRequest(Json.toJson(TaxYearFormatError)))
+    case (CalculationIdFormatError,_) => Future(BadRequest(Json.toJson(CalculationIdFormatError)))
+    case (MatchingResourcesNotFoundError,_) => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)))
+    case (ClientOrAgentNotAuthorisedError,_) => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
+    case (InvalidCredentialsError,_) => Future(Unauthorized(Json.toJson(InvalidCredentialsError)))
+    case (RdsAuthError,_) => Future(InternalServerError(Json.toJson(ForbiddenDownstreamError)))
+    case (ServiceUnavailableError,_) => Future(InternalServerError(Json.toJson(ServiceUnavailableError)))
+    case (BadRequestError,Some(errs)) => Future(BadRequest(Json.toJson(errs)))
+    case (BadRequestError,None) => Future(BadRequest(Json.toJson(BadRequestError)))
+    case (_,Some(errs)) =>
+      logger.error(s"$correlationId::[generateReportInternal] Error in general scenario with multiple errors $errs")
+      Future(InternalServerError(Json.toJson(errs)))
+    case (error@_,None) =>
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
-      Future(BadRequest(Json.toJson(MatchingResourcesNotFoundError)))
+      Future(InternalServerError(Json.toJson(MatchingResourcesNotFoundError)))
   }
 
 
@@ -108,14 +112,5 @@ class GenerateReportController @Inject()(
       fraudRiskHeaders=fraudRiskHeaders
     )
     fraudRiskRequest
-  }
-
-  private def toId(rawId: String): Option[UUID] =
-    Try(UUID.fromString(rawId)).toOption
-
-  private def getCalculationInfo(id: UUID, nino: String)(implicit correlationId:String): Future[ServiceOutcome[CalculationInfo]] = {
-    for{
-      calculationInfo <- integrationFrameworkService.getCalculationInfo(id, nino)
-    } yield calculationInfo
   }
 }

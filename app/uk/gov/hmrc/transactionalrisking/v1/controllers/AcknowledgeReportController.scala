@@ -91,13 +91,16 @@ class AcknowledgeReportController @Inject()(
     }
   }
 
-  def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = errorWrapper.error match {
-    case ServerError | DownstreamError |ServiceUnavailableError => Future.successful(InternalServerError(Json.toJson(DownstreamError)))
-    case FormatReportIdError => Future.successful(BadRequest(Json.toJson(FormatReportIdError)))
-    case ClientOrAgentNotAuthorisedError => Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
-    case NinoFormatError => Future.successful(BadRequest(Json.toJson(NinoFormatError)))
-    case MatchingResourcesNotFoundError | ResourceNotFoundError => Future.successful(ServiceUnavailable(Json.toJson(ServiceUnavailableError)))
-    case error@_ =>
+  def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error,errorWrapper.errors) match {
+    case (ServerError | DownstreamError |ServiceUnavailableError,_) => Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+    case (FormatReportIdError,_) => Future.successful(BadRequest(Json.toJson(FormatReportIdError)))
+    case (ClientOrAgentNotAuthorisedError,_) => Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
+    case (NinoFormatError,_) => Future.successful(BadRequest(Json.toJson(NinoFormatError)))
+    case (MatchingResourcesNotFoundError | ResourceNotFoundError,_) => Future.successful(ServiceUnavailable(Json.toJson(ServiceUnavailableError)))
+    case (error@_,Some(errs)) =>
+      logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario with multiple errors $errs")
+      Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
+    case (error@_,None) =>
       logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario $error")
       Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
   }
