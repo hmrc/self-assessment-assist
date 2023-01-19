@@ -86,24 +86,24 @@ class GenerateReportController @Inject()(
   }
 
   def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = (errorWrapper.error,errorWrapper.errors) match {
-    case (ServerError | DownstreamError,_) => Future(InternalServerError(Json.toJson(DownstreamError)))
-    case (NinoFormatError,_) => Future(BadRequest(Json.toJson(NinoFormatError)))
-    case (TaxYearRangeInvalid,_) => Future(BadRequest(Json.toJson(TaxYearRangeInvalid)))
-    case (TaxYearFormatError,_) => Future(BadRequest(Json.toJson(TaxYearFormatError)))
-    case (CalculationIdFormatError,_) => Future(BadRequest(Json.toJson(CalculationIdFormatError)))
-    case (MatchingResourcesNotFoundError,_) => Future(NotFound(Json.toJson(MatchingResourcesNotFoundError)))
-    case (ClientOrAgentNotAuthorisedError,_) => Future(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
-    case (InvalidCredentialsError,_) => Future(Unauthorized(Json.toJson(InvalidCredentialsError)))
-    case (RdsAuthError,_) => Future(InternalServerError(Json.toJson(ForbiddenDownstreamError)))
-    case (ServiceUnavailableError,_) => Future(InternalServerError(Json.toJson(ServiceUnavailableError)))
-    case (BadRequestError,Some(errs)) => Future(BadRequest(Json.toJson(errs)))
-    case (BadRequestError,None) => Future(BadRequest(Json.toJson(BadRequestError)))
+    case (ServerError | DownstreamError,_) => Future(InternalServerError(Json.toJson(Seq(DownstreamError))))
+    case (NinoFormatError,_) => Future(BadRequest(Json.toJson(Seq(NinoFormatError))))
+    case (TaxYearRangeInvalid,_) => Future(BadRequest(Json.toJson(Seq(TaxYearRangeInvalid))))
+    case (TaxYearFormatError,_) => Future(BadRequest(Json.toJson(Seq(TaxYearFormatError))))
+    case (CalculationIdFormatError,_) => Future(BadRequest(Json.toJson(Seq(CalculationIdFormatError))))
+    case (MatchingResourcesNotFoundError,_) => Future(NotFound(Json.toJson(Seq(MatchingResourcesNotFoundError))))
+    case (ClientOrAgentNotAuthorisedError,_) => Future(Forbidden(Json.toJson(Seq(ClientOrAgentNotAuthorisedError))))
+    case (InvalidCredentialsError,_) => Future(Unauthorized(Json.toJson(Seq(InvalidCredentialsError))))
+    case (RdsAuthError,_) => Future(InternalServerError(Json.toJson(Seq(ForbiddenDownstreamError))))
+    case (ServiceUnavailableError,_) => Future(InternalServerError(Json.toJson(Seq(ServiceUnavailableError))))
+    case (BadRequestError,Some(errs)) => Future(BadRequest(Json.toJson(Seq(errs))))
+    case (BadRequestError,None) => Future(BadRequest(Json.toJson(Seq(BadRequestError))))
     case (_,Some(errs)) =>
       logger.error(s"$correlationId::[generateReportInternal] Error in general scenario with multiple errors $errs")
       Future(InternalServerError(Json.toJson(errs)))
     case (error@_,None) =>
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
-      Future(InternalServerError(Json.toJson(MatchingResourcesNotFoundError)))
+      Future(InternalServerError(Json.toJson(Seq(MatchingResourcesNotFoundError))))
   }
 
 

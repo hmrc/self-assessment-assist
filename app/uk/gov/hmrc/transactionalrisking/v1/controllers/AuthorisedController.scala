@@ -81,7 +81,7 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
         }.map(_.withApiHeaders(correlationId))
       } else {
         logger.warn(s"$correlationId::[invokeBlock]Error in nino format")
-        Future.successful(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
+        Future.successful(BadRequest(Json.toJson(Seq(NinoFormatError))).withApiHeaders(correlationId))
       }
     }
   }
