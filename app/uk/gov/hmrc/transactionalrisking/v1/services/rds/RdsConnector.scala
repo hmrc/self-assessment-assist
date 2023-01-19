@@ -138,7 +138,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] response is ${response.status}")
+        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] response is ${response}")
         response.status match {
           case CREATED =>
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
