@@ -79,9 +79,8 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         val returnedError: String = returnedErrorJSon.utf8String
 
         val ninoErrorJSon: JsValue = Json.toJson(NinoFormatError)
-        val ninoError: String = ninoErrorJSon.toString()
 
-        returnedError shouldBe ninoError
+        returnedError shouldBe Json.toJson(Seq(ninoErrorJSon)).toString()
       }
     }
   }

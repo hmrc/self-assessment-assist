@@ -145,7 +145,7 @@ class AcknowledgeReportControllerSpec
 
         status(result) shouldBe BAD_REQUEST
 
-        contentAsJson(result) shouldBe NinoFormatError.toJson
+        contentAsJson(result) shouldBe Json.toJson(Seq(NinoFormatError))
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
