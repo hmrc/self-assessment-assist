@@ -52,9 +52,8 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
     val utfEncodedClientId = URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")
     val utfEncodedSecret = URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")
     val utfEncodedGrantType = URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")
-    val utfEncodedCode = URLEncoder.encode("o1a2fXTJVU", "UTF-8")
 
-    val body = s"grant_type=$utfEncodedGrantType&code=$utfEncodedCode"
+    val body = s"grant_type=$utfEncodedGrantType"
 
     val credentials = s"$utfEncodedClientId:$utfEncodedSecret"
     val base64EncodedCredentials = Base64.getEncoder.encodeToString(credentials.getBytes)
