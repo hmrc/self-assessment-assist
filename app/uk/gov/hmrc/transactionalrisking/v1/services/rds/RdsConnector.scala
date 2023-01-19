@@ -36,35 +36,13 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject()(@Named("external-http-client") val httpClient: HttpClient,//TODO this should be @Named("external-http-client")
+class RdsConnector @Inject()(@Named("external-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
-  val requiredHeaderForRDS_Even_IfEmpty = List("Gov-Client-Connection-Method",
-  "Gov-Client-Device-ID ",
-  "Gov-Client-Local-IPs",
-  "Gov-Client-Local-IPs-Timestamp",
-  "Gov-Client-MAC-Addresses",
-  "Gov-Client-Multi-Factor",
-  "Gov-Client-Screens",
-  "Gov-Client-Timezone",
-  "Gov-Client-User-Agent",
-  "Gov-Client-User-IDs",
-  "Gov-Client-Window-Size",
-  "Gov-Vendor-License-IDs",
-  "Gov-Vendor-Product-Name",
-  "Gov-Vendor-Version",
-  "Gov-Client-Public-IP",
-  "Gov-Client-Public-IP-Timestamp",
-  "Gov-Client-Public-Port",
-  "Gov-Vendor-Public-IP",
-  "Gov-Vendor-Forwarded",
-  "Gov-Client-Browser-Do-Not-Track",
-  "Gov-Client-Browser-JS-User-Agent")
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
-   // def rdsRequestHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
@@ -153,7 +131,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           case BAD_REQUEST => Left(ErrorWrapper(correlationId,DownstreamError))
           case NOT_FOUND => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
           case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, DownstreamError))
-          case _@errorCode =>
+          case _ =>
             Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
