@@ -56,26 +56,28 @@ class GenerateReportController @Inject()(
     authorisedAction(nino, nrsRequired = true).async { implicit request =>
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
-      val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReport]] = for {
+      val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] = for {
 
         assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
         fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head })))
-        rdsAssessmentReport <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+        rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
 
-      } yield rdsAssessmentReport
+      } yield rdsAssessmentReportWrapper
 
       responseData.fold(
         errorWrapper =>
           errorHandler(errorWrapper, correlationId),
-        report => {
-          nonRepudiationService.buildNrsSubmission(report.responseData.stringify, report.responseData.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
+        reportWrapper => {
+            //TODO for txr015, calculationTimestamp can be retrieved from reportWrapper.responseData.calculationTimestamp
+            //TODO for txr015, need to make sure if there are any format issues with timestamp then need to be fixed in txr015
+          nonRepudiationService.buildNrsSubmission(reportWrapper.responseData.report.stringify, reportWrapper.responseData.report.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
             .fold(
               error => Future.successful(InternalServerError(Json.toJson(DownstreamError))),
               success => {
                 logger.info(s"$correlationId::[submit] Request initiated to store ${AssistReportGenerated.value} content to NRS")
                 nonRepudiationService.submit(success)
                 logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
-                Future.successful(Ok(Json.toJson[AssessmentReport](report.responseData)))
+                Future.successful(Ok(Json.toJson[AssessmentReport](reportWrapper.responseData.report)))
               }
             )
         }

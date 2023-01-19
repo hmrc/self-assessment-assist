@@ -24,9 +24,9 @@ import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockRdsAuthConnector
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.{RdsAuthCredentials, UserDetails}
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, Internal}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, Internal}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
-import RdsTestData.{assessmentReport, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
+import RdsTestData.{assessmentReport, assessmentReportWrapper, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
@@ -75,8 +75,8 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         MockRdsAuthConnector.retrieveAuthorisedBearer()
         MockRdsConnector.submit(rdsRequest) returns Future.successful(Right(ResponseWrapper(correlationId, rdsNewSubmissionReport)))
 
-        val assessmentReportSO: ServiceOutcome[AssessmentReport] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
-        assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReport))
+        val assessmentReportSO: ServiceOutcome[AssessmentReportWrapper] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
+        assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReportWrapper))
       }
     }
 
@@ -85,8 +85,8 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
       val rdsAssessmentReportSO: ServiceOutcome[RdsAssessmentReport] = Right(ResponseWrapper(correlationId, rdsNewSubmissionReport))
       MockRdsConnector.submit(rdsRequest) returns Future.successful(rdsAssessmentReportSO)
 
-      private val assessmentReportSO: ServiceOutcome[AssessmentReport] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
-      assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReport))
+      private val assessmentReportSO: ServiceOutcome[AssessmentReportWrapper] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
+      assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReportWrapper))
     }
 
     "the acknowledged method is called" must {
