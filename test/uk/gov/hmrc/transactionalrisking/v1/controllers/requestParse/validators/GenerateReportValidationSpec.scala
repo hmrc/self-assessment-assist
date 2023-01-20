@@ -19,36 +19,47 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.GenerateReportValidator
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, NinoFormatError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, NinoFormatError, TaxYearFormatError, TaxYearRangeInvalid}
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
 class GenerateReportValidationSpec extends UnitSpec {
-  val validator:GenerateReportValidator = new GenerateReportValidator
+  val validator: GenerateReportValidator = new GenerateReportValidator
 
   "running a validation" should {
     "return no errors" when {
       "a valid request" in {
-        val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationId.toString)
-        validator.validate(generateReportRawData) shouldBe Nil
+       
+        validator.validate(simpleGenerateReportRawData) shouldBe Nil
       }
 
       "return errors" when {
         "an invalid nino." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationId.toString)
-
+          val generateReportRawData: GenerateReportRawData = simpleGenerateReportRawData.copy(nino = simpleNinoInvalid)
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError)
         }
 
         "an invalid calculationId." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNino, simpleCalculationIdStrangeCharsString)
+          val generateReportRawData: GenerateReportRawData = simpleGenerateReportRawData.copy(calculationId = simpleCalculationIdStrangeCharsString)
 
           validator.validate(generateReportRawData) shouldBe Seq(CalculationIdFormatError)
         }
 
         "an invalid nino and calculationId." in {
-          val generateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleNinoInvalid, simpleCalculationIdStrangeCharsString)
+          val generateReportRawData: GenerateReportRawData = simpleGenerateReportRawData.copy(calculationId = invalidUUID.toString, nino = simpleNinoInvalid)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, CalculationIdFormatError)
+        }
+
+        "an invalid nino and tax year." in {
+          val generateReportRawData: GenerateReportRawData = simpleGenerateReportRawData.copy( nino = simpleNinoInvalid,taxYear = simpleTaxYearInvalid2)
+
+          validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, TaxYearFormatError)
+        }
+
+        "an invalid nino and no sequential tax year." in {
+          val generateReportRawData: GenerateReportRawData = simpleGenerateReportRawData.copy(nino = simpleNinoInvalid, taxYear = simpleTaxYearInvalid1)
+
+          validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, TaxYearRangeInvalid)
         }
       }
     }

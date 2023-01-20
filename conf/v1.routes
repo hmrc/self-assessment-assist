@@ -1,6 +1,4 @@
 # microservice specific routes
 
-GET        /hello                                                               uk.gov.hmrc.transactionalrisking.v1.controllers.HelloWorldController.hello
-
-POST       /reports/:nino/:calculationId                                 uk.gov.hmrc.transactionalrisking.v1.controllers.GenerateReportController.generateReportInternal(nino:String, calculationId:String)
+POST       /reports/:nino/:taxYear/:calculationId                        uk.gov.hmrc.transactionalrisking.v1.controllers.GenerateReportController.generateReportInternal(nino:String, taxYear:String, calculationId:String)
 POST       /reports/acknowledge/:nino/:reportId/:rdsCorrelationId        uk.gov.hmrc.transactionalrisking.v1.controllers.AcknowledgeReportController.acknowledgeReportForSelfAssessment(nino:String, reportId:String, rdsCorrelationId:String)

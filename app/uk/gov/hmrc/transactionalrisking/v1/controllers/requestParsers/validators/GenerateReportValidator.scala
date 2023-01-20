@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators
 
-import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.{CalculationIdValidation, NinoValidation}
+import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations.{CalculationIdValidation, NinoValidation, TaxYearValidation}
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.MtdError
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
@@ -25,7 +25,7 @@ class GenerateReportValidator extends Validator[GenerateReportRawData] {
   private val validationSet = List(parameterFormatValidation)
 
   private def parameterFormatValidation: GenerateReportRawData => List[List[MtdError]] = { data =>
-    List(NinoValidation.validate(data.nino), CalculationIdValidation.validate(data.calculationId))
+    List(NinoValidation.validate(data.nino),TaxYearValidation.validate(data.taxYear), CalculationIdValidation.validate(data.calculationId))
   }
 
   override def validate(data: GenerateReportRawData): List[MtdError] = {

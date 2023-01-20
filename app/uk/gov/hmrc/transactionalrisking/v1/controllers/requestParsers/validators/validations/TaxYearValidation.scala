@@ -16,19 +16,22 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.validations
 
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{CalculationIdFormatError, MtdError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{MtdError, TaxYearFormatError, TaxYearRangeInvalid}
 
-import java.util.UUID
-import scala.util.Try
+object TaxYearValidation {
 
-object CalculationIdValidation {
-  private val calculationIdRegex = "^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-
-  private def toId(rawId: String): Option[UUID] =
-    Try(UUID.fromString(rawId)).toOption
-
-  def validate(calculationId: String): List[MtdError] = toId(calculationId) match {
-    case Some(_) => if (calculationId matches calculationIdRegex) NoValidationErrors else List(CalculationIdFormatError)
-    case None                                             => List(CalculationIdFormatError)
+  def validate(inputTaxYear: String): List[MtdError] = {
+    val correctRegex = inputTaxYear.matches("^[0-9]{4}-[0-9]{2}$")
+    if(correctRegex){
+      val yearCheck1 = inputTaxYear.slice(2, 4).toInt
+      val yearCheck2 = inputTaxYear.drop(5).toInt
+      if(yearCheck2.equals(yearCheck1 + 1)){
+        NoValidationErrors
+      } else {
+        List(TaxYearRangeInvalid)
+      }
+    } else {
+      List(TaxYearFormatError)
+    }
   }
 }
