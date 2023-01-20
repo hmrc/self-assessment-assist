@@ -87,7 +87,7 @@ class GenerateReportController @Inject()(
 
   def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = (errorWrapper.error,errorWrapper.errors) match {
     case (ServerError | DownstreamError,_) => Future(InternalServerError(Json.toJson(Seq(DownstreamError))))
-    case (NinoFormatError,_) => Future(BadRequest(Json.toJson(NinoFormatError)))
+    case (NinoFormatError,_) => Future(BadRequest(Json.toJson(Seq(NinoFormatError))))
     case (TaxYearRangeInvalid,_) => Future(BadRequest(Json.toJson(Seq(TaxYearRangeInvalid))))
     case (TaxYearFormatError,_) => Future(BadRequest(Json.toJson(Seq(TaxYearFormatError))))
     case (CalculationIdFormatError,_) => Future(BadRequest(Json.toJson(Seq(CalculationIdFormatError))))
@@ -105,7 +105,6 @@ class GenerateReportController @Inject()(
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
       Future(InternalServerError(Json.toJson(Seq(MatchingResourcesNotFoundError))))
   }
-
 
   private def generateFraudRiskRequest(request: AssessmentRequestForSelfAssessment,fraudRiskHeaders:FraudRiskRequest.FraudRiskHeaders): FraudRiskRequest = {
     val fraudRiskRequest =new FraudRiskRequest(
