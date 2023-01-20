@@ -21,6 +21,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
+import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
@@ -42,6 +43,7 @@ class GenerateReportController @Inject()(
                                           requestParser: GenerateReportRequestParser,
                                           val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
+                                          val lookupConnector: MtdIdLookupConnector,
                                           nonRepudiationService: NrsService,
                                           insightService: InsightService,
                                           rdsService: RdsService,

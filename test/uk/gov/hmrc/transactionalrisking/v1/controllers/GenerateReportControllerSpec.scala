@@ -22,6 +22,7 @@ import play.api.mvc.Result
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
@@ -39,6 +40,7 @@ class GenerateReportControllerSpec
   extends ControllerBaseSpec
     with MockIntegrationFrameworkService
     with MockEnrolmentsAuthService
+    with MockLookupConnector
     with MockNrsService
     with MockInsightService
     with MockRdsService
@@ -57,6 +59,7 @@ class GenerateReportControllerSpec
       requestParser = mockGenerateReportRequestParser,
       integrationFrameworkService = mockIntegrationFrameworkService,
       authService = mockEnrolmentsAuthService,
+      lookupConnector = mockLookupConnector,
       nonRepudiationService = mockNrsService,
       insightService = mockInsightService,
       rdsService = mockRdsService,
@@ -73,6 +76,7 @@ class GenerateReportControllerSpec
         MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
         MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
@@ -93,6 +97,7 @@ class GenerateReportControllerSpec
         MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
         MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
@@ -192,6 +197,7 @@ class GenerateReportControllerSpec
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} to indicate that the data has not been accepted and saved due to EnrolmentsAuthService.authorised returning an error." in new Test {
 
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockEnrolmentsAuthService.authoriseUserFail(mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
@@ -223,6 +229,7 @@ class GenerateReportControllerSpec
         s"return the expected error ${mtdError.code} when controller is set to return error from InsightService.assess " in new Test {
 
           MockEnrolmentsAuthService.authoriseUser()
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
           MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assessFail(simpleFraudRiskRequest, mtdError)
@@ -253,6 +260,7 @@ class GenerateReportControllerSpec
         s"return the expected error ${mtdError.code} when controller is set to return error from RDSService.submit " in new Test {
 
           MockEnrolmentsAuthService.authoriseUser()
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
           MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assess(simpleFraudRiskRequest)
@@ -284,6 +292,7 @@ class GenerateReportControllerSpec
       "return the expected error to indicate that the data has not been accepted or saved due to failed NRSService submit" in new Test {
 
         MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,assessmentReportWrapper)

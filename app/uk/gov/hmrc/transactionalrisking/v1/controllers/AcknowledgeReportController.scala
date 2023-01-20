@@ -20,6 +20,7 @@ import cats.data.EitherT
 import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
+import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.AcknowledgeRequestParser
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
@@ -36,6 +37,7 @@ class AcknowledgeReportController @Inject()(
                                              val cc: ControllerComponents,
                                              requestParser: AcknowledgeRequestParser,
                                              val authService: EnrolmentsAuthService,
+                                             val lookupConnector: MtdIdLookupConnector,
                                              nonRepudiationService: NrsService,
                                              rdsService: RdsService,
                                              currentDateTime: CurrentDateTime,
