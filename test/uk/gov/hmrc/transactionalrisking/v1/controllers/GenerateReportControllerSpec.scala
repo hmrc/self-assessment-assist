@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 
-import play.api.libs.json.{JsValue, Json, __}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
@@ -34,7 +34,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class GenerateReportControllerSpec
   extends ControllerBaseSpec
@@ -307,7 +307,7 @@ class GenerateReportControllerSpec
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsJson(result)  shouldBe DownstreamError.toJson
+        contentAsJson(result)  shouldBe Json.toJson(Seq(DownstreamError))
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 

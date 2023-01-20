@@ -101,7 +101,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
         val returnedError: String = returnedErrorJSon.utf8String
 
-        val invalidBearerJson: JsValue = Json.toJson(InvalidBearerTokenError)
+        val invalidBearerJson: JsValue = Json.toJson(Seq(InvalidBearerTokenError))
         val ninoError: String = invalidBearerJson.toString()
 
         returnedError shouldBe ninoError

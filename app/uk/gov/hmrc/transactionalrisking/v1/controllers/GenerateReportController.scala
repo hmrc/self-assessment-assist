@@ -75,7 +75,7 @@ class GenerateReportController @Inject()(
             //TODO for txr015, need to make sure if there are any format issues with timestamp then need to be fixed in txr015
           nonRepudiationService.buildNrsSubmission(reportWrapper.responseData.report.stringify, reportWrapper.responseData.report.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
             .fold(
-              error => Future.successful(InternalServerError(Json.toJson(DownstreamError))),
+              error => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError))),
               success => {
                 logger.info(s"$correlationId::[submit] Request initiated to store ${AssistReportGenerated.value} content to NRS")
                 nonRepudiationService.submit(success)
@@ -99,7 +99,7 @@ class GenerateReportController @Inject()(
     case (InvalidCredentialsError,_) => Future(Unauthorized(convertErrorAsJson(InvalidCredentialsError)))
     case (RdsAuthError,_) => Future(InternalServerError(convertErrorAsJson(ForbiddenDownstreamError)))
     case (ServiceUnavailableError,_) => Future(InternalServerError(convertErrorAsJson(ServiceUnavailableError)))
-    case (BadRequestError,Some(errs)) => Future(BadRequest(Json.toJson(Seq(errs))))
+    case (BadRequestError,Some(errs)) => Future(BadRequest(Json.toJson(errs)))
     case (BadRequestError,None) => Future(BadRequest(convertErrorAsJson(BadRequestError)))
     case (_,Some(errs)) =>
       logger.error(s"$correlationId::[generateReportInternal] Error in general scenario with multiple errors $errs")

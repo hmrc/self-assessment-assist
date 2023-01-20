@@ -16,15 +16,10 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.mocks.connectors
 
-import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
-import uk.gov.hmrc.transactionalrisking.v1.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.MtdError
-import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 
 import scala.concurrent.{ExecutionContext, Future}
 

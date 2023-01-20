@@ -81,10 +81,10 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
       if (NinoChecker.isValid(nino)) {
         lookupConnector.getMtdId(nino).flatMap[Result] {
           case Right(mtdId)                  => invokeBlockWithAuthCheck(mtdId, request, block)
-          case Left(NinoFormatError)         => Future.successful(BadRequest(Json.toJson(NinoFormatError)))
-          case Left(UnauthorisedError)       => Future.successful(Forbidden(Json.toJson(UnauthorisedError)))
-          case Left(InvalidBearerTokenError) => Future.successful(Unauthorized(Json.toJson(InvalidBearerTokenError)))
-          case Left(_)                       => Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+          case Left(NinoFormatError)         => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
+          case Left(UnauthorisedError)       => Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
+          case Left(InvalidBearerTokenError) => Future.successful(Unauthorized(convertErrorAsJson(InvalidBearerTokenError)))
+          case Left(_)                       => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
         }
       } else {
         logger.warn(s"$correlationId::[invokeBlock]Error in nino format")
