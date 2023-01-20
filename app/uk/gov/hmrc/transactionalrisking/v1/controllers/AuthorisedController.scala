@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
-import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.{Enrolment, Nino}
+import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
-import uk.gov.hmrc.transactionalrisking.v1.controllers.AuthorisedController.ninoKey
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.NinoChecker
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BearerTokenExpiredError, ClientOrAgentNotAuthorisedError, DownstreamError, ForbiddenDownstreamError, InvalidBearerTokenError, InvalidCredentialsError, LegacyUnauthorisedError, NinoFormatError, UnauthorisedError}
@@ -55,22 +54,22 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
       authService.authorised(predicate(mtdId), correlationId, nrsRequired).flatMap[Result] {
         case Right(userDetails)      => block(UserRequest(userDetails.copy(clientID = clientID), request))
         case Left(ClientOrAgentNotAuthorisedError) =>
-          Future.successful(Forbidden(Json.toJson(ClientOrAgentNotAuthorisedError)))
+          Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
         case Left(ForbiddenDownstreamError) =>
           logger.warn(s"$correlationId::[invokeBlock]Forbidden downstream error")
-          Future.successful(Forbidden(Json.toJson(DownstreamError)))
+          Future.successful(Forbidden(convertErrorAsJson(DownstreamError)))
         case Left(InvalidBearerTokenError) =>
-          Future.successful(Forbidden(Json.toJson(InvalidCredentialsError)))
+          Future.successful(Forbidden(convertErrorAsJson(InvalidCredentialsError)))
         case Left(BearerTokenExpiredError) =>
-          Future.successful(Forbidden(Json.toJson(InvalidCredentialsError)))
+          Future.successful(Forbidden(convertErrorAsJson(InvalidCredentialsError)))
         case Left(LegacyUnauthorisedError) =>
-          Future.successful(Forbidden(Json.toJson(LegacyUnauthorisedError)))
+          Future.successful(Forbidden(convertErrorAsJson(LegacyUnauthorisedError)))
         case Left(_) =>
           logger.warn(s"$correlationId::[invokeBlock]Downstream")
-          Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+          Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
         case _ =>
           logger.error(s"$correlationId::[invokeBlock]Unknown error")
-          Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+          Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
       }.map(_.withApiHeaders(correlationId))
     }
 
@@ -81,14 +80,14 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
       if (NinoChecker.isValid(nino)) {
         lookupConnector.getMtdId(nino).flatMap[Result] {
           case Right(mtdId)                  => invokeBlockWithAuthCheck(mtdId, request, block)
-          case Left(NinoFormatError)         => Future.successful(BadRequest(Json.toJson(NinoFormatError)))
-          case Left(UnauthorisedError)       => Future.successful(Forbidden(Json.toJson(UnauthorisedError)))
-          case Left(InvalidBearerTokenError) => Future.successful(Unauthorized(Json.toJson(InvalidBearerTokenError)))
-          case Left(_)                       => Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+          case Left(NinoFormatError)         => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
+          case Left(UnauthorisedError)       => Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
+          case Left(InvalidBearerTokenError) => Future.successful(Unauthorized(convertErrorAsJson(InvalidBearerTokenError)))
+          case Left(_)                       => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
         }
       } else {
         logger.warn(s"$correlationId::[invokeBlock]Error in nino format")
-        Future.successful(BadRequest(Json.toJson(NinoFormatError)).withApiHeaders(correlationId))
+        Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)).withApiHeaders(correlationId))
       }
 
 

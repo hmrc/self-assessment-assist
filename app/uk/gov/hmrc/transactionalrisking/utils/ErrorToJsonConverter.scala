@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.models.request
+package uk.gov.hmrc.transactionalrisking.utils
 
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType.CustomerType
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.MtdError
 
-
-case class GenerateReportRawData(calculationId: String,
-  nino: String,
-  preferredLanguage: PreferredLanguage,
-  customerType: CustomerType,
-  agentRef: Option[String],
-  taxYear: String
-  ) extends RawData
-case class AcknowledgeReportRawData(nino: String, reportId: String, rdsCorrelationId:String) extends RawData
+object ErrorToJsonConverter {
+  def convertErrorAsJson(mtdError: MtdError): JsValue = {
+    Json.toJson(Seq(mtdError))
+  }
+}

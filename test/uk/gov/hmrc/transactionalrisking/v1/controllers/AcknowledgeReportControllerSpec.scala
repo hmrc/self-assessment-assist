@@ -150,7 +150,7 @@ class AcknowledgeReportControllerSpec
 
         status(result) shouldBe BAD_REQUEST
 
-        contentAsJson(result) shouldBe NinoFormatError.toJson
+        contentAsJson(result) shouldBe Json.toJson(Seq(NinoFormatError))
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -170,7 +170,7 @@ class AcknowledgeReportControllerSpec
           val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe expectedBody
+          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -203,7 +203,7 @@ class AcknowledgeReportControllerSpec
           val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe expectedBody
+          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -239,7 +239,7 @@ class AcknowledgeReportControllerSpec
           val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, simpleRDSCorrelationId)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe expectedBody
+          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -274,7 +274,7 @@ class AcknowledgeReportControllerSpec
 
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
-          contentAsJson(result)  shouldBe DownstreamError.toJson
+          contentAsJson(result)  shouldBe Json.toJson(Seq(DownstreamError.toJson))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 

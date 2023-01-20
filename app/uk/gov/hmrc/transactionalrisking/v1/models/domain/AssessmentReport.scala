@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.models.domain
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsPath, Json, Writes}
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.{LocalDateTime}
 import java.util.UUID
 
 case class AssessmentReportWrapper(calculationTimestamp:LocalDateTime, report:AssessmentReport)

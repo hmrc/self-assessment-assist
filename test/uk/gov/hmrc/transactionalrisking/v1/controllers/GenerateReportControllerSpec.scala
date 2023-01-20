@@ -29,6 +29,8 @@ import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{Metadata, NrsSubmission, SearchKeys}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsTestData.assessmentReportWrapper
+import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers.MockGenerateReportRequestParser
+import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -43,7 +45,8 @@ class GenerateReportControllerSpec
     with MockInsightService
     with MockRdsService
     with MockCurrentDateTime
-    with MockIdGenerator {
+    with MockIdGenerator
+    with MockGenerateReportRequestParser {
 
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
@@ -53,6 +56,7 @@ class GenerateReportControllerSpec
 
     class TestController extends GenerateReportController(
       cc = cc,
+      requestParser = mockGenerateReportRequestParser,
       integrationFrameworkService = mockIntegrationFrameworkService,
       authService = mockEnrolmentsAuthService,
       lookupConnector = mockLookupConnector,
@@ -69,6 +73,7 @@ class GenerateReportControllerSpec
     "a valid request is supplied" should {
       "return the expected data when controller is called" in new Test {
 
+        MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
         MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
@@ -80,7 +85,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -89,6 +94,7 @@ class GenerateReportControllerSpec
 
       "return the expected data when controller is called even when NRS is unable to non repudiate the event" in new Test {
 
+        MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
         MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
@@ -100,11 +106,69 @@ class GenerateReportControllerSpec
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAsssementReportMtdJson
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
+      }
+    }
+
+    "a request fails due to an incorrect tax year format" should {
+      s"return the tax year format error to indicate the taxYear is invalid if the tax years are not consecutive" in new Test {
+        val rawDataNonSequentialTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(taxYear = simpleTaxYearInvalid1)
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
+        MockCurrentDateTime.getDateTime()
+        MockProvideRandomCorrelationId.IdGenerator
+        MockGenerateReportRequestParser.parseRequestFail(rawDataNonSequentialTaxYear, TaxYearRangeInvalid)
+        MockEnrolmentsAuthService.authoriseUser()
+
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid1)(fakePostRequest)
+
+        status(result) shouldBe BAD_REQUEST
+        Thread.sleep(1000)
+
+        contentAsJson(result) shouldBe Json.toJson(Seq(TaxYearRangeInvalid))
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+      }
+      s"return the tax year format error to indicate the taxYear format is invalid" in new Test {
+        val rawDataInvalidTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(simpleTaxYearInvalid2)
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
+        MockCurrentDateTime.getDateTime()
+        MockProvideRandomCorrelationId.IdGenerator
+        MockGenerateReportRequestParser.parseRequestFail(rawDataInvalidTaxYear, TaxYearFormatError)
+        MockEnrolmentsAuthService.authoriseUser()
+
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid2)(fakePostRequest)
+
+        status(result) shouldBe BAD_REQUEST
+        Thread.sleep(1000)
+
+        contentAsJson(result) shouldBe Json.toJson(Seq(TaxYearFormatError))
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+      }
+
+      s"return the tax year format error to indicate the taxYear format is an invalid string" in new Test {
+        val rawDataInvalidTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(simpleTaxYearInvalid3)
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
+        MockCurrentDateTime.getDateTime()
+        MockProvideRandomCorrelationId.IdGenerator
+        MockGenerateReportRequestParser.parseRequestFail(rawDataInvalidTaxYear, TaxYearFormatError)
+        MockEnrolmentsAuthService.authoriseUser()
+
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid3)(fakePostRequest)
+
+        status(result) shouldBe BAD_REQUEST
+        Thread.sleep(1000)
+
+        contentAsJson(result) shouldBe Json.toJson(Seq(TaxYearFormatError))
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+
       }
     }
 
@@ -114,13 +178,12 @@ class GenerateReportControllerSpec
 
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
-
-        val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
 
-        contentAsJson(result) shouldBe NinoFormatError.toJson
+        contentAsJson(result) shouldBe Json.toJson(Seq(NinoFormatError))
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -137,11 +200,12 @@ class GenerateReportControllerSpec
           MockEnrolmentsAuthService.authoriseUserFail(mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
+          MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe expectedBody
+          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -166,14 +230,15 @@ class GenerateReportControllerSpec
           MockEnrolmentsAuthService.authoriseUser()
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
+          MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assessFail(simpleFraudRiskRequest, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe expectedBody
+          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
         }
@@ -188,7 +253,7 @@ class GenerateReportControllerSpec
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
     }
 
-    "a request fails due to a failed RDSService.submit " should {
+    "a request fails due to a failed RDSService.submit" should {
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
         s"return the expected error ${mtdError.code} when controller is set to return error from RDSService.submit " in new Test {
@@ -196,15 +261,16 @@ class GenerateReportControllerSpec
           MockEnrolmentsAuthService.authoriseUser()
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
+          MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assess(simpleFraudRiskRequest)
           MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, mtdError)
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe expectedBody
+          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
         }
@@ -234,11 +300,13 @@ class GenerateReportControllerSpec
         MockProvideRandomCorrelationId.IdGenerator
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
+        MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
+
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsJson(result)  shouldBe DownstreamError.toJson
+        contentAsJson(result)  shouldBe Json.toJson(Seq(DownstreamError))
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 

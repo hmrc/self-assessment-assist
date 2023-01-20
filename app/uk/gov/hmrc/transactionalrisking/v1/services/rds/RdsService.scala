@@ -22,7 +22,7 @@ import uk.gov.hmrc.transactionalrisking.utils.{DateUtils, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, AssessmentRequestForSelfAssessment, DesTaxYear, Link, Origin, PreferredLanguage, Risk}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, AssessmentRequestForSelfAssessment, Link, Origin, PreferredLanguage, Risk}
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
@@ -104,7 +104,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
               Right(ResponseWrapper(correlationId,AssessmentReportWrapper(LocalDateTime.parse(calculationTimestamp,DateUtils.dateTimePattern),
                 AssessmentReport(reportId = reportId,
                   risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
-                  taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
+                  taxYear = request.taxYear, //Todo check whether format is correct
                   calculationId = request.calculationId, rdsCorrelationID))))
 
             case None =>

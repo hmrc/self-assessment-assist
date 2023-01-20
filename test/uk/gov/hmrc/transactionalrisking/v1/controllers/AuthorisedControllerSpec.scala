@@ -84,9 +84,8 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         val returnedError: String = returnedErrorJSon.utf8String
 
         val ninoErrorJSon: JsValue = Json.toJson(NinoFormatError)
-        val ninoError: String = ninoErrorJSon.toString()
 
-        returnedError shouldBe ninoError
+        returnedError shouldBe Json.toJson(Seq(ninoErrorJSon)).toString()
       }
     }
 
@@ -102,7 +101,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
         val returnedError: String = returnedErrorJSon.utf8String
 
-        val invalidBearerJson: JsValue = Json.toJson(InvalidBearerTokenError)
+        val invalidBearerJson: JsValue = Json.toJson(Seq(InvalidBearerTokenError))
         val ninoError: String = invalidBearerJson.toString()
 
         returnedError shouldBe ninoError
@@ -128,7 +127,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
 
           private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
           status(actualResult) shouldBe expectedStatus
-          contentAsJson(actualResult) shouldBe expectedBody
+          contentAsJson(actualResult) shouldBe Json.toJson(Seq(expectedBody))
         }
       }
 
