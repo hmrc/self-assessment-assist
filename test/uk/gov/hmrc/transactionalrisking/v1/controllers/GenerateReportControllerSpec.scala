@@ -117,7 +117,7 @@ class GenerateReportControllerSpec
     "a request fails due to an incorrect tax year format" should {
       s"return the tax year format error to indicate the taxYear is invalid if the tax years are not consecutive" in new Test {
         val rawDataNonSequentialTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(taxYear = simpleTaxYearInvalid1)
-
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
         MockGenerateReportRequestParser.parseRequestFail(rawDataNonSequentialTaxYear, TaxYearRangeInvalid)
@@ -135,7 +135,7 @@ class GenerateReportControllerSpec
       }
       s"return the tax year format error to indicate the taxYear format is invalid" in new Test {
         val rawDataInvalidTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(simpleTaxYearInvalid2)
-
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
         MockGenerateReportRequestParser.parseRequestFail(rawDataInvalidTaxYear, TaxYearFormatError)
@@ -154,7 +154,7 @@ class GenerateReportControllerSpec
 
       s"return the tax year format error to indicate the taxYear format is an invalid string" in new Test {
         val rawDataInvalidTaxYear: GenerateReportRawData = simpleGenerateReportRawData.copy(simpleTaxYearInvalid3)
-
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
         MockGenerateReportRequestParser.parseRequestFail(rawDataInvalidTaxYear, TaxYearFormatError)
@@ -178,7 +178,6 @@ class GenerateReportControllerSpec
 
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
-
         val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
