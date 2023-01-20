@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import cats.data.EitherT
-import play.api.libs.json._
+import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.AcknowledgeRequestParser
@@ -66,7 +66,7 @@ class AcknowledgeReportController @Inject()(
                   fold(
                     error => {
                       logger.error(s"$correlationId::[acknowledgeReport] NRS event generation failed")
-                      Future.successful(InternalServerError(Json.toJson(DownstreamError)))
+                      Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
                     },
                     success => {
                       logger.debug(s"$correlationId::[submit] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
@@ -77,13 +77,13 @@ class AcknowledgeReportController @Inject()(
                     }
                   )
               case Some(NO_CONTENT) => Future.successful(NoContent)
-              case Some(BAD_REQUEST) => Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
+              case Some(BAD_REQUEST) => Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
               case Some(UNAUTHORIZED) =>
                 logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $UNAUTHORIZED ${assessmentReport.responseMessage}")
-                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
+                Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
               case _ =>
                 logger.error(s"$correlationId::[acknowledgeReport] unrecognised value for response code")
-                Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
+                Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
             }
           }
         ).flatten.map(_.withApiHeaders(correlationId))
@@ -92,16 +92,16 @@ class AcknowledgeReportController @Inject()(
   }
 
   def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error,errorWrapper.errors) match {
-    case (ServerError | DownstreamError |ServiceUnavailableError,_) => Future.successful(InternalServerError(Json.toJson(Seq(DownstreamError))))
-    case (FormatReportIdError,_) => Future.successful(BadRequest(Json.toJson(Seq(FormatReportIdError))))
-    case (ClientOrAgentNotAuthorisedError,_) => Future.successful(Forbidden(Json.toJson(Seq(ClientOrAgentNotAuthorisedError))))
-    case (NinoFormatError,_) => Future.successful(BadRequest(Json.toJson(Seq(NinoFormatError))))
-    case (MatchingResourcesNotFoundError | ResourceNotFoundError,_) => Future.successful(ServiceUnavailable(Json.toJson(Seq(ServiceUnavailableError))))
+    case (ServerError | DownstreamError |ServiceUnavailableError,_) => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
+    case (FormatReportIdError,_) => Future.successful(BadRequest(convertErrorAsJson(FormatReportIdError)))
+    case (ClientOrAgentNotAuthorisedError,_) => Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
+    case (NinoFormatError,_) => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
+    case (MatchingResourcesNotFoundError | ResourceNotFoundError,_) => Future.successful(ServiceUnavailable(convertErrorAsJson(ServiceUnavailableError)))
     case (error@_,Some(errs)) =>
       logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario with multiple errors $errs")
-      Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
+      Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
     case (error@_,None) =>
       logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario $error")
-      Future.successful(ServiceUnavailable(Json.toJson(DownstreamError)))
+      Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
   }
 }

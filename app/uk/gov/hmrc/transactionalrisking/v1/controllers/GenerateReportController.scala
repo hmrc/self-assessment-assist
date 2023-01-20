@@ -19,6 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
+import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
@@ -86,24 +87,24 @@ class GenerateReportController @Inject()(
   }
 
   def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = (errorWrapper.error,errorWrapper.errors) match {
-    case (ServerError | DownstreamError,_) => Future(InternalServerError(Json.toJson(Seq(DownstreamError))))
-    case (NinoFormatError,_) => Future(BadRequest(Json.toJson(Seq(NinoFormatError))))
-    case (TaxYearRangeInvalid,_) => Future(BadRequest(Json.toJson(Seq(TaxYearRangeInvalid))))
-    case (TaxYearFormatError,_) => Future(BadRequest(Json.toJson(Seq(TaxYearFormatError))))
-    case (CalculationIdFormatError,_) => Future(BadRequest(Json.toJson(Seq(CalculationIdFormatError))))
-    case (MatchingResourcesNotFoundError,_) => Future(NotFound(Json.toJson(Seq(MatchingResourcesNotFoundError))))
-    case (ClientOrAgentNotAuthorisedError,_) => Future(Forbidden(Json.toJson(Seq(ClientOrAgentNotAuthorisedError))))
-    case (InvalidCredentialsError,_) => Future(Unauthorized(Json.toJson(Seq(InvalidCredentialsError))))
-    case (RdsAuthError,_) => Future(InternalServerError(Json.toJson(Seq(ForbiddenDownstreamError))))
-    case (ServiceUnavailableError,_) => Future(InternalServerError(Json.toJson(Seq(ServiceUnavailableError))))
+    case (ServerError | DownstreamError,_) => Future(InternalServerError(convertErrorAsJson(DownstreamError)))
+    case (NinoFormatError,_) => Future(BadRequest(convertErrorAsJson(NinoFormatError)))
+    case (TaxYearRangeInvalid,_) => Future(BadRequest(convertErrorAsJson(TaxYearRangeInvalid)))
+    case (TaxYearFormatError,_) => Future(BadRequest(convertErrorAsJson(TaxYearFormatError)))
+    case (CalculationIdFormatError,_) => Future(BadRequest(convertErrorAsJson(CalculationIdFormatError)))
+    case (MatchingResourcesNotFoundError,_) => Future(NotFound(convertErrorAsJson(MatchingResourcesNotFoundError)))
+    case (ClientOrAgentNotAuthorisedError,_) => Future(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
+    case (InvalidCredentialsError,_) => Future(Unauthorized(convertErrorAsJson(InvalidCredentialsError)))
+    case (RdsAuthError,_) => Future(InternalServerError(convertErrorAsJson(ForbiddenDownstreamError)))
+    case (ServiceUnavailableError,_) => Future(InternalServerError(convertErrorAsJson(ServiceUnavailableError)))
     case (BadRequestError,Some(errs)) => Future(BadRequest(Json.toJson(Seq(errs))))
-    case (BadRequestError,None) => Future(BadRequest(Json.toJson(Seq(BadRequestError))))
+    case (BadRequestError,None) => Future(BadRequest(convertErrorAsJson(BadRequestError)))
     case (_,Some(errs)) =>
       logger.error(s"$correlationId::[generateReportInternal] Error in general scenario with multiple errors $errs")
       Future(InternalServerError(Json.toJson(errs)))
     case (error@_,None) =>
       logger.error(s"$correlationId::[generateReportInternal] Error handled in general scenario $error")
-      Future(InternalServerError(Json.toJson(Seq(MatchingResourcesNotFoundError))))
+      Future(InternalServerError(convertErrorAsJson(MatchingResourcesNotFoundError)))
   }
 
   private def generateFraudRiskRequest(request: AssessmentRequestForSelfAssessment,fraudRiskHeaders:FraudRiskRequest.FraudRiskHeaders): FraudRiskRequest = {

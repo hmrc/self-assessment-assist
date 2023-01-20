@@ -24,9 +24,9 @@ import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockRdsConnector
 import uk.gov.hmrc.transactionalrisking.v1.mocks.services.MockRdsAuthConnector
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.{RdsAuthCredentials, UserDetails}
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, Internal}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReportWrapper, Internal}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
-import RdsTestData.{assessmentReport, assessmentReportWrapper, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
+import RdsTestData.{assessmentReportWrapper, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest

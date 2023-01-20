@@ -99,7 +99,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
 
           private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
           status(actualResult) shouldBe expectedStatus
-          contentAsJson(actualResult) shouldBe expectedBody
+          contentAsJson(actualResult) shouldBe Json.toJson(Seq(expectedBody))
         }
       }
 

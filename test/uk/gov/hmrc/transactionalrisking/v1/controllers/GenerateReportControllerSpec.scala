@@ -200,7 +200,7 @@ class GenerateReportControllerSpec
           val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe expectedBody
+          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 

@@ -21,12 +21,9 @@ import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.ParseOutcome
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.GenerateReportRequest
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.AssessmentRequestForSelfAssessment
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError, TaxYearFormatError}
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
