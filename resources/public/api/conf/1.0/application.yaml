@@ -56,9 +56,12 @@ servers:
 
 components:
   securitySchemes:
-    userScheme:
+    userRestricted:
       type: oauth2
-      description: HMRC supports OAuth 2.0 for authenticating User-restricted API requests
+      description: |
+        HMRC supports OAuth 2.0 for authenticating user-restricted API requests using an OAuth 2.0 Bearer Token in the
+        AUTHORIZATION header.
+        See https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints for details.
       flows:
         authorizationCode:
           authorizationUrl: https://api.service.hmrc.gov.uk/oauth/authorize
@@ -76,6 +79,15 @@ components:
       schema:
         type: string
         example: TC663795B
+      required: true
+    taxYear:
+      name: taxYear
+      in: path
+      description: |
+        The tax year to which the data applies in the format `YYYY-YY`
+      schema:
+        type: string
+        example: 2023-24
       required: true
     reportId:
       name: reportId
@@ -126,17 +138,19 @@ components:
       required: true
   schemas:
     errorResponse:
-      type: object
-      description: Error Response
-      properties:
-        code:
-          description: The error code
-          type: string
-        message:
-          description: The error message
-          type: string
-      required:
-        - code
+      type: array
+      items:
+        type: object
+        description: Error Response
+        properties:
+          code:
+            description: The error code
+            type: string
+          message:
+            description: The error message
+            type: string
+        required:
+          - code
   examples:
 
     #400
@@ -153,7 +167,18 @@ components:
       value:
         code: FORMAT_CALC_ID
         message: The provided Calculation ID is invalid.
-
+    formatTaxYear:
+      description: |
+        The format of the supplied taxYear value is not valid.
+      value:
+        code: FORMAT_TAX_YEAR
+        message: The provided Tax Year is invalid.
+    ruleTaxYearRangeInvalid:
+      description: |
+        Tax year range invalid. A tax year range of one year is required.
+      value:
+        code: RULE_TAX_YEAR_RANGE_INVALID
+        message: The provided Tax Year range is invalid.
 
     # 403
 
@@ -191,7 +216,7 @@ tags:
     description: allow the customer or agent to acknowledge the report
 
 paths:
-  /individuals/self-assessment/assist/reports/{nino}/{calculationId}:
+  /individuals/self-assessment/assist/reports/{nino}/{taxYear}/{calculationId}:
     post:
       summary: Produce a HMRC Self Assessment Assist Report
       description: |
@@ -201,6 +226,7 @@ paths:
 
       parameters:
         - $ref: '#/components/parameters/nino'
+        - $ref: '#/components/parameters/taxYear'
         - $ref: '#/components/parameters/calculationId'
         - $ref: '#/components/parameters/acceptHeader'
         - $ref: '#/components/parameters/authorizationReadScopeHeader'
@@ -340,6 +366,10 @@ paths:
                   $ref: '#/components/examples/formatNino'
                 FORMAT_CALC_ID:
                   $ref: '#/components/examples/formatCalcId'
+                FORMAT_TAX_YEAR:
+                  $ref: '#/components/examples/formatTaxYear'
+                RULE_TAX_YEAR_RANGE_INVALID:
+                  $ref: '#/components/examples/ruleTaxYearRangeInvalid'
 
         "403":
           description: Forbidden
@@ -385,7 +415,7 @@ paths:
         - $ref: '#/components/parameters/authorizationReadScopeHeader'
 
       security:
-        - userScheme:
+        - userRestricted:
             - write:self-assessment-assist
       responses:
         "204":
