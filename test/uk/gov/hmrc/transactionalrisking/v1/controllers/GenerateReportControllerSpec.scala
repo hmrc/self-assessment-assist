@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
-import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
+import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockLookupConnector
@@ -28,6 +28,7 @@ import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{Metadata, NrsSubmission, SearchKeys}
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsTestData.assessmentReportWrapper
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -73,7 +74,7 @@ class GenerateReportControllerSpec
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
-        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
         MockCurrentDateTime.getDateTime()
        // MockNrsService.stubAssessmentReport(simpleNRSResponseReportSubmission)
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
@@ -93,7 +94,7 @@ class GenerateReportControllerSpec
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
-        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
         MockCurrentDateTime.getDateTime()
         MockNrsService.stubFailureReportDueToException()
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
@@ -227,7 +228,7 @@ class GenerateReportControllerSpec
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
-        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,assessmentReportWrapper)
         MockCurrentDateTime.getDateTime()
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockProvideRandomCorrelationId.IdGenerator
@@ -237,7 +238,7 @@ class GenerateReportControllerSpec
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsJson(result)  shouldBe DownstreamError.toJson // TODO what should the body be as per the spec?
+        contentAsJson(result)  shouldBe DownstreamError.toJson
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 

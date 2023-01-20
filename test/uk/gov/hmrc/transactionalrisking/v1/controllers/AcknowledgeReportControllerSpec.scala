@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.transactionalrisking.mocks.utils.utils.MockCurrentDateTime
+import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockLookupConnector
@@ -274,7 +274,7 @@ class AcknowledgeReportControllerSpec
 
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
-          contentAsJson(result)  shouldBe DownstreamError.toJson // TODO Revist what should the body be as per the spec?
+          contentAsJson(result)  shouldBe DownstreamError.toJson
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 

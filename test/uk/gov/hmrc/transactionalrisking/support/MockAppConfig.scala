@@ -33,7 +33,7 @@ trait MockAppConfig extends MockFactory {
     def rdsBaseUrlForSubmit: CallHandler[String] = (mockAppConfig.rdsBaseUrlForSubmit _).expects().anyNumberOfTimes()
     def rdsBaseUrlForAcknowledge: CallHandler[String] = (mockAppConfig.rdsBaseUrlForAcknowledge _).expects().anyNumberOfTimes()
     def rdsAuthRequiredForThisEnv: CallHandler[Boolean] = (mockAppConfig.rdsAuthRequiredForThisEnv _).expects().anyNumberOfTimes()
-
+    def cipFraudServiceBaseUrl:CallHandler[String] = (mockAppConfig.cipFraudServiceBaseUrl _).expects().anyNumberOfTimes()
     //API Config
     def featureSwitch: CallHandler[Option[Configuration]] = (mockAppConfig.featureSwitch _: () => Option[Configuration]).expects()
 
