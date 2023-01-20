@@ -44,6 +44,9 @@ trait AppConfig {
   def appName: String
   def nrsBaseUrl: String
   def rdsAuthCredential: AuthCredential
+
+  //MTD ID lookup
+  def mtdIdBaseUrl: String
 }
 
 @Singleton
@@ -67,6 +70,8 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
 
   val rdsSasBaseUrlForAuth:String = config.baseUrl("rds.sas")+rdsConfig.get[String]("sas.auth-url")
   val rdsAuthRequiredForThisEnv: Boolean = rdsConfig.get[Boolean]("rdsAuthRequiredForThisEnv")
+
+  val mtdIdBaseUrl: String = config.baseUrl("mtd-id-lookup")
 
   def rdsAuthCredential: AuthCredential =
     AuthCredential(

@@ -20,6 +20,7 @@ import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
+import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
@@ -40,6 +41,7 @@ class GenerateReportController @Inject()(
                                           val cc: ControllerComponents, //TODO add request parser
                                           val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
+                                          val lookupConnector: MtdIdLookupConnector,
                                           nonRepudiationService: NrsService,
                                           insightService: InsightService,
                                           rdsService: RdsService,
