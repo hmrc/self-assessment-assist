@@ -47,6 +47,10 @@ trait AppConfig {
 
   //MTD ID lookup
   def mtdIdBaseUrl: String
+
+  //IF
+  def ifsBaseUrl: String
+  def ifsApiKey: String
 }
 
 @Singleton
@@ -70,6 +74,10 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
 
   val rdsSasBaseUrlForAuth:String = config.baseUrl("rds.sas")+rdsConfig.get[String]("sas.auth-url")
   val rdsAuthRequiredForThisEnv: Boolean = rdsConfig.get[Boolean]("rdsAuthRequiredForThisEnv")
+
+  private val ifsConfig = configuration.get[Configuration]("microservice.services.ifs")
+  val ifsBaseUrl:String = config.baseUrl("ifs")+ifsConfig.get[String]("submit-url")
+  val ifsApiKey:String = config.baseUrl("ifs")+ifsConfig.get[String]("x-api-key")
 
   val mtdIdBaseUrl: String = config.baseUrl("mtd-id-lookup")
 

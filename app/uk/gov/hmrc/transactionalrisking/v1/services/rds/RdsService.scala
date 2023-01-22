@@ -131,7 +131,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                 AssessmentReport(reportId = reportId,
                   risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
                   taxYear = request.taxYear, //Todo check whether format is correct
-                  calculationId = request.calculationId, rdsCorrelationID))))
+                  calculationId = request.calculationId, rdsCorrelationID), report)))
 
             case None =>
               logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")

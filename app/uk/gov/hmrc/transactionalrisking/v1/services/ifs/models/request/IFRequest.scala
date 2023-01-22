@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.utils
+package uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request
+import play.api.libs.json.{Format, Json}
 
 import java.time.OffsetDateTime
-import javax.inject.{Inject, Singleton}
 
-@Singleton
-class CurrentDateTime @Inject()() {
-  def getDateTime(): OffsetDateTime = OffsetDateTime.now()
-  def dateString(currentDatetime: OffsetDateTime): OffsetDateTime = {
-    val formatted = currentDatetime.format(DateUtils.dateTimePattern)
-//    val formatter = DateUtils.dateTimePattern.format(OffsetDateTime.parse(currentDatetime.toString))
-    OffsetDateTime.parse(formatted)
-  }
+
+case class IFRequest(
+                      serviceRegime: String,
+                      eventName: String,
+                      eventTimestamp: OffsetDateTime,
+                      feedbackId: String,
+                      metadata: List[Map[String, String]],
+                      payload: Option[Seq[IFRequestPayload]]
+                    )
+
+  object IFRequest {
+    implicit val formats: Format[IFRequest] = Json.format[IFRequest]
 }

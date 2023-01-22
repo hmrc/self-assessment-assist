@@ -32,7 +32,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsTestData.assessmentRe
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers.MockGenerateReportRequestParser
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
-import java.time.OffsetDateTime
+import java.time.{LocalDateTime, OffsetDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -46,7 +46,8 @@ class GenerateReportControllerSpec
     with MockRdsService
     with MockCurrentDateTime
     with MockIdGenerator
-    with MockGenerateReportRequestParser {
+    with MockGenerateReportRequestParser
+    with MockIfsService {
 
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
@@ -64,7 +65,8 @@ class GenerateReportControllerSpec
       insightService = mockInsightService,
       rdsService = mockRdsService,
       currentDateTime = mockCurrentDateTime,
-      idGenerator = mockIdGenerator
+      idGenerator = mockIdGenerator,
+      ifService = mockIfsService
     )
 
   }
@@ -84,6 +86,7 @@ class GenerateReportControllerSpec
        // MockNrsService.stubAssessmentReport(simpleNRSResponseReportSubmission)
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
+        MockIfsService.stubSubmit(simpleAssessmentReport, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
@@ -105,6 +108,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubFailureReportDueToException()
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
+        MockIfsService.stubSubmit(simpleAssessmentReportWrapper.report, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
@@ -301,6 +305,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
         MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
+        MockIfsService.stubSubmit(assessmentReportWrapper.report, assessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
 
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
