@@ -78,15 +78,19 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
       implicit val headerCarrier: HeaderCarrier = hc(request)
 
       if (NinoChecker.isValid(nino)) {
+        logger.info(s"Nino validation passed")
         lookupConnector.getMtdId(nino).flatMap[Result] {
           case Right(mtdId)                  => invokeBlockWithAuthCheck(mtdId, request, block)
-          case Left(NinoFormatError)         => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
+          case Left(NinoFormatError)         => {
+            logger.info(s"$correlationId::lookupConnector.getMtdId(nino) Error in nino format")
+            Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))}
           case Left(UnauthorisedError)       => Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
           case Left(InvalidBearerTokenError) => Future.successful(Unauthorized(convertErrorAsJson(InvalidBearerTokenError)))
           case Left(_)                       => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
         }
       } else {
         logger.warn(s"$correlationId::[invokeBlock]Error in nino format")
+        logger.info(s"$correlationId::[invokeBlock]Error in nino format")
         Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)).withApiHeaders(correlationId))
       }
 
