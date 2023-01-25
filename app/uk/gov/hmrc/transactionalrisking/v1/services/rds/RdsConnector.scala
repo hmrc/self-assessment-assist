@@ -38,36 +38,37 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RdsConnector @Inject()(@Named("external-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
-  val requiredHeaderForRDS_Even_IfEmpty = List("Gov-Client-Connection-Method",
-  "Gov-Client-Device-ID ",
-  "Gov-Client-Local-IPs",
-  "Gov-Client-Local-IPs-Timestamp",
-  "Gov-Client-MAC-Addresses",
-  "Gov-Client-Multi-Factor",
-  "Gov-Client-Screens",
-  "Gov-Client-Timezone",
-  "Gov-Client-User-Agent",
-  "Gov-Client-User-IDs",
-  "Gov-Client-Window-Size",
-  "Gov-Vendor-License-IDs",
-  "Gov-Vendor-Product-Name",
-  "Gov-Vendor-Version",
-  "Gov-Client-Public-IP",
-  "Gov-Client-Public-IP-Timestamp",
-  "Gov-Client-Public-Port",
-  "Gov-Vendor-Public-IP",
-  "Gov-Vendor-Forwarded",
-  "Gov-Client-Browser-Do-Not-Track",
-  "Gov-Client-Browser-JS-User-Agent")
+  val requiredHeaderForRDS_with_Empty: Seq[(String, String)] = List("Gov-Client-Connection-Method",
+    "Gov-Client-Device-ID ",
+    "Gov-Client-Local-IPs",
+    "Gov-Client-Local-IPs-Timestamp",
+    "Gov-Client-MAC-Addresses",
+    "Gov-Client-Multi-Factor",
+    "Gov-Client-Screens",
+    "Gov-Client-Timezone",
+    "Gov-Client-User-Agent",
+    "Gov-Client-User-IDs",
+    "Gov-Client-Window-Size",
+    "Gov-Vendor-License-IDs",
+    "Gov-Vendor-Product-Name",
+    "Gov-Vendor-Version",
+    "Gov-Client-Public-IP",
+    "Gov-Client-Public-IP-Timestamp",
+    "Gov-Client-Public-Port",
+    "Gov-Vendor-Public-IP",
+    "Gov-Vendor-Forwarded",
+    "Gov-Client-Browser-Do-Not-Track",
+    "Gov-Client-Browser-JS-User-Agent").map(_ -> "")
 
-  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
+  def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None,requestHeaders:Map[String,String])(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
-   // def rdsRequestHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+    //requirement is to pass empty value if header is missing in request
+    def rdsRequestHeaders = requiredHeaderForRDS_with_Empty ++ requestHeaders  ++ rdsAuthHeaders
 
     httpClient
-      .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
+      .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsRequestHeaders)
       .map { response =>
         logger.info(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
         response.status match {

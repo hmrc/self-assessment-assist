@@ -23,7 +23,6 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsReques
 case class RdsRequest(inputs: Seq[Input])
 
 object RdsRequest {
-
   trait Input {
     def name: String
     def value: Any
