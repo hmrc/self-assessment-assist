@@ -36,7 +36,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject()(@Named("external-http-client") val httpClient: HttpClient,//TODO this should be @Named("external-http-client")
+class RdsConnector @Inject()(@Named("external-http-client") val httpClient: HttpClient,
                              appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
   val requiredHeaderForRDS_Even_IfEmpty = List("Gov-Client-Connection-Method",
   "Gov-Client-Device-ID ",
@@ -138,7 +138,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] response is ${response.status} ${response.json} ${response.body}")
+        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] response is ${response.status}")
         response.status match {
           case CREATED =>
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
