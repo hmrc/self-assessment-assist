@@ -80,11 +80,20 @@ components:
         type: string
         example: TC663795B
       required: true
+    taxYear:
+      name: taxYear
+      in: path
+      description: |
+        The tax year to which the data applies in the format `YYYY-YY`
+      schema:
+        type: string
+        example: 2023-24
+      required: true
     reportId:
       name: reportId
       in: path
       description: |
-        The unique identifier for the report. Must conform to the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
+        The unique identifier for the report.
       schema:
         type: string
         example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
@@ -93,7 +102,7 @@ components:
       name: calculationId
       in: path
       description: |
-        The unique identifier for the calculation. Must conform the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
+        The unique identifier for the calculation. Must conform to the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
       schema:
         type: string
         example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
@@ -129,17 +138,19 @@ components:
       required: true
   schemas:
     errorResponse:
-      type: object
-      description: Error Response
-      properties:
-        code:
-          description: The error code
-          type: string
-        message:
-          description: The error message
-          type: string
-      required:
-        - code
+      type: array
+      items:
+        type: object
+        description: Error Response
+        properties:
+          code:
+            description: The error code
+            type: string
+          message:
+            description: The error message
+            type: string
+        required:
+          - code
   examples:
 
     #400
@@ -156,12 +167,18 @@ components:
       value:
         code: FORMAT_CALC_ID
         message: The provided Calculation ID is invalid.
-    formatReportId:
+    formatTaxYear:
       description: |
-        The format of the supplied reportId is not valid.
+        The format of the supplied taxYear value is not valid.
       value:
-        code: FORMAT_REPORT_ID
-        message: The provided Report ID is invalid.
+        code: FORMAT_TAX_YEAR
+        message: The provided Tax Year is invalid.
+    ruleTaxYearRangeInvalid:
+      description: |
+        Tax year range invalid. A tax year range of one year is required.
+      value:
+        code: RULE_TAX_YEAR_RANGE_INVALID
+        message: The provided Tax Year range is invalid.
 
     # 403
 
@@ -199,7 +216,7 @@ tags:
     description: allow the customer or agent to acknowledge the report
 
 paths:
-  /individuals/self-assessment/assist/reports/{nino}/{calculationId}:
+  /individuals/self-assessment/assist/reports/{nino}/{taxYear}/{calculationId}:
     post:
       summary: Produce a HMRC Self Assessment Assist Report
       description: |
@@ -209,6 +226,7 @@ paths:
 
       parameters:
         - $ref: '#/components/parameters/nino'
+        - $ref: '#/components/parameters/taxYear'
         - $ref: '#/components/parameters/calculationId'
         - $ref: '#/components/parameters/acceptHeader'
         - $ref: '#/components/parameters/authorizationReadScopeHeader'
@@ -348,6 +366,10 @@ paths:
                   $ref: '#/components/examples/formatNino'
                 FORMAT_CALC_ID:
                   $ref: '#/components/examples/formatCalcId'
+                FORMAT_TAX_YEAR:
+                  $ref: '#/components/examples/formatTaxYear'
+                RULE_TAX_YEAR_RANGE_INVALID:
+                  $ref: '#/components/examples/ruleTaxYearRangeInvalid'
 
         "403":
           description: Forbidden
@@ -408,8 +430,7 @@ paths:
               examples:
                 FORMAT_NINO:
                   $ref: '#/components/examples/formatNino'
-                FORMAT_REPORT_ID:
-                  $ref: '#/components/examples/formatReportId'
+
 
         "403":
           description: Forbidden
@@ -420,13 +441,3 @@ paths:
               examples:
                 CLIENT_OR_AGENT_NOT_AUTHORISED:
                   $ref: '#/components/examples/clientOrAgentNotAuthorised'
-
-        "404":
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-              examples:
-                MATCHING_RESOURCE_NOT_FOUND:
-                  $ref: '#/components/examples/matchingResourceNotFound'
