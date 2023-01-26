@@ -53,8 +53,8 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
       rdsRequestSO match {
         case Right(ResponseWrapper(_, rdsRequest)) =>
           logger.info(s"$correlationId::[RdsService submit ] RdsAssessmentRequest Created")
-          val requestHeaders: Map[String, String] = userRequest.headers.toMap.map(h => h._1 -> h._2.head)
-          connector.submit(rdsRequest, rdsAuthCredentials,requestHeaders).map {
+
+          connector.submit(rdsRequest, rdsAuthCredentials).map {
               case Right(ResponseWrapper(_, rdsResponse)) =>
                     val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
                     assessmentReportSO match {
