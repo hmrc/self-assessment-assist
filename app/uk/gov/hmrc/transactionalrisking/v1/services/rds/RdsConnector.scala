@@ -41,6 +41,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
+    logger.info(s"$correlationId::[RdsConnector:submit] RDS request content $request")
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
