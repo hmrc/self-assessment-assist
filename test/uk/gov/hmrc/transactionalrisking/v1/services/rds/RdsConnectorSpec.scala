@@ -35,7 +35,6 @@ import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, Error
   MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import RdsTestData.rdsRequest
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsConnector
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport

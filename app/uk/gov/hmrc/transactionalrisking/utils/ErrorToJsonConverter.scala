@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-//package services
-//
-//class AuthServiceSpec extends ServiceSpec {
-//
-//}
+package uk.gov.hmrc.transactionalrisking.utils
+
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.MtdError
+
+object ErrorToJsonConverter {
+  def convertErrorAsJson(mtdError: MtdError): JsValue = {
+    Json.toJson(Seq(mtdError))
+  }
+}

@@ -21,7 +21,7 @@ import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, Origin}
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReportWrapper, AssessmentRequestForSelfAssessment, Origin}
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
@@ -41,14 +41,14 @@ trait MockRdsService extends MockFactory {
 
     def submit(request: AssessmentRequestForSelfAssessment,
                fraudRiskReport: FraudRiskReport,
-               origin: Origin): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
+               origin: Origin,simpleAssessmentReportWrapper:AssessmentReportWrapper): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
       (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(correlationId, simpleAssessmentReport) )))
+        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(correlationId, simpleAssessmentReportWrapper) )))
     }
 
     def submitFail(request: AssessmentRequestForSelfAssessment,
                fraudRiskReport: FraudRiskReport,
-               origin: Origin, error: MtdError): CallHandler[Future[ServiceOutcome[AssessmentReport]]] = {
+               origin: Origin, error: MtdError): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
       (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
         .expects(*, *, simpleInternalOrigin, *, *, *, *) returns (Future(Left(ErrorWrapper(correlationId, error))))
     }

@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.v1.models.request
+package uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request
 
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType.CustomerType
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
 
+import java.util.UUID
 
-case class GenerateReportRawData(calculationId: String,
-  nino: String,
-  preferredLanguage: PreferredLanguage,
-  customerType: CustomerType,
-  agentRef: Option[String],
-  taxYear: String
-  ) extends RawData
-case class AcknowledgeReportRawData(nino: String, reportId: String, rdsCorrelationId:String) extends RawData
+case class GenerateReportRequest(calculationId: UUID,
+                                 nino: String,
+                                 preferredLanguage: PreferredLanguage,
+                                 customerType: CustomerType,
+                                 agentRef: Option[String],
+                                 taxYear: String
+                                )

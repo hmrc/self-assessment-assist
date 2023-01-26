@@ -18,7 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.services.rds
 
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
-import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskReport}
+import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.FraudRiskReport
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 
@@ -30,7 +30,7 @@ object RdsTestData {
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
     agentRef = None,
-    taxYear = "2022"
+    taxYear = "2021-22"
   )
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(
@@ -92,8 +92,10 @@ object RdsTestData {
     reportId =  simpleReportId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
-    taxYear = DesTaxYear.fromDesIntToString(assessmentRequestForSelfAssessment.taxYear.toInt) ,
+    taxYear = assessmentRequestForSelfAssessment.taxYear ,
     calculationId = simpleCalculationId,
     rdsCorrelationId = simpleRDSCorrelationId
   )
+
+  val assessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalulationTimestamp,assessmentReport)
 }
