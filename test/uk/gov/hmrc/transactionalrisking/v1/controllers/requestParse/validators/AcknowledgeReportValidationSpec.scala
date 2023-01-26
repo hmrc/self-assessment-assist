@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers.requestParse.validators
 import uk.gov.hmrc.transactionalrisking.support.UnitSpec
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.validators.AcknowledgeReportValidator
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.NinoFormatError
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{FormatReportIdError, NinoFormatError}
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 
 class AcknowledgeReportValidationSpec extends UnitSpec {
@@ -31,6 +31,13 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
         val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
         validator.validate(acknowledgeReportRawData) shouldBe Nil
       }
+    }
+
+    "an invalid reportId." in {
+
+      val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportIdStrangeCharsString, simpleRDSCorrelationId)
+
+      validator.validate(acknowledgeReportRawData) shouldBe Seq(FormatReportIdError)
     }
 
     "return errors" when {
