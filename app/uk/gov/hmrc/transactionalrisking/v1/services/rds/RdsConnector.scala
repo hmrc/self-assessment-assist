@@ -67,7 +67,8 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
     //requirement is to pass empty value if header is missing in request
     def rdsRequestHeaders = rdsAuthHeaders ++ requiredHeaderForRDS_with_Empty ++ requestHeaders
-    logger.info(s"headers ==$rdsRequestHeaders")
+    logger.info(s"request is $request")
+    logger.info(s"previous header were $rdsAuthHeaders headers ==$rdsRequestHeaders")
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsRequestHeaders)
       .map { response =>
