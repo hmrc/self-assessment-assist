@@ -93,10 +93,10 @@ components:
       name: reportId
       in: path
       description: |
-        The unique identifier for the report.
+        The unique identifier for the report. Must conform to the regular expression: `^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`
       schema:
         type: string
-        example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
+        example: 579800fe-e047-cd40-b3e4-0e14b1f183a8
       required: true
     calculationId:
       name: calculationId
@@ -140,17 +140,18 @@ components:
     errorResponse:
       type: array
       items:
-        type: object
-        description: Error Response
-        properties:
-          code:
-            description: The error code
-            type: string
-          message:
-            description: The error message
-            type: string
-        required:
-          - code
+        $ref: "#/components/schemas/errorResponses"
+    errorResponses:
+      type: object
+      properties:
+        code:
+          description: The error code
+          type: string
+        message:
+          description: The error message
+          type: string
+      required:
+        - code
   examples:
 
     #400
@@ -159,26 +160,31 @@ components:
       description: |
         The format of the supplied NINO field is not valid.
       value:
-        code: FORMAT_NINO
-        message: The provided NINO is invalid.
+        [{code: FORMAT_NINO, message: The provided NINO is invalid.}]
     formatCalcId:
       description: |
         The format of the supplied CalculationID is not valid
       value:
-        code: FORMAT_CALC_ID
-        message: The provided Calculation ID is invalid.
+        [{code: FORMAT_CALC_ID,
+          message: The provided Calculation ID is invalid.}]
     formatTaxYear:
       description: |
         The format of the supplied taxYear value is not valid.
       value:
-        code: FORMAT_TAX_YEAR
-        message: The provided Tax Year is invalid.
+        [{code: FORMAT_TAX_YEAR,
+          message: The provided Tax Year is invalid.}]
     ruleTaxYearRangeInvalid:
       description: |
         Tax year range invalid. A tax year range of one year is required.
       value:
-        code: RULE_TAX_YEAR_RANGE_INVALID
-        message: The provided Tax Year range is invalid.
+        [{code: RULE_TAX_YEAR_RANGE_INVALID,
+          message: The provided Tax Year range is invalid.}]
+    formatReportId:
+      description: |
+        The format of the supplied reportId is not valid.
+      value:
+        [{code: FORMAT_REPORT_ID,
+          message: The provided Report ID is invalid.}]
 
     # 403
 
@@ -186,17 +192,15 @@ components:
       description: |
         The client and/or agent is not authorised. This is normally because: the client is not subscribed to MTD, the agent is not subscribed to Agent Services, or the client has not authorised the agent to act on their behalf.
       value:
-        code: CLIENT_OR_AGENT_NOT_AUTHORISED
-        message: The client or agent is not authorised.
+        [{code: CLIENT_OR_AGENT_NOT_AUTHORISED,
+            message: The client or agent is not authorised.}]
 
     # 404
 
     matchingResourceNotFound:
       description: |
         Calculation ID was not found.
-      value:
-        code: MATCHING_RESOURCE_NOT_FOUND
-        message: The Calculation ID was not found at this time. You can try again later.
+      value: [{code: MATCHING_RESOURCE_NOT_FOUND, message: The Calculation ID was not found at this time. You can try again later.}]
 
     # 401
 
@@ -204,9 +208,8 @@ components:
       description: |
         Invalid Authentication information provided.
       value:
-        code: INVALID_CREDENTIALS
-        message: Invalid Authentication information provided."
-
+        [{code: INVALID_CREDENTIALS,
+          message: Invalid Authentication information provided."}]
 
 
 tags:
@@ -355,6 +358,8 @@ paths:
                     taxYear: 2017-18
                     calculationId: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
                     correlationId: 7X57CKG72JVNSSS9SALT
+        "204":
+          description: HTTP status 204 (No Content)
         "400":
           description: Bad request
           content:
@@ -430,7 +435,8 @@ paths:
               examples:
                 FORMAT_NINO:
                   $ref: '#/components/examples/formatNino'
-
+                FORMAT_REPORT_ID:
+                  $ref: '#/components/examples/formatReportId'
 
         "403":
           description: Forbidden
@@ -441,3 +447,13 @@ paths:
               examples:
                 CLIENT_OR_AGENT_NOT_AUTHORISED:
                   $ref: '#/components/examples/clientOrAgentNotAuthorised'
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                MATCHING_RESOURCE_NOT_FOUND:
+                  $ref: '#/components/examples/matchingResourceNotFound'
