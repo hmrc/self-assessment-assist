@@ -107,6 +107,25 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         returnedError shouldBe ninoError
       }
     }
+
+    "the mtd id lookup service returns an NinoFormat error" should {
+      "return a 403 error response" in new Test {
+        MockLookupConnector.mockMtdIdLookupConnectorError(NinoFormatError)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, nrsRequired = false)(fakePostRequest)
+        val result: Result = Await.result(resultFuture, defaultTimeout)
+
+        (result.header.status) shouldBe FORBIDDEN
+
+        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
+        val returnedError: String = returnedErrorJSon.utf8String
+
+        val unauthorisedErrorJson: JsValue = Json.toJson(Seq(UnauthorisedError))
+        val unauthorisedError: String = unauthorisedErrorJson.toString()
+
+        returnedError shouldBe unauthorisedError
+      }
+    }
   }
 
   "the enrolments auth service returns an error" must {
