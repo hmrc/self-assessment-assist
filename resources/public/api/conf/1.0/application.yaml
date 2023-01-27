@@ -96,7 +96,7 @@ components:
         The unique identifier for the report. Must conform to the regular expression: `^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`
       schema:
         type: string
-        example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
+        example: 579800fe-e047-cd40-b3e4-0e14b1f183a8
       required: true
     calculationId:
       name: calculationId
