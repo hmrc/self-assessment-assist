@@ -160,32 +160,31 @@ components:
       description: |
         The format of the supplied NINO field is not valid.
       value:
-        code: FORMAT_NINO
-        message: The provided NINO is invalid.
+        [{code: FORMAT_NINO, message: The provided NINO is invalid.}]
     formatCalcId:
       description: |
         The format of the supplied CalculationID is not valid
       value:
-        code: FORMAT_CALC_ID
-        message: The provided Calculation ID is invalid.
+        [{code: FORMAT_CALC_ID,
+          message: The provided Calculation ID is invalid.}]
     formatTaxYear:
       description: |
         The format of the supplied taxYear value is not valid.
       value:
-        code: FORMAT_TAX_YEAR
-        message: The provided Tax Year is invalid.
+        [{code: FORMAT_TAX_YEAR,
+          message: The provided Tax Year is invalid.}]
     ruleTaxYearRangeInvalid:
       description: |
         Tax year range invalid. A tax year range of one year is required.
       value:
-        code: RULE_TAX_YEAR_RANGE_INVALID
-        message: The provided Tax Year range is invalid.
+        [{code: RULE_TAX_YEAR_RANGE_INVALID,
+          message: The provided Tax Year range is invalid.}]
     formatReportId:
       description: |
         The format of the supplied reportId is not valid.
       value:
-        code: FORMAT_REPORT_ID
-        message: The provided Report ID is invalid.
+        [{code: FORMAT_REPORT_ID,
+          message: The provided Report ID is invalid.}]
 
     # 403
 
@@ -193,17 +192,15 @@ components:
       description: |
         The client and/or agent is not authorised. This is normally because: the client is not subscribed to MTD, the agent is not subscribed to Agent Services, or the client has not authorised the agent to act on their behalf.
       value:
-        code: CLIENT_OR_AGENT_NOT_AUTHORISED
-        message: The client or agent is not authorised.
+        [{code: CLIENT_OR_AGENT_NOT_AUTHORISED,
+            message: The client or agent is not authorised.}]
 
     # 404
 
     matchingResourceNotFound:
       description: |
         Calculation ID was not found.
-      value:
-        code: MATCHING_RESOURCE_NOT_FOUND
-        message: The Calculation ID was not found at this time. You can try again later.
+      value: [{code: MATCHING_RESOURCE_NOT_FOUND, message: The Calculation ID was not found at this time. You can try again later.}]
 
     # 401
 
@@ -211,9 +208,8 @@ components:
       description: |
         Invalid Authentication information provided.
       value:
-        code: INVALID_CREDENTIALS
-        message: Invalid Authentication information provided."
-
+        [{code: INVALID_CREDENTIALS,
+          message: Invalid Authentication information provided."}]
 
 
 tags:
