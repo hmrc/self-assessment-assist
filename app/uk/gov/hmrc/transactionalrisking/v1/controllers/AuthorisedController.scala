@@ -80,7 +80,10 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
       if (NinoChecker.isValid(nino)) {
         lookupConnector.getMtdId(nino).flatMap[Result] {
           case Right(mtdId)                  => invokeBlockWithAuthCheck(mtdId, request, block)
-          case Left(NinoFormatError)         => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
+          case Left(NinoFormatError)         =>
+            //lookup connector is sending this error instead of forbidden even for valid nino
+            logger.error(s"$correlationId::[invokeBlock] MTDID lookup returned NinoFormatError")
+            Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
           case Left(UnauthorisedError)       => Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
           case Left(InvalidBearerTokenError) => Future.successful(Unauthorized(convertErrorAsJson(InvalidBearerTokenError)))
           case Left(_)                       => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
@@ -89,8 +92,6 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
         logger.warn(s"$correlationId::[invokeBlock]Error in nino format")
         Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)).withApiHeaders(correlationId))
       }
-
-
     }
 
   }
