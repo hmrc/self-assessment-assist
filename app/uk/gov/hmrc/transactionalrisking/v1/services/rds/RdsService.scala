@@ -39,6 +39,31 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector: RdsConnector, appConfig: AppConfig) extends Logging {
 
+  val requiredHeaderForRDS_with_Empty: Seq[(String, String)] = List(
+    "Gov-Client-Connection-Method",
+    "Gov-Client-Device-ID",
+    "Gov-Client-Local-IPs",
+    "Gov-Client-Local-IPs-Timestamp",
+    "Gov-Client-MAC-Addresses",
+    "Gov-Client-Multi-Factor",
+    "Gov-Client-Screens",
+    "Gov-Client-Timezone",
+    "Gov-Client-User-Agent",
+    "Gov-Client-User-IDs",
+    "Gov-Client-Window-Size",
+    "Gov-Vendor-License-IDs",
+    "Gov-Vendor-Product-Name",
+    "Gov-Vendor-Version",
+    "Gov-Client-Public-IP",
+    "Gov-Client-Public-IP-Timestamp",
+    "Gov-Client-Public-Port",
+    "Gov-Vendor-Public-IP",
+    "Gov-Vendor-Forwarded",
+    "Gov-Client-Browser-Do-Not-Track",
+    "Gov-Client-Browser-JS-User-Agent").map(_ -> "")
+
+
+
 //TODO Refactor this code
   def submit(request: AssessmentRequestForSelfAssessment,
              fraudRiskReport: FraudRiskReport,
@@ -47,13 +72,12 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
                              correlationId: String): Future[ServiceOutcome[AssessmentReportWrapper]] = {
-
+    val fraudRiskReportHeaders: Seq[(String, String)] = requiredHeaderForRDS_with_Empty ++ userRequest.headers.toMap.map(h => h._1 -> h._2.head)
     def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None): Future[Either[ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]]] = {
-      val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport)
+      val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport,fraudRiskReportHeaders)
       rdsRequestSO match {
         case Right(ResponseWrapper(_, rdsRequest)) =>
           logger.info(s"$correlationId::[RdsService submit ] RdsAssessmentRequest Created")
-
           connector.submit(rdsRequest, rdsAuthCredentials).map {
               case Right(ResponseWrapper(_, rdsResponse)) =>
                     val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
@@ -142,7 +166,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   }
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
-                                           fraudRiskReport: FraudRiskReport)(implicit correlationId: String,userRequest: UserRequest[_]): ServiceOutcome[RdsRequest]
+                                           fraudRiskReport: FraudRiskReport, fraudRiskReportHeaders:Seq[(String, String)])(implicit correlationId: String,userRequest: UserRequest[_]): ServiceOutcome[RdsRequest]
   = {
     logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
     Right(ResponseWrapper(correlationId, RdsRequest(
@@ -161,7 +185,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                 Map("KEY" -> "string"),
                 Map("VALUE" -> "string")
               )),
-            DataWrapper(userRequest.headers.toMap.map(header => Seq(header._1, header._2.head)).toSeq)
+            DataWrapper(fraudRiskReportHeaders.toMap.map(header => Seq(header._1, header._2)).toSeq)
           )
         ),
         RdsRequest.InputWithObject("fraudRiskReportReasons",
