@@ -72,7 +72,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
                              correlationId: String): Future[ServiceOutcome[AssessmentReportWrapper]] = {
-    val fraudRiskReportHeaders: Seq[(String, String)] = requiredHeaderForRDS_with_Empty ++ userRequest.headers.toMap.map(h => h._1 -> h._2.head)
+    val requestHeaders: Map[String, String] = userRequest.headers.toMap.map(h => h._1 -> h._2.head)
+    val fraudRiskReportHeaders: Seq[(String, String)] = requiredHeaderForRDS_with_Empty.map( entry => entry._1 -> requestHeaders.getOrElse(entry._1,""))
+
     def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None): Future[Either[ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]]] = {
       val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport,fraudRiskReportHeaders)
       rdsRequestSO match {
