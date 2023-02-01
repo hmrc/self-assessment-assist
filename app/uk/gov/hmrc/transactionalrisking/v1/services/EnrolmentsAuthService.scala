@@ -98,7 +98,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
                                            identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
     //TODO Fixme clientReference is coming as none in logs
     val clientReference = getClientReferenceFromEnrolments(enrolments)
-    logger.debug(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
+    logger.info(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
       s"fully-authorised organisation with reference $clientReference.")
 
     val userDetails = UserDetails(
