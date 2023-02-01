@@ -32,12 +32,20 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAsses
 class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDateTime) extends Logging {
 
   def submitGenerateReportMessage(assessmentReport: AssessmentReport, calculationTimestamp: LocalDateTime, request: AssessmentRequestForSelfAssessment, rdsAssessmentReport: RdsAssessmentReport)(implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
-    connector.submit(buildIfsGenerateReportSubmission(assessmentReport, "GenerateReport", calculationTimestamp, request, rdsAssessmentReport))
+    val req = buildIfsGenerateReportSubmission(
+      assessmentReport,
+      "GenerateReport",
+      calculationTimestamp,
+      request,
+      rdsAssessmentReport
+    )
+    connector.submit(req)
   }
 
   private def buildIfsGenerateReportSubmission(assessmentReport: AssessmentReport, eventName: String, calculationTimestamp: LocalDateTime, request: AssessmentRequestForSelfAssessment, rdsAssessmentReport: RdsAssessmentReport)(implicit correlationId: String): IFRequest = {
     val englishActions = risks(rdsAssessmentReport, PreferredLanguage.English)
     val welshActions = risks(rdsAssessmentReport, PreferredLanguage.Welsh)
+    val payloadMessageIds = typeIds(rdsAssessmentReport)
     IFRequest(
         serviceRegime = "self-assessment-assist",
         eventName,
@@ -68,12 +76,20 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
               links = if(welshActions(index).links.nonEmpty) Some(welshActions(index).links.map(e => IFRequestPayloadActionLinks(e.title, e.url))) else None
             )
             IFRequestPayload(
-              messageId = risk.path, // what is the messageId
+              messageId = payloadMessageIds(index), // what is the messageId
               englishAction = englishAction,
               welshAction = welsh
             )
         })
     )
+  }
+
+  private def typeIds(report: RdsAssessmentReport) = {
+    report.outputs.collect {
+      case elm: RdsAssessmentReport.MainOutputWrapper if elm.name == "typeIDs" => elm
+    }.flatMap(_.value).collect {
+      case value: RdsAssessmentReport.DataWrapper => value
+    }.flatMap(_.data).flatten
   }
 
   private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
