@@ -124,10 +124,10 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
           val rdsCorrelationIdOption = report.rdsCorrelationId
           rdsCorrelationIdOption match {
             case Some(rdsCorrelationID) =>
-              val calculationTimestamp = LocalDateTime.parse(calculationTimestamp,DateUtils.dateTimePattern)
+              val parsedCalculationTimestamp = LocalDateTime.parse(calculationTimestamp,DateUtils.dateTimePattern)
               logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
 
-              Right(ResponseWrapper(correlationId,AssessmentReportWrapper(calculationTimestamp,
+              Right(ResponseWrapper(correlationId,AssessmentReportWrapper(parsedCalculationTimestamp,
                 AssessmentReport(reportId = reportId,
                   risks = risks(report, request.preferredLanguage), nino = request.nino,
                   taxYear = request.taxYear,
