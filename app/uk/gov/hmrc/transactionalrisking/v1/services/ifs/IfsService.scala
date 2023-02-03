@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.services.ifs
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment, Link, PreferredLanguage, Risk}
-import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.{IFRequest, IFRequestPayload, IFRequestPayloadAction, IFRequestPayloadActionLinks}
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.{IFRequest, IFRequestPayload, IFRequestPayloadAction, IFRequestPayloadActionLinks, Messages}
 
 import java.time.LocalDateTime
 import javax.inject.{Inject, Singleton}
@@ -59,7 +59,8 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
           Map("agentReferenceNumber" -> request.agentRef.getOrElse("")),
           Map("calculationTimestamp" -> calculationTimestamp.format(DateUtils.dateTimePattern)) // What does comment mean here
         ),
-        payload = Some(englishActions.zipWithIndex.map{
+        payload = Some(Messages(
+          Some(englishActions.zipWithIndex.map{
           case (risk, index) =>
             val englishAction = IFRequestPayloadAction(
               title = risk.title,
@@ -76,11 +77,12 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
               links = if(welshActions(index).links.nonEmpty) Some(welshActions(index).links.map(e => IFRequestPayloadActionLinks(e.title, e.url))) else None
             )
             IFRequestPayload(
-              messageId = payloadMessageIds(index), // what is the messageId
+              messageId = payloadMessageIds(index),
               englishAction = englishAction,
               welshAction = welsh
             )
-        })
+        }).fold(Option.empty[Seq[IFRequestPayload]])(e => Some(e))
+      ))
     )
   }
 

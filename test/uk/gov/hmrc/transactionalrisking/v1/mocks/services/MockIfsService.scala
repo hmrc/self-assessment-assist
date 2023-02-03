@@ -24,7 +24,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsRespo
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.{IfsOutcome, IfsService}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
-import java.time.{LocalDateTime, OffsetDateTime}
+import java.time.LocalDateTime
 import scala.concurrent.Future
 
 trait MockIfsService extends MockFactory {
@@ -36,7 +36,7 @@ trait MockIfsService extends MockFactory {
     def stubSubmit(assesmentRerport: AssessmentReport, localDateTime: LocalDateTime, assessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment): CallHandler[Future[IfsOutcome]] = {
       (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_:HeaderCarrier,_: String))
         .expects(assesmentRerport, localDateTime, *, *, *, *).anyNumberOfTimes()
-        .returns(Future.successful(Right(IfsResponse(""))))
+        .returns(Future.successful(Right(IfsResponse())))
     }
 
   }

@@ -18,21 +18,17 @@ package uk.gov.hmrc.transactionalrisking.v1.service.ifs
 
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
-import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, Link, Risk}
-import uk.gov.hmrc.transactionalrisking.v1.services.ifs.IfsService
-import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.{IFRequest, IFRequestPayload, IFRequestPayloadAction, IFRequestPayloadActionLinks}
-import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsResponse
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsTestData.assessmentRequestForSelfAssessment
-
-import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, LocalDateTime}
-import java.util.UUID
-import scala.concurrent.Future
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData
-import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData.{simpleCalculationId, simpleRDSCorrelationId, simpleReportId}
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
-import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport.MainOutputWrapper
+import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, Link, Risk}
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.IfsService
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.{IFRequest, Messages}
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsFailure.ErrorResponse
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.{IfsFailure, IfsResponse}
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsTestData.assessmentRequestForSelfAssessment
+
+import java.util.UUID
+import scala.concurrent.Future
 class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
   private val rdsReport: AssessmentReport = AssessmentReport(
@@ -66,7 +62,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
         Map("agentReferenceNumber" -> assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
         Map("calculationTimestamp" -> mockCurrentDateTime.getDateTime().toLocalDateTime.format(DateUtils.dateTimePattern))
       ),
-      payload = Some(Vector())
+      payload = Some(Messages(Some(Vector())))
     )
 
 
@@ -82,12 +78,28 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
         MockCurrentDateTime.getDateTime()
         MockIfsConnector.submit(expectedPayload = expectedPayload)
-          .returns(Future.successful(Right(IfsResponse("hello world"))))
+          .returns(Future.successful(Right(IfsResponse())))
 
         await(
           service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.simpleAcknowledgeNewRdsAssessmentReport)
-        ) shouldBe Right(IfsResponse("hello world"))
+        ) shouldBe Right(IfsResponse())
       }
+
+    }
+
+    "service call unsuccessful" must {
+
+      "return the expected result" in new Test {
+
+        MockCurrentDateTime.getDateTime()
+        MockIfsConnector.submit(expectedPayload = expectedPayload)
+          .returns(Future.successful(Left(IfsFailure.ErrorResponse(SERVICE_UNAVAILABLE))))
+
+        await(
+          service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.simpleAcknowledgeNewRdsAssessmentReport)
+        ) shouldBe Left(IfsFailure.ErrorResponse(SERVICE_UNAVAILABLE))
+      }
+
     }
   }
 

@@ -16,11 +16,4 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response
 
-import play.api.libs.json.{Json, Reads}
-
-case class IfsResponse(ifsResponse: String)
-
-object IfsResponse {
-
-  implicit val reads: Reads[IfsResponse] = Json.reads[IfsResponse]
-}
+case class IfsResponse()

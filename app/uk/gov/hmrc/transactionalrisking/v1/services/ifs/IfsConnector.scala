@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.ifs
 
-import play.api.http.Status
-import play.api.http.Status.NO_CONTENT
-import play.api.mvc.Results.NoContent
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, SERVICE_UNAVAILABLE}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.IFRequest
@@ -41,24 +39,26 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
       httpClient
         .POST[IFRequest, HttpResponse](s"$url", ifRequest, Seq("X-API-Key" -> apiKey))
         .map { response =>
-          val status = response.status
-
-          if (Status.isSuccessful(status)) {
-            logger.info(s"$correlationId::[submit] IFS submission successful")
-            if(response.status == NO_CONTENT) {
-              Right(IfsResponse(""))
-            } else {
-              Right(response.json.as[IfsResponse])
-            }
-          } else {
-            logger.warn(s"$correlationId::[submit] RequestId:${hc.requestId}\nIFS submission failed with error: ${response.body}")
-            Left(IfsFailure.ErrorResponse(status))
+          response.status match {
+            case NO_CONTENT => Right(IfsResponse())
+            case unexpectedStatus@_ =>
+              logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
+              Left(IfsFailure.ErrorResponse(unexpectedStatus))
           }
         }
         .recover {
-          case NonFatal(e) =>
+          case _: uk.gov.hmrc.http.BadRequestException => {
+              logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : BAD request")
+              Left(IfsFailure.ErrorResponse(BAD_REQUEST))
+          }
+          case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE => {
+            logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request")
+            Left(IfsFailure.ErrorResponse(SERVICE_UNAVAILABLE))
+          }
+          case NonFatal(e) => {
             logger.error(s"$correlationId::[submit] RequestId:${hc.requestId}\nIFS submission failed with exception", e)
             Left(IfsFailure.Exception(e.getMessage))
+          }
         }
   }
 }
