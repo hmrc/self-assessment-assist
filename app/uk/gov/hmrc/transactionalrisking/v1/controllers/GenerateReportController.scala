@@ -30,6 +30,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.FraudRiskRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.IfsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AssistReportGenerated
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
@@ -47,6 +48,7 @@ class GenerateReportController @Inject()(
                                           nonRepudiationService: NrsService,
                                           insightService: InsightService,
                                           rdsService: RdsService,
+                                          ifService: IfsService,
                                           currentDateTime: CurrentDateTime,
                                           idGenerator: IdGenerator
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
@@ -60,12 +62,14 @@ class GenerateReportController @Inject()(
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
       val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] = for {
-
         assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
         fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head })))
         rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+      } yield {
+        ifService.submitGenerateReportMessage(rdsAssessmentReportWrapper.responseData.report, rdsAssessmentReportWrapper.responseData.calculationTimestamp, assessmentRequestForSelfAssessment, rdsAssessmentReportWrapper.responseData.rdsAssessmentReport)
+        rdsAssessmentReportWrapper
+      }
 
-      } yield rdsAssessmentReportWrapper
 
       responseData.fold(
         errorWrapper =>
@@ -73,6 +77,7 @@ class GenerateReportController @Inject()(
         reportWrapper => {
             //TODO for txr015, calculationTimestamp can be retrieved from reportWrapper.responseData.calculationTimestamp
             //TODO for txr015, need to make sure if there are any format issues with timestamp then need to be fixed in txr015
+
           nonRepudiationService.buildNrsSubmission(reportWrapper.responseData.report.stringify, reportWrapper.responseData.report.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
             .fold(
               error => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError))),

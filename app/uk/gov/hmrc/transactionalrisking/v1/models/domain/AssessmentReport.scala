@@ -18,11 +18,13 @@ package uk.gov.hmrc.transactionalrisking.v1.models.domain
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsPath, Json, Writes}
+import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
-import java.time.{LocalDateTime}
+import java.time.LocalDateTime
 import java.util.UUID
 
-case class AssessmentReportWrapper(calculationTimestamp:LocalDateTime, report:AssessmentReport)
+case class AssessmentReportWrapper(calculationTimestamp:LocalDateTime, report:AssessmentReport, rdsAssessmentReport: RdsAssessmentReport)
+
 case class AssessmentReport(reportId: UUID, risks: Seq[Risk], nino:String, taxYear: String, calculationId:UUID, rdsCorrelationId:String) {
   def stringify: String = Json.stringify(Json.toJson(this))
 }

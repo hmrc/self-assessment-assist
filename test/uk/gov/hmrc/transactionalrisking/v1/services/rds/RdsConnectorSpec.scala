@@ -65,7 +65,6 @@ class RdsConnectorSpec extends ConnectorSpec
   override def beforeAll(): Unit = {
     wireMockServer.start()
     port = wireMockServer.port()
-    println(s"started at $port")
     SharedMetricRegistries.clear()
   }
 

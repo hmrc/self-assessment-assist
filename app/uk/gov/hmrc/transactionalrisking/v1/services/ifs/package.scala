@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.transactionalrisking.utils
+package uk.gov.hmrc.transactionalrisking.v1.services
 
-import java.time.OffsetDateTime
-import javax.inject.{Inject, Singleton}
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.{IfsFailure, IfsResponse}
 
-@Singleton
-class CurrentDateTime @Inject()() {
-  def getDateTime(): OffsetDateTime = OffsetDateTime.now()
-  def dateString(currentDatetime: OffsetDateTime): OffsetDateTime = {
-    val formatted = currentDatetime.format(DateUtils.dateTimePattern)
-//    val formatter = DateUtils.dateTimePattern.format(OffsetDateTime.parse(currentDatetime.toString))
-    OffsetDateTime.parse(formatted)
-  }
+package object ifs {
+  type IfsOutcome = Either[IfsFailure, IfsResponse]
 }
