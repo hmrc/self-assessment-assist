@@ -57,7 +57,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
               },
               assessmentReport =>  assessmentReport.responseCode match {
                 case Some(201) | Some(204) => {
-                  logger.info(s"rds response is $assessmentReport")
+                  logger.info(s"rds response is ${Json.toJson(assessmentReport)}")
                   Right(ResponseWrapper(correlationId, assessmentReport))
                 }
                 case Some(404) =>
