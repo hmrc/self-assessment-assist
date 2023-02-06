@@ -47,7 +47,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response.status}")
+        logger.info(s"$correlationId::[RdsConnector:submit]Successfully submitted the report response status is ${response}")
         response.status match {
           case CREATED =>
             response.json.validate[RdsAssessmentReport].fold(
@@ -56,10 +56,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
               },
               assessmentReport =>  assessmentReport.responseCode match {
-                case Some(201) | Some(204) => {
-                  logger.info(s"rds response is ${Json.toJson(assessmentReport)}")
-                  Right(ResponseWrapper(correlationId, assessmentReport))
-                }
+                case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
                 case Some(404) =>
                   val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
                   logger.warn(s"$correlationId::[RdsService][submit] $errorMessage")
