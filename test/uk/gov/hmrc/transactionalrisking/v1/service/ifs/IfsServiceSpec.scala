@@ -29,6 +29,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsTestData.assessmentRe
 
 import java.util.UUID
 import scala.concurrent.Future
+
 class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
   private val rdsReport: AssessmentReport = AssessmentReport(
@@ -48,7 +49,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
   )
 
-  private def expectedPayload =
+  private def expectedReportGenerationPayload =
     IFRequest(
       serviceRegime = "self-assessment-assist",
       eventName = "GenerateReport",
@@ -58,13 +59,24 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
         Map("nino" -> rdsReport.nino),
         Map("taxYear" -> rdsReport.taxYear),
         Map("calculationId" -> rdsReport.calculationId.toString),
-        Map("customerType" -> assessmentRequestForSelfAssessment.customerType.toString),
-        Map("agentReferenceNumber" -> assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
-        Map("calculationTimestamp" -> mockCurrentDateTime.getDateTime().toLocalDateTime.format(DateUtils.dateTimePattern))
+        Map("customerType" -> "Individual"),
+        Map("calculationTimestamp" -> mockCurrentDateTime.getDateTime().toLocalDateTime.format(DateUtils.dateTimePattern)),
       ),
       payload = Some(Messages(Some(Vector())))
     )
 
+  private def expectedAcknowledgementPayload =
+    IFRequest(
+      serviceRegime = "self-assessment-assist",
+      eventName = "AcknowledgeReport",
+      eventTimestamp = mockCurrentDateTime.getDateTime(),
+      feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
+      metadata = List(
+        Map("nino" -> CommonTestData.simpleAcknowledgeReportRequest.nino),
+        Map("customerType" -> "Individual"),
+      ),
+      payload = None
+    )
 
   class Test extends MockIfsConnector {
     val service = new IfsService(mockIfsConnector, mockCurrentDateTime)
@@ -72,12 +84,12 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
   "service using acknowledged generated" when {
 
-    "service call successful" must {
+    "submitGenerateReportMessage" must {
 
       "return the expected result" in new Test {
 
         MockCurrentDateTime.getDateTime()
-        MockIfsConnector.submit(expectedPayload = expectedPayload)
+        MockIfsConnector.submit(expectedPayload = expectedReportGenerationPayload)
           .returns(Future.successful(Right(IfsResponse())))
 
         await(
@@ -92,7 +104,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       "return the expected result" in new Test {
 
         MockCurrentDateTime.getDateTime()
-        MockIfsConnector.submit(expectedPayload = expectedPayload)
+        MockIfsConnector.submit(expectedPayload = expectedReportGenerationPayload)
           .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))))
 
         await(
@@ -101,7 +113,19 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       }
 
     }
+
+    "submitAcknowledgementMessage" must {
+
+      "return the expected result" in new Test {
+
+        MockCurrentDateTime.getDateTime()
+        MockIfsConnector.submit(expectedPayload = expectedAcknowledgementPayload)
+          .returns(Future.successful(Right(IfsResponse())))
+
+        await(
+          service.submitAcknowledgementMessage(CommonTestData.simpleAcknowledgeReportRequest, CommonTestData.simpleAcknowledgeNewRdsAssessmentReport, CommonTestData.simpleIndividualUserDetails)
+        ) shouldBe Right(IfsResponse())
+      }
+    }
   }
-
-
 }

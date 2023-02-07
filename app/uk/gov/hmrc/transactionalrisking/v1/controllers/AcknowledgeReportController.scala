@@ -17,14 +17,15 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import cats.data.EitherT
-import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import play.api.mvc._
+import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.transactionalrisking.v1.controllers.requestParsers.AcknowledgeRequestParser
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.IfsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, AssistReportAcknowledged}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
@@ -41,8 +42,10 @@ class AcknowledgeReportController @Inject()(
                                              nonRepudiationService: NrsService,
                                              rdsService: RdsService,
                                              currentDateTime: CurrentDateTime,
-                                             idGenerator: IdGenerator
+                                             idGenerator: IdGenerator,
+                                             ifsService: IfsService
                                            )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
+
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
     implicit val correlationId: String = idGenerator.getUid
     logger.info(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
@@ -55,7 +58,10 @@ class AcknowledgeReportController @Inject()(
         val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
           parsedRequest <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
           serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
-        } yield serviceResponse.responseData
+          _ <- EitherT(ifsService.submitAcknowledgementMessage(parsedRequest, serviceResponse.responseData, request.userDetails))
+        } yield  {
+          serviceResponse.responseData
+        }
 
         processRequest.fold(
           errorWrapper => errorHandler(errorWrapper, correlationId),

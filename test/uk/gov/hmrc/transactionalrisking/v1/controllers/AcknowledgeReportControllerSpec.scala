@@ -24,7 +24,7 @@ import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers._
-import uk.gov.hmrc.transactionalrisking.v1.mocks.services._
+import uk.gov.hmrc.transactionalrisking.v1.mocks.services.{MockIfsService, _}
 import uk.gov.hmrc.transactionalrisking.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.transactionalrisking.v1.models.errors._
 import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawData
@@ -44,10 +44,11 @@ class AcknowledgeReportControllerSpec
     with MockRdsService
     with MockAcknowledgeRequestParser
     with MockCurrentDateTime
-    with MockIdGenerator {
+    with MockIdGenerator
+    with MockIfsService {
 
 
-  trait Test {
+    trait Test {
     val hc: HeaderCarrier = HeaderCarrier()
 
     val controller: TestController = new TestController()
@@ -62,7 +63,8 @@ class AcknowledgeReportControllerSpec
       nonRepudiationService = mockNrsService,
       rdsService = mockRdsService,
       currentDateTime = mockCurrentDateTime,
-      idGenerator = mockIdGenerator
+      idGenerator = mockIdGenerator,
+      ifsService = mockIfsService
     )
 
      val dummyReportPayload: NrsSubmission =
@@ -105,6 +107,7 @@ class AcknowledgeReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockNrsService.stubBuildNrsSubmission(dummyReportPayload)
         MockNrsService.stubAcknowledgement(simpleNRSResponseAcknowledgeSubmission)
+        MockIfsService.stubAcknowledgeSubmit()
 
         MockProvideRandomCorrelationId.IdGenerator
 
@@ -126,6 +129,7 @@ class AcknowledgeReportControllerSpec
         MockCurrentDateTime.getDateTime()
         MockNrsService.stubBuildNrsSubmission(dummyReportPayload)
         MockNrsService.stubFailureAcknowledgementDueToException()
+        MockIfsService.stubAcknowledgeSubmit()
 
 
         MockProvideRandomCorrelationId.IdGenerator
@@ -270,6 +274,7 @@ class AcknowledgeReportControllerSpec
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
           MockNrsService.stubUnableToConstrucNrsSubmission()
+          MockIfsService.stubAcknowledgeSubmit()
 
           val result: Future[Result] = controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, simpleRDSCorrelationId)(fakePostRequest)
 

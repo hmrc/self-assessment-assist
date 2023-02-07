@@ -37,11 +37,15 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
   def submit(ifRequest: IFRequest)(
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
 
+    logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
       httpClient
         .POST[IFRequest, HttpResponse](s"$url", ifRequest, Seq("X-API-Key" -> apiKey))
         .map { response =>
           response.status match {
-            case NO_CONTENT => Right(IfsResponse())
+            case NO_CONTENT => {
+              logger.info(s"$correlationId::[IfsConnector:submit]  ${ifRequest.eventName} interaction stored successfully")
+              Right(IfsResponse())
+            }
             case unexpectedStatus@_ =>
               logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
               Left(ErrorWrapper(correlationId, DownstreamError))

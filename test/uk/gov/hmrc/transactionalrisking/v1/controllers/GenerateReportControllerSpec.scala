@@ -83,7 +83,7 @@ class GenerateReportControllerSpec
        // MockNrsService.stubAssessmentReport(simpleNRSResponseReportSubmission)
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
-        MockIfsService.stubSubmit(simpleAssessmentReport, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
+        MockIfsService.stubGenerateReportSubmit(simpleAssessmentReport, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
@@ -104,7 +104,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubFailureReportDueToException()
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
-        MockIfsService.stubSubmit(simpleAssessmentReportWrapper.report, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
+        MockIfsService.stubGenerateReportSubmit(simpleAssessmentReportWrapper.report, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
@@ -298,7 +298,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
         MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
-        MockIfsService.stubSubmit(assessmentReportWrapper.report, assessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
+        MockIfsService.stubGenerateReportSubmit(assessmentReportWrapper.report, assessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
 
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)

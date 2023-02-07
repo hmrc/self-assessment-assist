@@ -18,7 +18,9 @@ package uk.gov.hmrc.transactionalrisking.v1.TestData
 
 import java.time.{LocalDateTime, Month, OffsetDateTime, ZoneOffset}
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.CustomerType
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.v1.models.domain._
@@ -54,6 +56,13 @@ object CommonTestData  {
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
+
+  val simpleIndividualUserDetails = UserDetails(
+    userType = AffinityGroup.Individual,
+    agentReferenceNumber = None,
+    clientID = "clientId",
+    identityData = None
+  )
 
   val simpleCustomerType= CustomerType.TaxPayer
   val simplePreferredLanguage: PreferredLanguage = PreferredLanguage.English
