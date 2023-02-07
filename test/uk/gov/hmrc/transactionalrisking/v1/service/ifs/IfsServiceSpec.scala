@@ -21,6 +21,7 @@ import uk.gov.hmrc.transactionalrisking.support.ServiceSpec
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, Link, Risk}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.IfsService
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.{IFRequest, Messages}
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsFailure.ErrorResponse
@@ -93,11 +94,11 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
         MockCurrentDateTime.getDateTime()
         MockIfsConnector.submit(expectedPayload = expectedPayload)
-          .returns(Future.successful(Left(IfsFailure.ErrorResponse(SERVICE_UNAVAILABLE))))
+          .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))))
 
         await(
           service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.simpleAcknowledgeNewRdsAssessmentReport)
-        ) shouldBe Left(IfsFailure.ErrorResponse(SERVICE_UNAVAILABLE))
+        ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))
       }
 
     }
