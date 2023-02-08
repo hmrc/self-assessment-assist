@@ -108,3 +108,4 @@ object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FO
 object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished")
 
 object ServerError extends MtdError("SERVER_ERROR", "Server error")
+object NoAssessmentFeedbackFromRDS extends MtdError("204", "No Content")
