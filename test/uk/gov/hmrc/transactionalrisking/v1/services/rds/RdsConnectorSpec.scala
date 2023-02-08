@@ -31,8 +31,7 @@ import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError,
-  MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, MatchingResourcesNotFoundError, MtdError, NoAssessmentFeedbackFromRDS, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import RdsTestData.rdsRequest
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
@@ -151,7 +150,7 @@ class RdsConnectorSpec extends ConnectorSpec
         stubRDSGenerateReportResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Right(ResponseWrapper(correlationId, expectedReportJson.as[RdsAssessmentReport]))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, NoAssessmentFeedbackFromRDS))
       }
 
 
