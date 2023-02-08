@@ -56,7 +56,8 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
               },
               assessmentReport =>  assessmentReport.responseCode match {
-                case Some(201) | Some(204) => Right(ResponseWrapper(correlationId, assessmentReport))
+                case Some(201)  => Right(ResponseWrapper(correlationId, assessmentReport))
+                case Some(204) => Left(ErrorWrapper(correlationId, NoAssessmentFeedbackFromRDS))//exceptional scenario to stop processing
                 case Some(404) =>
                   val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
                   logger.warn(s"$correlationId::[RdsService][submit] $errorMessage")

@@ -29,7 +29,6 @@ import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.InsightService
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.FraudRiskRequest
-import uk.gov.hmrc.transactionalrisking.v1.services.eis.IntegrationFrameworkService
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.IfsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AssistReportGenerated
@@ -95,6 +94,7 @@ class GenerateReportController @Inject()(
   def errorHandler(errorWrapper: ErrorWrapper,correlationId:String): Future[Result] = (errorWrapper.error,errorWrapper.errors) match {
     case (ServerError | DownstreamError,_) => Future(InternalServerError(convertErrorAsJson(DownstreamError)))
     case (NinoFormatError,_) => Future(BadRequest(convertErrorAsJson(NinoFormatError)))
+    case (NoAssessmentFeedbackFromRDS,_) => Future(NoContent)
     case (TaxYearRangeInvalid,_) => Future(BadRequest(convertErrorAsJson(TaxYearRangeInvalid)))
     case (TaxYearFormatError,_) => Future(BadRequest(convertErrorAsJson(TaxYearFormatError)))
     case (CalculationIdFormatError,_) => Future(BadRequest(convertErrorAsJson(CalculationIdFormatError)))
