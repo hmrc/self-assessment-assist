@@ -18,7 +18,6 @@ package uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request
 
 import play.api.libs.json.{Format, Json}
 
-import java.net.URI
 
 case class IFRequestPayloadActionLinks(linkTitle: String, linkUrl: String) {
 

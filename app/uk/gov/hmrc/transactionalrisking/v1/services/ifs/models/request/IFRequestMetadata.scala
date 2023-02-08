@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request
 
-import org.joda.time.LocalDateTime
 import play.api.libs.json.{Format, Json, Reads, Writes}
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 
