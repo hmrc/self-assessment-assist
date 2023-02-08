@@ -1,4 +1,4 @@
-The HMRC Assist report is generated using the customers’ National Insurance number (NINO) and Calculation ID. The report contains targeted messages contained within the JSON response for the customer.
+The HMRC Assist report is generated using the customers’ National Insurance number (NINO), Calculation ID and Tax year. The report contains targeted messages contained within the JSON response for the customer.
 
 This API allows developers to:
 

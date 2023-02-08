@@ -118,20 +118,20 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   }
 
   private def toAssessmentReport(report: RdsAssessmentReport, request: AssessmentRequestForSelfAssessment, correlationId: String): ServiceOutcome[AssessmentReportWrapper] = {
-    logger.info(s"$correlationId::[toAssessmentReport]Generated assessment report")
 
     (report.calculationId, report.feedbackId,report.calculationTimestamp) match {
       case (Some(calculationId), Some(reportId),Some(calculationTimestamp)) =>
           val rdsCorrelationIdOption = report.rdsCorrelationId
           rdsCorrelationIdOption match {
             case Some(rdsCorrelationID) =>
+              val parsedCalculationTimestamp = LocalDateTime.parse(calculationTimestamp,DateUtils.dateTimePattern)
               logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
 
-              Right(ResponseWrapper(correlationId,AssessmentReportWrapper(LocalDateTime.parse(calculationTimestamp,DateUtils.dateTimePattern),
+              Right(ResponseWrapper(correlationId,AssessmentReportWrapper(parsedCalculationTimestamp,
                 AssessmentReport(reportId = reportId,
-                  risks = risks(report, request.preferredLanguage, correlationId), nino = request.nino,
-                  taxYear = request.taxYear, //Todo check whether format is correct
-                  calculationId = request.calculationId, rdsCorrelationID), report)))
+                  risks = risks(report, request.preferredLanguage), nino = request.nino,
+                  taxYear = request.taxYear,
+                  calculationId = calculationId, rdsCorrelationID), report)))
 
             case None =>
               logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
@@ -144,7 +144,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     }
   }
 
-  private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage, correlationId: String): Seq[Risk] = {
+  private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
     report.outputs.collect {
       case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
     }.flatMap(_.value).collect {
