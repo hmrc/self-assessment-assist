@@ -319,7 +319,6 @@ class GenerateReportControllerSpec
           MockProvideRandomCorrelationId.IdGenerator
           MockEnrolmentsAuthService.authoriseUser()
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
           MockInsightService.assess(simpleFraudRiskRequest)
           MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
           MockCurrentDateTime.getDateTime()
