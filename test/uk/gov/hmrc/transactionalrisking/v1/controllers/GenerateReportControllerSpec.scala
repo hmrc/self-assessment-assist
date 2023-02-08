@@ -38,7 +38,6 @@ import scala.concurrent.Future
 
 class GenerateReportControllerSpec
   extends ControllerBaseSpec
-    with MockIntegrationFrameworkService
     with MockEnrolmentsAuthService
     with MockLookupConnector
     with MockNrsService
@@ -58,7 +57,6 @@ class GenerateReportControllerSpec
     class TestController extends GenerateReportController(
       cc = cc,
       requestParser = mockGenerateReportRequestParser,
-      integrationFrameworkService = mockIntegrationFrameworkService,
       authService = mockEnrolmentsAuthService,
       lookupConnector = mockLookupConnector,
       nonRepudiationService = mockNrsService,
@@ -79,7 +77,6 @@ class GenerateReportControllerSpec
         MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
         MockCurrentDateTime.getDateTime()
@@ -101,7 +98,6 @@ class GenerateReportControllerSpec
         MockProvideRandomCorrelationId.IdGenerator
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
         MockCurrentDateTime.getDateTime()
@@ -233,7 +229,6 @@ class GenerateReportControllerSpec
 
           MockEnrolmentsAuthService.authoriseUser()
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
           MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assessFail(simpleFraudRiskRequest, mtdError)
           MockCurrentDateTime.getDateTime()
@@ -264,7 +259,6 @@ class GenerateReportControllerSpec
 
           MockEnrolmentsAuthService.authoriseUser()
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
           MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assess(simpleFraudRiskRequest)
           MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, mtdError)
@@ -296,7 +290,6 @@ class GenerateReportControllerSpec
 
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-        MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,assessmentReportWrapper)
         MockCurrentDateTime.getDateTime()

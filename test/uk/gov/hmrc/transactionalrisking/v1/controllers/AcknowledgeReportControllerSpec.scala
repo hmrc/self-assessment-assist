@@ -249,7 +249,7 @@ class AcknowledgeReportControllerSpec
       val errorInErrorOut =
         Seq(
           (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (ForbiddenDownstreamError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
+          (ForbiddenDownstreamError, FORBIDDEN, ForbiddenDownstreamError.toJson),
           (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
           (MatchingResourcesNotFoundError, SERVICE_UNAVAILABLE, ServiceUnavailableError.toJson),
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson)

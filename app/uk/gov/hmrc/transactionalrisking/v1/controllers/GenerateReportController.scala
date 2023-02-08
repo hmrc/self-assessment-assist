@@ -40,9 +40,8 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GenerateReportController @Inject()(
-                                          val cc: ControllerComponents, //TODO add request parser
+                                          val cc: ControllerComponents,
                                           requestParser: GenerateReportRequestParser,
-                                          val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
                                           val lookupConnector: MtdIdLookupConnector,
                                           nonRepudiationService: NrsService,

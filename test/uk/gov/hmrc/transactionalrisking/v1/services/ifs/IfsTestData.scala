@@ -20,11 +20,10 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.{ConfidenceLevel, User}
-import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.{IFRequest, Messages}
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{IdentityData, Metadata, NrsSubmission, SearchKeys}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{IdentityData, Metadata, SearchKeys}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsTestData.assessmentRequestForSelfAssessment
 
 import java.time.{Instant, LocalDate, OffsetDateTime}

@@ -42,7 +42,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
-    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+    def rdsAuthHeaders: Seq[(String, String)] = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForSubmit}", Json.toJson(request), headers = rdsAuthHeaders)
@@ -146,6 +146,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
             case 408 => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
             case 401 => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
             case 403 => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case 404 => Left(ErrorWrapper(correlationId, DownstreamError))
             case _ => Left(ErrorWrapper(correlationId, DownstreamError))
           }
         case ex@_ =>
