@@ -42,7 +42,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class GenerateReportController @Inject()(
                                           val cc: ControllerComponents,
                                           requestParser: GenerateReportRequestParser,
-                                          val integrationFrameworkService: IntegrationFrameworkService,
                                           val authService: EnrolmentsAuthService,
                                           val lookupConnector: MtdIdLookupConnector,
                                           nonRepudiationService: NrsService,
