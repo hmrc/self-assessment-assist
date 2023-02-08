@@ -32,7 +32,7 @@ import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsTestData.assessmentRe
 import uk.gov.hmrc.transactionalrisking.v1.mocks.requestParsers.MockGenerateReportRequestParser
 import uk.gov.hmrc.transactionalrisking.v1.models.request.GenerateReportRawData
 
-import java.time.{LocalDateTime, OffsetDateTime}
+import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -309,6 +309,32 @@ class GenerateReportControllerSpec
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
       }
+    }
+
+    "a request fails due to a failed IfsService.submit " should {
+
+      def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
+        s"return the expected error ${mtdError.code} when controller is set to return error from IfService.submit " in new Test {
+          MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
+          MockProvideRandomCorrelationId.IdGenerator
+          MockEnrolmentsAuthService.authoriseUser()
+          MockLookupConnector.mockMtdIdLookupConnector("1234567890")
+          MockIntegrationFrameworkService.getCalculationInfo(simpleCalculationId, simpleNino)
+          MockInsightService.assess(simpleFraudRiskRequest)
+          MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
+          MockCurrentDateTime.getDateTime()
+          MockIfsService.stubFailedSubmit(simpleAssessmentReport, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment, mtdError)
+
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+          status(result) shouldBe expectedStatus
+          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
+          contentType(result) shouldBe Some("application/json")
+          header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+        }
+      }
+
+      runTest(ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson)
     }
   }
   private val expectedReportPayload: NrsSubmission =
