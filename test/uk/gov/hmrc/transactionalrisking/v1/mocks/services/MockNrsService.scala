@@ -68,5 +68,10 @@ trait MockNrsService extends MockFactory {
         .expects(*, *, *).anyNumberOfTimes()
         .returns(Future.successful(Left(NrsFailure.Exception("GatewayTimeout"))))
     }
+
+    def submitNeverCalled() = {
+      (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *).never
+    }
   }
 }
