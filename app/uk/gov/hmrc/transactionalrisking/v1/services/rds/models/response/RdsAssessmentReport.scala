@@ -68,11 +68,12 @@ object RdsAssessmentReport {
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
         fields.keys.toSeq match {
-          case Seq("name", "value") if (specialKeys.contains(json("name").asInstanceOf[JsString].value)) =>
+          case Seq("name", "value") if specialKeys.contains(json("name").asInstanceOf[JsString].value) =>
               KeyValueWrapper.reads.reads(json)
           case _ =>
               MainOutputWrapper.reads.reads(json)
         }
+      case _ => throw new IllegalThreadStateException("Output malformed")
     }
 
     implicit val writes: Writes[Output] = {
@@ -134,6 +135,7 @@ object RdsAssessmentReport {
           case List("metadata") => MetadataWrapper.reads.reads(json)
           case List("data") => DataWrapper.reads.reads(json)
         }
+      case _ => throw new IllegalThreadStateException("Object part malformed")
     }
 
     implicit val writes: Writes[ObjectPart] = {

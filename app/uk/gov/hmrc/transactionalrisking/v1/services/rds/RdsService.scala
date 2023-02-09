@@ -168,7 +168,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   }
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
-                                           fraudRiskReport: FraudRiskReport, fraudRiskReportHeaders:Seq[(String, String)])(implicit correlationId: String,userRequest: UserRequest[_]): ServiceOutcome[RdsRequest]
+                                           fraudRiskReport: FraudRiskReport,
+                                           fraudRiskReportHeaders:Seq[(String, String)])
+                                          (implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
     logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
     Right(ResponseWrapper(correlationId, RdsRequest(
@@ -208,7 +210,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   def acknowledge(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
                                                      ec: ExecutionContext,
                                                      //logContext: EndpointLogContext,
-                                                     userRequest: UserRequest[_],
                                                      correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[acknowledge]acknowledge")
     if (appConfig.rdsAuthRequiredForThisEnv) {
