@@ -20,7 +20,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment}
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, ErrorWrapper, MtdError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsResponse
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.{IfsOutcome, IfsService}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
