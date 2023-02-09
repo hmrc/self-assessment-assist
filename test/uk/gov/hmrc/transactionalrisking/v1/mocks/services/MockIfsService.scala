@@ -53,6 +53,18 @@ trait MockIfsService extends MockFactory {
         .expects(*, *, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(IfsResponse())))
     }
+
+    def submitGenerateReportNeverCalled() ={
+      (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_: HeaderCarrier, _: String))
+        .expects(*, *, *, *, *, *)
+        .never()
+    }
+
+    def submitAcknowledgmentNeverCalled() ={
+      (mockIfsService.submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
+        .expects(*, *, *, *, *)
+        .never()
+    }
   }
 
 }

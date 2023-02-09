@@ -262,6 +262,10 @@ class GenerateReportControllerSpec
           MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
           MockInsightService.assess(simpleFraudRiskRequest)
           MockRdsService.submitFail(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, mtdError)
+
+          MockIfsService.submitGenerateReportNeverCalled()
+          MockNrsService.submitNeverCalled()
+
           MockCurrentDateTime.getDateTime()
           MockProvideRandomCorrelationId.IdGenerator
 
