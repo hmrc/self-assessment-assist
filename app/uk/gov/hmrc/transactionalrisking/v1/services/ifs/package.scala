@@ -17,7 +17,7 @@
 package uk.gov.hmrc.transactionalrisking.v1.services
 
 import uk.gov.hmrc.transactionalrisking.v1.models.errors.ErrorWrapper
-import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.{IfsFailure, IfsResponse}
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsResponse
 
 package object ifs {
   type IfsOutcome = Either[ErrorWrapper, IfsResponse]

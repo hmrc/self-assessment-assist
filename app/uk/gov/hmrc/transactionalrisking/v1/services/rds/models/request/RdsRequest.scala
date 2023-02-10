@@ -38,6 +38,7 @@ object RdsRequest {
           case Some(JsArray(_)) => InputWithObject.reads.reads(json)
           case Some(JsBoolean(_)) => InputWithBoolean.reads.reads(json)
         }
+      case _ => throw new IllegalStateException("Input malformed")
     }
 
     implicit val writes: Writes[Input] = {
@@ -114,6 +115,7 @@ object RdsRequest {
           case List("metadata") => MetadataWrapper.reads.reads(json)
           case List("data") => DataWrapper.reads.reads(json)
         }
+      case _ => throw new IllegalStateException("Object part malformed")
     }
 
     implicit val writes: Writes[ObjectPart] = {

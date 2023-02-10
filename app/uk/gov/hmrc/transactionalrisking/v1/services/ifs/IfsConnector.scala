@@ -20,13 +20,15 @@ import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, ServiceUnavailableError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.IFRequest
-import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.{IfsFailure, IfsResponse}
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsResponse
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 @Singleton
 class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (implicit val ec: ExecutionContext) extends Logging {
