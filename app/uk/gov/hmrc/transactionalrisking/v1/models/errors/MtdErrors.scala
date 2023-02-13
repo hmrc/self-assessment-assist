@@ -86,7 +86,7 @@ object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED"
 object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client or agent is not authorised")
 object ForbiddenDownstreamError extends MtdError(
   code = "INTERNAL_SERVER_ERROR",
-  message = "An internal server error occurred",
+  message = "An internal server error occurred, forbidden",
   customJson = Some(
     Json.parse(
       """
@@ -108,3 +108,4 @@ object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FO
 object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished")
 
 object ServerError extends MtdError("SERVER_ERROR", "Server error")
+object NoAssessmentFeedbackFromRDS extends MtdError("204", "No Content")

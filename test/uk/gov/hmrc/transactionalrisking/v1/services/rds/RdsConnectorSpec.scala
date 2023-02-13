@@ -31,10 +31,11 @@ import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.transactionalrisking.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError,
-  MatchingResourcesNotFoundError, MtdError, ServiceUnavailableError}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, MatchingResourcesNotFoundError, MtdError, NoAssessmentFeedbackFromRDS, ServiceUnavailableError}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import RdsTestData.rdsRequest
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.transactionalrisking.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
@@ -76,13 +77,13 @@ class RdsConnectorSpec extends ConnectorSpec
   class Test {
     val submitBaseUrl: String = s"http://localhost:$port/submit"
     val acknowledgeUrl: String = s"http://localhost:$port/rds/assessments/self-assessment-assist/acknowledge"
-    val rdsAuthCredentials = RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
+    val rdsAuthCredentials: RdsAuthCredentials = RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
 
     MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
     MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
     val connector = new RdsConnector(httpClient, mockAppConfig)
 
-    def stubRDSGenerateReportResponse(body: Option[String] = None, status: Int) = {
+    def stubRDSGenerateReportResponse(body: Option[String] = None, status: Int): StubMapping = {
       body match {
         case Some(data) =>
           wireMockServer.stubFor(
@@ -102,7 +103,7 @@ class RdsConnectorSpec extends ConnectorSpec
       }
     }
 
-    def stubRDSAcknowledgeReportResponse(body: Option[String] = None, status: Int) = {
+    def stubRDSAcknowledgeReportResponse(body: Option[String] = None, status: Int): StubMapping = {
       body match {
         case Some(data) =>
           wireMockServer.stubFor(
@@ -146,17 +147,16 @@ class RdsConnectorSpec extends ConnectorSpec
       }
 
       "return the empty feedback, if RDS returns http status 201 and no feedback with responsecode 204" in new Test{
-        val expectedReportJson = loadSubmitResponseTemplate(expectedCalculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId,"204")
-        val rdsReportJson = loadSubmitResponseTemplate(calculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId,"204")
+        val rdsReportJson: JsValue = loadSubmitResponseTemplate(calculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId,"204")
         stubRDSGenerateReportResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Right(ResponseWrapper(correlationId, expectedReportJson.as[RdsAssessmentReport]))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, NoAssessmentFeedbackFromRDS))
       }
 
 
       "return MatchingResourcesNotFoundError, if RDS returns http status 201 and no calculationId found with responsecode 404" in new Test{
-        val rdsReportJson = loadSubmitResponseTemplate(noCalculationFound.toString, simpleReportId.toString, simpleRDSCorrelationId,"404")
+        val rdsReportJson: JsValue = loadSubmitResponseTemplate(noCalculationFound.toString, simpleReportId.toString, simpleRDSCorrelationId,"404")
         stubRDSGenerateReportResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
@@ -194,7 +194,7 @@ class RdsConnectorSpec extends ConnectorSpec
 
     "acknowledge method is called" must {
       "return the response if successful" in new Test {
-        val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
+        val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
 
         await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(correlationId, rdsAssessmentAckJson.as[RdsAssessmentReport]))
@@ -211,7 +211,7 @@ class RdsConnectorSpec extends ConnectorSpec
       }
 
       "return MatchingResourcesNotFoundError, if RDS returns http status 201 and no calculationId found with responsecode 401" in new Test{
-        val rdsAssessmentAckJson = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="401")
+        val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="401")
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials)))
@@ -243,7 +243,7 @@ class RdsConnectorSpec extends ConnectorSpec
         stubRDSAcknowledgeReportResponse(status=REQUEST_TIMEOUT)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
     }
   }

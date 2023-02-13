@@ -16,16 +16,19 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.services.ifs
 
-import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, SERVICE_UNAVAILABLE}
+import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.Logging
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.IFRequest
-import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.{IfsFailure, IfsResponse}
+import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsResponse
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 @Singleton
 class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (implicit val ec: ExecutionContext) extends Logging {
@@ -36,28 +39,32 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
   def submit(ifRequest: IFRequest)(
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
 
+    logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
       httpClient
         .POST[IFRequest, HttpResponse](s"$url", ifRequest, Seq("X-API-Key" -> apiKey))
         .map { response =>
           response.status match {
-            case NO_CONTENT => Right(IfsResponse())
+            case NO_CONTENT => {
+              logger.info(s"$correlationId::[IfsConnector:submit]  ${ifRequest.eventName} interaction stored successfully")
+              Right(IfsResponse())
+            }
             case unexpectedStatus@_ =>
               logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
-              Left(IfsFailure.ErrorResponse(unexpectedStatus))
+              Left(ErrorWrapper(correlationId, DownstreamError))
           }
         }
         .recover {
           case _: uk.gov.hmrc.http.BadRequestException => {
-              logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : BAD request")
-              Left(IfsFailure.ErrorResponse(BAD_REQUEST))
+            logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : BAD request")
+            Left(ErrorWrapper(correlationId, DownstreamError))
           }
           case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE => {
             logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request")
-            Left(IfsFailure.ErrorResponse(SERVICE_UNAVAILABLE))
+            Left(ErrorWrapper(correlationId, DownstreamError))
           }
           case NonFatal(e) => {
             logger.error(s"$correlationId::[submit] RequestId:${hc.requestId}\nIFS submission failed with exception", e)
-            Left(IfsFailure.Exception(e.getMessage))
+            Left(ErrorWrapper(correlationId, DownstreamError))
           }
         }
   }

@@ -52,7 +52,7 @@ class Module extends AbstractModule {
                                ): HttpClient =
     new DefaultHttpClient(config, auditConnector, wsClient, actorSystem) with WSProxy {
       override def wsProxyServer: Option[WSProxyServer] =
-        WSProxyConfiguration(s"proxy", config)
+        WSProxyConfiguration.buildWsProxyServer(config)
     }
 
   @Provides
@@ -67,6 +67,6 @@ class Module extends AbstractModule {
       override val hooks: Seq[HttpHook] = NoneRequired
 
       override def wsProxyServer: Option[WSProxyServer] =
-        WSProxyConfiguration(s"proxy", config)
+        WSProxyConfiguration.buildWsProxyServer(config)
     }
 }

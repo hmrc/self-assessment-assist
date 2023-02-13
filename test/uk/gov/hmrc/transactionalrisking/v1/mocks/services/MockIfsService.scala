@@ -19,9 +19,12 @@ package uk.gov.hmrc.transactionalrisking.v1.mocks.services
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.v1.models.auth.UserDetails
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.response.IfsResponse
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.{IfsOutcome, IfsService}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
 import java.time.LocalDateTime
@@ -33,11 +36,35 @@ trait MockIfsService extends MockFactory {
 
   object MockIfsService {
 
-    def stubSubmit(assesmentRerport: AssessmentReport, localDateTime: LocalDateTime, assessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment): CallHandler[Future[IfsOutcome]] = {
-      (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_:HeaderCarrier,_: String))
+    def stubGenerateReportSubmit(assesmentRerport: AssessmentReport, localDateTime: LocalDateTime, assessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment): CallHandler[Future[IfsOutcome]] = {
+      (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_: HeaderCarrier, _: String))
         .expects(assesmentRerport, localDateTime, *, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(IfsResponse())))
     }
 
+    def stubFailedSubmit(assesmentRerport: AssessmentReport, localDateTime: LocalDateTime, assessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment, mtdError: MtdError): CallHandler[Future[IfsOutcome]] = {
+      (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_: HeaderCarrier, _: String))
+        .expects(assesmentRerport, localDateTime, *, *, *, *).anyNumberOfTimes()
+        .returns(Future.successful(Left(ErrorWrapper(assesmentRerport.rdsCorrelationId, mtdError))))
+    }
+
+    def stubAcknowledgeSubmit() = {
+      (mockIfsService.submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
+        .expects(*, *, *, *, *).anyNumberOfTimes()
+        .returns(Future.successful(Right(IfsResponse())))
+    }
+
+    def submitGenerateReportNeverCalled() ={
+      (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_: HeaderCarrier, _: String))
+        .expects(*, *, *, *, *, *)
+        .never()
+    }
+
+    def submitAcknowledgmentNeverCalled() ={
+      (mockIfsService.submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
+        .expects(*, *, *, *, *)
+        .never()
+    }
   }
+
 }

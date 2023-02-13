@@ -59,7 +59,7 @@ class NrsService @Inject()(connector: NrsConnector,
               userSubmissionTimestamp = formattedDate,
               identityData = request.userDetails.identityData,
               userAuthToken = token,
-              headerData = Json.toJson(request.headers.toMap.map { h => h._1 -> h._2.head }), //TODO remove auth header
+              headerData = Json.toJson(request.headers.toMap.filterNot{case (k,v) => k.equals("authorization")}.map { h => h._1 -> h._2.head }), //TODO remove auth header
               searchKeys =
                 SearchKeys(
                   reportId = reportId
