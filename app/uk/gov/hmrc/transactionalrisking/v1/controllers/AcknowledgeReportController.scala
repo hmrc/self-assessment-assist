@@ -27,7 +27,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawDa
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.IfsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, AssistReportAcknowledged}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, AssistReportAcknowledged, NotableEventType}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 
@@ -75,10 +75,9 @@ class AcknowledgeReportController @Inject()(
                       Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
                     },
                     success => {
-                      logger.debug(s"$correlationId::[submit] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
-                      //Submit asynchronously to NRS
+                      logger.debug(s"$correlationId::[acknowledgeReport] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
                       nonRepudiationService.submit(success)
-                      logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
+                      logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
                       Future.successful(NoContent)
                     }
                   )

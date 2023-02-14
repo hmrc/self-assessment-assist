@@ -73,9 +73,6 @@ class GenerateReportController @Inject()(
         errorWrapper =>
           errorHandler(errorWrapper, correlationId),
         reportWrapper => {
-            //TODO for txr015, calculationTimestamp can be retrieved from reportWrapper.responseData.calculationTimestamp
-            //TODO for txr015, need to make sure if there are any format issues with timestamp then need to be fixed in txr015
-
           nonRepudiationService.buildNrsSubmission(reportWrapper.responseData.report.stringify, reportWrapper.responseData.report.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
             .fold(
               error => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError))),
