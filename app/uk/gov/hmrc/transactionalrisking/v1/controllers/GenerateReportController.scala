@@ -77,7 +77,7 @@ class GenerateReportController @Inject()(
             .fold(
               error => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError))),
               success => {
-                logger.info(s"$correlationId::[submit] Request initiated to store ${AssistReportGenerated.value} content to NRS")
+                logger.info(s"$correlationId::[generateReport] Request initiated to store ${AssistReportGenerated.value} content to NRS")
                 nonRepudiationService.submit(success)
                 logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
                 Future.successful(Ok(Json.toJson[AssessmentReport](reportWrapper.responseData.report)))

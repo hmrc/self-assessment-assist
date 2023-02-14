@@ -27,7 +27,7 @@ import uk.gov.hmrc.transactionalrisking.v1.models.request.AcknowledgeReportRawDa
 import uk.gov.hmrc.transactionalrisking.v1.services.EnrolmentsAuthService
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.IfsService
 import uk.gov.hmrc.transactionalrisking.v1.services.nrs.NrsService
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, AssistReportAcknowledged, NotableEventType}
+import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.{AcknowledgeReportId, AssistReportAcknowledged}
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.RdsService
 import uk.gov.hmrc.transactionalrisking.v1.services.rds.models.response.RdsAssessmentReport
 

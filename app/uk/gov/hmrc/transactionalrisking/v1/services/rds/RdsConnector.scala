@@ -91,7 +91,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationId::[RdsConnector:submit] UpstreamErrorResponse $ex")
           ex.statusCode match {
-            case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+            case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, DownstreamError))
             case UNAUTHORIZED => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
             case FORBIDDEN => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
             case _ => Left(ErrorWrapper(correlationId, DownstreamError))
