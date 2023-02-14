@@ -85,13 +85,13 @@ object BearerTokenExpiredError extends MtdError("INVALID_CREDENTIALS", "Invalid 
 object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.")
 object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client or agent is not authorised")
 object ForbiddenDownstreamError extends MtdError(
-  code = "INTERNAL_SERVER_ERROR",
+  code = "Forbidden",
   message = "An internal server error occurred, forbidden",
   customJson = Some(
     Json.parse(
       """
         |{
-        |  "code": "INTERNAL_SERVER_ERROR",
+        |  "code": "Forbidden",
         |  "message": "An internal server error occurred, forbidden"
         |}
       """.stripMargin

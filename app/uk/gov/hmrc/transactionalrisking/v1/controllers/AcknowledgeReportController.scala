@@ -67,8 +67,6 @@ class AcknowledgeReportController @Inject()(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
             logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge status ${assessmentReport.responseCode}")
-            assessmentReport.responseCode match {
-              case Some(CREATED) | Some(ACCEPTED)=>
                 nonRepudiationService.buildNrsSubmission(AcknowledgeReportId(reportId).stringify, reportId,
                   submissionTimestamp, request, AssistReportAcknowledged).
                   fold(
@@ -84,18 +82,8 @@ class AcknowledgeReportController @Inject()(
                       Future.successful(NoContent)
                     }
                   )
-              case Some(NO_CONTENT) => Future.successful(NoContent)
-              case Some(BAD_REQUEST) => Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
-              case Some(UNAUTHORIZED) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $UNAUTHORIZED ${assessmentReport.responseMessage}")
-                Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
-              case _ =>
-                logger.error(s"$correlationId::[acknowledgeReport] unrecognised value for response code")
-                Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
-            }
           }
         ).flatten.map(_.withApiHeaders(correlationId))
-
     }
   }
 

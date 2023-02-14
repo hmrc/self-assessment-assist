@@ -21,7 +21,6 @@ import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.models.request.IFRequest
 import uk.gov.hmrc.transactionalrisking.v1.services.ifs.{IfsConnector, IfsOutcome}
-import uk.gov.hmrc.transactionalrisking.v1.services.nrs.models.request.NrsSubmission
 
 import scala.concurrent.Future
 
