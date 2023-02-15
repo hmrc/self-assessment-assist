@@ -169,7 +169,7 @@ class NrsConnectorSpec extends ConnectorSpec
                   |}""".stripMargin)
               .withStatus(ACCEPTED)))
 
-        await(connector.submit(nrsSubmission)) shouldBe Left(Exception("JsResultException(errors:List((/nrSubmissionId,List(JsonValidationError(List(error.path.missing),WrappedArray())))))"))
+        await(connector.submit(nrsSubmission)) shouldBe Left(Exception("JsResultException(errors:List((/nrSubmissionId,List(JsonValidationError(List(error.path.missing),ArraySeq())))))"))
       }
     }
   }

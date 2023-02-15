@@ -116,7 +116,6 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
 
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
 
-    logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] request was  ${request}")
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>

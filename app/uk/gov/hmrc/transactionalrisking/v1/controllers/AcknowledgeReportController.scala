@@ -44,7 +44,7 @@ class AcknowledgeReportController @Inject()(
                                              currentDateTime: CurrentDateTime,
                                              idGenerator: IdGenerator,
                                              ifsService: IfsService
-                                           )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
+                                           )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with ApiBaseController with BaseController with Logging {
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
     implicit val correlationId: String = idGenerator.getUid
@@ -59,7 +59,9 @@ class AcknowledgeReportController @Inject()(
           parsedRequest <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
           serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
           _ <- EitherT(ifsService.submitAcknowledgementMessage(parsedRequest, serviceResponse.responseData, request.userDetails))
-        } yield serviceResponse.responseData
+        } yield {
+          serviceResponse.responseData
+        }
 
 
         processRequest.fold(

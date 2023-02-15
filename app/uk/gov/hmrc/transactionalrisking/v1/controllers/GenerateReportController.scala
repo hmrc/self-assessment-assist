@@ -49,7 +49,7 @@ class GenerateReportController @Inject()(
                                           ifService: IfsService,
                                           currentDateTime: CurrentDateTime,
                                           idGenerator: IdGenerator
-                                        )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
+                                        )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with ApiBaseController with BaseController with Logging {
 
   def generateReportInternal(nino: String, taxYear: String, calculationId:String): Action[AnyContent] = {
 
@@ -64,8 +64,9 @@ class GenerateReportController @Inject()(
         fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head })))
         rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
         _ <- EitherT(ifService.submitGenerateReportMessage(rdsAssessmentReportWrapper.responseData.report, rdsAssessmentReportWrapper.responseData.calculationTimestamp, assessmentRequestForSelfAssessment, rdsAssessmentReportWrapper.responseData.rdsAssessmentReport))
-      } yield rdsAssessmentReportWrapper
-
+      } yield {
+        rdsAssessmentReportWrapper
+      }
 
       responseData.fold(
         errorWrapper =>
