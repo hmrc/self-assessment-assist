@@ -25,6 +25,10 @@ Run unit tests: `sbt test`
 
 Run integration tests: `sbt it:test`
 
+## QA Test Instructions
+The QA test instruction documentation for local, QA and dev journeys (individual and agent) can be seen [here](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=TR&title=QA).
+
+
 ## To view the OAS documention
 To view documentation locally, ensure the Self Assessment Assist API is running.
 
