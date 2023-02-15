@@ -59,9 +59,8 @@ class AcknowledgeReportController @Inject()(
           parsedRequest <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
           serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
           _ <- EitherT(ifsService.submitAcknowledgementMessage(parsedRequest, serviceResponse.responseData, request.userDetails))
-        } yield  {
-          serviceResponse.responseData
-        }
+        } yield serviceResponse.responseData
+
 
         processRequest.fold(
           errorWrapper => errorHandler(errorWrapper, correlationId),
