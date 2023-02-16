@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class UserRequest[A](userDetails: UserDetails, request: Request[A]) extends WrappedRequest[A](request)
 
-abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with BaseController with Logging {
+abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) with ApiBaseController with BaseController with Logging {
 
   val authService: EnrolmentsAuthService
   val lookupConnector: MtdIdLookupConnector

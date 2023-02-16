@@ -29,7 +29,7 @@ trait MockIdGenerator extends MockFactory {
 
     def IdGenerator: CallHandler[String] = {
       (mockIdGenerator.getUid _)
-        .expects
+        .expects()
         .returns(correlationId)
     }
   }

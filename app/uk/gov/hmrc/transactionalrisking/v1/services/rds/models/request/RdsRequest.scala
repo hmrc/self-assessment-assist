@@ -29,6 +29,7 @@ object RdsRequest {
   }
 
   object Input {
+    @annotation.nowarn
     implicit val reads: Reads[Input] = {
       case json@JsObject(values) =>
         values.get("value") match {
@@ -41,6 +42,7 @@ object RdsRequest {
       case _ => throw new IllegalStateException("Input malformed")
     }
 
+    @annotation.nowarn
     implicit val writes: Writes[Input] = {
       case i@InputWithString(_, _) => InputWithString.writes.writes(i)
       case i@InputWithInt(_, _) => InputWithInt.writes.writes(i)
@@ -109,6 +111,7 @@ object RdsRequest {
 
   object ObjectPart {
 
+    @annotation.nowarn
     implicit val reads: Reads[ObjectPart] = {
       case json@JsObject(values) =>
         values.keys.toList match {
@@ -118,6 +121,7 @@ object RdsRequest {
       case _ => throw new IllegalStateException("Object part malformed")
     }
 
+    @annotation.nowarn
     implicit val writes: Writes[ObjectPart] = {
       case o@MetadataWrapper(_) => MetadataWrapper.writes.writes(o)
       case o@DataWrapper(_) => DataWrapper.writes.writes(o)

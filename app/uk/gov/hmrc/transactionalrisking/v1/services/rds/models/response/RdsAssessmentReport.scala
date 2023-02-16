@@ -76,6 +76,7 @@ object RdsAssessmentReport {
       case _ => throw new IllegalThreadStateException("Output malformed")
     }
 
+    @annotation.nowarn
     implicit val writes: Writes[Output] = {
       case o@MainOutputWrapper(_, _) => MainOutputWrapper.writes.writes(o)
       case o@IdentifiersWrapper(_) => IdentifiersWrapper.writes.writes(o)
@@ -129,6 +130,7 @@ object RdsAssessmentReport {
 
   object ObjectPart {
 
+    @annotation.nowarn
     implicit val reads: Reads[ObjectPart] = {
       case json@JsObject(values) =>
         values.keys.toList match {
@@ -138,6 +140,7 @@ object RdsAssessmentReport {
       case _ => throw new IllegalThreadStateException("Object part malformed")
     }
 
+    @annotation.nowarn
     implicit val writes: Writes[ObjectPart] = {
       case o@MetadataWrapper(_) => MetadataWrapper.writes.writes(o)
       case o@DataWrapper(_) => DataWrapper.writes.writes(o)
