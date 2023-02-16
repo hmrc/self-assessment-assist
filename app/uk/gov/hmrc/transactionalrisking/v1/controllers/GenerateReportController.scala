@@ -19,6 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
+import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
@@ -48,7 +49,8 @@ class GenerateReportController @Inject()(
                                           rdsService: RdsService,
                                           ifService: IfsService,
                                           currentDateTime: CurrentDateTime,
-                                          idGenerator: IdGenerator
+                                          idGenerator: IdGenerator,
+                                          config: AppConfig
                                         )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with ApiBaseController with BaseController with Logging {
 
   def generateReportInternal(nino: String, taxYear: String, calculationId:String): Action[AnyContent] = {
@@ -56,7 +58,9 @@ class GenerateReportController @Inject()(
     implicit val correlationId: String = idGenerator.getUid
     logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
 
-    authorisedAction(nino, nrsRequired = true).async { implicit request =>
+    val retrievalRequiredSwitch = config.authRetrievalRequired
+
+    authorisedAction(nino, retrievalRequired = retrievalRequiredSwitch).async { implicit request =>
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
       val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] = for {

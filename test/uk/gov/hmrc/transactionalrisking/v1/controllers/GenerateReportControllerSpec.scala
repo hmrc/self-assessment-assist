@@ -17,8 +17,10 @@
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
+import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
@@ -46,10 +48,13 @@ class GenerateReportControllerSpec
     with MockCurrentDateTime
     with MockIdGenerator
     with MockGenerateReportRequestParser
-    with MockIfsService {
+    with MockIfsService
+    with GuiceOneAppPerSuite {
 
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
+
+  private val appConfig = app.injector.instanceOf[AppConfig]
   trait Test {
 
     val controller: TestController = new TestController()
@@ -64,7 +69,8 @@ class GenerateReportControllerSpec
       rdsService = mockRdsService,
       currentDateTime = mockCurrentDateTime,
       idGenerator = mockIdGenerator,
-      ifService = mockIfsService
+      ifService = mockIfsService,
+      config = appConfig
     )
 
   }

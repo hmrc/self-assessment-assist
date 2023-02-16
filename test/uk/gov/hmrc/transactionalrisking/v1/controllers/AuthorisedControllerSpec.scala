@@ -35,7 +35,6 @@ import scala.concurrent.{Await, Future}
 
 
 class AuthorisedControllerSpec extends ControllerBaseSpec {
-
   trait Test extends MockEnrolmentsAuthService with MockLookupConnector {
 
     val hc: HeaderCarrier = HeaderCarrier()
@@ -45,9 +44,12 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       override val authService: EnrolmentsAuthService = mockEnrolmentsAuthService
       override val lookupConnector: MtdIdLookupConnector = mockLookupConnector
 
-      def authorisedActionAysncSUT(nino: String, nrsRequired: Boolean = true): Action[AnyContent] = authorisedAction(nino, nrsRequired)(correlationId).async {
-        Future.successful(Ok(Json.obj()))
+      def authorisedActionAysncSUT(nino: String, retrievalRequired: Boolean): Action[AnyContent] = {
+        authorisedAction(nino, retrievalRequired)(correlationId).async {
+          Future.successful(Ok(Json.obj()))
+        }
       }
+
     }
   }
 
@@ -62,7 +64,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       "return a 200 success response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-        private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
+        private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, retrievalRequired = true)(fakePostRequest)
         val result: Result = Await.result(resultFuture, defaultTimeout)
         result.header.status shouldBe OK
       }
@@ -74,7 +76,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       "return a 400 error response" in new Test {
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, nrsRequired = false)(fakePostRequest)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect, retrievalRequired = false)(fakePostRequest)
         val result: Result = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe BAD_REQUEST
@@ -92,7 +94,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "the mtd id lookup service returns an unauthorised error" should {
       "return a 401 error response" in new Test {
         MockLookupConnector.mockMtdIdLookupConnectorError(InvalidBearerTokenError)
-        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, nrsRequired = false)(fakePostRequest)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, retrievalRequired = false)(fakePostRequest)
         val result: Result = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe UNAUTHORIZED
@@ -111,7 +113,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
     "the mtd id lookup service returns an NinoFormat error" should {
       "return a 403 error response" in new Test {
         MockLookupConnector.mockMtdIdLookupConnectorError(NinoFormatError)
-        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, nrsRequired = false)(fakePostRequest)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, retrievalRequired = false)(fakePostRequest)
         val result: Result = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe FORBIDDEN
@@ -144,7 +146,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
           MockEnrolmentsAuthService.authorised(predicate("1234567890"))
             .returns(Future.successful(Left(mtdError)))
 
-          private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
+          private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect, retrievalRequired = true)(fakePostRequest)
           status(actualResult) shouldBe expectedStatus
           contentAsJson(actualResult) shouldBe Json.toJson(Seq(expectedBody))
         }

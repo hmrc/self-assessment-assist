@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.transactionalrisking.v1.controllers
 
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.transactionalrisking.utils.DateUtils
 import uk.gov.hmrc.transactionalrisking.v1.TestData.CommonTestData._
@@ -45,7 +47,8 @@ class AcknowledgeReportControllerSpec
     with MockAcknowledgeRequestParser
     with MockCurrentDateTime
     with MockIdGenerator
-    with MockIfsService {
+    with MockIfsService
+    with GuiceOneAppPerSuite {
 
 
     trait Test {
@@ -54,6 +57,8 @@ class AcknowledgeReportControllerSpec
     val controller: TestController = new TestController()
     private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
     private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
+
+    private lazy val appConfig = app.injector.instanceOf[AppConfig]
 
     class TestController extends AcknowledgeReportController(
       cc = cc,
@@ -64,7 +69,8 @@ class AcknowledgeReportControllerSpec
       rdsService = mockRdsService,
       currentDateTime = mockCurrentDateTime,
       idGenerator = mockIdGenerator,
-      ifsService = mockIfsService
+      ifsService = mockIfsService,
+      config = appConfig
     )
 
      val dummyReportPayload: NrsSubmission =
