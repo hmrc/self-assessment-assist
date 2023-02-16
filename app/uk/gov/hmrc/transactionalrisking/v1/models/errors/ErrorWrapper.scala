@@ -32,6 +32,7 @@ case class ErrorWrapper( correlationId: String, error: MtdError, errors: Option[
 
 object ErrorWrapper {
 
+  @annotation.nowarn
   val allErrors: Seq[MtdError] => Seq[JsValue] = {
     case mtdError :: Nil => mtdErrors(mtdError)
     case mtdError :: rest => mtdErrors(mtdError) ++ allErrors(rest)

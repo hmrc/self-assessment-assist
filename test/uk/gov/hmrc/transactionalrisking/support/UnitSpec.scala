@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.transactionalrisking.support
-//import uk.gov.hmrc.transactionalrisking.config.FeatureSwitch
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import org.scalamock.scalatest.MockFactory
@@ -24,6 +23,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
+import scala.language.postfixOps
 
 trait UnitSpec extends AnyWordSpecLike
   with MockFactory

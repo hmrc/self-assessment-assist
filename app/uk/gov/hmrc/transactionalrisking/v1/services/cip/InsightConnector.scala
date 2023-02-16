@@ -28,6 +28,8 @@ import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.{FraudRiskReport,
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+
 @Singleton
 class InsightConnector @Inject()(val httpClient: HttpClient,
                                  appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {

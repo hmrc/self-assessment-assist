@@ -71,7 +71,7 @@ trait MockNrsService extends MockFactory {
 
     def submitNeverCalled() = {
       (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
-        .expects(*, *, *).never
+        .expects(*, *, *).never()
     }
   }
 }

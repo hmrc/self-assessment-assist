@@ -46,7 +46,7 @@ class AcknowledgeReportController @Inject()(
                                              idGenerator: IdGenerator,
                                              ifsService: IfsService,
                                              config: AppConfig
-                                           )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
+                                           )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with ApiBaseController with BaseController with Logging {
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
     implicit val correlationId: String = idGenerator.getUid
@@ -63,16 +63,15 @@ class AcknowledgeReportController @Inject()(
           parsedRequest <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
           serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
           _ <- EitherT(ifsService.submitAcknowledgementMessage(parsedRequest, serviceResponse.responseData, request.userDetails))
-        } yield  {
+        } yield {
           serviceResponse.responseData
         }
+
 
         processRequest.fold(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
             logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge status ${assessmentReport.responseCode}")
-            assessmentReport.responseCode match {
-              case Some(CREATED) | Some(ACCEPTED)=>
                 nonRepudiationService.buildNrsSubmission(AcknowledgeReportId(reportId).stringify, reportId,
                   submissionTimestamp, request, AssistReportAcknowledged).
                   fold(
@@ -81,25 +80,14 @@ class AcknowledgeReportController @Inject()(
                       Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
                     },
                     success => {
-                      logger.debug(s"$correlationId::[submit] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
-                      //Submit asynchronously to NRS
+                      logger.debug(s"$correlationId::[acknowledgeReport] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
                       nonRepudiationService.submit(success)
-                      logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
+                      logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
                       Future.successful(NoContent)
                     }
                   )
-              case Some(NO_CONTENT) => Future.successful(NoContent)
-              case Some(BAD_REQUEST) => Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
-              case Some(UNAUTHORIZED) =>
-                logger.warn(s"$correlationId::[acknowledgeReport] rds ack response is $UNAUTHORIZED ${assessmentReport.responseMessage}")
-                Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
-              case _ =>
-                logger.error(s"$correlationId::[acknowledgeReport] unrecognised value for response code")
-                Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
-            }
           }
         ).flatten.map(_.withApiHeaders(correlationId))
-
     }
   }
 

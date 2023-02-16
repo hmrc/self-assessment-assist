@@ -23,7 +23,7 @@ import uk.gov.hmrc.transactionalrisking.v1.controllers.UserRequest
 import uk.gov.hmrc.transactionalrisking.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.transactionalrisking.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, AssessmentRequestForSelfAssessment, Link, Origin, PreferredLanguage, Risk}
-import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.transactionalrisking.v1.models.errors.{DownstreamError, ErrorWrapper, NoAssessmentFeedbackFromRDS}
 import uk.gov.hmrc.transactionalrisking.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.transactionalrisking.v1.services.ServiceOutcome
 import uk.gov.hmrc.transactionalrisking.v1.services.cip.models.FraudRiskReport
@@ -93,8 +93,12 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                         Left(errorWrapper)
                     }
               case Left(errorWrapper) =>
-                logger.error(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
-                Left(errorWrapper)
+                errorWrapper.error match {
+                  case NoAssessmentFeedbackFromRDS => logger.info(s"$correlationId::[RdsService][submit] No feedback available in RDS")
+                    Left(errorWrapper)
+                  case _ => logger.error(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
+                    Left(errorWrapper)
+                }
           }
         case Left(errorWrapper) =>
           logger.error(s"$correlationId::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request ${errorWrapper.error}")
@@ -168,7 +172,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   }
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
-                                           fraudRiskReport: FraudRiskReport, fraudRiskReportHeaders:Seq[(String, String)])(implicit correlationId: String,userRequest: UserRequest[_]): ServiceOutcome[RdsRequest]
+                                           fraudRiskReport: FraudRiskReport,
+                                           fraudRiskReportHeaders:Seq[(String, String)])
+                                          (implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
     logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
     Right(ResponseWrapper(correlationId, RdsRequest(
@@ -208,7 +214,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   def acknowledge(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
                                                      ec: ExecutionContext,
                                                      //logContext: EndpointLogContext,
-                                                     userRequest: UserRequest[_],
                                                      correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[acknowledge]acknowledge")
     if (appConfig.rdsAuthRequiredForThisEnv) {

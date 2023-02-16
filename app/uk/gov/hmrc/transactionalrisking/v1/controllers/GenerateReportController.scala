@@ -51,7 +51,7 @@ class GenerateReportController @Inject()(
                                           currentDateTime: CurrentDateTime,
                                           idGenerator: IdGenerator,
                                           config: AppConfig
-                                        )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
+                                        )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with ApiBaseController with BaseController with Logging {
 
   def generateReportInternal(nino: String, taxYear: String, calculationId:String): Action[AnyContent] = {
 
@@ -72,19 +72,15 @@ class GenerateReportController @Inject()(
         rdsAssessmentReportWrapper
       }
 
-
       responseData.fold(
         errorWrapper =>
           errorHandler(errorWrapper, correlationId),
         reportWrapper => {
-            //TODO for txr015, calculationTimestamp can be retrieved from reportWrapper.responseData.calculationTimestamp
-            //TODO for txr015, need to make sure if there are any format issues with timestamp then need to be fixed in txr015
-
           nonRepudiationService.buildNrsSubmission(reportWrapper.responseData.report.stringify, reportWrapper.responseData.report.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
             .fold(
               error => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError))),
               success => {
-                logger.info(s"$correlationId::[submit] Request initiated to store ${AssistReportGenerated.value} content to NRS")
+                logger.info(s"$correlationId::[generateReport] Request initiated to store ${AssistReportGenerated.value} content to NRS")
                 nonRepudiationService.submit(success)
                 logger.info(s"$correlationId::[generateReport] ... report submitted to NRS")
                 Future.successful(Ok(Json.toJson[AssessmentReport](reportWrapper.responseData.report)))

@@ -19,7 +19,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 import play.api.mvc.Result
 import uk.gov.hmrc.transactionalrisking.utils.Logging
 
-trait BaseController {
+trait ApiBaseController {
   self: Logging =>
 
   implicit class Response(result: Result) {

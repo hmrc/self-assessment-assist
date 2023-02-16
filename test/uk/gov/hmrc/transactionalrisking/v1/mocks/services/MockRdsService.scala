@@ -55,13 +55,13 @@ trait MockRdsService extends MockFactory {
 
 
     def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[RdsAssessmentReport]]] = {
-      (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, *, *, *).anyNumberOfTimes().returns( Future( Right(ResponseWrapper( correlationId, simpleAcknowledgeNewRdsAssessmentReport ) ) ) )
+      (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _:String))
+        .expects(*, *, *, *).anyNumberOfTimes().returns( Future( Right(ResponseWrapper( correlationId, simpleAcknowledgeNewRdsAssessmentReport ) ) ) )
     }
 
     def acknowlegeRdsFail(request: AcknowledgeReportRequest, error: MtdError): CallHandler[Future[ServiceOutcome[RdsAssessmentReport]]] = {
-      (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes().returns(Future(Left(ErrorWrapper(correlationId, error))))
+      (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: String))
+        .expects(*, *, *, *).anyNumberOfTimes().returns(Future(Left(ErrorWrapper(correlationId, error))))
     }
 
   }

@@ -137,6 +137,7 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
         links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5)))
   }
 
+  @annotation.nowarn
   private def customerTypeString(customerType: CustomerType) = customerType match {
     case TaxPayer => "Individual"
     case Agent => "Agent"
