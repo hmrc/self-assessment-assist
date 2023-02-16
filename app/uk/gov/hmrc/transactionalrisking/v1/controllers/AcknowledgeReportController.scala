@@ -18,6 +18,7 @@ package uk.gov.hmrc.transactionalrisking.v1.controllers
 
 import cats.data.EitherT
 import play.api.mvc._
+import uk.gov.hmrc.transactionalrisking.config.AppConfig
 import uk.gov.hmrc.transactionalrisking.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.transactionalrisking.utils.{CurrentDateTime, IdGenerator, Logging}
 import uk.gov.hmrc.transactionalrisking.v1.connectors.MtdIdLookupConnector
@@ -43,7 +44,8 @@ class AcknowledgeReportController @Inject()(
                                              rdsService: RdsService,
                                              currentDateTime: CurrentDateTime,
                                              idGenerator: IdGenerator,
-                                             ifsService: IfsService
+                                             ifsService: IfsService,
+                                             config: AppConfig
                                            )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with BaseController with Logging {
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
@@ -52,7 +54,9 @@ class AcknowledgeReportController @Inject()(
 
     val submissionTimestamp = currentDateTime.getDateTime()
 
-    authorisedAction(nino, nrsRequired = true).async {
+    val retrievalRequiredSwitch = config.authRetrievalRequired
+
+    authorisedAction(nino, retrievalRequired = retrievalRequiredSwitch).async {
       implicit request =>
 
         val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {

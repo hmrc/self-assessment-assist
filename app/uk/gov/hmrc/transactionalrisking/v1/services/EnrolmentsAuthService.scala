@@ -39,9 +39,9 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     override def authConnector: AuthConnector = connector
   }
 
-  def authorised(predicate: Predicate, correlationId: String, nrsRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
+  def authorised(predicate: Predicate, correlationId: String, retrievalRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
 
-    if (!nrsRequired) {
+    if (!retrievalRequired) {
       logger.info(s"$correlationId::[authorised]Performing nrs not required")
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
         case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Individual, enrolments, correlationId)

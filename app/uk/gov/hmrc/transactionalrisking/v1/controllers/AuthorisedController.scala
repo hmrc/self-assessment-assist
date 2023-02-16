@@ -38,7 +38,7 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
   val authService: EnrolmentsAuthService
   val lookupConnector: MtdIdLookupConnector
 
-  def authorisedAction(nino: String, nrsRequired: Boolean = false)(implicit correlationId:String): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
+  def authorisedAction(nino: String, retrievalRequired: Boolean)(implicit correlationId:String): ActionBuilder[UserRequest, AnyContent] = new ActionBuilder[UserRequest, AnyContent] {
 
     override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
 
@@ -51,7 +51,7 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
 
     def invokeBlockWithAuthCheck[A](mtdId: String, request: Request[A], block: UserRequest[A] => Future[Result])(implicit headerCarrier: HeaderCarrier): Future[Result] = {
       val clientID = request.headers.get("X-Client-Id").getOrElse("N/A")
-      authService.authorised(predicate(mtdId), correlationId, nrsRequired).flatMap[Result] {
+      authService.authorised(predicate(mtdId), correlationId, retrievalRequired).flatMap[Result] {
         case Right(userDetails)      => block(UserRequest(userDetails.copy(clientID = clientID), request))
         case Left(ClientOrAgentNotAuthorisedError) =>
           Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
