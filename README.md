@@ -38,10 +38,6 @@ Then go to http://localhost:9680/api-documentation/docs/openapi/preview and ente
 http://localhost:8342/api/conf/1.0/application.yaml
 ```
 
-## Changelog
-
-You can see our changelog [here](https://github.com/hmrc/transactional-risking/wiki)
-
 ## Support and Reporting Issues
 
 - You can raise non-technical or platform-related issues with the [Software Development Support Team](https://developer.service.hmrc.gov.uk/developer/support)
