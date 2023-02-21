@@ -209,7 +209,7 @@ components:
     matchingResourceNotFoundIncorrectURL:
       description: |
         URL missing element.
-      value: [ { code: MATCHING_RESOURCE_NOT_FOUND, message: A resource with the name in the request can not be found in the API. } ]
+      value: [ { code: MATCHING_RESOURCE_NOT_FOUND, message: A resource with the name in the request can not be found.} ]
 
 
 
