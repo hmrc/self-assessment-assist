@@ -62,7 +62,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 case Some(NOT_FOUND) =>
                   val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
                   logger.info(s"$correlationId::[RdsService][submit] $errorMessage")
-                  Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
+                  Left(ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
                 case Some(_) | None =>
                   logger.error(s"$correlationId::[RdsService][submit] unexpected response")
                   Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
@@ -148,7 +148,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           ex.statusCode match {
             case REQUEST_TIMEOUT  => Left(ErrorWrapper(correlationId, DownstreamError))
             case UNAUTHORIZED     => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case FORBIDDEN        => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case FORBIDDEN        => Left(ErrorWrapper(correlationId, ForbiddenRDSCorrelationIdError))
             case NOT_FOUND        => Left(ErrorWrapper(correlationId, DownstreamError))
             case _                => Left(ErrorWrapper(correlationId, DownstreamError))
           }
