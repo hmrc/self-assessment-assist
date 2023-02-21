@@ -31,7 +31,7 @@ import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, MatchingCalculationIDNotFoundError, MatchingResourcesNotFoundError, MtdError, NoAssessmentFeedbackFromRDS}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, ForbiddenRDSCorrelationIdError, MatchingCalculationIDNotFoundError, MatchingResourcesNotFoundError, MtdError, NoAssessmentFeedbackFromRDS}
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import RdsTestData.rdsRequest
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
@@ -210,12 +210,12 @@ class RdsConnectorSpec extends ConnectorSpec
         await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(correlationId, simpleAcknowledgeNewRdsAssessmentReport))
       }
 
-      "return MatchingResourcesNotFoundError, if RDS returns http status 201 and no calculationId found with responsecode 401" in new Test{
+      "return ForbiddenRDSCorrelationIdError, if RDS returns http status 201 with responsecode 401 for reportid  and correlationId combination " in new Test{
         val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="401")
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsRequest,Some(rdsAuthCredentials)))
-        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ForbiddenDownstreamError,None))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, ForbiddenRDSCorrelationIdError,None))
       }
 
       "return Internal Server Error, if RDS returns http status 400" in new Test{

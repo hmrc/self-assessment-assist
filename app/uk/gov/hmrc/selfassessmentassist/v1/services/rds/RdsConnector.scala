@@ -119,13 +119,13 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] response is ${response.status}")
+        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] RDS http response status is ${response.status}")
         response.status match {
           case CREATED =>
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
             assessmentReport.responseCode match {
               case Some(ACCEPTED)       => Right(ResponseWrapper(correlationId, assessmentReport))
-              case Some(UNAUTHORIZED)   => Left(ErrorWrapper(correlationId,ForbiddenDownstreamError))
+              case Some(UNAUTHORIZED)   => Left(ErrorWrapper(correlationId,ForbiddenRDSCorrelationIdError))
               case Some(_) | None       =>
                 logger.warn(s"$correlationId::[RdsConnector:acknowledgeRds] unexpected response")
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
@@ -148,7 +148,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           ex.statusCode match {
             case REQUEST_TIMEOUT  => Left(ErrorWrapper(correlationId, DownstreamError))
             case UNAUTHORIZED     => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case FORBIDDEN        => Left(ErrorWrapper(correlationId, ForbiddenRDSCorrelationIdError))
+            case FORBIDDEN        => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
             case NOT_FOUND        => Left(ErrorWrapper(correlationId, DownstreamError))
             case _                => Left(ErrorWrapper(correlationId, DownstreamError))
           }
