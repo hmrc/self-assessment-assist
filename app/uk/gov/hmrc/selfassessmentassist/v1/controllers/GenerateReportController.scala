@@ -99,6 +99,7 @@ class GenerateReportController @Inject()(
     case (TaxYearFormatError,_) => Future(BadRequest(convertErrorAsJson(TaxYearFormatError)))
     case (CalculationIdFormatError,_) => Future(BadRequest(convertErrorAsJson(CalculationIdFormatError)))
     case (MatchingResourcesNotFoundError,_) => Future(NotFound(convertErrorAsJson(MatchingResourcesNotFoundError)))
+    case (MatchingCalculationIDNotFoundError,_) => Future(NotFound(convertErrorAsJson(MatchingCalculationIDNotFoundError)))
     case (ClientOrAgentNotAuthorisedError,_) => Future(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
     case (InvalidCredentialsError,_) => Future(Unauthorized(convertErrorAsJson(InvalidCredentialsError)))
     case (RdsAuthError,_) => Future(InternalServerError(convertErrorAsJson(ForbiddenDownstreamError)))

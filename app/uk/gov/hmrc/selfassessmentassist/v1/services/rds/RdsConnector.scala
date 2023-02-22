@@ -62,7 +62,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 case Some(NOT_FOUND) =>
                   val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
                   logger.info(s"$correlationId::[RdsService][submit] $errorMessage")
-                  Left(ErrorWrapper(correlationId, MatchingResourcesNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
+                  Left(ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
                 case Some(_) | None =>
                   logger.error(s"$correlationId::[RdsService][submit] unexpected response")
                   Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
@@ -119,13 +119,13 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
       .map { response =>
-        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] response is ${response.status}")
+        logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] RDS http response status is ${response.status}")
         response.status match {
           case CREATED =>
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
             assessmentReport.responseCode match {
               case Some(ACCEPTED)       => Right(ResponseWrapper(correlationId, assessmentReport))
-              case Some(UNAUTHORIZED)   => Left(ErrorWrapper(correlationId,ForbiddenDownstreamError))
+              case Some(UNAUTHORIZED)   => Left(ErrorWrapper(correlationId,ForbiddenRDSCorrelationIdError))
               case Some(_) | None       =>
                 logger.warn(s"$correlationId::[RdsConnector:acknowledgeRds] unexpected response")
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))

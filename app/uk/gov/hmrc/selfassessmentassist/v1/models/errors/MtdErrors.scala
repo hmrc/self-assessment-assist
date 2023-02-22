@@ -86,13 +86,28 @@ object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED"
 object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client or agent is not authorised")
 object ForbiddenDownstreamError extends MtdError(
   code = "Forbidden",
-  message = "An internal server error occurred, forbidden",
+  message = "Request not authorised, forbidden",
   customJson = Some(
     Json.parse(
       """
         |{
         |  "code": "Forbidden",
-        |  "message": "An internal server error occurred, forbidden"
+        |  "message": "Request not authorised, forbidden"
+        |}
+      """.stripMargin
+    )
+  )
+)
+
+object ForbiddenRDSCorrelationIdError extends MtdError(
+  code = "CORRELATION_ID_NOT_AUTHORISED",
+  message = "The Correlation ID is not the expected value for this report",
+  customJson = Some(
+    Json.parse(
+      """
+        |{
+        |  "code": "CORRELATION_ID_NOT_AUTHORISED",
+        |  "message": "The Correlation ID is not the expected value for this report"
         |}
       """.stripMargin
     )
@@ -104,7 +119,8 @@ object InvalidAcceptHeaderError extends MtdError("ACCEPT_HEADER_INVALID", "The a
 object UnsupportedVersionError extends MtdError("NOT_FOUND", "The requested resource could not be found")
 object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body")
 
-object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "The Calculation ID was not found at this time, try again later")
+object MatchingCalculationIDNotFoundError extends MtdError("MATCHING_CALCULATION_ID_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later.")
+object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "A resource with the name in the request can not be found.")
 object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished")
 
 object ServerError extends MtdError("SERVER_ERROR", "Server error")
