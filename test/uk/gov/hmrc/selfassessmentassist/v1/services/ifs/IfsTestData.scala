@@ -26,7 +26,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request.{IFReques
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.{IdentityData, Metadata, SearchKeys}
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData.assessmentRequestForSelfAssessment
 
-import java.time.{Instant, LocalDate, OffsetDateTime}
+import java.time.{Instant, OffsetDateTime}
 
 object IdentityDataTestData {
 
@@ -71,7 +71,6 @@ object IdentityDataTestData {
     credentials = Some(Credentials("12345-credId", "GovernmentGateway")),
     confidenceLevel = ConfidenceLevel.L200,
     name = Some(Name(Some("test"), Some("test"))),
-    dateOfBirth = Some(LocalDate.parse("1985-01-01")),
     email = Some("test@test.com"),
     agentInformation = AgentInformation(agentCode = Some("TZRXXV"), agentFriendlyName = Some("Bodgitt & Legget LLP"), agentId = Some("BDGL")),
     groupIdentifier = Some("GroupId"),
