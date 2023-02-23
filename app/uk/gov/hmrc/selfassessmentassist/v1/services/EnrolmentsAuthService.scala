@@ -42,7 +42,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
   def authorised(predicate: Predicate, correlationId: String, retrievalRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
 
     if (!retrievalRequired) {
-      logger.info(s"$correlationId::[authorised]Performing nrs not required")
+      logger.info(s"$correlationId::[authorised] retrieval not required")
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
         case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Individual, enrolments, correlationId)
         case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Organisation, enrolments, correlationId)
@@ -52,7 +52,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
           Future.successful(Left(LegacyUnauthorisedError))
       } recoverWith unauthorisedError(correlationId)
     } else {
-      logger.info(s"$correlationId::[authorised]authorisation NRS required.")
+      logger.info(s"$correlationId::[authorised]retrievals required.")
 
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
         and internalId and externalId and agentCode and credentials
