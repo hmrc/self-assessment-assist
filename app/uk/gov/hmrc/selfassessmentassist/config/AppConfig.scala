@@ -51,8 +51,6 @@ trait AppConfig {
   //IF
   def ifsBaseUrl: String
   def ifsApiKey: String
-
-  val authRetrievalRequired: Boolean
 }
 
 @Singleton
@@ -82,8 +80,6 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
   val ifsApiKey:String = config.baseUrl("ifs")+ifsConfig.get[String]("x-api-key")
 
   val mtdIdBaseUrl: String = config.baseUrl("mtd-id-lookup")
-
-  override val authRetrievalRequired: Boolean = configuration.get[Boolean]("feature-switch.auth.retrievalRequired")
 
   def rdsAuthCredential: AuthCredential =
     AuthCredential(
