@@ -58,9 +58,7 @@ class GenerateReportController @Inject()(
     implicit val correlationId: String = idGenerator.getUid
     logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
 
-    val retrievalRequiredSwitch = config.authRetrievalRequired
-
-    authorisedAction(nino, retrievalRequired = retrievalRequiredSwitch).async { implicit request =>
+    authorisedAction(nino).async { implicit request =>
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
       val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] = for {

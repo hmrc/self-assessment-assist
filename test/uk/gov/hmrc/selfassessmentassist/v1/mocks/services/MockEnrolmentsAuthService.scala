@@ -34,21 +34,21 @@ trait MockEnrolmentsAuthService extends MockFactory {
   object MockEnrolmentsAuthService {
 
     def authoriseUser(): Unit = {
-      (mockEnrolmentsAuthService.authorised(_: Predicate,  _:String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
+      (mockEnrolmentsAuthService.authorised(_: Predicate,  _:String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *, *).anyNumberOfTimes()
         .returns(Future.successful(Right(UserDetails(AffinityGroup.Individual, None, "client-Id"))))
     }
 
     def authoriseUserFail( mtdError: MtdError ): Unit = {
-      (mockEnrolmentsAuthService.authorised(_: Predicate, _: String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
+      (mockEnrolmentsAuthService.authorised(_: Predicate, _: String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *, *).anyNumberOfTimes()
         .returns( Future.successful(Left(mtdError)) )
     }
 
 
     def authorised(predicate: Predicate): CallHandler[Future[AuthOutcome]] = {
-      (mockEnrolmentsAuthService.authorised(_: Predicate, _:String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(predicate, *, *, *, *).anyNumberOfTimes()
+      (mockEnrolmentsAuthService.authorised(_: Predicate, _:String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(predicate, *, *, *).anyNumberOfTimes()
     }
   }
 

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
 import play.api.libs.json.JsResultException
-import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
@@ -39,22 +38,9 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     override def authConnector: AuthConnector = connector
   }
 
-  def authorised(predicate: Predicate, correlationId: String, retrievalRequired: Boolean = false)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
+  def authorised(predicate: Predicate, correlationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
 
-    if (!retrievalRequired) {
-      logger.info(s"$correlationId::[authorised] retrieval not required")
-      authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments) {
-        case Some(Individual) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Individual, enrolments, correlationId)
-        case Some(Organisation) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Organisation, enrolments, correlationId)
-        case Some(Agent) ~ enrolments => createUserDetailsWithLogging(affinityGroup = Agent, enrolments, correlationId)
-        case _ =>
-          logger.warn(s"$correlationId::[authorised]Authorisation failed due to unsupported affinity group.")
-          Future.successful(Left(LegacyUnauthorisedError))
-      } recoverWith unauthorisedError(correlationId)
-    } else {
-      logger.info(s"$correlationId::[authorised]retrievals required.")
-
-      authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
+    authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
         and internalId and externalId and agentCode and credentials
         and confidenceLevel and name
         and email and agentInformation and groupIdentifier and credentialRole
@@ -84,18 +70,18 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
           createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData))
         case _ =>
-          logger.warn(s"$correlationId::[EnrolmentsAuthService] [authorised with nrsRequired = true] Authorisation failed due to unsupported affinity group.")
+          logger.warn(s"$correlationId::[EnrolmentsAuthService] Authorisation failed due to unsupported affinity group.")
           Future.successful(Left(LegacyUnauthorisedError))
 
       } recoverWith unauthorisedError(correlationId)
     }
 
-  }
+
 
   private def createUserDetailsWithLogging(affinityGroup: AffinityGroup,
                                            enrolments: Enrolments,
                                            correlationId: String,
-                                           identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
+                                           identityData: Option[IdentityData]): Future[Right[MtdError, UserDetails]] = {
     //TODO Fixme clientReference is coming as none in logs
     val clientReference = getClientReferenceFromEnrolments(enrolments)
     logger.debug(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +

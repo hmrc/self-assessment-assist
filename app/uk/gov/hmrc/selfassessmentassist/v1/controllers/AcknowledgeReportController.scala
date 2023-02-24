@@ -54,9 +54,7 @@ class AcknowledgeReportController @Inject()(
 
     val submissionTimestamp = currentDateTime.getDateTime()
 
-    val retrievalRequiredSwitch = config.authRetrievalRequired
-
-    authorisedAction(nino, retrievalRequired = retrievalRequiredSwitch).async {
+    authorisedAction(nino).async {
       implicit request =>
 
         val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
