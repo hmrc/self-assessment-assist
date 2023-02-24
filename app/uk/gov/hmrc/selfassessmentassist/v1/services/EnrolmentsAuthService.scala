@@ -97,7 +97,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
                                            identityData: Option[IdentityData] = None): Future[Right[MtdError, UserDetails]] = {
     //TODO Fixme clientReference is coming as none in logs
     val clientReference = getClientReferenceFromEnrolments(enrolments)
-    logger.debug(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
+    logger.info(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
       s"fully-authorised organisation with reference $clientReference.")
 
     val userDetails = UserDetails(
@@ -111,7 +111,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
       logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent not part of affinityGroup")
       Future.successful(Right(userDetails))
     } else {
-      logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup")
+      logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup ${getAgentReferenceFromEnrolments(enrolments)}")
       Future.successful(Right(userDetails.copy(agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments))))
     }
   }
