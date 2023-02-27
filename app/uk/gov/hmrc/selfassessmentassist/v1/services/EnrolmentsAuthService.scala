@@ -98,7 +98,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
     val clientReference = getClientReferenceFromEnrolments(enrolments)
     logger.debug(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
-      s"fully-authorised organisation with reference $clientReference.")
+      s"fully-authorised organisation with client reference $clientReference.")
 
     val userDetails = UserDetails(
       userType = affinityGroup,
@@ -111,8 +111,10 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
       logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent not part of affinityGroup")
       Future.successful(Right(userDetails))
     } else {
-      logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup ${getAgentReferenceFromEnrolments(enrolments)}")
-      Future.successful(Right(userDetails.copy(agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments))))
+      logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup")
+      val agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments)
+      logger.debug(s"$correlationId::[createUserDetailsWithLogging] agentReferenceNumber $agentReferenceNumber")
+      Future.successful(Right(userDetails.copy(agentReferenceNumber = agentReferenceNumber)))
     }
   }
 
