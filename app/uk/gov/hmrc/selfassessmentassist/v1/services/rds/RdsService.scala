@@ -63,7 +63,6 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     "Gov-Client-Browser-JS-User-Agent").map(_ -> "")
 
 
-
 //TODO Refactor this code
   def submit(request: AssessmentRequestForSelfAssessment,
              fraudRiskReport: FraudRiskReport,
@@ -107,7 +106,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     }
 
     if (appConfig.rdsAuthRequiredForThisEnv) {
-      logger.info(s"$correlationId::[submit]RDS Auth Required}")
+      logger.debug(s"$correlationId::[submit]RDS Auth Required}")
       rdsAuthConnector
         .retrieveAuthorisedBearer()
         .foldF(
@@ -116,7 +115,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
           credentials => processRdsRequest(Some(credentials))
         )
     } else {
-      logger.info(s"$correlationId::[submit]RDS Auth Not Required}")
+      logger.debug(s"$correlationId::[submit]RDS Auth Not Required}")
       processRdsRequest()
     }
   }
@@ -129,7 +128,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
           rdsCorrelationIdOption match {
             case Some(rdsCorrelationID) =>
               val parsedCalculationTimestamp = LocalDateTime.parse(calculationTimestamp,DateUtils.dateTimePattern)
-              logger.info(s"$correlationId::[toAssessmentReport]Successfully generated assessment report")
+              logger.info(s"$correlationId::[toAssessmentReport]Successfully recieved assessment report")
 
               Right(ResponseWrapper(correlationId,AssessmentReportWrapper(parsedCalculationTimestamp,
                 AssessmentReport(reportId = reportId,
@@ -176,7 +175,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
                                            fraudRiskReportHeaders:Seq[(String, String)])
                                           (implicit correlationId: String): ServiceOutcome[RdsRequest]
   = {
-    logger.info(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
+    logger.debug(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
     Right(ResponseWrapper(correlationId, RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationId", request.calculationId.toString),
