@@ -23,7 +23,7 @@ import uk.gov.hmrc.auth.core.{ConfidenceLevel, User}
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.{IdentityData, Metadata, NrsSubmission, SearchKeys}
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 
 object IdentityDataTestData {
 
@@ -35,7 +35,10 @@ object IdentityDataTestData {
       |  "credentials": {"providerId": "12345-credId",
       |  "providerType": "GovernmentGateway"},
       |  "confidenceLevel": 200,
+      |  "nino": "DH00475D",
+      |  "saUtr": "Utr",
       |  "name": { "name": "test", "lastName": "test" },
+      |  "dateOfBirth": "1985-01-01",
       |  "email":"test@test.com",
       |  "agentInformation": {
       |    "agentId": "BDGL",
@@ -64,7 +67,10 @@ object IdentityDataTestData {
     agentCode = Some("TZRXXV"),
     credentials = Some(Credentials("12345-credId", "GovernmentGateway")),
     confidenceLevel = ConfidenceLevel.L200,
+    nino = Some("DH00475D"),
+    saUtr = Some("Utr"),
     name = Some(Name(Some("test"), Some("test"))),
+    dateOfBirth = Some(LocalDate.parse("1985-01-01")),
     email = Some("test@test.com"),
     agentInformation = AgentInformation(agentCode = Some("TZRXXV"), agentFriendlyName = Some("Bodgitt & Legget LLP"), agentId = Some("BDGL")),
     groupIdentifier = Some("GroupId"),

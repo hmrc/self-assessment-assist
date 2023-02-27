@@ -55,13 +55,13 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
       authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
         and internalId and externalId and agentCode and credentials
-        and confidenceLevel and name
+        and confidenceLevel and nino and saUtr and name and dateOfBirth
         and email and agentInformation and groupIdentifier and credentialRole
         and mdtpInformation and credentialStrength and loginTimes
         and itmpName and itmpAddress
       ) {
         case Some(affGroup) ~ enrolments ~ inId ~ exId ~ agCode ~ creds
-          ~ confLevel ~ nme
+          ~ confLevel ~ ni ~ saRef ~ nme ~ dob
           ~ eml ~ agInfo ~ groupId ~ credRole
           ~ mdtpInfo ~ credStrength ~ logins
           ~ itmpName ~ itmpAddress =>
@@ -72,7 +72,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
           val identityData =
             IdentityData(
               inId, exId, agCode, creds,
-              confLevel, nme,
+              confLevel, ni, saRef, nme, dob,
               eml, agInfo, groupId,
               credRole, mdtpInfo, itmpName.getOrElse(emptyItmpName), itmpDateOfBirth = None,
               itmpAddress.getOrElse(emptyItmpAddress),
