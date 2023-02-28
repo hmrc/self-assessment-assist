@@ -40,7 +40,7 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
     httpClient
       .POST[FraudRiskRequest, HttpResponse](s"${appConfig.cipFraudServiceBaseUrl}", fraudRiskRequest)
       .map { response =>
-        logger.info(s"$correlationId::[InsightConnector:assess]Successfully received fraudRiskreport and status is ${response.status}")
+        logger.info(s"$correlationId::[InsightConnector:assess] FraudRiskreport status is ${response.status}")
         response.status match {
           case OK =>
             response.json.validate[FraudRiskReport].fold(
@@ -50,7 +50,7 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
               },
               report => Right(ResponseWrapper(correlationId,report)))
           case _ =>
-            logger.error(s"$correlationId::[InsightConnector:assess]Unable to get fraudrisk report as unknown code returned ${response.status}")
+            logger.error(s"$correlationId::[InsightConnector:assess] Fraudrisk report failed as unknown code returned ${response.status}")
             Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }

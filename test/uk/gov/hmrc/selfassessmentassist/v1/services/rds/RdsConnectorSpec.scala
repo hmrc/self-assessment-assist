@@ -31,7 +31,7 @@ import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, ForbiddenRDSCorrelationIdError, MatchingCalculationIDNotFoundError, MatchingResourcesNotFoundError, MtdError, NoAssessmentFeedbackFromRDS}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, ForbiddenRDSCorrelationIdError, MatchingCalculationIDNotFoundError, MtdError, NoAssessmentFeedbackFromRDS}
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import RdsTestData.rdsRequest
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
