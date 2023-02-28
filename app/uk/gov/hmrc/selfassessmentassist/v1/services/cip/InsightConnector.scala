@@ -35,7 +35,7 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
                                  appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   def assess(fraudRiskRequest: FraudRiskRequest)(implicit hc: HeaderCarrier, correlationId: String): Future[ServiceOutcome[FraudRiskReport]] = {
-    logger.info(s"$correlationId::[InsightConnector:assess] Before requesting report")
+    logger.info(s"$correlationId::[InsightConnector:assess] requesting fraud risk report")
 
     httpClient
       .POST[FraudRiskRequest, HttpResponse](s"${appConfig.cipFraudServiceBaseUrl}", fraudRiskRequest)
