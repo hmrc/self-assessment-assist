@@ -63,19 +63,22 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
       "Accept" -> "application/json",
       "Authorization" -> s"Basic $base64EncodedCredentials")
 
-    logger.info(s"$correlationId::[retrieveAuthorisedBearer] request info url=$url")
+    logger.debug(s"$correlationId::[retrieveAuthorisedBearer] request info url=$url")
     EitherT {
       http
         .POSTString(url, body, headers = reqHeaders)
         .map { response =>
-          logger.info(s"$correlationId::[retrieveAuthorisedBearer] response is $response}")
+          logger.debug(s"$correlationId::[retrieveAuthorisedBearer] response is $response}")
           response.status match {
             case ACCEPTED =>
               logger.info(s"$correlationId::[retrieveAuthorisedBearer] ACCEPTED reponse")
               handleResponse(response)
-            case OK => logger.info(s"$correlationId::[retrieveAuthorisedBearer] Ok reponse")
+            case OK =>
+              logger.info(s"$correlationId::[retrieveAuthorisedBearer] Ok reponse")
               handleResponse(response)
-            case errorStatusCode => Left(RdsAuthError)
+            case errorStatusCode =>
+              logger.error(s"$correlationId::[retrieveAuthorisedBearer] failed $errorStatusCode")
+              Left(RdsAuthError)
           }
         }
         .recover {
@@ -83,7 +86,6 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
             logger.error(s"$correlationId::[retrieveAuthorisedBearer] HttpException=$ex")
             Left(RdsAuthError)
           case ex: UpstreamErrorResponse =>
-            logger.error(s"$correlationId::[RdsAuthConnector:retrieveAuthorisedBearer] UpstreamErrorResponse")
             logger.error(s"$correlationId::[retrieveAuthorisedBearer] UpstreamErrorResponse=$ex")
             Left(RdsAuthError)
         }
@@ -92,8 +94,4 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
 
   private def handleResponse(response: HttpResponse): Either[MtdError, RdsAuthCredentials] =
     response.json.asOpt[RdsAuthCredentials].toRight(RdsAuthError)
-
-  //  private def handleError(statusCode: Int): Either[RdsAuthError, RdsAuthCredentials] =
-  //    RdsAuthError(statusCode).asLeft[RdsAuthCredentials]
-
 }

@@ -50,7 +50,7 @@ class AcknowledgeReportController @Inject()(
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
     implicit val correlationId: String = idGenerator.getUid
-    logger.info(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
+    logger.debug(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
 
     val submissionTimestamp = currentDateTime.getDateTime()
 
@@ -64,7 +64,6 @@ class AcknowledgeReportController @Inject()(
         } yield {
           serviceResponse.responseData
         }
-
 
         processRequest.fold(
           errorWrapper => errorHandler(errorWrapper, correlationId),
@@ -80,7 +79,7 @@ class AcknowledgeReportController @Inject()(
                     success => {
                       logger.debug(s"$correlationId::[acknowledgeReport] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
                       nonRepudiationService.submit(success)
-                      logger.info(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                      logger.debug(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
                       Future.successful(NoContent)
                     }
                   )

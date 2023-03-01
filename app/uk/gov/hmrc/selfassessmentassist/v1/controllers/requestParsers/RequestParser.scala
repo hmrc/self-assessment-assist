@@ -31,10 +31,7 @@ trait RequestParser[Raw <: RawData, Request] extends Logging {
 
   def parseRequest(data: Raw)(implicit ec:ExecutionContext, correlationId: String): Future[ParseOutcome[Request]] = {
     validator.validate(data) match {
-      case Nil =>
-        logger.info(message = s"$correlationId::[RequestParser][parseRequest]" +
-          s"Validation successful for the request")
-        Future(Right(requestFor(data)))
+      case Nil => Future(Right(requestFor(data)))
       case err :: Nil =>
         logger.error(message = s"$correlationId::[RequestParser][parseRequest]" +
           s"Validation failed with ${err.code} error for the request")

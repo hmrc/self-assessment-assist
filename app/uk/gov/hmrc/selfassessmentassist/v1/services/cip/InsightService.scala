@@ -28,9 +28,7 @@ import scala.concurrent.Future
 class InsightService @Inject()(connector: InsightConnector) extends Logging{
 
   def assess(fraudRiskRequest: FraudRiskRequest)(implicit hc: HeaderCarrier,
-                                                 correlationId: String): Future[ServiceOutcome[FraudRiskReport]] = {
-    logger.info(s"$correlationId::[assess] Received request for a fraud risk report ...")
+                                                 correlationId: String): Future[ServiceOutcome[FraudRiskReport]] =
     connector.assess(fraudRiskRequest)
-  }
 }
 

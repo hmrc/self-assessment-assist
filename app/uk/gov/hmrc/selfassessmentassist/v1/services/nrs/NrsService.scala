@@ -38,7 +38,7 @@ class NrsService @Inject()(connector: NrsConnector,
                                  submissionTimestamp: OffsetDateTime,
                                  request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationId: String): Either[NrsFailure, NrsSubmission] = {
 
-    logger.info(s"$correlationId::[buildNrsSubmission] Building the NRS submission")
+    logger.debug(s"$correlationId::[buildNrsSubmission] Building the NRS submission")
 
     val userAuthToken = request.headers.get(HeaderNames.authorisation)
 
