@@ -230,7 +230,6 @@ class AcknowledgeReportControllerSpec
     }
 
 
-//TODO revist, what is the purpose of this test, and the way these test are written doesn't indicate clear purpose of test
     "a request fails due to RdsService.acknowledge failure" should {
 
       def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {

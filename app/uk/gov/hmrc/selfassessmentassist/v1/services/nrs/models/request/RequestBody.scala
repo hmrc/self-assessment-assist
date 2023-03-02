@@ -18,8 +18,6 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request
 
 import play.api.libs.json.Json
 
-//TODO RdsAssessmentReport will be populated using RdsAssessmentReport class, as of now String because common
-// class is used for generate report and acknowledge
 case class RequestBody(bodyContent:String, reportId:String)
 object RequestBody{
   implicit val formatter = Json.format[RequestBody]

@@ -31,7 +31,7 @@ import scala.util.Try
 @Singleton
 class NrsService @Inject()(connector: NrsConnector,
                            hashUtil: HashUtil) extends Logging {
-  //                           override val metrics: Metrics) extends Timer with Logging { TODO include metrics later
+  //                           override val metrics: Metrics) extends Timer with Logging {
 
   def buildNrsSubmission(payload: String,
                                  reportId: String,
@@ -59,7 +59,7 @@ class NrsService @Inject()(connector: NrsConnector,
               userSubmissionTimestamp = formattedDate,
               identityData = request.userDetails.identityData,
               userAuthToken = token,
-              headerData = Json.toJson(request.headers.toMap.filterNot{case (k,v) => k.equals("authorization")}.map { h => h._1 -> h._2.head }), //TODO remove auth header
+              headerData = Json.toJson(request.headers.toMap.filterNot{case (k,v) => k.equals("authorization")}.map { h => h._1 -> h._2.head }),
               searchKeys =
                 SearchKeys(
                   reportId = reportId
