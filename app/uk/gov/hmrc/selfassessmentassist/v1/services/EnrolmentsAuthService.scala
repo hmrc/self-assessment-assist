@@ -23,7 +23,6 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
-import uk.gov.hmrc.selfassessmentassist.v1.controllers.AuthorisedController
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{BearerTokenExpiredError, DownstreamError, ForbiddenDownstreamError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.IdentityData
@@ -82,10 +81,9 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
                                            enrolments: Enrolments,
                                            correlationId: String,
                                            identityData: Option[IdentityData]): Future[Right[MtdError, UserDetails]] = {
-    //TODO Fixme clientReference is coming as none in logs
     val clientReference = getClientReferenceFromEnrolments(enrolments)
     logger.debug(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
-      s"fully-authorised organisation with reference $clientReference.")
+      s"fully-authorised organisation with client reference $clientReference.")
 
     val userDetails = UserDetails(
       userType = affinityGroup,
@@ -99,17 +97,19 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
       Future.successful(Right(userDetails))
     } else {
       logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup")
-      Future.successful(Right(userDetails.copy(agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments))))
+      val agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments)
+      logger.debug(s"$correlationId::[createUserDetailsWithLogging] agentReferenceNumber $agentReferenceNumber")
+      Future.successful(Right(userDetails.copy(agentReferenceNumber = agentReferenceNumber)))
     }
   }
 
   private def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
-    .getEnrolment("IR-SA")
-    .flatMap(_.getIdentifier(AuthorisedController.ninoKey))
+    .getEnrolment("HMRC-MTD-IT")
+    .flatMap(_.getIdentifier("MTDITID"))
     .map(_.value)
 
   private def getAgentReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
-    .getEnrolment("IR-SA")
+    .getEnrolment("HMRC-AS-AGENT")
     .flatMap(_.getIdentifier("AgentReferenceNumber"))
     .map(_.value)
 
