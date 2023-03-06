@@ -41,7 +41,7 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
       httpClient
-        .POST[IFRequest, HttpResponse](s"$url", ifRequest, Seq("X-API-Key" -> apiKey))
+        .POST[IFRequest, HttpResponse](s"$url", ifRequest, Seq("Authorization" -> s"Bearer ${apiKey}"))
         .map { response =>
           response.status match {
             case NO_CONTENT => {
