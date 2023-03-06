@@ -70,7 +70,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-              .withHeader("X-API-Key", equalTo(apiKeyValue))
+              .withHeader("Authorization", equalTo(s"Bearer ${apiKeyValue}"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(NO_CONTENT)))
@@ -84,7 +84,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-              .withHeader("X-API-Key", equalTo(apiKeyValue))
+              .withHeader("Authorization", equalTo(s"Bearer ${apiKeyValue}"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(SERVICE_UNAVAILABLE)))
@@ -96,7 +96,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-              .withHeader("X-API-Key", equalTo(apiKeyValue))
+              .withHeader("Authorization", equalTo(s"Bearer ${apiKeyValue}"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(BAD_REQUEST)))
