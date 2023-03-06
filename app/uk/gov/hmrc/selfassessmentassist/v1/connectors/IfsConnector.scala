@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.ifs
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
@@ -30,6 +30,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsOutcome
 
 @Singleton
 class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (implicit val ec: ExecutionContext) extends Logging {

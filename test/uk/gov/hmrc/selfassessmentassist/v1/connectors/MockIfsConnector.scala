@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.service.ifs
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request.IFRequest
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.{IfsConnector, IfsOutcome}
 
 import scala.concurrent.Future
 
@@ -33,7 +33,7 @@ trait MockIfsConnector extends MockFactory {
     def submit(expectedPayload: IFRequest): CallHandler[Future[IfsOutcome]] = {
       (mockIfsConnector
         .submit(_: IFRequest)(_: HeaderCarrier, _: String))
-        .expects (where {
+        .expects(where {
           (ifsRequest: IFRequest, _: HeaderCarrier, _: String) => ifsRequest == expectedPayload
         })
     }

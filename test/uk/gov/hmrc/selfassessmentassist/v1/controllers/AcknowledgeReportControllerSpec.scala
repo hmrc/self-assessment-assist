@@ -259,9 +259,11 @@ class AcknowledgeReportControllerSpec
         Seq(
           (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
           (ForbiddenDownstreamError, FORBIDDEN, ForbiddenDownstreamError.toJson),
+          (ForbiddenRDSCorrelationIdError, FORBIDDEN, ForbiddenRDSCorrelationIdError.toJson),
           (DownstreamError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
           (MatchingResourcesNotFoundError, SERVICE_UNAVAILABLE, ServiceUnavailableError.toJson),
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson)
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
+          (InvalidBodyTypeError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))

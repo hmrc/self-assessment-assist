@@ -19,6 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.rds
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, Logging}
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.{RdsAuthConnector, RdsConnector}
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.PreferredLanguage.PreferredLanguage

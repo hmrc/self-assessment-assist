@@ -36,11 +36,12 @@ object DateUtils {
   }
 
   implicit def dateTimeReads: Reads[OffsetDateTime] = new Reads[OffsetDateTime] {
-    override def reads(json: JsValue): JsResult[OffsetDateTime] =
+    override def reads(json: JsValue): JsResult[OffsetDateTime] = {
       Try(json.as[String]) match {
         case Success(value) => JsSuccess(OffsetDateTime.parse(value))
         case Failure(_) => JsError()
       }
+    }
   }
 
   val dateTimeFormat: Format[OffsetDateTime] = Format[OffsetDateTime](
