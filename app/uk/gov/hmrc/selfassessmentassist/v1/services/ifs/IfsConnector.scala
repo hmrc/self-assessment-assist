@@ -35,14 +35,16 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
 
   private lazy val url: String    = appConfig.ifsBaseUrl
   private lazy val apiKey: String = appConfig.ifsApiKey
+  private val requestHeader = Seq("Authorization" -> s"Bearer $apiKey")
 
   def submit(ifRequest: IFRequest)(
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
-    logger.info(s"$correlationId::[IfsConnector:submit] url and data  $url data is $ifRequest header $apiKey")
+    //TODO remove me
+    logger.info(s"$correlationId::[IfsConnector:submit] url and data  $url header = $requestHeader")
       httpClient
-        .POST[IFRequest, HttpResponse](s"$url", ifRequest, Seq("Authorization" -> s"Bearer $apiKey"))
+        .POST[IFRequest, HttpResponse](s"$url", ifRequest, requestHeader)
         .map { response =>
           response.status match {
             case NO_CONTENT => {
