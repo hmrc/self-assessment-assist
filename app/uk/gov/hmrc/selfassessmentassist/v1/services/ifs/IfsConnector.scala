@@ -40,8 +40,9 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
+    logger.info(s"$correlationId::[IfsConnector:submit] url and data  $url data is $ifRequest header $apiKey")
       httpClient
-        .POST[IFRequest, HttpResponse](s"$url", ifRequest, Seq("Authorization" -> s"Bearer ${apiKey}"))
+        .POST[IFRequest, HttpResponse](s"$url", ifRequest, Seq("Authorization" -> s"Bearer $apiKey"))
         .map { response =>
           response.status match {
             case NO_CONTENT => {

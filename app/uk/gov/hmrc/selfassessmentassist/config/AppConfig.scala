@@ -77,7 +77,7 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
 
   private val ifsConfig = configuration.get[Configuration]("microservice.services.ifs")
   val ifsBaseUrl:String = config.baseUrl("ifs")+ifsConfig.get[String]("submit-url")
-  val ifsApiKey:String = config.baseUrl("ifs")+ifsConfig.get[String]("x-api-key")
+  val ifsApiKey:String = ifsConfig.get[String]("x-api-key")
 
   val mtdIdBaseUrl: String = config.baseUrl("mtd-id-lookup")
 
