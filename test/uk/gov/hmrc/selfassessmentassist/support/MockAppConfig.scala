@@ -45,6 +45,6 @@ trait MockAppConfig extends MockFactory {
 
     // IFS config items
     def ifsBaseUrl: CallHandler[String] = (mockAppConfig.ifsBaseUrl _).expects().anyNumberOfTimes()
-    def ifsApiKey: CallHandler[String] = (mockAppConfig.ifsApiKey _).expects().anyNumberOfTimes()
+    def ifsToken: CallHandler[String] = (mockAppConfig.ifsToken _).expects().anyNumberOfTimes()
   }
 }

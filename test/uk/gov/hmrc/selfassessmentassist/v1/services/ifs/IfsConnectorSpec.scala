@@ -40,7 +40,7 @@ class IfsConnectorSpec extends ConnectorSpec
 
     var port: Int = _
     val reportId = "12345"
-    val apiKeyValue = "api-key"
+    val ifsTokenValue = "api-key"
     val url = "/interaction-data/store-interactions"
 
     private val ifsRequest: IFRequest = FullRequestTestData.correctModel
@@ -50,7 +50,7 @@ class IfsConnectorSpec extends ConnectorSpec
 
     class Test() {
       MockedAppConfig.ifsBaseUrl returns (s"http://localhost:$port/interaction-data/store-interactions")
-      MockedAppConfig.ifsApiKey returns apiKeyValue
+      MockedAppConfig.ifsToken returns ifsTokenValue
 
       val connector = new IfsConnector(httpClient, mockAppConfig)
 
@@ -70,7 +70,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-              .withHeader("Authorization", equalTo(s"Bearer ${apiKeyValue}"))
+              .withHeader("Authorization", equalTo(s"Bearer ${ifsTokenValue}"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(NO_CONTENT)))
@@ -84,7 +84,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-              .withHeader("Authorization", equalTo(s"Bearer ${apiKeyValue}"))
+              .withHeader("Authorization", equalTo(s"Bearer ${ifsTokenValue}"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(SERVICE_UNAVAILABLE)))
@@ -96,7 +96,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-              .withHeader("Authorization", equalTo(s"Bearer ${apiKeyValue}"))
+              .withHeader("Authorization", equalTo(s"Bearer ${ifsTokenValue}"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(BAD_REQUEST)))
