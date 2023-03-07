@@ -35,7 +35,7 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
 
   private lazy val url: String    = appConfig.ifsBaseUrl
   private lazy val apiKey: String = appConfig.ifsApiKey
-  private val requestHeader = Seq("Authorization" -> s"Bearer $apiKey")
+  private lazy val requestHeader = Seq("Authorization" -> s"Bearer $apiKey")
 
   def submit(ifRequest: IFRequest)(
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
