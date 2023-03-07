@@ -42,7 +42,7 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
     //TODO remove me
-    logger.info(s"$correlationId::[IfsConnector:submit] url and data  $url header = $requestHeader")
+    logger.debug(s"$correlationId::[IfsConnector:submit] url and data  $url header = $requestHeader")
       httpClient
         .POST[IFRequest, HttpResponse](s"$url", ifRequest, requestHeader)
         .map { response =>
