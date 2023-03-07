@@ -17,7 +17,8 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services.ifs
 
 import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import play.api.libs.json.Writes
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
@@ -27,15 +28,13 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsRespo
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
-
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 @Singleton
 class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (implicit val ec: ExecutionContext) extends Logging {
 
   private lazy val url: String    = appConfig.ifsBaseUrl
-  private lazy val apiKey: String = appConfig.ifsApiKey
-  private lazy val requestHeader = Seq("Authorization" -> s"Bearer $apiKey")
+  private lazy val requestHeader: Seq[(String, String)] = Seq("Authorization" -> s"Bearer ${appConfig.ifsToken}")
 
   def submit(ifRequest: IFRequest)(
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
@@ -44,7 +43,8 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
     //TODO remove me
     logger.debug(s"$correlationId::[IfsConnector:submit] url and data  $url header = $requestHeader")
       httpClient
-        .POST[IFRequest, HttpResponse](s"$url", ifRequest, requestHeader)
+        .POST[IFRequest, HttpResponse](s"$url", ifRequest)(implicitly[Writes[IFRequest]],
+          implicitly[HttpReads[HttpResponse]],hc.copy(authorization = Some(Authorization(s"Bearer ${appConfig.ifsToken}"))),ec)
         .map { response =>
           response.status match {
             case NO_CONTENT => {
