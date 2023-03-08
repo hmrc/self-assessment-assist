@@ -50,10 +50,11 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
           "Environment"   -> appConfig.ifsEnv,
           "CorrelationId" -> correlationId,
           HeaderNames.CONTENT_TYPE -> s"${MimeTypes.JSON};charset=UTF-8",
-          "accept"-> "*/*"
+          "accept"-> "*/*",
+          "Authorization" -> s"Bearer ${appConfig.ifsToken}"
         ))(implicitly[Writes[IFRequest]],
           implicitly[HttpReads[HttpResponse]],
-          hc.copy(authorization = Some(Authorization(s"Bearer ${appConfig.ifsToken}"))), ec)
+          hc.copy(authorization = None), ec)
         .map { response =>
           response.status match {
             case NO_CONTENT => {
