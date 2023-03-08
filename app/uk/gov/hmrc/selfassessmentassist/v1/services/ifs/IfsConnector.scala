@@ -34,7 +34,6 @@ import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (implicit val ec: ExecutionContext) extends Logging {
 
   private lazy val url: String    = appConfig.ifsBaseUrl
-  //private lazy val requestHeader: Seq[(String, String)] = Seq("Authorization" -> s"Bearer ${appConfig.ifsToken}")
   private val jsonContentTypeHeader = HeaderNames.CONTENT_TYPE -> MimeTypes.JSON
   private def getBackendHeaders[Resp](hc: HeaderCarrier,
                                       correlationId: String,
@@ -62,9 +61,8 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
-    //TODO remove me
-
     val backEndHeaders: HeaderCarrier = getBackendHeaders(hc, correlationId, jsonContentTypeHeader)
+    //TODO remove me
     logger.info(s"$correlationId::[IfsConnector:submit] url and data  $url header = $backEndHeaders")
     doPost(ifRequest)(backEndHeaders,correlationId)
   }
