@@ -62,17 +62,17 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
               Right(IfsResponse())
             }
             case unexpectedStatus@_ =>
-              logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
+              logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus $response")
               Left(ErrorWrapper(correlationId, DownstreamError))
           }
         }
         .recover {
-          case _: BadRequestException => {
-            logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : BAD request")
+          case e: BadRequestException => {
+            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : BAD request ${e.message}")
             Left(ErrorWrapper(correlationId, DownstreamError))
           }
           case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE => {
-            logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request")
+            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request ${e.message}")
             Left(ErrorWrapper(correlationId, DownstreamError))
           }
           case NonFatal(e) => {
