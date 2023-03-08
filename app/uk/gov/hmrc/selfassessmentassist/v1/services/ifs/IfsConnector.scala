@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.ifs
 
 import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
 import play.api.libs.json.Writes
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{Authorization, BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
@@ -34,17 +34,21 @@ import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (implicit val ec: ExecutionContext) extends Logging {
 
   private lazy val url: String    = appConfig.ifsBaseUrl
-  private lazy val requestHeader: Seq[(String, String)] = Seq("Authorization" -> s"Bearer ${appConfig.ifsToken}")
 
   def submit(ifRequest: IFRequest)(
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
     //TODO remove me
-    logger.debug(s"$correlationId::[IfsConnector:submit] url and data  $url header = $requestHeader")
+    val headersPassed = s"auth = Bearer ${appConfig.ifsToken}, Environment = ${appConfig.ifsEnv} , CorrelationId = $correlationId"
+
+    logger.info(s"$correlationId::[IfsConnector:submit] url  $url headers = $headersPassed")
       httpClient
-        .POST[IFRequest, HttpResponse](s"$url", ifRequest)(implicitly[Writes[IFRequest]],
-          implicitly[HttpReads[HttpResponse]],hc.copy(authorization = Some(Authorization(s"Bearer ${appConfig.ifsToken}"))),ec)
+        .POST[IFRequest, HttpResponse](s"$url", ifRequest,Seq(
+          "Environment"   -> appConfig.ifsEnv,
+          "CorrelationId" -> correlationId))(implicitly[Writes[IFRequest]],
+          implicitly[HttpReads[HttpResponse]],
+          hc.copy(authorization = Some(Authorization(s"Bearer ${appConfig.ifsToken}"))), ec)
         .map { response =>
           response.status match {
             case NO_CONTENT => {
@@ -57,7 +61,7 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
           }
         }
         .recover {
-          case _: uk.gov.hmrc.http.BadRequestException => {
+          case _: BadRequestException => {
             logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : BAD request")
             Left(ErrorWrapper(correlationId, DownstreamError))
           }

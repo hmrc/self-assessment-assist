@@ -40,7 +40,9 @@ class IfsConnectorSpec extends ConnectorSpec
 
     var port: Int = _
     val reportId = "12345"
-    val ifsTokenValue = "api-key"
+    val ifsTokenValue = "ABCD1234"
+    val ifsEnv = "local"
+    val ifsEnvironmentHeaders = Some(Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id"))
     val url = "/interaction-data/store-interactions"
 
     private val ifsRequest: IFRequest = FullRequestTestData.correctModel
@@ -51,6 +53,8 @@ class IfsConnectorSpec extends ConnectorSpec
     class Test() {
       MockedAppConfig.ifsBaseUrl returns (s"http://localhost:$port/interaction-data/store-interactions")
       MockedAppConfig.ifsToken returns ifsTokenValue
+      MockedAppConfig.ifsEnv returns ifsEnv
+      MockedAppConfig.ifsEnvironmentHeaders returns ifsEnvironmentHeaders
 
       val connector = new IfsConnector(httpClient, mockAppConfig)
 

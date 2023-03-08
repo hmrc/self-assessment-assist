@@ -51,6 +51,8 @@ trait AppConfig {
   //IF
   def ifsBaseUrl: String
   def ifsToken: String
+  def ifsEnv: String
+  def ifsEnvironmentHeaders:Option[Seq[String]]
 }
 
 @Singleton
@@ -77,7 +79,9 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
 
   private val ifsConfig = configuration.get[Configuration]("microservice.services.ifs")
   val ifsBaseUrl:String = config.baseUrl("ifs")+ifsConfig.get[String]("submit-url")
-  val ifsToken: String = config.getString("microservice.services.ifs.token")
+  val ifsToken: String  = config.getString("microservice.services.ifs.token")
+  val ifsEnv: String    = config.getString("microservice.services.ifs.env")
+  val ifsEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.ifs.environmentHeaders")
 
   val mtdIdBaseUrl: String = config.baseUrl("mtd-id-lookup")
 
