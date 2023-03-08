@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.ifs
 
+import play.api.http.{HeaderNames, MimeTypes}
 import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
 import play.api.libs.json.Writes
 import uk.gov.hmrc.http.{Authorization, BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
@@ -40,13 +41,17 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
     //TODO remove me
-    val headersPassed = s"auth = Bearer ${appConfig.ifsToken}, Environment = ${appConfig.ifsEnv} , CorrelationId = $correlationId"
+    val headersPassed = s" Environment = ${appConfig.ifsEnv} , CorrelationId = $correlationId"
 
-    logger.info(s"$correlationId::[IfsConnector:submit] url  $url headers = $headersPassed")
+    logger.info(s"$correlationId::[IfsConnector:submit] url  $url headers = $headersPassed, " +
+      s"${HeaderNames.CONTENT_TYPE} -> ${MimeTypes.JSON};charset=UTF-8" )
       httpClient
         .POST[IFRequest, HttpResponse](s"$url", ifRequest,Seq(
           "Environment"   -> appConfig.ifsEnv,
-          "CorrelationId" -> correlationId))(implicitly[Writes[IFRequest]],
+          "CorrelationId" -> correlationId,
+          HeaderNames.CONTENT_TYPE -> s"${MimeTypes.JSON};charset=UTF-8",
+          "accept"-> "*/*"
+        ))(implicitly[Writes[IFRequest]],
           implicitly[HttpReads[HttpResponse]],
           hc.copy(authorization = Some(Authorization(s"Bearer ${appConfig.ifsToken}"))), ec)
         .map { response =>
