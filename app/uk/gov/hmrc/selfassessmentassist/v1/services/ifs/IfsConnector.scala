@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.ifs
 
-import play.api.http.{HeaderNames, MimeTypes}
 import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient,HttpResponse, UpstreamErrorResponse}
+import play.api.libs.json.Writes
+import uk.gov.hmrc.http.{Authorization, BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
@@ -34,65 +34,45 @@ import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (implicit val ec: ExecutionContext) extends Logging {
 
   private lazy val url: String    = appConfig.ifsBaseUrl
-  private val jsonContentTypeHeader = HeaderNames.CONTENT_TYPE -> MimeTypes.JSON
-  private def getBackendHeaders[Resp](hc: HeaderCarrier,
-                                      correlationId: String,
-                                      additionalHeaders: (String, String)*): HeaderCarrier = {
-
-
-    val passThroughHeaders = hc
-      .headers(appConfig.ifsEnvironmentHeaders.getOrElse(Seq.empty))
-      .filterNot(hdr => additionalHeaders.exists(_._1.equalsIgnoreCase(hdr._1)))
-
-    HeaderCarrier(
-      extraHeaders = hc.extraHeaders ++
-        // Contract headers
-        Seq(
-          "Authorization" -> s"Bearer ${appConfig.ifsToken}",
-          "Environment"   -> appConfig.ifsEnv,
-          "CorrelationId" -> correlationId
-        ) ++
-        additionalHeaders ++
-        passThroughHeaders
-    )
-  }
 
   def submit(ifRequest: IFRequest)(
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
-    val backEndHeaders: HeaderCarrier = getBackendHeaders(hc, correlationId, jsonContentTypeHeader)
     //TODO remove me
-    logger.info(s"$correlationId::[IfsConnector:submit] url and data  $url header = $backEndHeaders")
-    doPost(ifRequest)(backEndHeaders,correlationId)
-  }
+    val headersPassed = s"auth = Bearer ${appConfig.ifsToken}, Environment = ${appConfig.ifsEnv} , CorrelationId = $correlationId"
 
-  private def doPost(ifRequest: IFRequest)(implicit hc: HeaderCarrier, correlationId: String) = {
-    httpClient
-      .POST[IFRequest, HttpResponse](s"$url", ifRequest)
-      .map { response =>
-        response.status match {
-          case NO_CONTENT => {
-            logger.info(s"$correlationId::[IfsConnector:submit]  ${ifRequest.eventName} interaction stored successfully")
-            Right(IfsResponse())
+    logger.info(s"$correlationId::[IfsConnector:submit] url  $url headers = $headersPassed")
+      httpClient
+        .POST[IFRequest, HttpResponse](s"$url", ifRequest,Seq(
+          "Environment"   -> appConfig.ifsEnv,
+          "CorrelationId" -> correlationId))(implicitly[Writes[IFRequest]],
+          implicitly[HttpReads[HttpResponse]],
+          hc.copy(authorization = Some(Authorization(s"Bearer ${appConfig.ifsToken}"))), ec)
+        .map { response =>
+          response.status match {
+            case NO_CONTENT => {
+              logger.info(s"$correlationId::[IfsConnector:submit]  ${ifRequest.eventName} interaction stored successfully")
+              Right(IfsResponse())
+            }
+            case unexpectedStatus@_ =>
+              logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
+              Left(ErrorWrapper(correlationId, DownstreamError))
           }
-          case unexpectedStatus@_ =>
-            logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
-            Left(ErrorWrapper(correlationId, DownstreamError))
         }
-      }
-      .recover {
-        case _: BadRequestException =>
-          logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : BAD request")
-          Left(ErrorWrapper(correlationId, DownstreamError))
-
-        case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE =>
-          logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request")
-          Left(ErrorWrapper(correlationId, DownstreamError))
-
-        case NonFatal(e) =>
-          logger.error(s"$correlationId::[submit] RequestId:${hc.requestId}\nIFS submission failed with exception", e)
-          Left(ErrorWrapper(correlationId, DownstreamError))
-      }
+        .recover {
+          case _: BadRequestException => {
+            logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : BAD request")
+            Left(ErrorWrapper(correlationId, DownstreamError))
+          }
+          case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE => {
+            logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request")
+            Left(ErrorWrapper(correlationId, DownstreamError))
+          }
+          case NonFatal(e) => {
+            logger.error(s"$correlationId::[submit] RequestId:${hc.requestId}\nIFS submission failed with exception", e)
+            Left(ErrorWrapper(correlationId, DownstreamError))
+          }
+        }
   }
 }
