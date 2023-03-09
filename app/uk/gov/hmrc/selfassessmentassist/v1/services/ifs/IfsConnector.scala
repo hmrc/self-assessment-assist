@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.ifs
 
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
-import play.api.libs.json.Writes
+import play.api.libs.json.{Json, Writes}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
@@ -45,9 +45,6 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
 
     logger.info(s"$correlationId::[IfsConnector:submit] url  $url headers = $headersPassed, " +
       s"${HeaderNames.CONTENT_TYPE} -> ${MimeTypes.JSON};charset=UTF-8" )
-
-    logger.info(s"$correlationId::[IfsConnector:submit] request is   $ifRequest" )
-
       httpClient
         .POST[IFRequest, HttpResponse](s"$url", ifRequest,Seq(
           "Environment"   -> appConfig.ifsEnv,
@@ -65,7 +62,7 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
               Right(IfsResponse())
             }
             case unexpectedStatus@_ =>
-              logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus $response")
+              logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
               Left(ErrorWrapper(correlationId, DownstreamError))
           }
         }
