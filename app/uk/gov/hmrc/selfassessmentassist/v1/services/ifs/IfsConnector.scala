@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.ifs
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
 import play.api.libs.json.Writes
-import uk.gov.hmrc.http.{Authorization, BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
@@ -40,11 +40,7 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
     implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
 
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
-    //TODO remove me
-    val headersPassed = s" Environment = ${appConfig.ifsEnv} , CorrelationId = $correlationId"
 
-    logger.info(s"$correlationId::[IfsConnector:submit] url  $url headers = $headersPassed, " +
-      s"${HeaderNames.CONTENT_TYPE} -> ${MimeTypes.JSON};charset=UTF-8" )
       httpClient
         .POST[IFRequest, HttpResponse](s"$url", ifRequest,Seq(
           "Environment"   -> appConfig.ifsEnv,
@@ -67,12 +63,12 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
           }
         }
         .recover {
-          case _: BadRequestException => {
-            logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : BAD request")
+          case e: BadRequestException => {
+            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : BAD request ${e.message}")
             Left(ErrorWrapper(correlationId, DownstreamError))
           }
           case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE => {
-            logger.warn(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request")
+            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request ${e.message}")
             Left(ErrorWrapper(correlationId, DownstreamError))
           }
           case NonFatal(e) => {

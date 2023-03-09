@@ -159,7 +159,7 @@ object FullRequestTestData {
     eventName = "GenerateReport",
     eventTimestamp = OffsetDateTime.now(),
     feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
-    metadata = List(
+    metaData = List(
       Map("nino" -> "nino"),
       Map("taxYear" -> "2023-2024"),
       Map("calculationId" -> "calculationId"),
