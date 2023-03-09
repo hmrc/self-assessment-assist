@@ -55,7 +55,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       eventName = "GenerateReport",
       eventTimestamp = mockCurrentDateTime.getDateTime(),
       feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
-      metadata = List(
+      metaData = List(
         Map("nino" -> rdsReport.nino),
         Map("taxYear" -> rdsReport.taxYear),
         Map("calculationId" -> rdsReport.calculationId.toString),
@@ -71,7 +71,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       eventName = "AcknowledgeReport",
       eventTimestamp = mockCurrentDateTime.getDateTime(),
       feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
-      metadata = List(
+      metaData = List(
         Map("nino" -> CommonTestData.simpleAcknowledgeReportRequest.nino),
         Map("customerType" -> "Individual"),
       ),

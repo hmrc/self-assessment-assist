@@ -25,7 +25,7 @@ case class IFRequest(
                       eventName: String,
                       eventTimestamp: OffsetDateTime,
                       feedbackId: String,
-                      metadata: List[Map[String, String]],
+                      metaData: List[Map[String, String]],
                       payload: Option[Messages]
                     )
 

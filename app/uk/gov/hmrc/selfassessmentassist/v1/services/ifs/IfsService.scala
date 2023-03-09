@@ -58,7 +58,7 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
         "GenerateReport",
         eventTimestamp = currentDateTime.getDateTime(),
         feedbackId = rdsAssessmentReport.feedbackId.fold("")(_.toString),
-        metadata = List(
+        metaData = List(
           Map("nino" -> assessmentReport.nino),
           Map("taxYear" -> assessmentReport.taxYear),
           Map("calculationId" -> assessmentReport.calculationId.toString),
@@ -98,7 +98,7 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
       "AcknowledgeReport",
       eventTimestamp = currentDateTime.getDateTime(),
       feedbackId = rdsAssessmentReport.feedbackId.fold("")(_.toString),
-      metadata = List(
+      metaData = List(
         Map("nino" -> acknowledgeReportRequest.nino),
         Map("customerType" -> customerTypeString(userDetails.toCustomerType)),
       ) ++ userDetails.agentReferenceNumber.fold(List.empty[Map[String, String]])(e => List(Map("agentReferenceNumber" -> e))),
