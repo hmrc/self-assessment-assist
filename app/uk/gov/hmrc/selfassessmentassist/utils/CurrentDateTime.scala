@@ -21,10 +21,13 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class CurrentDateTime @Inject()() {
-  def getDateTime(): OffsetDateTime = OffsetDateTime.now()
+  def getDateTime(): OffsetDateTime = {
+   val formatted = OffsetDateTime.now().format(DateUtils.dateTimePattern)
+    OffsetDateTime.parse(formatted)
+  }
+
   def dateString(currentDatetime: OffsetDateTime): OffsetDateTime = {
-    val formatted = currentDatetime.format(DateUtils.dateTimePattern)
-//    val formatter = DateUtils.dateTimePattern.format(OffsetDateTime.parse(currentDatetime.toString))
+    val formatted: String = currentDatetime.format(DateUtils.dateTimePattern)
     OffsetDateTime.parse(formatted)
   }
 }
