@@ -19,6 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.nrs
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, HashUtil, Logging}
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.NrsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request._
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.NrsFailure

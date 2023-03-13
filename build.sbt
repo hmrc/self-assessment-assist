@@ -1,3 +1,4 @@
+import scoverage.ScoverageKeys
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 
 
@@ -35,6 +36,11 @@ lazy val microservice = Project(appName, file("."))
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(PlayKeys.playDefaultPort := 8342)
   .settings(CodeCoverageSettings.settings: _*)
+  .settings(
+    ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*filters.*;.*handlers.*;.*components.*;.*repositories.*;" +
+      ".*BuildInfo.*;.*javascript.*;.*Routes.*;.*config.*;.*TimeProvider;.*GuiceInjector;" +
+      ".*ControllerConfiguration;.*testonly.*;",
+    ScoverageKeys.coverageMinimumStmtTotal := 80)
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "resources")
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(

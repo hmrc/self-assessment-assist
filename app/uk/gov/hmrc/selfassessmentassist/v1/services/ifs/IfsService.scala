@@ -25,6 +25,7 @@ import java.time.LocalDateTime
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.IfsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.CustomerType.{Agent, CustomerType, TaxPayer}
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.PreferredLanguage.PreferredLanguage
@@ -108,7 +109,7 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
 
   private def typeIds(report: RdsAssessmentReport): Seq[String] = {
     report.outputs.collect {
-      case elm: RdsAssessmentReport.MainOutputWrapper if elm.name == "typeId" => elm
+      case elm: RdsAssessmentReport.MainOutputWrapper if elm.name == "typeIDs" => elm
     }.flatMap(_.value).collect {
       case value: RdsAssessmentReport.DataWrapper => value
     }.flatMap(_.data).flatten

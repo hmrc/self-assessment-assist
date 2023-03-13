@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.cip
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import play.api.http.Status.OK
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
@@ -27,8 +28,6 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.{FraudRiskReport,
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 @Singleton
 class InsightConnector @Inject()(val httpClient: HttpClient,

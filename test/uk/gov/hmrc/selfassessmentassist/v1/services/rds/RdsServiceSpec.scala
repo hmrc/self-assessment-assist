@@ -40,14 +40,14 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
 
   var port: Int = _
 
-  class Test extends MockRdsConnector {
+  class Test(rdsRequired: Boolean = false) extends MockRdsConnector {
     val submitBaseUrl: String = s"http://localhost:$port/submit"
     val acknowledgeUrl: String = s"http://localhost:$port/acknowledge"
     val rdsAuthCredentials: RdsAuthCredentials = RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
 
     MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
     MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
-    MockedAppConfig.rdsAuthRequiredForThisEnv returns false
+    MockedAppConfig.rdsAuthRequiredForThisEnv returns rdsRequired
 
     implicit val userRequest: UserRequest[_] =
       UserRequest(
@@ -72,6 +72,14 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
   "service" when {
     "the submit method is called" must {
       "return the expected result" in new Test {
+        MockRdsAuthConnector.retrieveAuthorisedBearer()
+        MockRdsConnector.submit(rdsRequest) returns Future.successful(Right(ResponseWrapper(correlationId, rdsNewSubmissionReport)))
+
+        val assessmentReportSO: ServiceOutcome[AssessmentReportWrapper] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport, Internal))
+        assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReportWrapper))
+      }
+
+      "return the expected result when rds auth required" in new Test(true) {
         MockRdsAuthConnector.retrieveAuthorisedBearer()
         MockRdsConnector.submit(rdsRequest) returns Future.successful(Right(ResponseWrapper(correlationId, rdsNewSubmissionReport)))
 

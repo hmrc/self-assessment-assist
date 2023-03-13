@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.cip
 
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.InsightConnector
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.{FraudRiskReport, FraudRiskRequest}
 

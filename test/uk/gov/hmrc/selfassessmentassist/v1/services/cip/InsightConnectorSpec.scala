@@ -26,6 +26,7 @@ import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData.simpleFraudRiskRequest
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.InsightConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.FraudRiskReport
@@ -51,6 +52,12 @@ class InsightConnectorSpec extends ConnectorSpec
       """{"riskCorrelationId":"8d844f4a-0630-4568-99ef-d4606ae45d17",
         |"riskScore":50,
         |"reasons":["No NINO has path to something risky."]}""".stripMargin)
+
+  private val malformedSuccessResponseJson: JsValue =
+    Json.parse(
+      """{"invalid":"8d844f4a-0630-4568-99ef-d4606ae45d17",
+        |"invalid2":50,
+        |"invalid3":["No NINO has path to something risky."]}""".stripMargin)
 
   private val fraudRiskRequestJsonString: String = Json.toJson(simpleFraudRiskRequest).toString()
   private val fraudRiskResponse = successResponseJson.validate[FraudRiskReport].get
@@ -97,6 +104,11 @@ class InsightConnectorSpec extends ConnectorSpec
       "return the response" in new Test {
         stubCIPResponse(Some(successResponseJson.toString),OK)
         await(connector.assess(simpleFraudRiskRequest)) shouldBe Right(ResponseWrapper(correlationId,fraudRiskResponse))
+      }
+
+      "return invalid response" in new Test {
+        stubCIPResponse(Some(malformedSuccessResponseJson.toString),OK)
+        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
     }
 

@@ -18,15 +18,16 @@ package uk.gov.hmrc.selfassessmentassist.v1.service.ifs
 
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
-import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.MockIfsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, Link, Risk}
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsService
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request.{IFRequest, Messages}
+import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request._
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData.assessmentRequestForSelfAssessment
 
+import java.time.OffsetDateTime
 import java.util.UUID
 import scala.concurrent.Future
 
@@ -49,21 +50,89 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
   )
 
-  private def expectedReportGenerationPayload =
-    IFRequest(
-      serviceRegime = "self-assessment-assist",
-      eventName = "GenerateReport",
-      eventTimestamp = mockCurrentDateTime.getDateTime(),
-      feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
-      metaData = List(
-        Map("nino" -> rdsReport.nino),
-        Map("taxYear" -> rdsReport.taxYear),
-        Map("calculationId" -> rdsReport.calculationId.toString),
-        Map("customerType" -> "Individual"),
-        Map("calculationTimestamp" -> mockCurrentDateTime.getDateTime().toLocalDateTime.format(DateUtils.dateTimePattern)),
-      ),
-      payload = Some(Messages(Some(Vector())))
+  private def expectedReportGenerationPayload = IFRequest(
+    "self-assessment-assist",
+    "GenerateReport",
+    OffsetDateTime.parse("2022-01-01T12:00Z"),
+    "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
+    List(
+      Map("nino" -> "nino"),
+      Map("taxYear" -> "2021-2022"),
+      Map("calculationId" -> "99d758f6-c4be-4339-804e-f79cf0610d4f"),
+      Map("customerType" -> "Individual"),
+      Map("calculationTimestamp" -> "2022-01-01T12:00:00.000Z")
+    ),
+    Some(
+      Messages(
+        Some(
+          List(
+            IFRequestPayload(
+              "001",
+              IFRequestPayloadAction(
+                "Non-Business Income Source",
+                "You have declared family loan as a source of your income. There have been changes to the rules around non-business sources you may declare, please check the appropriate guidance to see how this impacts you.",
+                "Check guidance",
+                "general/non_business_income_sources/income_source",
+                Some(
+                  List(
+                    IFRequestPayloadActionLinks(
+                      "[ITSA Guidance, Income Source Guidance]",
+                      "[www.itsa.gov.uk, www.itsa/incomesources.gov.uk]"
+                    )
+                  )
+                )
+              ),
+              IFRequestPayloadAction(
+                "Ffynhonnell Incwm Di-Fusnes",
+                "Rydych wedi datgan benthyciad teulu fel ffynhonnell eich incwm. Bu newidiadau i'r rheolau ynghylch ffynonellau nad ydynt yn ymwneud â busnes y gallwch eu datgan, darllenwch y canllawiau priodol i weld sut mae hyn yn effeithio arnoch chi.",
+                "Gwirio Canllawiau",
+                "general/non_business_income_sources/income_source",
+                Some(
+                  List(
+                    IFRequestPayloadActionLinks(
+                      "[Canllawiau ITSA, Arweiniad i Ffynonellau Incwm]",
+                      "[www.itsa/cym.gov.uk, www.itsa/incomesources.gov.uk]"
+                    )
+                  )
+                )
+              )
+            ),
+            IFRequestPayload(
+              "002",
+              IFRequestPayloadAction(
+                "Turnover",
+                "Your declared turnover of £80,000 appears to be lower than expected based on your income sources, please confirm all turnover is accounted for before submission.",
+                "Check turnover",
+                "general/total_declared_turnover",
+                Some(
+                  List(
+                    IFRequestPayloadActionLinks(
+                      "[Accounting for Income]",
+                      "[www.itsa/incomecompliance.gov.uk]"
+                    )
+                  )
+                )
+              ),
+              IFRequestPayloadAction(
+                "Trosiant",
+                "Mae'n ymddangos bod eich trosiant datganedig o £80,000 yn is na'r disgwyl yn seiliedig ar eich ffynonellau incwm, cadarnhewch y cyfrifir am yr holl drosiant cyn cyflwyno.",
+                "Gwiriwch y trosiant",
+                "general/total_declared_turnover",
+                Some(
+                  List(
+                    IFRequestPayloadActionLinks(
+                      "[Cyfrifo am Incwm]",
+                      "[www.itsa/incomecompliance.gov.uk]"
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
     )
+  )
 
   private def expectedAcknowledgementPayload =
     IFRequest(
@@ -93,7 +162,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
           .returns(Future.successful(Right(IfsResponse())))
 
         await(
-          service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.simpleAcknowledgeNewRdsAssessmentReport)
+          service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.rdsNewSubmissionReport)
         ) shouldBe Right(IfsResponse())
       }
 
@@ -108,7 +177,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
           .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))))
 
         await(
-          service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.simpleAcknowledgeNewRdsAssessmentReport)
+          service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.rdsNewSubmissionReport)
         ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))
       }
 

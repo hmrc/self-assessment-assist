@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.nrs
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import akka.actor.Scheduler
 import play.api.http.Status
@@ -22,6 +22,7 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{Delayer, Logging, Retrying}
+import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.NrsOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.NrsSubmission
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 
