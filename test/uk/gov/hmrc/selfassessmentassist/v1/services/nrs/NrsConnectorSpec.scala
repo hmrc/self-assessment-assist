@@ -27,6 +27,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.NrsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.NrsSubmission
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.NrsFailure.Exception
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.{NrsFailure, NrsResponse}

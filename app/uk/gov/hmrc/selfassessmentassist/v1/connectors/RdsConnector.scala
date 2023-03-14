@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.rds
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import play.api.http.Status.{ACCEPTED, BAD_REQUEST, CREATED, FORBIDDEN, NOT_FOUND, NO_CONTENT, REQUEST_TIMEOUT, SERVICE_UNAVAILABLE, UNAUTHORIZED}
+import play.api.http.Status._
 import play.api.libs.json.Json
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ForbiddenDownstreamError}
-
-import javax.inject.Named
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
+import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, _}
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{Inject, Named, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 @Singleton
 class RdsConnector @Inject()(@Named("external-http-client") val httpClient: HttpClient,

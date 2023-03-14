@@ -24,6 +24,7 @@ import play.api.http.MimeTypes
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.IfsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request.IFRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsResponse

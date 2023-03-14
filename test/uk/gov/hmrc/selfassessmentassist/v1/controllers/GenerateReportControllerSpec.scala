@@ -260,7 +260,7 @@ class GenerateReportControllerSpec
 
     "a request fails due to a failed RDSService.submit" should {
 
-      def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
+      def runTest(mtdError: MtdError, expectedStatus: Int, expectedBody: Option[JsValue]): Unit = {
         s"return the expected error ${mtdError.code} when controller is set to return error from RDSService.submit " in new Test {
 
           MockEnrolmentsAuthService.authoriseUser()
@@ -278,18 +278,29 @@ class GenerateReportControllerSpec
           val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
-          contentType(result) shouldBe Some("application/json")
+          if(expectedBody.nonEmpty) {
+            contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody.get))
+            contentType(result) shouldBe Some("application/json")
+          }
           header("X-CorrelationId", result) shouldBe Some(correlationId)
         }
       }
 
       val errorInErrorOut =
         Seq(
-          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, ServiceUnavailableError.toJson),
-          (MatchingResourcesNotFoundError, NOT_FOUND, MatchingResourcesNotFoundError.toJson),
-          (InvalidCredentialsError, UNAUTHORIZED, InvalidCredentialsError.toJson)
+          (ServerError, INTERNAL_SERVER_ERROR, Some(DownstreamError.toJson)),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, Some(ServiceUnavailableError.toJson)),
+          (MatchingResourcesNotFoundError, NOT_FOUND, Some(MatchingResourcesNotFoundError.toJson)),
+          (InvalidCredentialsError, UNAUTHORIZED, Some(InvalidCredentialsError.toJson)),
+          (NinoFormatError, BAD_REQUEST, Some(NinoFormatError.toJson)),
+          (NoAssessmentFeedbackFromRDS, NO_CONTENT, None),
+          (CalculationIdFormatError, BAD_REQUEST, Some(CalculationIdFormatError.toJson)),
+          (MatchingCalculationIDNotFoundError, NOT_FOUND, Some(MatchingCalculationIDNotFoundError.toJson)),
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, Some(ClientOrAgentNotAuthorisedError.toJson)),
+          (RdsAuthError, INTERNAL_SERVER_ERROR, Some(ForbiddenDownstreamError.toJson)),
+          (BadRequestError, BAD_REQUEST, Some(BadRequestError.toJson)),
+          (InvalidJson, INTERNAL_SERVER_ERROR, Some(MatchingResourcesNotFoundError.toJson)),
+
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))

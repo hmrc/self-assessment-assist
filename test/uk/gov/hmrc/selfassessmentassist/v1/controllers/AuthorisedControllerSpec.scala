@@ -110,6 +110,44 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       }
     }
 
+    "the mtd id lookup service returns an forbidden" should {
+      "return a 405 error response" in new Test {
+        MockLookupConnector.mockMtdIdLookupConnectorError(UnauthorisedError)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
+        val result: Result = Await.result(resultFuture, defaultTimeout)
+
+        (result.header.status) shouldBe FORBIDDEN
+
+        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
+        val returnedError: String = returnedErrorJSon.utf8String
+
+        val invalidBearerJson: JsValue = Json.toJson(Seq(UnauthorisedError))
+        val ninoError: String = invalidBearerJson.toString()
+
+        returnedError shouldBe ninoError
+      }
+    }
+
+    "the mtd id lookup service returns an unknown error" should {
+      "return a 500 error response" in new Test {
+        MockLookupConnector.mockMtdIdLookupConnectorError(ForbiddenRDSCorrelationIdError)
+        private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
+        val result: Result = Await.result(resultFuture, defaultTimeout)
+
+        (result.header.status) shouldBe INTERNAL_SERVER_ERROR
+
+        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
+        val returnedError: String = returnedErrorJSon.utf8String
+
+        val invalidBearerJson: JsValue = Json.toJson(Seq(DownstreamError))
+        val ninoError: String = invalidBearerJson.toString()
+
+        returnedError shouldBe ninoError
+      }
+    }
+
     "the mtd id lookup service returns an NinoFormat error" should {
       "return a 403 error response" in new Test {
         MockLookupConnector.mockMtdIdLookupConnectorError(NinoFormatError)
@@ -140,7 +178,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       }
 
       def serviceErrors(mtdError: MtdError, expectedStatus: Int, expectedBody: JsValue): Unit = {
-        s"a ${mtdError.code} error is returned from the enrolments auth service" in new Test {
+        s"a ${mtdError.code}/${mtdError.message} error is returned from the enrolments auth service" in new Test {
 
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockEnrolmentsAuthService.authorised(predicate("1234567890"))
@@ -158,6 +196,10 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         Seq(
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, Json.toJson(ClientOrAgentNotAuthorisedError)),
           (ForbiddenDownstreamError, FORBIDDEN, Json.toJson(DownstreamError)),
+          (InvalidBearerTokenError, FORBIDDEN, Json.toJson(InvalidCredentialsError)),
+          (BearerTokenExpiredError, FORBIDDEN, Json.toJson(InvalidCredentialsError)),
+          (LegacyUnauthorisedError, FORBIDDEN, Json.toJson(LegacyUnauthorisedError)),
+          (RdsAuthError, INTERNAL_SERVER_ERROR, Json.toJson(DownstreamError)),
           (unexpectedError, INTERNAL_SERVER_ERROR, Json.toJson(DownstreamError))
         )
 

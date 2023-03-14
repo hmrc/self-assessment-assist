@@ -77,7 +77,7 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
 
 
-  private def createUserDetailsWithLogging(affinityGroup: AffinityGroup,
+  def createUserDetailsWithLogging(affinityGroup: AffinityGroup,
                                            enrolments: Enrolments,
                                            correlationId: String,
                                            identityData: Option[IdentityData]): Future[Right[MtdError, UserDetails]] = {
@@ -98,7 +98,6 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     } else {
       logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup")
       val agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments)
-      logger.debug(s"$correlationId::[createUserDetailsWithLogging] agentReferenceNumber $agentReferenceNumber")
       Future.successful(Right(userDetails.copy(agentReferenceNumber = agentReferenceNumber)))
     }
   }

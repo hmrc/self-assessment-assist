@@ -20,6 +20,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import play.api.Configuration
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
+import uk.gov.hmrc.selfassessmentassist.v1.models.auth.AuthCredential
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -34,6 +35,10 @@ trait MockAppConfig extends MockFactory {
     def rdsBaseUrlForAcknowledge: CallHandler[String] = (mockAppConfig.rdsBaseUrlForAcknowledge _).expects().anyNumberOfTimes()
     def rdsAuthRequiredForThisEnv: CallHandler[Boolean] = (mockAppConfig.rdsAuthRequiredForThisEnv _).expects().anyNumberOfTimes()
     def cipFraudServiceBaseUrl:CallHandler[String] = (mockAppConfig.cipFraudServiceBaseUrl _).expects().anyNumberOfTimes()
+    // RDS Auth
+    def rdsSasBaseUrlForAuth:CallHandler[String] = (mockAppConfig.rdsSasBaseUrlForAuth _).expects().anyNumberOfTimes()
+    def rdsAuthCredential:CallHandler[AuthCredential] = (mockAppConfig.rdsAuthCredential _).expects().anyNumberOfTimes()
+
     //API Config
     def featureSwitch: CallHandler[Option[Configuration]] = (mockAppConfig.featureSwitch _: () => Option[Configuration]).expects()
 
