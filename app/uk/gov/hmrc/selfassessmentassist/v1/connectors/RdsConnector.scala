@@ -54,14 +54,17 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
               },
               assessmentReport =>  assessmentReport.responseCode match {
-                case Some(CREATED)  => Right(ResponseWrapper(correlationId, assessmentReport))
-                case Some(NO_CONTENT) => Left(ErrorWrapper(correlationId, NoAssessmentFeedbackFromRDS))//exceptional scenario to stop processing
+                case Some(CREATED)  => logger.info(s"$correlationId::[RdsConnector:submit]RDS response body status code is ${CREATED}")
+                  Right(ResponseWrapper(correlationId, assessmentReport))
+                case Some(NO_CONTENT) => logger.info(s"$correlationId::[RdsConnector:submit]RDS response body status code is ${NO_CONTENT}")
+                  Left(ErrorWrapper(correlationId, NoAssessmentFeedbackFromRDS))//exceptional scenario to stop processing
                 case Some(NOT_FOUND) =>
+                  logger.info(s"$correlationId::[RdsConnector:submit]RDS response body status code is ${NOT_FOUND}")
                   val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
                   logger.info(s"$correlationId::[RdsService][submit] $errorMessage")
                   Left(ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
                 case Some(_) | None =>
-                  logger.error(s"$correlationId::[RdsService][submit] unexpected response")
+                  logger.error(s"$correlationId::[RdsService][submit] RDS response body status code is ${assessmentReport.responseCode}")
                   Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
               }
             )
