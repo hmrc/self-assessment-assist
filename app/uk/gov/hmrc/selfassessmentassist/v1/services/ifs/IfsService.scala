@@ -54,6 +54,8 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
     val englishActions = risks(rdsAssessmentReport, PreferredLanguage.English)
     val welshActions = risks(rdsAssessmentReport, PreferredLanguage.Welsh)
     val payloadMessageIds = typeIds(rdsAssessmentReport)
+    logger.info(s"in ifs processing ${assessmentReport.reportId} and ${assessmentReport.calculationId}")
+
     IFRequest(
         serviceRegime = "self-assessment-assist",
         "GenerateReport",
@@ -83,8 +85,12 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
               path = welshActions(index).path,
               links = if(welshActions(index).links.nonEmpty) Some(welshActions(index).links.map(e => IFRequestPayloadActionLinks(e.title, e.url))) else None
             )
+            logger.info(s"processing risk with index $risk and $index")
+            val messageIds = payloadMessageIds(index)
+              logger.info(s"in ifs payloadMessageIds $messageIds}")
+
             IFRequestPayload(
-              messageId = payloadMessageIds(index),
+              messageId = messageIds,
               englishAction = englishAction,
               welshAction = welsh
             )

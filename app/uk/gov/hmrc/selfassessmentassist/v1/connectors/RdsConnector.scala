@@ -54,17 +54,17 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
               },
               assessmentReport =>  assessmentReport.responseCode match {
-                case Some(CREATED)  => logger.info(s"$correlationId::[RdsConnector:submit]RDS response body status code is ${CREATED}")
+                case Some(CREATED)  => logger.info(s"$correlationId::[RdsConnector:submit] RDS response body status code is ${CREATED}")
                   Right(ResponseWrapper(correlationId, assessmentReport))
-                case Some(NO_CONTENT) => logger.info(s"$correlationId::[RdsConnector:submit]RDS response body status code is ${NO_CONTENT}")
+                case Some(NO_CONTENT) => logger.info(s"$correlationId::[RdsConnector:submit] RDS response body status code is ${NO_CONTENT}")
                   Left(ErrorWrapper(correlationId, NoAssessmentFeedbackFromRDS))//exceptional scenario to stop processing
                 case Some(NOT_FOUND) =>
-                  logger.info(s"$correlationId::[RdsConnector:submit]RDS response body status code is ${NOT_FOUND}")
-                  val errorMessage = assessmentReport.responseMessage.getOrElse("Calculation Not Found")
+                  logger.info(s"$correlationId::[RdsConnector:submit] RDS response calculationId Not Found, body status code is ${NOT_FOUND}")
+                  val errorMessage = assessmentReport.responseMessage.getOrElse("CalculationId Not Found")
                   logger.info(s"$correlationId::[RdsService][submit] $errorMessage")
                   Left(ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
                 case Some(_) | None =>
-                  logger.error(s"$correlationId::[RdsService][submit] RDS response body status code is ${assessmentReport.responseCode}")
+                  logger.error(s"$correlationId::[RdsService][submit] RDS unexpected response, body status code is ${assessmentReport.responseCode}")
                   Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
               }
             )
@@ -75,21 +75,24 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           case NOT_FOUND =>
             logger.error(s"$correlationId::[RdsConnector:submit] RDS not reachable")
             Left(ErrorWrapper(correlationId, DownstreamError))
-          case REQUEST_TIMEOUT =>  Left(ErrorWrapper(correlationId, DownstreamError))
-          case UNAUTHORIZED => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-          case SERVICE_UNAVAILABLE => Left(ErrorWrapper(correlationId, DownstreamError))
+          case REQUEST_TIMEOUT =>  logger.error(s"$correlationId::[RdsConnector:submit] Rds request timeout")
+            Left(ErrorWrapper(correlationId, DownstreamError))
+          case UNAUTHORIZED => logger.error(s"$correlationId::[RdsConnector:submit] Rds request failed as unauthorized")
+            Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+          case SERVICE_UNAVAILABLE => logger.error(s"$correlationId::[RdsConnector:submit] Rds returned service unavailable")
+            Left(ErrorWrapper(correlationId, DownstreamError))
           case unexpectedStatus@_ =>
-            logger.error(s"$correlationId::[RdsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
+            logger.error(s"$correlationId::[RdsConnector:submit] Rds unable to submit the report due to unexpected status code returned $unexpectedStatus")
             Left(ErrorWrapper(correlationId, ServiceUnavailableError))
         }
       }
       .recover {
         case ex: BadRequestException =>
-          logger.error(s"$correlationId::[RdsConnector:submit] BadRequestException $ex")
+          logger.error(s"$correlationId::[RdsConnector:submit] RDS BadRequestException $ex")
           Left(ErrorWrapper(correlationId, DownstreamError))
 
         case ex: UpstreamErrorResponse =>
-          logger.error(s"$correlationId::[RdsConnector:submit] UpstreamErrorResponse $ex")
+          logger.error(s"$correlationId::[RdsConnector:submit] RDS UpstreamErrorResponse $ex")
           ex.statusCode match {
             case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, DownstreamError))
             case UNAUTHORIZED => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
@@ -98,11 +101,11 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           }
 
         case ex: HttpException =>
-          logger.error(s"$correlationId::[RdsConnector:submit] HttpException $ex")
+          logger.error(s"$correlationId::[RdsConnector:submit] RDS HttpException $ex")
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
 
         case ex@_ =>
-          logger.error(s"$correlationId::[RdsConnector:submit] Unknown exception $ex")
+          logger.error(s"$correlationId::[RdsConnector:submit] RDS Unknown exception $ex")
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
   }
@@ -125,26 +128,38 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
             val assessmentReport = response.json.validate[RdsAssessmentReport].get
             assessmentReport.responseCode match {
               case Some(ACCEPTED)       => Right(ResponseWrapper(correlationId, assessmentReport))
-              case Some(UNAUTHORIZED)   => Left(ErrorWrapper(correlationId,ForbiddenRDSCorrelationIdError))
+              case Some(UNAUTHORIZED)   =>
+                logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS body status unauthorized with message  ${assessmentReport.responseMessage}")
+                Left(ErrorWrapper(correlationId,ForbiddenRDSCorrelationIdError))
               case Some(_) | None       =>
                 logger.warn(s"$correlationId::[RdsConnector:acknowledgeRds] unexpected response")
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
 
             }
-          case BAD_REQUEST      => Left(ErrorWrapper(correlationId,DownstreamError))
-          case NOT_FOUND        => Left(ErrorWrapper(correlationId, DownstreamError))
-          case UNAUTHORIZED     => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-          case REQUEST_TIMEOUT  => Left(ErrorWrapper(correlationId, DownstreamError))
+          case BAD_REQUEST      =>
+            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS response : BAD request")
+            Left(ErrorWrapper(correlationId,DownstreamError))
+          case NOT_FOUND        =>
+            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS not reachable")
+            Left(ErrorWrapper(correlationId, DownstreamError))
+          case UNAUTHORIZED     =>
+            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Rds request failed as unauthorized")
+            Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+          case REQUEST_TIMEOUT  =>
+            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Rds request timeout")
+            Left(ErrorWrapper(correlationId, DownstreamError))
           case _                => Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
       .recover {
         case ex: BadRequestException =>
-          logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] BadRequestException $ex")
+          logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS BadRequestException $ex")
           Left(ErrorWrapper(correlationId, DownstreamError))
-        case _: HttpException => Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+        case ex: HttpException =>
+          logger.error(s"$correlationId::[RdsConnector:submit] RDS HttpException $ex")
+          Left(ErrorWrapper(correlationId, ServiceUnavailableError))
         case ex: UpstreamErrorResponse =>
-          logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] UpstreamErrorResponse $ex")
+          logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS UpstreamErrorResponse $ex")
           ex.statusCode match {
             case REQUEST_TIMEOUT  => Left(ErrorWrapper(correlationId, DownstreamError))
             case UNAUTHORIZED     => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
@@ -153,7 +168,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
             case _                => Left(ErrorWrapper(correlationId, DownstreamError))
           }
         case ex@_ =>
-          logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Unknown exception $ex")
+          logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS Unknown exception $ex")
           Left(ErrorWrapper(correlationId, ServiceUnavailableError))
       }
   }
