@@ -132,7 +132,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS body status code is $UNAUTHORIZED unauthorized with message  ${assessmentReport.responseMessage}")
                 Left(ErrorWrapper(correlationId,ForbiddenRDSCorrelationIdError))
               case Some(_) | None       =>
-                logger.warn(s"$correlationId::[RdsConnector:acknowledgeRds] unexpected response WITH body status code is ${assessmentReport.responseCode} and message {${assessmentReport.responseMessage}}")
+                logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] unexpected response WITH body status code is ${assessmentReport.responseCode} and message {${assessmentReport.responseMessage}}")
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
 
             }
