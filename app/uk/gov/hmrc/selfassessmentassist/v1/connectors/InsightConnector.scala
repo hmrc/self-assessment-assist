@@ -44,18 +44,18 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
           case OK =>
             response.json.validate[FraudRiskReport].fold(
               e=> {
-                logger.error(s"$correlationId::[InsightConnector:assess] failed during validate $e")
+                logger.error(s"$correlationId::[InsightConnector:assess] CIP failed during validate $e")
                 Left(ErrorWrapper(correlationId, DownstreamError))
               },
               report => Right(ResponseWrapper(correlationId,report)))
           case _ =>
-            logger.error(s"$correlationId::[InsightConnector:assess] Fraudrisk report failed as unknown code returned ${response.status}")
+            logger.error(s"$correlationId::[InsightConnector:assess] CIP Fraudrisk report failed as unknown code returned ${response.status}")
             Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
       .recover {
         case ex@_ =>
-          logger.error(s"$correlationId::[InsightConnector:assess] Unknown exception $ex")
+          logger.error(s"$correlationId::[InsightConnector:assess] CIP Unknown exception ",ex)
           Left(ErrorWrapper(correlationId, DownstreamError))
       }
   }

@@ -64,18 +64,18 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
           }
         }
         .recover {
-          case e: BadRequestException => {
-            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : BAD request ${e.message}")
+          case e: BadRequestException =>
+            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : BAD request",e)
             Left(ErrorWrapper(correlationId, DownstreamError))
-          }
-          case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE => {
-            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request ${e.message}")
+
+          case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE =>
+            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request",e)
             Left(ErrorWrapper(correlationId, DownstreamError))
-          }
-          case NonFatal(e) => {
-            logger.error(s"$correlationId::[submit] RequestId:${hc.requestId}\nIFS submission failed with exception", e)
+
+          case NonFatal(e) =>
+            logger.error(s"$correlationId::[IfsConnector:submit] IFS submission failed with exception ",e)
             Left(ErrorWrapper(correlationId, DownstreamError))
-          }
+
         }
   }
 }
