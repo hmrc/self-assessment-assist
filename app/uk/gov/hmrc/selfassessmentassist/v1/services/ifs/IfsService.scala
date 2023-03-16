@@ -115,7 +115,7 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
 
   private def typeIds(report: RdsAssessmentReport): Seq[String] = {
     report.outputs.collect {
-      case elm: RdsAssessmentReport.MainOutputWrapper if elm.name == "typeIDs" => elm
+      case elm: RdsAssessmentReport.MainOutputWrapper if elm.name == "typeId" => elm
     }.flatMap(_.value).collect {
       case value: RdsAssessmentReport.DataWrapper => value
     }.flatMap(_.data).flatten

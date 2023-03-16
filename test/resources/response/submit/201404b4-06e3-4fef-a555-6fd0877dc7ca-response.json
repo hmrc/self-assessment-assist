@@ -78,6 +78,24 @@
       ]
     },
     {
+      "name": "typeId",
+      "value": [
+        {
+          "metadata": [
+            {
+              "typeID": "string"
+            }
+          ]
+        },
+        {
+          "data": [
+            [
+            ]
+          ]
+        }
+      ]
+    },
+    {
       "name": "calculationId",
       "value": "replaceCalculationId"
     },
