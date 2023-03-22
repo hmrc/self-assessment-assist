@@ -24,7 +24,7 @@ sealed trait NrsFailure {
 
 case object NrsFailure {
   case class ErrorResponse(status: Int) extends NrsFailure {
-    override def retryable: Boolean = Status.isServerError(status)
+    override def retryable: Boolean = Status.isServerError(status) | status == Status.REQUEST_TIMEOUT
   }
   case class Exception(reason: String) extends NrsFailure {
     override def retryable: Boolean = false
