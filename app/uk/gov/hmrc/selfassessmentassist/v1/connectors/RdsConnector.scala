@@ -83,7 +83,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
             Left(ErrorWrapper(correlationId, DownstreamError))
           case unexpectedStatus@_ =>
             logger.error(s"$correlationId::[RdsConnector:submit] Rds unable to submit the report due to unexpected status code returned $unexpectedStatus")
-            Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+            Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
       .recover {
@@ -157,7 +157,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           Left(ErrorWrapper(correlationId, DownstreamError))
         case ex: HttpException =>
           logger.error(s"$correlationId::[RdsConnector:submit] RDS HttpException $ex")
-          Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+          Left(ErrorWrapper(correlationId, DownstreamError))
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS UpstreamErrorResponse $ex")
           ex.statusCode match {
@@ -169,7 +169,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           }
         case ex@_ =>
           logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS Unknown exception $ex")
-          Left(ErrorWrapper(correlationId, ServiceUnavailableError))
+          Left(ErrorWrapper(correlationId, DownstreamError))
       }
   }
 }
