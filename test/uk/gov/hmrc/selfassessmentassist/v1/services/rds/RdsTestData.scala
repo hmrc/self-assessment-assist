@@ -19,6 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.rds
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
 import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.FraudRiskReport
+import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest.{DataWrapper, MetadataWrapper}
 
@@ -30,7 +31,7 @@ object RdsTestData {
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
     agentRef = None,
-    taxYear = "2021-22"
+    taxYear = "2021"
   )
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(
@@ -44,7 +45,7 @@ object RdsTestData {
         Seq(
           RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
           RdsRequest.InputWithString("nino", assessmentRequestForSelfAssessment.nino),
-          RdsRequest.InputWithString("taxYear", assessmentRequestForSelfAssessment.taxYear),
+          RdsRequest.InputWithInt("taxYear", Integer.parseInt(assessmentRequestForSelfAssessment.taxYear)),
           RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
           RdsRequest.InputWithString("agentRef", assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
           RdsRequest.InputWithString("preferredLanguage", assessmentRequestForSelfAssessment.preferredLanguage.toString),
@@ -70,6 +71,18 @@ object RdsTestData {
           )
         )
   )
+  val acknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
+
+  def rdsAcknowledgementRequest: RdsRequest
+  = {
+    RdsRequest(
+      Seq(
+        RdsRequest.InputWithString("feedbackId", acknowledgeReportRequest.feedbackId),
+        RdsRequest.InputWithString("nino", acknowledgeReportRequest.nino),
+        RdsRequest.InputWithString("correlationId", acknowledgeReportRequest.rdsCorrelationId)
+      )
+    )
+  }
 
   val risks: Seq[Risk] = Vector(
     Risk(
