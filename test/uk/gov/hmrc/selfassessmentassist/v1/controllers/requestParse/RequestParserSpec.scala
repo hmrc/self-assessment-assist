@@ -20,7 +20,7 @@ import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.RequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.validators.Validator
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, NinoFormatError}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, MtdError, NinoFormatError}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.RawData
 
 import scala.concurrent.ExecutionContext
@@ -40,7 +40,7 @@ class RequestParserSpec extends UnitSpec {
     val parser: RequestParser[Raw, Request] = new RequestParser[Raw, Request] {
       val validator: Validator[Raw] = test.validator
 
-      protected def requestFor(data: Raw): Request = Request(data.nino)
+      protected def requestFor(data: Raw): Either[MtdError,Request] = Right(Request(data.nino))
     }
   }
 

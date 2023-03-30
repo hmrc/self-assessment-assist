@@ -17,6 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers
 
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.validators.AcknowledgeReportValidator
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.AcknowledgeReportRequest
 
@@ -26,7 +27,7 @@ import javax.inject.{Inject, Singleton}
 class AcknowledgeRequestParser @Inject()(val validator: AcknowledgeReportValidator)
   extends RequestParser[AcknowledgeReportRawData, AcknowledgeReportRequest] {
 
-  override protected def requestFor(data: AcknowledgeReportRawData): AcknowledgeReportRequest = {
-    AcknowledgeReportRequest(data.nino, data.reportId, rdsCorrelationId=data.rdsCorrelationId)
+  override protected def requestFor(data: AcknowledgeReportRawData): Either[MtdError, AcknowledgeReportRequest] = {
+    Right(AcknowledgeReportRequest(data.nino, data.reportId, rdsCorrelationId=data.rdsCorrelationId))
   }
 }
