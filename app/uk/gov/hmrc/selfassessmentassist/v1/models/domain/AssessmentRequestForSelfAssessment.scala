@@ -22,6 +22,8 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.domain.CustomerType.CustomerTy
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.PreferredLanguage.PreferredLanguage
 
 import java.util.UUID
+sealed trait IdError
+case object InvalidFormatOrValue extends IdError
 
 case class AssessmentRequestForSelfAssessment(calculationId: UUID,
                                               nino: String,

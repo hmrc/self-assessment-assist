@@ -21,8 +21,8 @@ import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.validators.GenerateReportValidator
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentRequestForSelfAssessment, CustomerType, PreferredLanguage}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.{GenerateReportRawData, RawData}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{ErrorWrapper, MtdError}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.{GenerateReportRawData}
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
@@ -30,30 +30,72 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class GenerateReportRequestParserSpec extends UnitSpec {
 
-  case class Raw(nino: String) extends RawData
-  case class Request(nino: String)
-
-  trait Test {
-    test =>
-    val validatorMock = mock[GenerateReportValidator]
-    (validatorMock.validate(_: GenerateReportRawData)).expects(*).anyNumberOfTimes().returns(List.empty[MtdError])
-  }
+  val validator: GenerateReportValidator = new GenerateReportValidator
+  val validData = GenerateReportRawData(
+    calculationId= "0f14d0ab-9605-4a62-a9e4-5ed26688389b",
+    nino= "NJ070957A",
+    preferredLanguage= PreferredLanguage.English,
+    customerType= CustomerType.Agent,
+    agentRef = None,
+    taxYear= "2021-22")
 
   "parse" should {
     "return a Request" when {
-      "the validator returns no errors" in new Test {
-
-        val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validatorMock)
+      "the validator returns no errors" in {
+        val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validator)
         val result = await(
-          parser.parseRequest(GenerateReportRawData("0f14d0ab-9605-4a62-a9e4-5ed26688389b", "", PreferredLanguage.English, CustomerType.Agent, None, ""))(implicitly[ExecutionContext], correlationId)
+          parser.parseRequest(validData)(implicitly[ExecutionContext], correlationId)
         )
+
         result shouldBe Right(AssessmentRequestForSelfAssessment(
           UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
-          "",
+          "NJ070957A",
           PreferredLanguage.English,
           CustomerType.Agent,
           None,
-          ""
+          "2022"
+        ))
+      }
+    }
+
+    "fail a Request" when {
+      "the validator returns errors" in {
+        val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validator)
+        val invalidData = validData.copy(nino = "", taxYear = "")
+        val result = await(
+          parser.parseRequest(invalidData)(implicitly[ExecutionContext], correlationId)
+        )
+
+        result shouldBe Left(ErrorWrapper("f2fb30e5-4ab6-4a29-b3c1-c00000011111",
+          MtdError("INVALID_REQUEST","Invalid request",None),
+          Some(List(MtdError("FORMAT_NINO","The provided NINO is invalid",None),
+            MtdError("FORMAT_TAX_YEAR","The provided tax year is invalid",None)))))
+      }
+    }
+
+    "return a Request with tax year in the expected format" when {
+      "the validator returns no errors" in {
+        val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validator)
+        val result = await(
+          parser.parseRequest(validData)(implicitly[ExecutionContext], correlationId)
+        )
+
+        result shouldBe  Right(AssessmentRequestForSelfAssessment(
+          UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
+          "NJ070957A",
+          PreferredLanguage.English,
+          CustomerType.Agent,
+          None,
+          "2022"
+        ))
+
+        result should not equal  Right(AssessmentRequestForSelfAssessment(
+          UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
+          "NJ070957A",
+          PreferredLanguage.English,
+          CustomerType.Agent,
+          None,
+          "2021-22"
         ))
       }
     }

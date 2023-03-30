@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers
 
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.validators.Validator
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{BadRequestError, ErrorWrapper}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{BadRequestError, ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.RawData
 import uk.gov.hmrc.selfassessmentassist.v1.services.ParseOutcome
 
@@ -27,11 +27,11 @@ import scala.concurrent.{ExecutionContext, Future}
 trait RequestParser[Raw <: RawData, Request] extends Logging {
   val validator: Validator[Raw]
 
-  protected def requestFor(data: Raw): Request
+  protected def requestFor(data: Raw): Either[MtdError, Request]
 
   def parseRequest(data: Raw)(implicit ec:ExecutionContext, correlationId: String): Future[ParseOutcome[Request]] = {
     validator.validate(data) match {
-      case Nil => Future(Right(requestFor(data)))
+      case Nil => Future(requestFor(data).fold(e => Left(ErrorWrapper( correlationId, e, None)), r => Right(r)))
       case err :: Nil =>
         logger.error(message = s"$correlationId::[RequestParser][parseRequest]" +
           s"Validation failed with ${err.code} error for the request")
