@@ -181,7 +181,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
       Seq(
         RdsRequest.InputWithString("calculationId", request.calculationId.toString),
         RdsRequest.InputWithString("nino", request.nino),
-        RdsRequest.InputWithString("taxYear", request.taxYear),
+        RdsRequest.InputWithInt("taxYear", Integer.parseInt(request.taxYear)),
         RdsRequest.InputWithString("customerType", request.customerType.toString),
         RdsRequest.InputWithString("agentRef", request.agentRef.getOrElse("")),
         RdsRequest.InputWithString("preferredLanguage", request.preferredLanguage.toString),
