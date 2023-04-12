@@ -153,9 +153,9 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
   private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
     report.outputs.collect {
       case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
-    }.flatMap(_.value).collect {
+    }.flatMap(_.value.getOrElse(Seq.empty)).collect {
       case value: RdsAssessmentReport.DataWrapper => value
-    }.flatMap(_.data)
+    }.flatMap(_.data.getOrElse(Seq.empty))
       .flatMap(toRisk)
   }
 

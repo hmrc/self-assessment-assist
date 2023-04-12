@@ -96,7 +96,7 @@
     },
     {
       "name": "calculationId",
-      "value": "666690b4-06e3-4fef-a555-6fd0877dc7ca"
+      "value": "201204b4-06e3-4fef-a555-6fd0877dc7ca"
     },
     {
       "name": "correlationId",
@@ -112,7 +112,7 @@
     },
     {
       "name": "responseCode",
-      "value": "replaceResponseCode"
+      "value": 204
     },
     {
       "name": "responseMessage",

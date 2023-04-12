@@ -50,7 +50,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
           case CREATED =>
             response.json.validate[RdsAssessmentReport].fold(
               e => {
-                logger.warn(s"$correlationId::[RdsService][submit] validation failed while transforming the response")
+                logger.error(s"$correlationId::[RdsConnector][submit] validation failed while transforming the response $e")
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
               },
               assessmentReport =>  assessmentReport.responseCode match {

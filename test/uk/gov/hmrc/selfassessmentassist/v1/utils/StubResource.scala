@@ -18,21 +18,21 @@ package uk.gov.hmrc.selfassessmentassist.v1.utils
 
 import play.api.Logging
 import play.api.http.ContentTypes
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results
 
 import java.io.{File, FileInputStream}
 
 trait StubResourceBase extends Results with ContentTypes with Logging {
 
-  def loadSubmitResponseTemplate(calculationId: String, replaceFeedbackId: String, replaceCorrelationId: String,replaceResponseCode:String) = {
+  def loadSubmitResponseTemplate(calculationId: String, replaceFeedbackId: String, replaceCorrelationId: String): JsValue = {
     val fileName = s"response/submit/$calculationId-response.json"
     val templateContent =
       findResource(fileName).map(
         _.replace("replaceFeedbackId", replaceFeedbackId)
           .replace("replaceCalculationId", calculationId)
           .replace("replaceCorrelationId", replaceCorrelationId)
-          .replace("replaceResponseCode",replaceResponseCode))
+      )
 
 
     val parsedContent = templateContent
@@ -41,15 +41,15 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
     parsedContent
   }
 
-  def loadAckResponseTemplate(replaceFeedbackId: String, replaceNino: String,  replaceResponseCode:String) = {
-    val fileName = s"response/acknowledge/feedback-ack.json"
-    val templateContent =
+  def loadAckResponseTemplate(feedbackId: String, nino: String, responseCode:Int):JsValue = {
+    val fileName = s"response/acknowledge/feedback-ack-$responseCode.json"
+    val templateContent: Option[String] =
       findResource(fileName).map(
-        _.replace("replaceFeedbackId", replaceFeedbackId)
-          .replace("replaceNino", replaceNino)
-          .replace("replaceResponseCode", replaceResponseCode))
+        _.replace("replaceFeedbackId", feedbackId)
+          .replace("replaceNino", nino))
 
-    val parsedContent = templateContent
+
+    val parsedContent: JsValue = templateContent
       .map(Json.parse)
       .getOrElse(
         throw new IllegalStateException("Acknowledge template parsing failed"))
