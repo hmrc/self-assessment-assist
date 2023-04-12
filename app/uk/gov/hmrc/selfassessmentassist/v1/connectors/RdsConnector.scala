@@ -125,8 +125,13 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
         logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] RDS http response status is ${response.status}")
         response.status match {
           case CREATED =>
-            val assessmentReport = response.json.validate[RdsAssessmentReport].get
-            assessmentReport.responseCode match {
+            response.json.validate[RdsAssessmentReport].fold(
+              e => {
+                logger.error(s"$correlationId::[RdsConnector][acknowledgeRds] validation failed while transforming the response $e")
+                Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
+              },
+              assessmentReport =>
+                assessmentReport.responseCode match {
               case Some(ACCEPTED)       => Right(ResponseWrapper(correlationId, assessmentReport))
               case Some(UNAUTHORIZED)   =>
                 logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS body status code is $UNAUTHORIZED unauthorized with message  ${assessmentReport.responseMessage}")
@@ -135,7 +140,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] unexpected response WITH body status code is ${assessmentReport.responseCode} and message {${assessmentReport.responseMessage}}")
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
 
-            }
+            })
           case BAD_REQUEST      =>
             logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS response : BAD request")
             Left(ErrorWrapper(correlationId,DownstreamError))
