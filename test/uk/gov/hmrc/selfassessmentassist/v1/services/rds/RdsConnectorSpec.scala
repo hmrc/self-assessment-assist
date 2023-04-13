@@ -148,7 +148,7 @@ class RdsConnectorSpec extends ConnectorSpec
       }
 
       "return the empty feedback, if RDS returns http status 201 and no feedback with responsecode 204" in new Test{
-        val rdsReportJson: JsValue = loadSubmitResponseTemplate(calculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId,"204")
+        val rdsReportJson: JsValue = loadSubmitResponseTemplate(calculationIdWithNoFeedback.toString, simpleReportId.toString, simpleRDSCorrelationId)
         stubRDSGenerateReportResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
@@ -157,7 +157,7 @@ class RdsConnectorSpec extends ConnectorSpec
 
 
       "return MatchingResourcesNotFoundError, if RDS returns http status 201 and no calculationId found with responsecode 404" in new Test{
-        val rdsReportJson: JsValue = loadSubmitResponseTemplate(noCalculationFound.toString, simpleReportId.toString, simpleRDSCorrelationId,"404")
+        val rdsReportJson: JsValue = loadSubmitResponseTemplate(noCalculationFound.toString, simpleReportId.toString, simpleRDSCorrelationId)
         stubRDSGenerateReportResponse(Some(rdsReportJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest,Some(rdsAuthCredentials)))
@@ -195,7 +195,7 @@ class RdsConnectorSpec extends ConnectorSpec
 
     "acknowledge method is called" must {
       "return the response if successful" in new Test {
-        val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
+        val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, nino=simpleNino, responseCode=202)
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
 
         await(connector.acknowledgeRds(rdsAcknowledgementRequest,Some(rdsAuthCredentials))) shouldBe Right(ResponseWrapper(correlationId, rdsAssessmentAckJson.as[RdsAssessmentReport]))
@@ -212,7 +212,7 @@ class RdsConnectorSpec extends ConnectorSpec
       }
 
       "return ForbiddenRDSCorrelationIdError, if RDS returns http status 201 with responsecode 401 for reportid  and correlationId combination " in new Test{
-        val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="401")
+        val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, nino=simpleNino, responseCode=401)
         stubRDSAcknowledgeReportResponse(Some(rdsAssessmentAckJson.toString),status=CREATED)
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsAcknowledgementRequest,Some(rdsAuthCredentials)))

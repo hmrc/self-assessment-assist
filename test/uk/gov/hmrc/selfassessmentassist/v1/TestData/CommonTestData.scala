@@ -37,8 +37,7 @@ object CommonTestData  {
 
   val simpleNino: String = "AA000000B"
   val simpleCalculationId: UUID = UUID.fromString("f2fb30e5-4ab6-4a29-b3c1-c00000000001")
-  val expectedCalculationIdWithNoFeedback: UUID = UUID.fromString("201204b4-06e3-4fef-a555-6fd0877dc7ca")
-  val calculationIdWithNoFeedback: UUID = UUID.fromString("000090b4-06e3-4fef-a555-6fd0877dc7ca")
+  val calculationIdWithNoFeedback: UUID = UUID.fromString("201204b4-06e3-4fef-a555-6fd0877dc7ca")
   val noCalculationFound: UUID = UUID.fromString("201404b4-06e3-4fef-a555-6fd0877dc7ca")
   val simpleRDSCorrelationId: String = "5fht738957jfjf845jgjf855"
   val simpleCIPCorrelationId: String = "5fht738957jfjf845jgjf855"
@@ -104,12 +103,12 @@ object CommonTestData  {
 
   val simpleAcknowledgeReportRequest:AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
-  val rdsSubmissionReportJson: JsValue = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId,"201")
+  val rdsSubmissionReportJson: JsValue = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId)
   val rdsNewSubmissionReport: RdsAssessmentReport = rdsSubmissionReportJson.as[RdsAssessmentReport]
   
   val simpleAssessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalulationTimestamp,simpleAssessmentReport, rdsNewSubmissionReport)
 
-  val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, replaceNino=simpleNino, replaceResponseCode="202")
+  val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, nino=simpleNino, responseCode=202)
   val simpleAcknowledgeNewRdsAssessmentReport: RdsAssessmentReport = rdsAssessmentAckJson.as[RdsAssessmentReport]
 
 

@@ -113,7 +113,7 @@
     },
     {
       "name": "responseCode",
-      "value": "replaceResponseCode"
+      "value": 404
     },
     {
       "name": "responseMessage",
