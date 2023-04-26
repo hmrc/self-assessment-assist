@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.rds
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import akka.actor
 import akka.actor.ActorSystem
@@ -31,7 +31,6 @@ import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.DefaultRdsAuthConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.{AuthCredential, RdsAuthCredentials}
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
 

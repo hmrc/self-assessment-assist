@@ -14,32 +14,31 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.rds
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import akka.actor
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.codahale.metrics.SharedMetricRegistries
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.{BeforeAndAfterAll, EitherValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.MimeTypes
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.JsValue
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, ForbiddenRDSCorrelationIdError, MatchingCalculationIDNotFoundError, MtdError, NoAssessmentFeedbackFromRDS}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
-import RdsTestData.{rdsAcknowledgementRequest, rdsRequest}
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.libs.json.JsValue
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.RdsConnector
-import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
+import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData.{rdsAcknowledgementRequest, rdsRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
+import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
 import java.util.UUID
 import scala.concurrent.Await

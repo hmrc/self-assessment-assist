@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.service.ifs
+package uk.gov.hmrc.selfassessmentassist.v1.services.ifs
 
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
@@ -22,7 +22,6 @@ import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.MockIfsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, Link, Risk}
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsService
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request._
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData.assessmentRequestForSelfAssessment
