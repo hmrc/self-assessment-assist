@@ -42,15 +42,15 @@ trait MockRdsService extends MockFactory {
     def submit(request: AssessmentRequestForSelfAssessment,
                fraudRiskReport: FraudRiskReport,
                origin: Origin,simpleAssessmentReportWrapper:AssessmentReportWrapper): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
-      (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns(Future(Right(ResponseWrapper(correlationId, simpleAssessmentReportWrapper) )))
+      (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
+        .expects(*, *, *, *, *, *) returns(Future(Right(ResponseWrapper(correlationId, simpleAssessmentReportWrapper) )))
     }
 
     def submitFail(request: AssessmentRequestForSelfAssessment,
                fraudRiskReport: FraudRiskReport,
                origin: Origin, error: MtdError): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
-      (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport, _: Origin)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
-        .expects(*, *, simpleInternalOrigin, *, *, *, *) returns (Future(Left(ErrorWrapper(correlationId, error))))
+      (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
+        .expects(*, *, *, *, *, *) returns (Future(Left(ErrorWrapper(correlationId, error))))
     }
 
 

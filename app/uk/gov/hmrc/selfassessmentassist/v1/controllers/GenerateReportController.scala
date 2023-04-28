@@ -65,7 +65,7 @@ class GenerateReportController @Inject()(
         for {
           assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
           fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head })))
-          rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+          rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData))
           _ <- EitherT(ifService.submitGenerateReportMessage(rdsAssessmentReportWrapper.responseData.report, rdsAssessmentReportWrapper.responseData.calculationTimestamp, assessmentRequestForSelfAssessment, rdsAssessmentReportWrapper.responseData.rdsAssessmentReport))
         } yield {
           rdsAssessmentReportWrapper
@@ -77,7 +77,7 @@ class GenerateReportController @Inject()(
         reportWrapper => {
           nonRepudiationService.buildNrsSubmission(reportWrapper.responseData.report.stringify, reportWrapper.responseData.report.reportId.toString, submissionTimestamp, request, AssistReportGenerated)
             .fold(
-              error => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError))),
+              _ => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError))),
               success => {
                 logger.debug(s"$correlationId::[generateReport] Request initiated to store ${AssistReportGenerated.value} content to NRS")
                 nonRepudiationService.submit(success)

@@ -23,6 +23,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
 import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, HashUtil}
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.UserRequest
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockNrsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, Link, Risk}
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request._
