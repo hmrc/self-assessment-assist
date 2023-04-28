@@ -93,7 +93,7 @@ class GenerateReportControllerSpec
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
-        contentAsJson(result) shouldBe simpleAsssementReportMtdJson
+        contentAsJson(result) shouldBe simpleAssessmentReportMtdJson
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
       }
@@ -114,7 +114,7 @@ class GenerateReportControllerSpec
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
-        contentAsJson(result) shouldBe simpleAsssementReportMtdJson
+        contentAsJson(result) shouldBe simpleAssessmentReportMtdJson
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
       }
