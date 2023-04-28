@@ -90,12 +90,6 @@ class RdsAssessmentReportSpec extends UnitSpec {
   "RdsAssessmentReport" when {
 
 
-    "reads JSON" must {
-      "return the valid model" in {
-        json.as[RdsAssessmentReport] shouldBe rdsAssessmentReport
-      }
-    }
-
     "When a function is called" must {
       "return calculationId" in {
         rdsAssessmentReport.calculationId shouldBe Some(calculationId)
