@@ -61,14 +61,15 @@ class GenerateReportController @Inject()(
     authorisedAction(nino).async { implicit request =>
       val customerType = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime()
-      val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] = for {
-        assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
-        fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head })))
-        rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
-        _ <- EitherT(ifService.submitGenerateReportMessage(rdsAssessmentReportWrapper.responseData.report, rdsAssessmentReportWrapper.responseData.calculationTimestamp, assessmentRequestForSelfAssessment, rdsAssessmentReportWrapper.responseData.rdsAssessmentReport))
-      } yield {
-        rdsAssessmentReportWrapper
-      }
+      val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] =
+        for {
+          assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
+          fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head })))
+          rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData, Internal))
+          _ <- EitherT(ifService.submitGenerateReportMessage(rdsAssessmentReportWrapper.responseData.report, rdsAssessmentReportWrapper.responseData.calculationTimestamp, assessmentRequestForSelfAssessment, rdsAssessmentReportWrapper.responseData.rdsAssessmentReport))
+        } yield {
+          rdsAssessmentReportWrapper
+        }
 
       responseData.fold(
         errorWrapper =>

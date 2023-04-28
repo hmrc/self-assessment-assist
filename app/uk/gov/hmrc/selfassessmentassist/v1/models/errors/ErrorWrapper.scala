@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.errors
 
-import play.api.libs.json.{JsObject, JsValue, Json, Writes}
+import play.api.libs.json.{Json, Writes}
 import uk.gov.hmrc.selfassessmentassist.v1.models.audit.AuditError
 
 case class ErrorWrapper( correlationId: String, error: MtdError, errors: Option[Seq[MtdError]] = None) {
@@ -32,33 +32,14 @@ case class ErrorWrapper( correlationId: String, error: MtdError, errors: Option[
 
 object ErrorWrapper {
 
-  @annotation.nowarn
-  val allErrors: Seq[MtdError] => Seq[JsValue] = {
-    case mtdError :: Nil => mtdErrors(mtdError)
-    case mtdError :: rest => mtdErrors(mtdError) ++ allErrors(rest)
-  }
-
-  private val mtdErrors : MtdError => Seq[JsValue] = {
-    case MtdError(_, _, Some(customJson)) =>
-      customJson.asOpt[MtdErrorWrapper] match {
-        case Some(e) => mtdErrorWrapper(e)
-        case _ => Seq(customJson)
-      }
-    case _@o => Seq(Json.toJson(o))
-  }
-
-  private val mtdErrorWrapper: MtdErrorWrapper => Seq[JsValue]= wrapper => wrapper.errors match {
-    case Some(errors) if errors.nonEmpty => errors.map(error => Json.toJson(error))
-    case _ => Seq(Json.toJson(wrapper))
-  }
-
   implicit val writes: Writes[ErrorWrapper] = (errorResponse: ErrorWrapper) => {
 
-    val singleJson: JsObject = Json.toJson(errorResponse.error).as[JsObject]
+    val json = errorResponse.error.asJson
 
     errorResponse.errors match {
-      case Some(errors) if errors.nonEmpty => singleJson + ("errors" -> Json.toJson(allErrors(errors)))
-      case _ => singleJson
+      case Some(errors) if errors.nonEmpty => json + ("errors" -> Json.toJson(errors))
+      case _                               => json
     }
+
   }
 }

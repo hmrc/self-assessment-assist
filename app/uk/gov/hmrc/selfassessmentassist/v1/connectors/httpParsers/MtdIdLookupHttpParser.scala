@@ -23,16 +23,16 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, Inval
 
 
 
-object MtdIdLookupHttpParser {
+object MtdIdLookupHttpParser extends HttpParser {
 
   private val mtdIdJsonReads: Reads[String] = (__ \ "mtdbsa").read[String]
 
   implicit val mtdIdLookupHttpReads: HttpReads[Either[MtdError, String]] = (_: String, _: String, response: HttpResponse) => {
     response.status match {
       case OK =>
-        response.json.asOpt[String](mtdIdJsonReads) match {
+        response.validateJson[String](mtdIdJsonReads) match {
           case Some(mtdId) => Right(mtdId)
-          case None        => Left(DownstreamError)
+          case _        => Left(DownstreamError)
         }
       case FORBIDDEN    => Left(NinoFormatError)
       case UNAUTHORIZED => Left(InvalidBearerTokenError)

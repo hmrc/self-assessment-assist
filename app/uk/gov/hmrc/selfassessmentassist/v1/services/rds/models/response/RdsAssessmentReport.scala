@@ -31,7 +31,7 @@ case class RdsAssessmentReport(links: Seq[String],
                                  ) {
 
   def calculationId: Option[UUID] = outputs.collectFirst {
-    case KeyValueWrapper("calculationId", value) => value.map(UUID.fromString(_))
+    case KeyValueWrapper("calculationId", value) => value.map(UUID.fromString)
   }.flatten
 
   def rdsCorrelationId: Option[String] = outputs.collectFirst {
@@ -39,7 +39,7 @@ case class RdsAssessmentReport(links: Seq[String],
     }.flatten
 
   def feedbackId: Option[UUID] = outputs.collectFirst {
-    case KeyValueWrapper("feedbackId", value) => value.map(UUID.fromString(_))
+    case KeyValueWrapper("feedbackId", value) => value.map(UUID.fromString)
   }.flatten
 
   def responseCode: Option[Int] = outputs.collectFirst {
@@ -58,11 +58,11 @@ case class RdsAssessmentReport(links: Seq[String],
 
 object RdsAssessmentReport {
 
-  trait Output
+  sealed trait Output
 
   object Output {
-    val specialKeysWithIntValues = List("responseCode")
-    val specialKeys = List("correlationId","feedbackId","calculationId","nino","taxYear","response",
+    val specialKeysWithIntValues: Seq[String] = List("responseCode")
+    val specialKeys: Seq[String] = List("correlationId","feedbackId","calculationId","nino","taxYear","response",
       "responseMessage","Created_dttm","createdDttm","calculationTimestamp","rt_Record_Contacts_Outer")
     implicit val reads: Reads[Output] = {
       case json@JsObject(fields) =>
@@ -77,11 +77,11 @@ object RdsAssessmentReport {
       case _ => throw new IllegalThreadStateException("Output malformed")
     }
 
-    @annotation.nowarn
     implicit val writes: Writes[Output] = {
       case o@MainOutputWrapper(_, _) => MainOutputWrapper.writes.writes(o)
       case o@IdentifiersWrapper(_) => IdentifiersWrapper.writes.writes(o)
-
+      case o@KeyValueWrapper(_, _) => KeyValueWrapper.writes.writes(o)
+      case o@KeyValueWrapperInt(_, _) => KeyValueWrapperInt.writes.writes(o)
     }
   }
 
@@ -90,7 +90,7 @@ object RdsAssessmentReport {
 
     val reads: Reads[KeyValueWrapperInt] =
       ((JsPath \ "name").read[String] and
-        ((JsPath \ "value").read[Int] ))(KeyValueWrapperInt.apply _)
+        (JsPath \ "value").read[Int])(KeyValueWrapperInt.apply _)
 
     val writes: Writes[KeyValueWrapperInt] =
       (JsPath \ "name").write[String].and((JsPath \ "value").write[Int])(unlift(KeyValueWrapperInt.unapply))
@@ -100,7 +100,7 @@ object RdsAssessmentReport {
   object KeyValueWrapper {
    implicit  val reads: Reads[KeyValueWrapper] =
       ((JsPath \ "name").read[String] and
-        ((JsPath \ "value").readNullable[String] ))(KeyValueWrapper.apply _)
+        (JsPath \ "value").readNullable[String])(KeyValueWrapper.apply _)
 
     implicit val writes: Writes[KeyValueWrapper] =
       ((JsPath \ "name").write[String] and
@@ -134,21 +134,19 @@ object RdsAssessmentReport {
 
   }
 
-  trait ObjectPart
+  sealed trait ObjectPart
 
   object ObjectPart {
 
-    @annotation.nowarn
     implicit val reads: Reads[ObjectPart] = {
       case json@JsObject(values) =>
         values.keys.toList match {
           case List("metadata") => MetadataWrapper.reads.reads(json)
-          case List("data") => DataWrapper.reads.reads(json)
+          case List(_) => DataWrapper.reads.reads(json)
         }
       case _ => throw new IllegalThreadStateException("Object part malformed")
     }
 
-    @annotation.nowarn
     implicit val writes: Writes[ObjectPart] = {
       case o@MetadataWrapper(_) => MetadataWrapper.writes.writes(o)
       case o@DataWrapper(_) => DataWrapper.writes.writes(o)

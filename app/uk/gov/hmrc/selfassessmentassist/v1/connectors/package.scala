@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.outcomes
+package uk.gov.hmrc.selfassessmentassist.v1
 
-case class ResponseWrapper[+A](correlationId: String,  responseData: A)
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
+
+package object connectors {
+
+  type MtdIdLookupOutcome = Either[MtdError, String]
+
+}

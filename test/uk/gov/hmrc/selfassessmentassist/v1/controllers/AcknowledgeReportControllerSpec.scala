@@ -189,9 +189,9 @@ class AcknowledgeReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
-          (ForbiddenDownstreamError, FORBIDDEN, DownstreamError.toJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson)
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
+          (ForbiddenDownstreamError, FORBIDDEN, DownstreamError.asJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -222,8 +222,8 @@ class AcknowledgeReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (NinoFormatError, BAD_REQUEST, NinoFormatError.toJson),
-          (FormatReportIdError, BAD_REQUEST, FormatReportIdError.toJson),
+          (NinoFormatError, BAD_REQUEST, NinoFormatError.asJson),
+          (FormatReportIdError, BAD_REQUEST, FormatReportIdError.asJson),
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -257,13 +257,13 @@ class AcknowledgeReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (ForbiddenDownstreamError, FORBIDDEN, ForbiddenDownstreamError.toJson),
-          (ForbiddenRDSCorrelationIdError, FORBIDDEN, ForbiddenRDSCorrelationIdError.toJson),
-          (DownstreamError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (MatchingResourcesNotFoundError, SERVICE_UNAVAILABLE, ServiceUnavailableError.toJson),
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
-          (InvalidBodyTypeError, SERVICE_UNAVAILABLE, DownstreamError.toJson)
+          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.asJson),
+          (ForbiddenDownstreamError, FORBIDDEN, ForbiddenDownstreamError.asJson),
+          (ForbiddenRDSCorrelationIdError, FORBIDDEN, ForbiddenRDSCorrelationIdError.asJson),
+          (DownstreamError, INTERNAL_SERVER_ERROR, DownstreamError.asJson),
+          (MatchingResourcesNotFoundError, SERVICE_UNAVAILABLE, ServiceUnavailableError.asJson),
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
+          (InvalidBodyTypeError, SERVICE_UNAVAILABLE, DownstreamError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -287,7 +287,7 @@ class AcknowledgeReportControllerSpec
 
 
           status(result) shouldBe INTERNAL_SERVER_ERROR
-          contentAsJson(result)  shouldBe Json.toJson(Seq(DownstreamError.toJson))
+          contentAsJson(result)  shouldBe Json.toJson(Seq(DownstreamError.asJson))
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 
