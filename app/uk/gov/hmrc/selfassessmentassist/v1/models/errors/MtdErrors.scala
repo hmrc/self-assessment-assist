@@ -16,37 +16,30 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.errors
 
+import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json._
 
-case class MtdError(code: String, message: String, customJson: Option[JsValue] = None){
-  lazy val toJson: JsValue = Json.obj(
-    "code" -> this.code,
-    "message" -> this.message
-  )
+import scala.collection.Seq
+
+
+case class MtdError(code: String, message: String, paths: Option[Seq[String]] = None) {
+  val asJson: JsObject = Json.toJson(this).as[JsObject]
 }
 
 object MtdError {
-  implicit val writes: Writes[MtdError] = {
-    case o@MtdError(_, _, None) => o.toJson
-    case MtdError("INVALID_REQUEST", _, Some(customJson)) => BadRequestError.toJson.as[JsObject] + ("errors" -> Json.toJson(Seq(customJson)))
-    case MtdError(_, _, Some(customJson)) => customJson
-  }
 
-  implicit def genericWrites[T <: MtdError]: Writes[T] =
+  implicit val writes: OWrites[MtdError] = (
+    (JsPath \ "code").write[String] and
+      (JsPath \ "message").write[String] and
+      (JsPath \ "paths").writeNullable[Seq[String]]
+    )(unlift(MtdError.unapply))
+
+  // excludes httpStatus
+  def unapply(e: MtdError): Option[(String, String, Option[Seq[String]])] = Some((e.code, e.message, e.paths))
+
+  implicit def genericWrites[T <: MtdError]: OWrites[T] =
     writes.contramap[T](c => c: MtdError)
 
-  implicit val reads: Reads[MtdError] = Json.reads[MtdError]
-}
-
-case class MtdErrorWrapper(code: String, message: String, path: Option[String], errors: Option[Seq[MtdErrorWrapper]] = None)
-
-object MtdErrorWrapper {
-  implicit val writes: OWrites[MtdErrorWrapper] = Json.writes[MtdErrorWrapper]
-
-  implicit def genericWrites[T <: MtdErrorWrapper]: OWrites[T] =
-    writes.contramap[T](c => c: MtdErrorWrapper)
-
-  implicit val reads: Reads[MtdErrorWrapper] = Json.reads[MtdErrorWrapper]
 }
 
 //NRS error
@@ -71,9 +64,6 @@ object DownstreamError extends MtdError("INTERNAL_SERVER_ERROR", "An internal se
 object BadRequestError extends MtdError("INVALID_REQUEST", "Invalid request")
 object ServiceUnavailableError extends MtdError("SERVICE_UNAVAILABLE", "Internal server error")
 object InvalidJson extends MtdError("INVALID_JSON", "Invalid JSON received")
-object UnexpectedFailure {
-  def trError(status: Int, body: String): MtdError = MtdError("UNEXPECTED_FAILURE", s"Unexpected failure. Status $status, body $body")
-}
 
 // Authorisation Errors
 object UnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised")
@@ -84,34 +74,11 @@ object BearerTokenExpiredError extends MtdError("INVALID_CREDENTIALS", "Invalid 
 // Legacy Authorisation Errors
 object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.")
 object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client or agent is not authorised")
-object ForbiddenDownstreamError extends MtdError(
-  code = "Forbidden",
-  message = "Request not authorised, forbidden",
-  customJson = Some(
-    Json.parse(
-      """
-        |{
-        |  "code": "Forbidden",
-        |  "message": "Request not authorised, forbidden"
-        |}
-      """.stripMargin
-    )
-  )
-)
+object ForbiddenDownstreamError extends MtdError(code = "Forbidden", message = "Request not authorised, forbidden")
 
 object ForbiddenRDSCorrelationIdError extends MtdError(
   code = "CORRELATION_ID_NOT_AUTHORISED",
-  message = "The Correlation ID is not the expected value for this report",
-  customJson = Some(
-    Json.parse(
-      """
-        |{
-        |  "code": "CORRELATION_ID_NOT_AUTHORISED",
-        |  "message": "The Correlation ID is not the expected value for this report"
-        |}
-      """.stripMargin
-    )
-  )
+  message = "The Correlation ID is not the expected value for this report"
 )
 
 // Accept header Errors

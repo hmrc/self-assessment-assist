@@ -23,52 +23,43 @@ import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
+import play.api.{Application, Environment, Mode}
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.NrsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.NrsSubmission
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.NrsFailure.Exception
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 
-class NrsConnectorSpec extends ConnectorSpec
-  with BeforeAndAfterAll
-  with GuiceOneAppPerSuite
-  with Injecting
-  with MockAppConfig {
+class NrsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
-  val actorSystem: ActorSystem = inject[ActorSystem]
-  implicit val scheduler: Scheduler = actorSystem.scheduler
-
-  var port: Int = _
-  val reportId = "12345"
-  val apiKeyValue = "api-key"
-  val url = "/"
-  val longDelays: List[FiniteDuration] = List(10.minutes)
-
-  val successResponseJson: JsValue =
-    Json.parse(
-      """{
-        |   "nrSubmissionId": "submissionId"
-        |}""".stripMargin)
-
-  private val nrsSubmission: NrsSubmission = FullRequestTestData.correctModel
+  private val nrsSubmission: NrsSubmission    = FullRequestTestData.correctModel
   private val nrsSubmissionJsonString: String = FullRequestTestData.correctJsonString
+
+  override lazy val app: Application = new GuiceApplicationBuilder()
+    .in(Environment.simple(mode = Mode.Dev))
+    .configure("metrics.enabled" -> "false")
+    .build()
 
   val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
 
-  class Test(retryDelays: List[FiniteDuration] = List(100.millis)) {
-    MockedAppConfig.nrsBaseUrl returns (s"http://localhost:$port")
-    MockedAppConfig.nrsRetries returns retryDelays
-    MockedAppConfig.nrsApiKey returns apiKeyValue
+  var port: Int = _
 
-    val connector = new NrsConnector(httpClient, mockAppConfig)
+  val actorSystem: ActorSystem              = inject[ActorSystem]
+  implicit val scheduler: Scheduler         = actorSystem.scheduler
 
-  }
+  // Long delays to force a test to timeout if it does retry when we're not expecting it...
+  val longDelays: List[FiniteDuration] = List(10.minutes)
+
+  val successResponseJson: JsValue =
+    Json.parse("""{
+                 |   "nrSubmissionId": "submissionId"
+                 |}""".stripMargin)
 
   override def beforeAll(): Unit = {
     wireMockServer.start()
@@ -77,6 +68,18 @@ class NrsConnectorSpec extends ConnectorSpec
 
   override def afterAll(): Unit =
     wireMockServer.stop()
+
+  val url         = "/"
+  val apiKeyValue = "api-key"
+
+  class Test(retryDelays: List[FiniteDuration] = List(100.millis)) {
+    MockedAppConfig.nrsBaseUrl.returns(s"http://localhost:$port")
+    MockedAppConfig.nrsRetries returns retryDelays
+    MockedAppConfig.nrsApiKey returns apiKeyValue
+
+    val connector = new NrsConnector(httpClient, mockAppConfig)
+
+  }
 
   "NRSConnector" when {
     "immediately successful" must {
@@ -153,7 +156,7 @@ class NrsConnectorSpec extends ConnectorSpec
             .withHeader("X-API-Key", equalTo(apiKeyValue))
             .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)))
 
-        await(connector.submit(nrsSubmission)) shouldBe Left(Exception("Connection reset by peer"))
+        await(connector.submit(nrsSubmission)) shouldBe Left(NrsFailure.ExceptionThrown)
       }
     }
 
@@ -164,14 +167,15 @@ class NrsConnectorSpec extends ConnectorSpec
             .withHeader("Content-Type", equalTo(MimeTypes.JSON))
             .withHeader("X-API-Key", equalTo(apiKeyValue))
             .willReturn(aResponse()
-              .withBody(
-                """{
-                  |   "badKey": "badValue"
-                  |}""".stripMargin)
+              .withBody("""{
+                          |   "badKey": "badValue"
+                          |}""".stripMargin)
               .withStatus(ACCEPTED)))
 
-        await(connector.submit(nrsSubmission)) shouldBe Left(Exception("JsResultException(errors:List((/nrSubmissionId,List(JsonValidationError(List(error.path.missing),ArraySeq())))))"))
+        await(connector.submit(nrsSubmission)) shouldBe Left(NrsFailure.ExceptionThrown)
       }
     }
   }
+
 }
+

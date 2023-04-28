@@ -220,9 +220,9 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.toJson),
-          (ForbiddenDownstreamError, FORBIDDEN, DownstreamError.toJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.toJson)
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
+          (ForbiddenDownstreamError, FORBIDDEN, DownstreamError.asJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -251,8 +251,8 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, ServiceUnavailableError.toJson)
+          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.asJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, ServiceUnavailableError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -288,18 +288,18 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ServerError, INTERNAL_SERVER_ERROR, Some(DownstreamError.toJson)),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, Some(ServiceUnavailableError.toJson)),
-          (MatchingResourcesNotFoundError, NOT_FOUND, Some(MatchingResourcesNotFoundError.toJson)),
-          (InvalidCredentialsError, UNAUTHORIZED, Some(InvalidCredentialsError.toJson)),
-          (NinoFormatError, BAD_REQUEST, Some(NinoFormatError.toJson)),
+          (ServerError, INTERNAL_SERVER_ERROR, Some(DownstreamError.asJson)),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, Some(ServiceUnavailableError.asJson)),
+          (MatchingResourcesNotFoundError, NOT_FOUND, Some(MatchingResourcesNotFoundError.asJson)),
+          (InvalidCredentialsError, UNAUTHORIZED, Some(InvalidCredentialsError.asJson)),
+          (NinoFormatError, BAD_REQUEST, Some(NinoFormatError.asJson)),
           (NoAssessmentFeedbackFromRDS, NO_CONTENT, None),
-          (CalculationIdFormatError, BAD_REQUEST, Some(CalculationIdFormatError.toJson)),
-          (MatchingCalculationIDNotFoundError, NOT_FOUND, Some(MatchingCalculationIDNotFoundError.toJson)),
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, Some(ClientOrAgentNotAuthorisedError.toJson)),
-          (RdsAuthError, INTERNAL_SERVER_ERROR, Some(ForbiddenDownstreamError.toJson)),
-          (BadRequestError, BAD_REQUEST, Some(BadRequestError.toJson)),
-          (InvalidJson, INTERNAL_SERVER_ERROR, Some(MatchingResourcesNotFoundError.toJson)),
+          (CalculationIdFormatError, BAD_REQUEST, Some(CalculationIdFormatError.asJson)),
+          (MatchingCalculationIDNotFoundError, NOT_FOUND, Some(MatchingCalculationIDNotFoundError.asJson)),
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, Some(ClientOrAgentNotAuthorisedError.asJson)),
+          (RdsAuthError, INTERNAL_SERVER_ERROR, Some(ForbiddenDownstreamError.asJson)),
+          (BadRequestError, BAD_REQUEST, Some(BadRequestError.asJson)),
+          (InvalidJson, INTERNAL_SERVER_ERROR, Some(MatchingResourcesNotFoundError.asJson)),
 
         )
 
@@ -354,7 +354,7 @@ class GenerateReportControllerSpec
         }
       }
 
-      runTest(ServerError, INTERNAL_SERVER_ERROR, DownstreamError.toJson)
+      runTest(ServerError, INTERNAL_SERVER_ERROR, DownstreamError.asJson)
     }
   }
   private val expectedReportPayload: NrsSubmission =
