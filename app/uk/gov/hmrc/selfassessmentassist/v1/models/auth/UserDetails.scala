@@ -26,11 +26,10 @@ case class UserDetails(userType: AffinityGroup,
                        clientID: String,
                        identityData: Option[IdentityData] = None) {
 
-  @annotation.nowarn
   val toCustomerType: CustomerType = userType match {
     case AffinityGroup.Individual => CustomerType.TaxPayer
-    case AffinityGroup.Organisation => CustomerType.Agent
     case AffinityGroup.Agent => CustomerType.Agent
+    case _ => throw new IllegalStateException(s"Invalid $userType")
   }
 
 }
