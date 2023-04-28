@@ -27,12 +27,7 @@ trait HttpParser extends Logging {
   implicit class KnownJsonResponse(response: HttpResponse) {
 
     def validateJson[T](implicit reads: Reads[T]): Option[T] = {
-      Try(response.json) match {
-        case Success(json: JsValue) => parseResult(json)
-        case _ =>
-          logger.warn("[KnownJsonResponse][validateJson] No JSON was returned")
-          None
-      }
+      Try(response.json).fold(_ => None, json => parseResult(json))
     }
 
     def parseResult[T](json: JsValue)(implicit reads: Reads[T]): Option[T] = json.validate[T] match {
