@@ -110,5 +110,5 @@ object RdsTestData {
     rdsCorrelationId = simpleRDSCorrelationId
   )
 
-  val assessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalulationTimestamp,assessmentReport, rdsNewSubmissionReport)
+  val assessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalculationTimestamp,assessmentReport, rdsNewSubmissionReport)
 }

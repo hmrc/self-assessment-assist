@@ -82,11 +82,11 @@ object CommonTestData  {
     , taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString
     , calculationId = simpleCalculationId,rdsCorrelationId = simpleRDSCorrelationId)
 
-  val simpleCalulationTimestamp = LocalDateTime.parse("2019-02-15T09:35:15.094Z",DateUtils.dateTimePattern)
+  val simpleCalculationTimestamp = LocalDateTime.parse("2019-02-15T09:35:15.094Z",DateUtils.dateTimePattern)
 
   val simpleGenerateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId.toString,simpleNino, PreferredLanguage.English, CustomerType.TaxPayer, None, simpleTaxYear)
 
-  val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
+  val simpleAssessmentReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
 
   val simpleFraudRiskRequest: FraudRiskRequest = new FraudRiskRequest(nino = Some(simpleNino), taxYear = Some(simpleTaxYear), fraudRiskHeaders = Map.empty[String, String])
   val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(0, simpleCIPCorrelationId, Seq.empty)
@@ -106,7 +106,7 @@ object CommonTestData  {
   val rdsSubmissionReportJson: JsValue = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId)
   val rdsNewSubmissionReport: RdsAssessmentReport = rdsSubmissionReportJson.as[RdsAssessmentReport]
   
-  val simpleAssessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalulationTimestamp,simpleAssessmentReport, rdsNewSubmissionReport)
+  val simpleAssessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalculationTimestamp,simpleAssessmentReport, rdsNewSubmissionReport)
 
   val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, nino=simpleNino, responseCode=202)
   val simpleAcknowledgeNewRdsAssessmentReport: RdsAssessmentReport = rdsAssessmentAckJson.as[RdsAssessmentReport]
