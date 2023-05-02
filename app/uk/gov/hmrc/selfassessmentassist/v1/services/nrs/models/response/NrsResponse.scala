@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Json, Reads, Writes}
 
 case class NrsResponse(nrSubmissionId: String)
 
 object NrsResponse {
 
   implicit val reads: Reads[NrsResponse] = Json.reads[NrsResponse]
+  implicit val writes: Writes[NrsResponse] = Json.writes[NrsResponse]
 }
