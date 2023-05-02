@@ -42,7 +42,7 @@ trait MockAppConfig extends MockFactory {
     def rdsAuthCredential:CallHandler[AuthCredential] = (() => mockAppConfig.rdsAuthCredential).expects().anyNumberOfTimes()
 
     //API Config
-    def featureSwitch: CallHandler[Option[Configuration]] = (mockAppConfig.featureSwitch _: () => Option[Configuration]).expects()
+    def featureSwitch: CallHandler[Option[Configuration]] = (() => mockAppConfig.featureSwitch).expects()
 
     // NRS config items
     def nrsApiKey: CallHandler[String] = (() => mockAppConfig.nrsApiKey).expects().anyNumberOfTimes()

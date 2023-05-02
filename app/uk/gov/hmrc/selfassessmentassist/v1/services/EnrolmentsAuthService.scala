@@ -102,12 +102,12 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     }
   }
 
-  private def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
+  def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
     .getEnrolment("HMRC-MTD-IT")
     .flatMap(_.getIdentifier("MTDITID"))
     .map(_.value)
 
-  private def getAgentReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
+  def getAgentReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
     .getEnrolment("HMRC-AS-AGENT")
     .flatMap(_.getIdentifier("AgentReferenceNumber"))
     .map(_.value)

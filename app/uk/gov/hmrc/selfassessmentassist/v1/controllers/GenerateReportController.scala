@@ -66,7 +66,8 @@ class GenerateReportController @Inject()(
           assessmentRequestForSelfAssessment <- EitherT(requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
           fraudRiskReport <- EitherT(insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head })))
           rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData))
-          _ <- EitherT(ifService.submitGenerateReportMessage(rdsAssessmentReportWrapper.responseData.report, rdsAssessmentReportWrapper.responseData.calculationTimestamp, assessmentRequestForSelfAssessment, rdsAssessmentReportWrapper.responseData.rdsAssessmentReport))
+          _ <- EitherT(ifService.submitGenerateReportMessage(rdsAssessmentReportWrapper.responseData.report, rdsAssessmentReportWrapper.responseData.calculationTimestamp,
+            assessmentRequestForSelfAssessment, rdsAssessmentReportWrapper.responseData.rdsAssessmentReport))
         } yield {
           rdsAssessmentReportWrapper
         }

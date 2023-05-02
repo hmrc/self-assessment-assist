@@ -27,7 +27,7 @@ import scala.concurrent.Future
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.IfsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.UserDetails
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.CustomerType.{Agent, CustomerType, TaxPayer}
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.CustomerType.{CustomerType, TaxPayer, Agent}
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
@@ -126,11 +126,10 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
       case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
     }.flatMap(_.value.getOrElse(Seq.empty)).collect {
       case value: RdsAssessmentReport.DataWrapper => value
-    }.flatMap(_.data.getOrElse(Seq.empty))
-      .flatMap(toRisk)
+    }.flatMap(_.data.getOrElse(Seq.empty)).flatMap(toRisk)
   }
 
-  private def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage) = preferredLanguage match {
+  private def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage): Boolean = preferredLanguage match {
     case PreferredLanguage.English if language == "EnglishActions" => true
     case PreferredLanguage.Welsh if language == "WelshActions" => true
     case _ => false
@@ -144,10 +143,10 @@ class IfsService @Inject()(connector: IfsConnector, currentDateTime: CurrentDate
         links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5)))
   }
 
-  @annotation.nowarn
-  private def customerTypeString(customerType: CustomerType) = customerType match {
+  def customerTypeString(customerType: CustomerType): String = customerType match {
     case TaxPayer => "Individual"
     case Agent => "Agent"
+    case _ => throw new IllegalStateException(s"Invalid $customerType")
   }
 
 }

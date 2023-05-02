@@ -167,8 +167,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport,
-                                           fraudRiskReportHeaders:Seq[(String, String)])
-                                          (implicit correlationId: String): RdsRequest
+                                           fraudRiskReportHeaders:Seq[(String, String)]): RdsRequest
   = RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationId", request.calculationId.toString),
