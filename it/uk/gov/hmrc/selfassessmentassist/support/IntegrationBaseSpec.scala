@@ -33,16 +33,17 @@ trait IntegrationBaseSpec extends IntegrationSpec with WireMockHelper with Guice
   lazy val client: WSClient = app.injector.instanceOf[WSClient]
 
   def servicesConfig: Map[String, Any] = Map(
-    "microservice.services.ifs.host"             -> mockHost,
-    "microservice.services.ifs.port"             -> mockPort,
-    "microservice.services.mtd-id-lookup.host"   -> mockHost,
-    "microservice.services.mtd-id-lookup.port"   -> mockPort,
-    "microservice.services.auth.host"            -> mockHost,
-    "microservice.services.auth.port"            -> mockPort,
-    "auditing.consumer.baseUri.port"             -> mockPort,
-    "microservice.services.rds.port"             -> mockPort,
-    "microservice.services.non-repudiation.port" -> mockPort,
-    "feature-switch.version-1.enabled"           -> "true"
+    "microservice.services.ifs.host"               -> mockHost,
+    "microservice.services.ifs.port"               -> mockPort,
+    "microservice.services.mtd-id-lookup.host"     -> mockHost,
+    "microservice.services.mtd-id-lookup.port"     -> mockPort,
+    "microservice.services.auth.host"              -> mockHost,
+    "microservice.services.auth.port"              -> mockPort,
+    "auditing.consumer.baseUri.port"               -> mockPort,
+    "microservice.services.rds.port"               -> mockPort,
+    "microservice.services.non-repudiation.port"   -> mockPort,
+    "microservice.services.cip-fraud-service.port" -> mockPort,
+    "feature-switch.version-1.enabled"             -> "true"
   )
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()

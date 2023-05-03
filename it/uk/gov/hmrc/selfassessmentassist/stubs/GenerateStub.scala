@@ -20,10 +20,8 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status.CREATED
 import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData
 
-object AcknowledgeStub {
-
-  def acknowledge(url: String): StubMapping = {
+object GenerateStub {
+  def generate(url: String): StubMapping = {
     DownstreamStub.onSuccess(DownstreamStub.POST, url, CREATED, CommonTestData.rdsAssessmentAckJson)
   }
-
 }

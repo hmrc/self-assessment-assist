@@ -21,11 +21,10 @@ import play.api.http.Status.{FORBIDDEN, NO_CONTENT}
 import play.api.libs.json.{Json, JsValue}
 import play.api.libs.ws.{WSRequest, WSResponse}
 import play.api.test.Helpers.{await, defaultAwaitTimeout, ACCEPT, AUTHORIZATION}
-import uk.gov.hmrc.auth.core.InternalError
 import uk.gov.hmrc.selfassessmentassist.stubs._
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
 import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{ClientOrAgentNotAuthorisedError, DownstreamError, InvalidBearerTokenError, InvalidCredentialsError, MtdError}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
 
 import scala.collection.Seq
 
@@ -38,7 +37,7 @@ class AuthorisedControllerISpec extends IntegrationBaseSpec {
         override def setupStubs(): StubMapping = {
           MtdIdLookupStub.ninoFound(nino)
           AuthStub.authorised()
-          AcknowledgeStub.acknowledge(acknowledgeUrl)
+          RdsStub.acknowledge(acknowledgeUrl)
           IfsServiceStub.submit(ifsSubmitUrl)
           NrsStub.submit(nrsSubmitUrl)
         }
