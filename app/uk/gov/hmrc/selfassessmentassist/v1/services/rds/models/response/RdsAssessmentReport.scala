@@ -98,23 +98,24 @@ object RdsAssessmentReport {
 
   case class KeyValueWrapper(name:String,value:Option[String]) extends Output
   object KeyValueWrapper {
-    val reads: Reads[KeyValueWrapper] =
+   implicit  val reads: Reads[KeyValueWrapper] =
       ((JsPath \ "name").read[String] and
         (JsPath \ "value").readNullable[String])(KeyValueWrapper.apply _)
 
-    val writes: Writes[KeyValueWrapper] =
-      (JsPath \ "name").write[String].and((JsPath \ "value").write[Option[String]])(unlift(KeyValueWrapper.unapply))
+    implicit val writes: Writes[KeyValueWrapper] =
+      ((JsPath \ "name").write[String] and
+        ((JsPath \ "value").writeNullable[String]))(unlift(KeyValueWrapper.unapply))
   }
 
   case class MainOutputWrapper(name: String, value: Option[Seq[ObjectPart]]) extends Output
 
   object MainOutputWrapper {
 
-    val reads: Reads[MainOutputWrapper] =
+    implicit val reads: Reads[MainOutputWrapper] =
       (JsPath \ "name").read[String]
         .and((JsPath \ "value").readNullable[Seq[ObjectPart]])(MainOutputWrapper.apply _)
 
-    val writes: Writes[MainOutputWrapper] =
+    implicit val writes: Writes[MainOutputWrapper] =
       (JsPath \ "name").write[String]
         .and((JsPath \ "value").write[Option[Seq[ObjectPart]]])(unlift(MainOutputWrapper.unapply))
 
@@ -124,10 +125,10 @@ object RdsAssessmentReport {
 
   object IdentifiersWrapper {
 
-    val reads: Reads[IdentifiersWrapper] =
+    implicit val  reads: Reads[IdentifiersWrapper] =
       (JsPath \ "identifiers").read[Seq[Identifier]].map(IdentifiersWrapper.apply)
 
-    val writes: Writes[IdentifiersWrapper] =
+    implicit val writes: Writes[IdentifiersWrapper] =
       (JsPath \ "identifiers").write[Seq[Identifier]].contramap(_.identifiers)
 
 
@@ -157,10 +158,10 @@ object RdsAssessmentReport {
 
   object MetadataWrapper {
 
-    val reads: Reads[MetadataWrapper] =
+   implicit  val reads: Reads[MetadataWrapper] =
       (JsPath \ "metadata").readNullable[Seq[Map[String, String]]].map(MetadataWrapper.apply)
 
-    val writes: Writes[MetadataWrapper] =
+    implicit val writes: Writes[MetadataWrapper] =
       (JsPath \ "metadata").write[Option[Seq[Map[String, String]]]].contramap(_.metadata)
 
 
@@ -169,10 +170,10 @@ object RdsAssessmentReport {
   case class DataWrapper(data: Option[Seq[Seq[String]]]) extends ObjectPart
 
   object DataWrapper {
-    val reads: Reads[DataWrapper] =
+    implicit val reads: Reads[DataWrapper] =
       (JsPath \ "data").readNullable[Seq[Seq[String]]].map(DataWrapper.apply)
 
-    val writes: Writes[DataWrapper] =
+    implicit val writes: Writes[DataWrapper] =
       (JsPath \ "data").write[Option[Seq[Seq[String]]]].contramap(_.data)
   }
 
