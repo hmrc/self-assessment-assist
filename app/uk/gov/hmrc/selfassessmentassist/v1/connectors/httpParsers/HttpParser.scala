@@ -20,7 +20,7 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
-import scala.util.{Success, Try}
+import scala.util.Try
 
 trait HttpParser extends Logging {
 

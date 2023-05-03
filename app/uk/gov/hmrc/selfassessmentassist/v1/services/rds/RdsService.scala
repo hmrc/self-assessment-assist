@@ -23,7 +23,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.connectors.{RdsAuthConnector, RdsConn
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, AssessmentRequestForSelfAssessment, Link, Origin, PreferredLanguage, Risk}
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper, MatchingCalculationIDNotFoundError, NoAssessmentFeedbackFromRDS}
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
@@ -66,8 +66,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
 
 //TODO Refactor this code
   def   submit(request: AssessmentRequestForSelfAssessment,
-             fraudRiskReport: FraudRiskReport,
-             origin: Origin)(implicit hc: HeaderCarrier,
+             fraudRiskReport: FraudRiskReport)(implicit hc: HeaderCarrier,
                              ec: ExecutionContext,
                              //logContext: EndpointLogContext,
                              userRequest: UserRequest[_],
@@ -76,35 +75,29 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
     val fraudRiskReportHeaders: Seq[(String, String)] = requiredHeaderForRDS_with_Empty.map( entry => entry._1 -> requestHeaders.getOrElse(entry._1,""))
 
     def processRdsRequest(rdsAuthCredentials: Option[RdsAuthCredentials] = None): Future[Either[ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]]] = {
-      val rdsRequestSO: ServiceOutcome[RdsRequest] = generateRdsAssessmentRequest(request, fraudRiskReport,fraudRiskReportHeaders)
-      rdsRequestSO match {
-        case Right(ResponseWrapper(_, rdsRequest)) =>
-          logger.info(s"$correlationId::[RdsService submit ] RdsAssessmentRequest Created")
-          connector.submit(rdsRequest, rdsAuthCredentials).map {
-              case Right(ResponseWrapper(_, rdsResponse)) =>
-                    val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
-                    assessmentReportSO match {
-                      case Right(ResponseWrapper(_, assessmentReport)) =>
-                        logger.debug(s"$correlationId::[submit]submit request for report successful returning it")
-                        Right(ResponseWrapper(correlationId, assessmentReport))
+      val rdsRequestSO: RdsRequest = generateRdsAssessmentRequest(request, fraudRiskReport, fraudRiskReportHeaders)
+      connector.submit(rdsRequestSO, rdsAuthCredentials).map {
+        case Right(ResponseWrapper(_, rdsResponse)) =>
+          val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
+          assessmentReportSO match {
+            case Right(ResponseWrapper(_, assessmentReport)) =>
+              logger.debug(s"$correlationId::[submit]submit request for report successful returning it")
+              Right(ResponseWrapper(correlationId, assessmentReport))
 
-                      case Left(errorWrapper) =>
-                        logger.error(s"$correlationId::[RdsService][submit]submit request for report error from service ${errorWrapper.error}")
-                        Left(errorWrapper)
-                    }
-              case Left(errorWrapper) =>
-                errorWrapper.error match {
-                  case NoAssessmentFeedbackFromRDS => logger.info(s"$correlationId::[RdsService][submit] No feedback available in RDS")
-                    Left(errorWrapper)
-                  case MatchingCalculationIDNotFoundError => logger.warn(s"$correlationId::[RdsService][submit] ${errorWrapper.error}")
-                    Left(errorWrapper)
-                  case _ => logger.error(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
-                    Left(errorWrapper)
-                }
+            case Left(errorWrapper) =>
+              logger.error(s"$correlationId::[RdsService][submit]submit request for report error from service ${errorWrapper.error}")
+              Left(errorWrapper)
           }
         case Left(errorWrapper) =>
-          logger.error(s"$correlationId::[RdsService][submit] generateRdsAssessmentRequest SO failed Unable to generate report request ${errorWrapper.error}")
-          Future(Left(errorWrapper))
+          errorWrapper.error match {
+            case NoAssessmentFeedbackFromRDS => logger.info(s"$correlationId::[RdsService][submit] No feedback available in RDS")
+              Left(errorWrapper)
+            case MatchingCalculationIDNotFoundError => logger.warn(s"$correlationId::[RdsService][submit] ${errorWrapper.error}")
+              Left(errorWrapper)
+            case _ => logger.error(s"$correlationId::[RdsService][submit] RDS connector failed Unable to generate report ${errorWrapper.error}")
+              Left(errorWrapper)
+          }
+
       }
     }
 
@@ -113,8 +106,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
       rdsAuthConnector
         .retrieveAuthorisedBearer()
         .foldF(
-          error =>
-            Future.successful(Left(ErrorWrapper(correlationId, error))),
+          error => Future.successful(Left(ErrorWrapper(correlationId, error))),
           credentials => processRdsRequest(Some(credentials))
         )
     } else {
@@ -175,11 +167,8 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport,
-                                           fraudRiskReportHeaders:Seq[(String, String)])
-                                          (implicit correlationId: String): ServiceOutcome[RdsRequest]
-  = {
-    logger.debug(s"$correlationId::[generateRdsAssessmentRequest]Creating a generateRdsAssessmentRequest")
-    Right(ResponseWrapper(correlationId, RdsRequest(
+                                           fraudRiskReportHeaders:Seq[(String, String)]): RdsRequest
+  = RdsRequest(
       Seq(
         RdsRequest.InputWithString("calculationId", request.calculationId.toString),
         RdsRequest.InputWithString("nino", request.nino),
@@ -208,10 +197,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
           )
         )
       )
-    )
-    )
-    )
-  }
+  )
 
   def acknowledge(request: AcknowledgeReportRequest)(implicit hc: HeaderCarrier,
                                                      ec: ExecutionContext,
@@ -222,8 +208,7 @@ class RdsService @Inject()(rdsAuthConnector: RdsAuthConnector[Future], connector
       rdsAuthConnector
         .retrieveAuthorisedBearer()
         .foldF(
-          error =>
-            Future.successful(Left(ErrorWrapper(correlationId, error))),
+          error => Future.successful(Left(ErrorWrapper(correlationId, error))),
           credentials => connector.acknowledgeRds(generateRdsAcknowledgementRequest(request), Some(credentials))
         )
     } else {

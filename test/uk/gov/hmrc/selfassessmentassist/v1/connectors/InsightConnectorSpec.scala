@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.cip
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import akka.actor.{ActorSystem, Scheduler}
 import com.github.tomakehurst.wiremock.client.WireMock._
@@ -26,7 +26,6 @@ import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData.simpleFraudRiskRequest
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.InsightConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.FraudRiskReport
