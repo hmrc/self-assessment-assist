@@ -20,7 +20,6 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.selfassessmentassist.support.WireMockMethods
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData
 
 object AuthStub extends WireMockMethods {
 
@@ -51,7 +50,6 @@ object AuthStub extends WireMockMethods {
       .thenReturn(status = UNAUTHORIZED, headers = Map("WWW-Authenticate" -> """MDTP detail="InvalidBearerToken""""))
   }
 
-  CommonTestData.acknowledgeSubmissionId
   private def successfulAuthResponse(enrolments: JsObject*): JsObject = {
     Json.obj(
       "authorisedEnrolments" -> enrolments,

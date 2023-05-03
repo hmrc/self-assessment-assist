@@ -23,8 +23,8 @@ import play.api.libs.ws.{EmptyBody, WSRequest, WSResponse}
 import play.api.test.Helpers.{await, defaultAwaitTimeout, ACCEPT, AUTHORIZATION}
 import uk.gov.hmrc.selfassessmentassist.stubs._
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{FormatReportIdError, MtdError, NinoFormatError, TaxYearFormatError}
+import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{FormatReportIdError, MtdError, NinoFormatError}
 
 import scala.collection.Seq
 
@@ -80,11 +80,11 @@ class AcknowledgeReportControllerISpec extends IntegrationBaseSpec {
   private trait Test {
 
     def nino: String             = "AA123456A"
-    def reportId: String         = CommonTestData.correlationId
+    def reportId: String         = CommonTestData.simpleCalculationId.toString
     val acknowledgeUrl: String   = "/rds/assessments/self-assessment-assist/acknowledge"
     val ifsSubmitUrl: String     = "/interaction-data/store-interactions"
     val nrsSubmitUrl: String     = "/submission"
-    val rdsCorrelationId: String = CommonTestData.simpleCalculationId.toString
+    val rdsCorrelationId: String = CommonTestData.correlationId
     val emptyJson: JsValue       = Json.parse("""{}""")
 
     def setupStubs(): StubMapping

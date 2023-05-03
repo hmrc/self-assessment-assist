@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.stubs
+package uk.gov.hmrc.selfassessmentassist.v1.controllers
 
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status.NO_CONTENT
+import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
 
-object IfsServiceStub {
-
-  def submit(url: String): StubMapping = DownstreamStub.onSuccess(DownstreamStub.POST, url, NO_CONTENT)
+class AuthorisedControllerISpec extends IntegrationBaseSpec {
 
 }
