@@ -48,11 +48,11 @@ class GenerateReportControllerISpec extends IntegrationBaseSpec {
 
     "return error according to spec" when {
       "validation error" when {
-        def validationErrorTest(requestNino: String, expectedTaxYear: String, calculationId: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
+        def validationErrorTest(requestNino: String, expectedTaxYear: String, expectedCalculationId: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
           s"validation fails with ${expectedBody.code} error" in new Test {
             override def nino: String = requestNino
             override def taxYear: String = expectedTaxYear
-            override def calculationId: String = calculationId
+            override def calculationId: String = expectedCalculationId
 
             override def setupStubs(): StubMapping = {
               AuthStub.authorised()

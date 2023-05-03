@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.controllers
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status.{FORBIDDEN, NO_CONTENT}
+import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.{Json, JsValue}
 import play.api.libs.ws.{WSRequest, WSResponse}
 import play.api.test.Helpers.{await, defaultAwaitTimeout, ACCEPT, AUTHORIZATION}
@@ -59,25 +59,25 @@ class AuthorisedControllerISpec extends IntegrationBaseSpec {
 
             val response: WSResponse = await(request().post(emptyJson))
             response.status shouldBe expectedStatus
-            response.body shouldBe Json.arr(expectedBody)
+            response.json shouldBe Json.arr(expectedBody)
           }
         }
 
 
         val input = Seq(
-          ("InvalidBearerToken", FORBIDDEN, InvalidBearerTokenError),
-          ("InsufficientConfidenceLevel", FORBIDDEN, ClientOrAgentNotAuthorisedError),
-          ("UnsupportedAffinityGroup", FORBIDDEN, ClientOrAgentNotAuthorisedError),
-          ("UnsupportedCredentialRole", FORBIDDEN, ClientOrAgentNotAuthorisedError),
-          ("UnsupportedAuthProvider", FORBIDDEN, ClientOrAgentNotAuthorisedError),
+          ("InvalidBearerToken", FORBIDDEN, InvalidCredentialsError),
+          ("InsufficientConfidenceLevel", FORBIDDEN, LegacyUnauthorisedError),
+          ("UnsupportedAffinityGroup", INTERNAL_SERVER_ERROR, DownstreamError),
+          ("UnsupportedCredentialRole", INTERNAL_SERVER_ERROR, DownstreamError),
+          ("UnsupportedAuthProvider", INTERNAL_SERVER_ERROR, DownstreamError),
           ("BearerTokenExpired", FORBIDDEN, InvalidCredentialsError),
-          ("MissingBearerToken", FORBIDDEN, InvalidCredentialsError),
-          ("SessionRecordNotFound", FORBIDDEN, InvalidCredentialsError),
-          ("IncorrectCredentialStrength", FORBIDDEN, ClientOrAgentNotAuthorisedError),
-          ("InsufficientEnrolments", FORBIDDEN, ClientOrAgentNotAuthorisedError),
-          ("FailedRelationship", FORBIDDEN, ClientOrAgentNotAuthorisedError),
-          ("other_error", FORBIDDEN, DownstreamError)
+          ("IncorrectCredentialStrength", INTERNAL_SERVER_ERROR, DownstreamError),
+          ("InsufficientEnrolments", FORBIDDEN, LegacyUnauthorisedError),
+          ("FailedRelationship", INTERNAL_SERVER_ERROR, DownstreamError),
+          ("other_error", INTERNAL_SERVER_ERROR, DownstreamError)
         )
+
+        input.foreach(args => (validationErrorTest _).tupled(args))
       }
     }
   }
