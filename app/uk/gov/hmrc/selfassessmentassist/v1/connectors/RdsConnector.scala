@@ -24,7 +24,7 @@ import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ForbiddenDownstreamError, _}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest
@@ -40,7 +40,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:submit] Before requesting report")
 
-    def rdsAuthHeaders: Seq[(String, String)] = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+    def rdsAuthHeaders: Seq[(String, String)] = rdsAuthCredentials.map(rdsAuthHeader).getOrElse(Seq.empty)
 
     httpClient
       .POST(appConfig.rdsBaseUrlForSubmit, Json.toJson(request), headers = rdsAuthHeaders)
@@ -54,12 +54,12 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
                 Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
               },
               assessmentReport =>  assessmentReport.responseCode match {
-                case Some(CREATED)  => logger.info(s"$correlationId::[RdsConnector:submit] RDS response body status code is ${CREATED}")
+                case Some(CREATED)  => logger.info(s"$correlationId::[RdsConnector:submit] RDS response body status code is $CREATED")
                   Right(ResponseWrapper(correlationId, assessmentReport))
-                case Some(NO_CONTENT) => logger.info(s"$correlationId::[RdsConnector:submit] RDS response body status code is ${NO_CONTENT}")
+                case Some(NO_CONTENT) => logger.info(s"$correlationId::[RdsConnector:submit] RDS response body status code is $NO_CONTENT")
                   Left(ErrorWrapper(correlationId, NoAssessmentFeedbackFromRDS))//exceptional scenario to stop processing
                 case Some(NOT_FOUND) =>
-                  logger.info(s"$correlationId::[RdsConnector:submit] RDS response calculationId Not Found, body status code is ${NOT_FOUND}")
+                  logger.info(s"$correlationId::[RdsConnector:submit] RDS response calculationId Not Found, body status code is $NOT_FOUND")
                   val errorMessage = assessmentReport.responseMessage.getOrElse("CalculationId Not Found")
                   logger.info(s"$correlationId::[RdsService][submit] $errorMessage")
                   Left(ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
@@ -117,7 +117,7 @@ class RdsConnector @Inject()(@Named("external-http-client") val httpClient: Http
   ): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] acknowledge the report ${appConfig.rdsBaseUrlForAcknowledge}")
 
-    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader(_)).getOrElse(Seq.empty)
+    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader).getOrElse(Seq.empty)
 
     httpClient
       .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)

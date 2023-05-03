@@ -17,13 +17,12 @@
 package uk.gov.hmrc.selfassessmentassist.v1.TestData
 
 import java.time.{LocalDateTime, Month, OffsetDateTime, ZoneOffset}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Json, JsValue}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.UserDetails
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.CustomerType
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{CustomerType, _}
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
 import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request._
@@ -56,16 +55,16 @@ object CommonTestData  {
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
 
-  val simpleIndividualUserDetails = UserDetails(
+  val simpleIndividualUserDetails: UserDetails = UserDetails(
     userType = AffinityGroup.Individual,
     agentReferenceNumber = None,
     clientID = "clientId",
     identityData = None
   )
 
-  val simpleCustomerType= CustomerType.TaxPayer
+  val simpleCustomerType: CustomerType.Value = CustomerType.TaxPayer
   val simplePreferredLanguage: PreferredLanguage = PreferredLanguage.English
-  val simpleAgentRef = None
+  val simpleAgentRef: Option[Nothing] = None
 
   val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
     calculationId = simpleCalculationId,
@@ -82,11 +81,11 @@ object CommonTestData  {
     , taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString
     , calculationId = simpleCalculationId,rdsCorrelationId = simpleRDSCorrelationId)
 
-  val simpleCalulationTimestamp = LocalDateTime.parse("2019-02-15T09:35:15.094Z",DateUtils.dateTimePattern)
+  val simpleCalculationTimestamp: LocalDateTime = LocalDateTime.parse("2019-02-15T09:35:15.094Z",DateUtils.dateTimePattern)
 
   val simpleGenerateReportRawData: GenerateReportRawData = GenerateReportRawData(simpleCalculationId.toString,simpleNino, PreferredLanguage.English, CustomerType.TaxPayer, None, simpleTaxYear)
 
-  val simpleAsssementReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
+  val simpleAssessmentReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
 
   val simpleFraudRiskRequest: FraudRiskRequest = new FraudRiskRequest(nino = Some(simpleNino), taxYear = Some(simpleTaxYear), fraudRiskHeaders = Map.empty[String, String])
   val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(0, simpleCIPCorrelationId, Seq.empty)
@@ -106,7 +105,7 @@ object CommonTestData  {
   val rdsSubmissionReportJson: JsValue = loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId)
   val rdsNewSubmissionReport: RdsAssessmentReport = rdsSubmissionReportJson.as[RdsAssessmentReport]
   
-  val simpleAssessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalulationTimestamp,simpleAssessmentReport, rdsNewSubmissionReport)
+  val simpleAssessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalculationTimestamp,simpleAssessmentReport, rdsNewSubmissionReport)
 
   val rdsAssessmentAckJson: JsValue = loadAckResponseTemplate(simpleReportId.toString, nino=simpleNino, responseCode=202)
   val simpleAcknowledgeNewRdsAssessmentReport: RdsAssessmentReport = rdsAssessmentAckJson.as[RdsAssessmentReport]

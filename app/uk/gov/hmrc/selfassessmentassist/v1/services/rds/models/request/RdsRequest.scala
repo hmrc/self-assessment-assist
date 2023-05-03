@@ -23,13 +23,12 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsReques
 case class RdsRequest(inputs: Seq[Input])
 
 object RdsRequest {
-  trait Input {
+  sealed trait Input {
     def name: String
     def value: Any
   }
 
   object Input {
-    @annotation.nowarn
     implicit val reads: Reads[Input] = {
       case json@JsObject(values) =>
         values.get("value") match {
@@ -38,15 +37,16 @@ object RdsRequest {
           case Some(JsNumber(_)) => InputWithInt.reads.reads(json)
           case Some(JsArray(_)) => InputWithObject.reads.reads(json)
           case Some(JsBoolean(_)) => InputWithBoolean.reads.reads(json)
+          case _ => throw new IllegalStateException("Input malformed")
         }
       case _ => throw new IllegalStateException("Input malformed")
     }
 
-    @annotation.nowarn
     implicit val writes: Writes[Input] = {
       case i@InputWithString(_, _) => InputWithString.writes.writes(i)
       case i@InputWithInt(_, _) => InputWithInt.writes.writes(i)
       case i@InputWithObject(_, _) => InputWithObject.writes.writes(i)
+      case i@InputWithBoolean(_, _) => InputWithBoolean.writes.writes(i)
     }
 
   }
@@ -107,21 +107,20 @@ object RdsRequest {
 
   }
 
-  trait ObjectPart
+  sealed trait ObjectPart
 
   object ObjectPart {
 
-    @annotation.nowarn
     implicit val reads: Reads[ObjectPart] = {
       case json@JsObject(values) =>
         values.keys.toList match {
           case List("metadata") => MetadataWrapper.reads.reads(json)
           case List("data") => DataWrapper.reads.reads(json)
+          case _ => throw new IllegalStateException("Object part malformed")
         }
       case _ => throw new IllegalStateException("Object part malformed")
     }
 
-    @annotation.nowarn
     implicit val writes: Writes[ObjectPart] = {
       case o@MetadataWrapper(_) => MetadataWrapper.writes.writes(o)
       case o@DataWrapper(_) => DataWrapper.writes.writes(o)

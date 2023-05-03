@@ -66,12 +66,12 @@ object RdsTestData {
                 Seq(
                   Map("Reason" -> "string")
                 )),
-              DataWrapper(fraudRiskReport.reasons.map(value => Seq(value)).toSeq)
+              DataWrapper(fraudRiskReport.reasons.map(value => Seq(value)))
             )
           )
         )
   )
-  val acknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
+  val acknowledgeReportRequest: AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
   def rdsAcknowledgementRequest: RdsRequest
   = {
@@ -110,5 +110,5 @@ object RdsTestData {
     rdsCorrelationId = simpleRDSCorrelationId
   )
 
-  val assessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalulationTimestamp,assessmentReport, rdsNewSubmissionReport)
+  val assessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalculationTimestamp,assessmentReport, rdsNewSubmissionReport)
 }

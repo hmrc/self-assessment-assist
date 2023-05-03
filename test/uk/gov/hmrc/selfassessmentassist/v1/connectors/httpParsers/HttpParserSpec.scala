@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.outcomes
+package uk.gov.hmrc.selfassessmentassist.v1.connectors.httpParsers
 
-case class ResponseWrapper[+A](correlationId: String,  responseData: A)
+import play.api.libs.json.{Json, Reads}
+
+trait HttpParserSpec {
+  // WLOG if Reads tested elsewhere
+  case class SomeModel(data: String)
+
+  object SomeModel {
+    implicit val reads: Reads[SomeModel] = Json.reads
+  }
+
+}

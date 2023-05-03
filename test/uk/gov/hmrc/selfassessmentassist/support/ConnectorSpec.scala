@@ -27,6 +27,7 @@ trait ConnectorSpec extends UnitSpec
   with MimeTypes
   with HeaderNames  {
 
+  lazy val baseUrl                   = "http://test-BaseUrl"
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   implicit val correlationId: String = CommonTestData.correlationId
@@ -41,7 +42,6 @@ trait ConnectorSpec extends UnitSpec
       Seq.empty[String],
       Some("self-assessment-assist-api")
     )
-
 
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
   //implicit val hc: HeaderCarrier = HeaderCarrier(requestId = Some(RequestId("123")), otherHeaders = otherHeaders)
