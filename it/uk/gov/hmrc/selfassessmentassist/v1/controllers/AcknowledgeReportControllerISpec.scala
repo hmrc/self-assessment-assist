@@ -30,7 +30,7 @@ import scala.collection.Seq
 
 class AcknowledgeReportControllerISpec extends IntegrationBaseSpec {
 
-  "Calling the acknowledge report' endpoint" should {
+  "Calling the acknowledge report endpoint" should {
     "return a 204 status code" when {
       "any valid request is made" in new Test {
 
