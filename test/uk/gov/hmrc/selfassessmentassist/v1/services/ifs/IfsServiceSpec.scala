@@ -20,7 +20,7 @@ import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.MockIfsConnector
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, Link, Risk}
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, CustomerType, Link, Risk}
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request._
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsResponse
@@ -193,6 +193,14 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
         await(
           service.submitAcknowledgementMessage(CommonTestData.simpleAcknowledgeReportRequest, CommonTestData.simpleAcknowledgeNewRdsAssessmentReport, CommonTestData.simpleIndividualUserDetails)
         ) shouldBe Right(IfsResponse())
+      }
+    }
+
+    "customerTypeString" should {
+      "return the expected result" in new Test {
+        service.customerTypeString(CustomerType.TaxPayer) shouldBe "Individual"
+        service.customerTypeString(CustomerType.Agent) shouldBe "Agent"
+        an [IllegalStateException] shouldBe thrownBy(service.customerTypeString(CustomerType.Unknown))
       }
     }
   }

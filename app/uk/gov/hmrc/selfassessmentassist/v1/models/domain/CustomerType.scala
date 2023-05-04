@@ -24,6 +24,7 @@ object CustomerType extends Enumeration {
 
   val TaxPayer: CustomerType.Value = Value("T")
   val Agent: CustomerType.Value = Value("A")
+  val Unknown: CustomerType.Value = Value("U")
 
   implicit val reads: Reads[CustomerType] =
     Json.formatEnum(CustomerType)

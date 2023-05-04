@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.cip
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import akka.actor.{ActorSystem, Scheduler}
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Json, JsValue}
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData.simpleFraudRiskRequest
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.InsightConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.FraudRiskReport
@@ -66,10 +66,10 @@ class InsightConnectorSpec extends ConnectorSpec
 
   class Test {
 
-    MockedAppConfig.cipFraudServiceBaseUrl returns (s"http://localhost:$port/fraud")
+    MockedAppConfig.cipFraudServiceBaseUrl returns s"http://localhost:$port/fraud"
     val connector = new InsightConnector(httpClient, mockAppConfig)
 
-    def stubCIPResponse(body: Option[String] = None, status: Int) = {
+    def stubCIPResponse(body: Option[String] = None, status: Int): StubMapping = {
       body match {
         case Some(data) =>
           wireMockServer.stubFor(

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.nrs
+package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import akka.actor.{ActorSystem, Scheduler}
 import com.github.tomakehurst.wiremock.client.WireMock._
@@ -29,7 +29,7 @@ import play.api.test.Injecting
 import play.api.{Application, Environment, Mode}
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.NrsConnector
+import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.FullRequestTestData
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.NrsSubmission
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
 

@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.nrs
+package uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.NrsConnector
+import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.NrsOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.NrsSubmission
 
 import scala.concurrent.Future
@@ -33,7 +34,7 @@ trait MockNrsConnector extends MockFactory {
     def submitNrs(expectedPayload: NrsSubmission): CallHandler[Future[NrsOutcome]] = {
       (mockNrsConnector
         .submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
-        .expects (where {
+        .expects(where {
           (nrsSubmission: NrsSubmission, _: HeaderCarrier, _: String) => nrsSubmission == expectedPayload
         })
     }
