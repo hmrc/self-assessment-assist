@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response
+package uk.gov.hmrc.selfassessmentassist.stubs
 
-import play.api.libs.json.{Json, Reads, Writes}
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import play.api.http.Status.OK
+import play.api.libs.json.Json
+import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData
 
-case class NrsResponse(nrSubmissionId: String)
+object NrsStub {
 
-object NrsResponse {
+  def submit(url: String): StubMapping = {
+    DownstreamStub.onSuccess(DownstreamStub.POST, url, OK, Json.toJson(CommonTestData.simpleNRSResponseAcknowledgeSubmission))
+  }
 
-  implicit val reads: Reads[NrsResponse] = Json.reads[NrsResponse]
-  implicit val writes: Writes[NrsResponse] = Json.writes[NrsResponse]
 }

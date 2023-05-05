@@ -85,7 +85,7 @@ class DefaultRdsAuthConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo("/submit"))
               .withHeader("Content-Type", equalTo(MimeTypes.FORM))
-              .withHeader("Authorization", equalTo(s"Basic ${authToken}"))
+              .withHeader("Authorization", equalTo(s"Basic $authToken"))
               .willReturn(aResponse()
                 .withStatus(status)
                 .withBody(

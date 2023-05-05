@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.TestData
+package uk.gov.hmrc.selfassessmentassist.support.TestData
 
 import java.time.{LocalDateTime, Month, OffsetDateTime, ZoneOffset}
 import play.api.libs.json.{Json, JsValue}
 import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.selfassessmentassist.support.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{CustomerType, _}
@@ -28,7 +29,6 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.{FraudRiskReport,
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request._
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.NrsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
-import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
 import java.util.UUID
 

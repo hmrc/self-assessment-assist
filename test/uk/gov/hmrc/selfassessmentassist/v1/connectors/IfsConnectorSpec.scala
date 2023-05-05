@@ -43,7 +43,7 @@ class IfsConnectorSpec extends ConnectorSpec
     val reportId = "12345"
     val ifsTokenValue = "ABCD1234"
     val ifsEnv = "local"
-    val ifsEnvironmentHeaders = Some(Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id"))
+    val ifsEnvironmentHeaders: Option[Seq[String]] = Some(Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id"))
     val url = "/interaction-data/store-interactions"
 
     private val ifsRequest: IFRequest = FullRequestTestData.correctModel
@@ -52,7 +52,7 @@ class IfsConnectorSpec extends ConnectorSpec
     val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
 
     class Test() {
-      MockedAppConfig.ifsBaseUrl returns (s"http://localhost:$port/interaction-data/store-interactions")
+      MockedAppConfig.ifsBaseUrl returns s"""http://localhost:$port/interaction-data/store-interactions"""
       MockedAppConfig.ifsToken returns ifsTokenValue
       MockedAppConfig.ifsEnv returns ifsEnv
       MockedAppConfig.ifsEnvironmentHeaders returns ifsEnvironmentHeaders
@@ -75,7 +75,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
-              .withHeader("Authorization", equalTo(s"Bearer ${ifsTokenValue}"))
+              .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(NO_CONTENT)))
@@ -89,7 +89,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
-              .withHeader("Authorization", equalTo(s"Bearer ${ifsTokenValue}"))
+              .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(SERVICE_UNAVAILABLE)))
@@ -101,7 +101,7 @@ class IfsConnectorSpec extends ConnectorSpec
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
-              .withHeader("Authorization", equalTo(s"Bearer ${ifsTokenValue}"))
+              .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
               .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
               .willReturn(aResponse()
                 .withStatus(BAD_REQUEST)))

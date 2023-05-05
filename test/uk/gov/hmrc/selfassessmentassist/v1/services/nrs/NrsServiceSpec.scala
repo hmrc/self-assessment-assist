@@ -86,7 +86,7 @@ class NrsServiceSpec extends ServiceSpec {
 
         MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
-        val nrsSubmission = service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, timestamp, userRequest, AssistReportGenerated)
+        val nrsSubmission: Either[NrsFailure, NrsSubmission] = service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, timestamp, userRequest, AssistReportGenerated)
 
         await(
           nrsSubmission.fold(
@@ -104,7 +104,7 @@ class NrsServiceSpec extends ServiceSpec {
         MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
           .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
 
-        val nrsSubmission = service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, timestamp, userRequest, AssistReportGenerated)
+        val nrsSubmission: Either[NrsFailure, NrsSubmission] = service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, timestamp, userRequest, AssistReportGenerated)
 
 
           await(
@@ -171,7 +171,7 @@ class NrsServiceSpec extends ServiceSpec {
         MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
           .returns(Future.successful(Right(NrsResponse(nrsId))))
 
-        val nrsSubmission = service.buildNrsSubmission(acknowledgeRdsReport.stringify, acknowledgeRdsReport.reportId, timestamp, userRequest, AssistReportAcknowledged)
+        val nrsSubmission: Either[NrsFailure, NrsSubmission] = service.buildNrsSubmission(acknowledgeRdsReport.stringify, acknowledgeRdsReport.reportId, timestamp, userRequest, AssistReportAcknowledged)
 
         await(
           nrsSubmission.fold(
@@ -189,7 +189,7 @@ class NrsServiceSpec extends ServiceSpec {
 
        MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
          .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
-       val nrsSubmission = service.buildNrsSubmission(acknowledgeRdsReport.stringify, acknowledgeRdsReport.reportId, timestamp, userRequest, AssistReportAcknowledged)
+       val nrsSubmission: Either[NrsFailure, NrsSubmission] = service.buildNrsSubmission(acknowledgeRdsReport.stringify, acknowledgeRdsReport.reportId, timestamp, userRequest, AssistReportAcknowledged)
 
        await(
          nrsSubmission.fold(
@@ -198,7 +198,6 @@ class NrsServiceSpec extends ServiceSpec {
          )
        ).map( value => value shouldBe Left(NrsFailure.Exception("reason")))
 
-       //await(service.submit(acknowledgeRdsReport)) shouldBe Left(NrsFailure.Exception("reason"))
      }
    }
 

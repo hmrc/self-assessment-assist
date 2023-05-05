@@ -104,7 +104,7 @@ object RdsAssessmentReport {
 
     implicit val writes: Writes[KeyValueWrapper] =
       ((JsPath \ "name").write[String] and
-        ((JsPath \ "value").writeNullable[String]))(unlift(KeyValueWrapper.unapply))
+        (JsPath \ "value").writeNullable[String])(unlift(KeyValueWrapper.unapply))
   }
 
   case class MainOutputWrapper(name: String, value: Option[Seq[ObjectPart]]) extends Output

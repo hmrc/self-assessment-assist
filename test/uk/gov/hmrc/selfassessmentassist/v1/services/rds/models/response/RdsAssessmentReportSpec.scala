@@ -50,41 +50,7 @@ class RdsAssessmentReportSpec extends UnitSpec {
     outputs = outputs)
 
   val json: JsValue = Json.parse(
-    s"""
-    {
-       |  "links": ["https://google.com"],
-       |  "version": 2,
-       |  "moduleId": "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK_ACK",
-       |  "stepId": "execute",
-       |  "executionState": "completed",
-       |  "outputs": [
-       |   {
-       |      "name": "calculationId",
-       |      "value": "${calculationId}"
-       |    },
-       |    {
-       |      "name": "correlationId",
-       |      "value": "${correlationId}"
-       |    },
-       |    {
-       |      "name": "feedbackId",
-       |      "value": "${feedbackId}"
-       |    },
-       |    {
-       |      "name": "responseCode",
-       |      "value": $responseCode
-       |    },
-       |    {
-       |      "name": "responseMessage",
-       |      "value": "$responseMessage"
-       |    },
-       |    {
-       |      "name": "calculationTimestamp",
-       |      "value": "$calculationTimeStamp"
-       |    }
-       |   ]
-       |   }
-       |""".stripMargin)
+    s"\n    {\n  \"links\": [\"https://google.com\"],\n  \"version\": 2,\n  \"moduleId\": \"HMRC_ASSIST_ITSA_FINSUB_FEEDBACK_ACK\",\n  \"stepId\": \"execute\",\n  \"executionState\": \"completed\",\n  \"outputs\": [\n   {\n      \"name\": \"calculationId\",\n      \"value\": \"$calculationId\"\n    },\n    {\n      \"name\": \"correlationId\",\n      \"value\": \"$correlationId\"\n    },\n    {\n      \"name\": \"feedbackId\",\n      \"value\": \"$feedbackId\"\n    },\n    {\n      \"name\": \"responseCode\",\n      \"value\": $responseCode\n    },\n    {\n      \"name\": \"responseMessage\",\n      \"value\": \"$responseMessage\"\n    },\n    {\n      \"name\": \"calculationTimestamp\",\n      \"value\": \"$calculationTimeStamp\"\n    }\n   ]\n   }\n")
 
 
   "RdsAssessmentReport" when {
