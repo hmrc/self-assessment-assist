@@ -37,7 +37,7 @@ class NrsServiceSpec extends ServiceSpec {
 
   private val nrsId = "a5894863-9cd7-4d0d-9eee-301ae79cbae6"
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
-  private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
+  private val formattedDate: String = timestamp.format(DateUtils.isoInstantDateTimePattern)
   private val rdsReport: AssessmentReport = AssessmentReport(
     reportId = UUID.fromString("db741dff-4054-478e-88d2-5993e925c7ab"),
     risks = Seq(

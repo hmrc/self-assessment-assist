@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.selfassessmentassist.utils
 
-import play.api.libs.json.{JsError, JsNumber, JsString, JsSuccess}
+import play.api.libs.json._
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-import java.time.OffsetDateTime
+import java.time.{LocalDate, OffsetDateTime}
 
 class DateUtilsSpec extends UnitSpec {
 
-
-val date = OffsetDateTime.parse("2022-01-01T12:00Z")
+  val date: OffsetDateTime = OffsetDateTime.parse("2022-01-01T12:00Z")
 
   "DateUtils" when {
     "dateTimeWrites" must {
@@ -45,14 +44,14 @@ val date = OffsetDateTime.parse("2022-01-01T12:00Z")
 
       "isoInstantDateWrites" must {
         "writes OK" in {
-          DateUtils.isoInstantDateWrites.writes(date).as[String] shouldBe "2022-01-01T12:00:00Z"
+          DateUtils.isoInstantDateTimeWrites.writes(date).as[String] shouldBe "2022-01-01T12:00:00Z"
         }
       }
 
       "isoInstantDateReads" must {
 
         "read fail" in {
-          DateUtils.isoInstantDateReads.reads(JsString("2022-01-01T12:00:00.000Z")) shouldBe JsError()
+          DateUtils.isoInstantDateTimeReads.reads(JsString("2022-01-01T12:00:00.000Z")) shouldBe JsError()
         }
 
       }
@@ -71,6 +70,54 @@ val date = OffsetDateTime.parse("2022-01-01T12:00Z")
         }
       }
 
+      "localDateTime" must {
+        "read to offset date time" in {
+          val localDateTimeString = "2007-12-03T10:15:30"
+
+          DateUtils.offsetDateTimeFromLocalDateTimeFormatReads.reads(JsString(localDateTimeString)).map(_.toString shouldBe "2007-12-03T10:15:30Z")
+        }
+
+        "return error" in {
+          val notADateTimeString = "foo"
+
+          DateUtils.offsetDateTimeFromLocalDateTimeFormatReads.reads(JsString(notADateTimeString)).asEither match {
+            case Left(List((_, List(JsonValidationError(List(message)))))) =>
+              message shouldBe "not a valid date Text 'foo' could not be parsed at index 0"
+            case _ => throw new IllegalStateException("unexpected result for offsetDateTimeFromLocalDateTimeFormatReads")
+          }
+
+        }
+      }
+
+      "date" should {
+        "serialize LocalDate to JSON" in {
+          val date         = LocalDate.of(2023, 5, 11)
+          val expectedJson = JsString("2023-05-11")
+
+          val json = DateUtils.dateWrites.writes(date)
+
+          json shouldBe expectedJson
+        }
+
+        "dateReads" should {
+          "deserialize JSON to LocalDate" in {
+            val json         = JsString("2023-05-11")
+            val expectedDate = LocalDate.of(2023, 5, 11)
+
+            val result = Json.fromJson[LocalDate](json)
+
+            result shouldBe JsSuccess(expectedDate)
+          }
+
+          "return JsError for invalid date format" in {
+            val json = JsString("invalid-date")
+
+            val result = Json.fromJson[LocalDate](json)
+
+            result shouldBe a[JsError]
+          }
+        }
+      }
     }
 
   }

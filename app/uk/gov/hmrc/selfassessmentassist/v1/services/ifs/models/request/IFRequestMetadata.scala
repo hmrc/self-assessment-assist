@@ -32,6 +32,6 @@ case class IFRequestMetadata(
 
 object IFRequestMetadata {
   implicit val dateReads: Reads[OffsetDateTime] = DateUtils.offsetDateTimeFromLocalDateTimeFormatReads
-  implicit val dateWrites: Writes[OffsetDateTime] = DateUtils.isoInstantDateWrites
+  implicit val dateWrites: Writes[OffsetDateTime] = DateUtils.isoInstantDateTimeWrites
   implicit val formats: Format[IFRequestMetadata] = Json.format[IFRequestMetadata]
 }
