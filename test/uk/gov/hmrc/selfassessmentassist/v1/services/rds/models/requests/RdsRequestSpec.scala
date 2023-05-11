@@ -3,7 +3,16 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.requests
 import play.api.libs.json.{JsObject, Json, JsSuccess}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest.{DataWrapper, Input, InputWithBoolean, InputWithInt, InputWithObject, InputWithString, MetadataWrapper, ObjectPart}
+import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest.{
+  DataWrapper,
+  Input,
+  InputWithBoolean,
+  InputWithInt,
+  InputWithObject,
+  InputWithString,
+  MetadataWrapper,
+  ObjectPart
+}
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData.fraudRiskReport
 
 class RdsRequestSpec extends UnitSpec {
