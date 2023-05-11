@@ -24,18 +24,16 @@ import scala.util.{Failure, Success, Try}
 
 object DateUtils {
 
-
-  val isoInstantDatePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-  val dateTimePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-  val datePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
+  val isoInstantDateTimePattern: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+  val dateTimePattern: DateTimeFormatter           = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+  val datePattern: DateTimeFormatter               = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   implicit def dateTimeWrites: Writes[OffsetDateTime] = (localDateTime: OffsetDateTime) => JsString(localDateTime.format(dateTimePattern))
 
   implicit def dateTimeReads: Reads[OffsetDateTime] = (json: JsValue) => {
     Try(json.as[String]) match {
       case Success(value) => JsSuccess(OffsetDateTime.parse(value))
-      case Failure(_) => JsError()
+      case Failure(_)     => JsError()
     }
   }
 
@@ -44,15 +42,16 @@ object DateUtils {
     dateTimeWrites
   )
 
+  implicit def isoInstantDateTimeWrites: Writes[OffsetDateTime] = (localDateTime: OffsetDateTime) =>
+    JsString(localDateTime.format(isoInstantDateTimePattern))
 
-  implicit def isoInstantDateWrites: Writes[OffsetDateTime] = (localDateTime: OffsetDateTime) => JsString(localDateTime.format(isoInstantDatePattern))
-
-  implicit def isoInstantDateReads: Reads[OffsetDateTime] = (json: JsValue) => Try(JsSuccess(OffsetDateTime.parse(json.as[String], isoInstantDatePattern), JsPath)).getOrElse(JsError())
+  implicit def isoInstantDateTimeReads: Reads[OffsetDateTime] = (json: JsValue) =>
+    Try(JsSuccess(OffsetDateTime.parse(json.as[String], isoInstantDateTimePattern), JsPath)).getOrElse(JsError())
 
   implicit val offsetDateTimeFromLocalDateTimeFormatReads: Reads[OffsetDateTime] = { json =>
     json.as[String].parseOffsetDateTimeFromLocalDateTimeFormat() match {
       case Right(value) => JsSuccess(value)
-      case Left(error) => JsError("not a valid date " + error.errorMessage)
+      case Left(error)  => JsError("not a valid date " + error.errorMessage)
     }
   }
 
@@ -62,37 +61,38 @@ object DateUtils {
 
   implicit class StringExtensions(string: String) {
 
-    def parseOffsetDateTimeFromLocalDateTimeFormat(formatter: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME)
-    : Either[DateError, OffsetDateTime] = {
+    def parseOffsetDateTimeFromLocalDateTimeFormat(
+        formatter: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME): Either[DateError, OffsetDateTime] = {
 
       Try(LocalDateTime.parse(string, formatter).utcOffset) match {
         case Success(offsetDateTime) => Right(offsetDateTime)
-        case Failure(exception) => Left(DateParseError(exception.getMessage, string))
+        case Failure(exception)      => Left(DateParseError(exception.getMessage, string))
       }
     }
+
   }
 
   sealed trait DateError {
     val errorMessage: String
     val dateFailedToParse: String
   }
+
   case class DateParseError(e: String, dateFailed: String) extends DateError {
     val dateFailedToParse: String = dateFailed
-    val errorMessage: String = e
+    val errorMessage: String      = e
   }
 
-
-  implicit def defaultDateTimeReads: Reads[OffsetDateTime] = (json: JsValue) => Try(JsSuccess(OffsetDateTime.parse(json.as[String], isoInstantDatePattern), JsPath)).getOrElse(JsError())
+  implicit def defaultDateTimeReads: Reads[OffsetDateTime] = (json: JsValue) =>
+    Try(JsSuccess(OffsetDateTime.parse(json.as[String], isoInstantDateTimePattern), JsPath)).getOrElse(JsError())
 
   val defaultDateTimeFormat: Format[OffsetDateTime] = Format[OffsetDateTime](
     defaultDateTimeReads,
     dateTimeWrites
   )
 
+  implicit def dateWrites: Writes[LocalDate] = (localDate: LocalDate) => JsString(localDate.format(datePattern))
 
-implicit def dateWrites: Writes[LocalDate] = (localDate: LocalDate) => JsString(localDate.format(datePattern))
-
-  implicit def dateReads: Reads[LocalDate] = (json: JsValue) => Try(JsSuccess(LocalDate.parse(json.as[String], datePattern), JsPath)).getOrElse(JsError())
-
+  implicit def dateReads: Reads[LocalDate] = (json: JsValue) =>
+    Try(JsSuccess(LocalDate.parse(json.as[String], datePattern), JsPath)).getOrElse(JsError())
 
 }

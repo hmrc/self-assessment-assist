@@ -56,7 +56,7 @@ class AcknowledgeReportControllerSpec
 
     val controller: TestController = new TestController()
     private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
-    private val formattedDate: String = timestamp.format(DateUtils.isoInstantDatePattern)
+    private val formattedDate: String = timestamp.format(DateUtils.isoInstantDateTimePattern)
 
     private lazy val appConfig = app.injector.instanceOf[AppConfig]
 

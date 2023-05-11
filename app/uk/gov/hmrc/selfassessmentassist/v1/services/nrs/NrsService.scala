@@ -48,7 +48,7 @@ class NrsService @Inject()(connector: NrsConnector,
         Try {
           val encodedPayload = hashUtil.encode(payload)
           val sha256Checksum = hashUtil.getHash(payload)
-          val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDatePattern)
+          val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDateTimePattern)
 
           NrsSubmission(
             payload = encodedPayload,

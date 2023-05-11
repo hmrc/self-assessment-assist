@@ -34,7 +34,7 @@ case class Metadata(
 
 object Metadata {
   implicit val idformat: OFormat[IdentityData] = IdentityData.format
-  implicit val dateReads: Reads[OffsetDateTime] = DateUtils.isoInstantDateReads
-  implicit val dateWrites: Writes[OffsetDateTime] = DateUtils.isoInstantDateWrites
+  implicit val dateReads: Reads[OffsetDateTime] = DateUtils.isoInstantDateTimeReads
+  implicit val dateWrites: Writes[OffsetDateTime] = DateUtils.isoInstantDateTimeWrites
   implicit val format: OFormat[Metadata] = Json.format[Metadata]
 }
