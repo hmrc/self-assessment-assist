@@ -1,15 +1,17 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.requests
 
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, Json, JsSuccess}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest.{
   DataWrapper,
+  Input,
   InputWithBoolean,
   InputWithInt,
   InputWithObject,
   InputWithString,
-  MetadataWrapper
+  MetadataWrapper,
+  ObjectPart
 }
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData.fraudRiskReport
 
@@ -30,6 +32,28 @@ class RdsRequestSpec extends UnitSpec {
 
     "read to object" in {
       InputWithString.reads.reads(inputWithStringJson).map(_ shouldBe inputWithStringObject)
+    }
+
+    "throw an exception for malformed JSON" in {
+      val json = Json.obj(
+        "invalid" -> "value"
+      )
+
+      val exception = intercept[IllegalStateException] {
+        Input.reads.reads(json)
+      }
+
+      exception.getMessage shouldBe "Input malformed"
+    }
+
+    "throw an exception with correct error message when JSON is not an object" in {
+      val json = Json.arr("value")
+
+      val exception = intercept[IllegalStateException] {
+        Input.reads.reads(json)
+      }
+
+      exception.getMessage shouldBe "Input malformed"
     }
   }
 
@@ -84,6 +108,54 @@ class RdsRequestSpec extends UnitSpec {
       }
 
       exception.getMessage should be("Object part malformed")
+    }
+  }
+
+  "ObjectPart" should {
+    "deserialize valid MetadataWrapper JSON" in {
+      val json = Json.obj(
+        "metadata" -> Seq(
+          Map("key1" -> "value1"),
+          Map("key2" -> "value2")
+        )
+      )
+
+      val result = ObjectPart.reads.reads(json)
+
+      result.map(
+        _ shouldBe MetadataWrapper(
+          Seq(
+            Map("key1" -> "value1"),
+            Map("key2" -> "value2")
+          )))
+    }
+
+    "deserialize valid DataWrapper JSON" in {
+      val json = Json.obj(
+        "data" -> Seq(
+          Seq("value1", "value2"),
+          Seq("value3", "value4")
+        )
+      )
+
+      val result = ObjectPart.reads.reads(json)
+
+      result.map(
+        _ shouldBe DataWrapper(
+          Seq(
+            Seq("value1", "value2"),
+            Seq("value3", "value4")
+          )))
+    }
+
+    "throw an exception for malformed JSON" in {
+      val json = Json.obj(
+        "invalid" -> "value"
+      )
+
+      an[IllegalStateException] should be thrownBy {
+        Json.fromJson[ObjectPart](json)
+      }
     }
   }
 
