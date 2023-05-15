@@ -32,7 +32,6 @@ import scala.util.Try
 @Singleton
 class NrsService @Inject()(connector: NrsConnector,
                            hashUtil: HashUtil) extends Logging {
-  //                           override val metrics: Metrics) extends Timer with Logging {
 
   def buildNrsSubmission(payload: String,
                                  reportId: String,
@@ -41,7 +40,7 @@ class NrsService @Inject()(connector: NrsConnector,
 
     logger.debug(s"$correlationId::[buildNrsSubmission] Building the NRS submission")
 
-    val userAuthToken = request.headers.get(HeaderNames.authorisation)
+    val userAuthToken: Option[String] = request.headers.get(HeaderNames.authorisation)
 
     userAuthToken match {
       case Some(token) =>
@@ -69,8 +68,8 @@ class NrsService @Inject()(connector: NrsConnector,
           )
         }.fold(
           error => {
-            logger.error(s"$correlationId::[buildNrsSubmission] unable to build NRS event due to ${error.getMessage}")
-            Left(NrsFailure.UnableToAttempt(error.getMessage))
+            logger.error(s"$correlationId::[buildNrsSubmission] unable to build NRS event due to $error")
+            Left(NrsFailure.Exception("failed to create submission request data"))
           },
           event => {
             logger.info(s"$correlationId::[buildNrsSubmission] successfully built NRS event for submission")
@@ -79,7 +78,7 @@ class NrsService @Inject()(connector: NrsConnector,
         )
       case None =>
         logger.error(s"$correlationId::[buildNrsSubmission] unable to build NRS event, no user bearer token")
-        Left(NrsFailure.UnableToAttempt("no beaker token for user"))
+        Left(NrsFailure.Exception("no beaker token for user"))
     }
 
 

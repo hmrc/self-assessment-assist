@@ -32,7 +32,4 @@ case object NrsFailure {
   case object ExceptionThrown extends NrsFailure {
     override def retryable: Boolean = false
   }
-  case class UnableToAttempt(reason: String) extends NrsFailure {
-    override def retryable: Boolean = false
-  }
 }

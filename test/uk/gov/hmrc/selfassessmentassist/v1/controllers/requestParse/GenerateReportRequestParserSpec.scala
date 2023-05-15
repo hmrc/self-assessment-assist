@@ -31,13 +31,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class GenerateReportRequestParserSpec extends UnitSpec {
 
   val validator: GenerateReportValidator = new GenerateReportValidator
+
   val validData = GenerateReportRawData(
-    calculationId= "0f14d0ab-9605-4a62-a9e4-5ed26688389b",
-    nino= "NJ070957A",
-    preferredLanguage= PreferredLanguage.English,
-    customerType= CustomerType.Agent,
+    calculationId = "0f14d0ab-9605-4a62-a9e4-5ed26688389b",
+    nino = "NJ070957A",
+    preferredLanguage = PreferredLanguage.English,
+    customerType = CustomerType.Agent,
     agentRef = None,
-    taxYear= "2021-22")
+    taxYear = "2021-22"
+  )
 
   "parse" should {
     "return a Request" when {
@@ -47,29 +49,50 @@ class GenerateReportRequestParserSpec extends UnitSpec {
           parser.parseRequest(validData)(implicitly[ExecutionContext], correlationId)
         )
 
-        result shouldBe Right(AssessmentRequestForSelfAssessment(
-          UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
-          "NJ070957A",
-          PreferredLanguage.English,
-          CustomerType.Agent,
-          None,
-          "2022"
-        ))
+        result shouldBe Right(
+          AssessmentRequestForSelfAssessment(
+            UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
+            "NJ070957A",
+            PreferredLanguage.English,
+            CustomerType.Agent,
+            None,
+            "2022"
+          ))
       }
     }
 
     "fail a Request" when {
-      "the validator returns errors" in {
+      " nino and taxyear is empty, the validator must returns errors" in {
         val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validator)
-        val invalidData = validData.copy(nino = "", taxYear = "")
+        val invalidData                         = validData.copy(nino = "", taxYear = "")
         val result = await(
           parser.parseRequest(invalidData)(implicitly[ExecutionContext], correlationId)
         )
 
-        result shouldBe Left(ErrorWrapper("f2fb30e5-4ab6-4a29-b3c1-c00000011111",
-          MtdError("INVALID_REQUEST","Invalid request",None),
-          Some(List(MtdError("FORMAT_NINO","The provided NINO is invalid",None),
-            MtdError("FORMAT_TAX_YEAR","The provided tax year is invalid",None)))))
+        result shouldBe Left(
+          ErrorWrapper(
+            "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
+            MtdError("INVALID_REQUEST", "Invalid request", None),
+            Some(
+              List(
+                MtdError("FORMAT_NINO", "The provided NINO is invalid", None),
+                MtdError("FORMAT_TAX_YEAR", "The provided tax year is invalid", None)))
+          ))
+      }
+
+      "invalid taxyear range is supplied, the validator must returns errors" in {
+        val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validator)
+        val invalidData                         = validData.copy(nino = "NJ070957A", taxYear = "2021-23")
+        val result = await(
+          parser.parseRequest(invalidData)(implicitly[ExecutionContext], correlationId)
+        )
+
+        result shouldBe Left(
+          ErrorWrapper(
+            "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
+            MtdError("RULE_TAX_YEAR_RANGE_INVALID", "Tax year range invalid. A tax year range of one year is required.", None),
+            None
+          ))
       }
     }
 
@@ -80,24 +103,27 @@ class GenerateReportRequestParserSpec extends UnitSpec {
           parser.parseRequest(validData)(implicitly[ExecutionContext], correlationId)
         )
 
-        result shouldBe  Right(AssessmentRequestForSelfAssessment(
-          UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
-          "NJ070957A",
-          PreferredLanguage.English,
-          CustomerType.Agent,
-          None,
-          "2022"
-        ))
+        result shouldBe Right(
+          AssessmentRequestForSelfAssessment(
+            UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
+            "NJ070957A",
+            PreferredLanguage.English,
+            CustomerType.Agent,
+            None,
+            "2022"
+          ))
 
-        result should not equal  Right(AssessmentRequestForSelfAssessment(
-          UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
-          "NJ070957A",
-          PreferredLanguage.English,
-          CustomerType.Agent,
-          None,
-          "2021-22"
-        ))
+        result should not equal Right(
+          AssessmentRequestForSelfAssessment(
+            UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
+            "NJ070957A",
+            PreferredLanguage.English,
+            CustomerType.Agent,
+            None,
+            "2021-22"
+          ))
       }
     }
   }
+
 }

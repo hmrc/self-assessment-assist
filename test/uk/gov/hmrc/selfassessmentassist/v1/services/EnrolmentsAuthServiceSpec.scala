@@ -19,14 +19,12 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, allEnrolments}
-import uk.gov.hmrc.auth.core.retrieve.{~, Retrieval}
+import uk.gov.hmrc.auth.core.retrieve.{Retrieval}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockAuthConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
-import uk.gov.hmrc.selfassessmentassist.v1.services.AuthFixture.enrolments
 
 import scala.concurrent.{ExecutionContext, Future}
 
