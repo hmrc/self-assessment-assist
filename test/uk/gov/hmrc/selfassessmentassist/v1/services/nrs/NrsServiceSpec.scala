@@ -79,9 +79,9 @@ class NrsServiceSpec extends ServiceSpec {
     )
   private val acknowledgeRdsReport = AcknowledgeReportId("12345")
 
-  "service using report generated" when {
+  "SAA api generated report should be stored in NRS" when {
 
-    "service call successful" must {
+    "nrs service call is successful" must {
       "return the expected result" in new Test {
 
         MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
@@ -98,8 +98,9 @@ class NrsServiceSpec extends ServiceSpec {
     }
   }
 
-    "service call unsuccessful report generated" must {
-      "map 4xx errors correctly" in new Test {
+
+    "When nrs service call is unsuccessful after n number of attempts then it" must {
+      "map errors correctly" in new Test {
 
         MockNrsConnector.submitNrs(expectedPayload = expectedReportPayload)
           .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
@@ -162,9 +163,9 @@ class NrsServiceSpec extends ServiceSpec {
 
   }
 
-  "service using acknowledged generated" when {
+  "SAA api acknowledge call should be stored in NRS" when {
 
-    "service call successful" must {
+    " the service call is successful" must {
 
       "return the expected result" in new Test {
 
@@ -183,9 +184,9 @@ class NrsServiceSpec extends ServiceSpec {
     }
   }
 
-   "service call unsuccessful acknowledged generated" must {
+   "When nrs service call for acknowledgement is unsuccessful after n number of attempts then it" must {
 
-     "map 4xx errors correctly" in new Test {
+     "map errors correctly" in new Test {
 
        MockNrsConnector.submitNrs(expectedPayload = expectedAcknowledgePayload)
          .returns(Future.successful(Left(NrsFailure.Exception("reason"))))

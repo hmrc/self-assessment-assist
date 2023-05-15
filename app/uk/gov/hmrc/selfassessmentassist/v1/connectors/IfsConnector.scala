@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
 import play.api.libs.json.Writes
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, HttpReads, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
@@ -64,18 +64,9 @@ class IfsConnector @Inject()(val httpClient: HttpClient, appConfig: AppConfig) (
           }
         }
         .recover {
-          case e: BadRequestException =>
-            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : BAD request",e)
+          case e: HttpException =>
+            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : failed with exception",e)
             Left(ErrorWrapper(correlationId, DownstreamError))
-
-          case e: UpstreamErrorResponse if e.statusCode == SERVICE_UNAVAILABLE =>
-            logger.error(s"$correlationId::[IfsConnector:submit] IFS response : SERVICE_UNAVAILABLE request",e)
-            Left(ErrorWrapper(correlationId, DownstreamError))
-
-          case NonFatal(e) =>
-            logger.error(s"$correlationId::[IfsConnector:submit] IFS submission failed with exception ",e)
-            Left(ErrorWrapper(correlationId, DownstreamError))
-
         }
   }
 }

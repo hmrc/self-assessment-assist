@@ -59,7 +59,7 @@ class GenerateReportRequestParserSpec extends UnitSpec {
     }
 
     "fail a Request" when {
-      "the validator returns errors" in {
+      " nino and taxyear is empty, the validator must returns errors" in {
         val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validator)
         val invalidData = validData.copy(nino = "", taxYear = "")
         val result = await(
@@ -71,7 +71,21 @@ class GenerateReportRequestParserSpec extends UnitSpec {
           Some(List(MtdError("FORMAT_NINO","The provided NINO is invalid",None),
             MtdError("FORMAT_TAX_YEAR","The provided tax year is invalid",None)))))
       }
+
+      "invalid taxyear range is supplied, the validator must returns errors" in {
+        val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validator)
+        val invalidData = validData.copy(nino = "NJ070957A", taxYear = "2021-23")
+        val result = await(
+          parser.parseRequest(invalidData)(implicitly[ExecutionContext], correlationId)
+        )
+
+        result shouldBe Left(ErrorWrapper("f2fb30e5-4ab6-4a29-b3c1-c00000011111",
+          MtdError("RULE_TAX_YEAR_RANGE_INVALID","Tax year range invalid. A tax year range of one year is required.",None),
+          None))
+      }
     }
+
+
 
     "return a Request with tax year in the expected format" when {
       "the validator returns no errors" in {

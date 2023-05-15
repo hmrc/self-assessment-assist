@@ -170,9 +170,9 @@ class NrsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
               .withBody("""{
                           |   "badKey": "badValue"
                           |}""".stripMargin)
-              .withStatus(ACCEPTED)))
+              .withStatus(BAD_REQUEST)))
 
-        await(connector.submit(nrsSubmission)) shouldBe Left(NrsFailure.ExceptionThrown)
+        await(connector.submit(nrsSubmission)) shouldBe Left(NrsFailure.ErrorResponse(BAD_REQUEST))
       }
     }
   }

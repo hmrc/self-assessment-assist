@@ -142,7 +142,8 @@ object RdsAssessmentReport {
       case json@JsObject(values) =>
         values.keys.toList match {
           case List("metadata") => MetadataWrapper.reads.reads(json)
-          case List(_) => DataWrapper.reads.reads(json)
+          case List("data") => DataWrapper.reads.reads(json)
+          case _ => throw new IllegalThreadStateException("Object part malformed")
         }
       case _ => throw new IllegalThreadStateException("Object part malformed")
     }

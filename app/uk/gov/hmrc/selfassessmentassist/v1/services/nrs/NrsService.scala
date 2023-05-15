@@ -70,7 +70,7 @@ class NrsService @Inject()(connector: NrsConnector,
         }.fold(
           error => {
             logger.error(s"$correlationId::[buildNrsSubmission] unable to build NRS event due to ${error.getMessage}")
-            Left(NrsFailure.UnableToAttempt(error.getMessage))
+            Left(NrsFailure.Exception("failed to create submission request data"))
           },
           event => {
             logger.info(s"$correlationId::[buildNrsSubmission] successfully built NRS event for submission")
@@ -79,7 +79,7 @@ class NrsService @Inject()(connector: NrsConnector,
         )
       case None =>
         logger.error(s"$correlationId::[buildNrsSubmission] unable to build NRS event, no user bearer token")
-        Left(NrsFailure.UnableToAttempt("no beaker token for user"))
+        Left(NrsFailure.Exception("no beaker token for user"))
     }
 
 

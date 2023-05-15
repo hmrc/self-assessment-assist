@@ -84,8 +84,8 @@ class IfsConnectorSpec extends ConnectorSpec
         }
       }
 
-      "unsuccessful" must {
-        "service unavailable" in new Test() {
+      "service unavailable" must {
+        "return downstream error" in new Test() {
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
@@ -96,8 +96,10 @@ class IfsConnectorSpec extends ConnectorSpec
 
           await(connector.submit(ifsRequest)) shouldBe Left(ErrorWrapper("f2fb30e5-4ab6-4a29-b3c1-c00000011111", DownstreamError))
         }
+      }
 
-        "bad request" in new Test() {
+      "bad request" must {
+        "return downstream error" in new Test() {
           wireMockServer.stubFor(
             post(urlPathEqualTo(url))
               .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
