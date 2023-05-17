@@ -102,8 +102,8 @@ class NrsServiceSpec extends ServiceSpec {
     }
   }
 
-  "When nrs service call is unsuccessful after n number of attempts then it" must {
-    "map errors correctly" in new Test {
+  "When nrs service call is unsuccessful " must {
+    "must map errors correctly after N attempts" in new Test {
 
       MockNrsConnector
         .submitNrs(expectedPayload = expectedReportPayload)
@@ -118,6 +118,26 @@ class NrsServiceSpec extends ServiceSpec {
           success => service.submit(success)
         )
       ).map(value => value shouldBe Left(NrsFailure.Exception("reason")))
+    }
+
+    "when bearer token not provided" in new Test {
+
+      MockNrsConnector
+        .submitNrs(expectedPayload = expectedReportPayload.copy(payload="bad-payload"))
+        .returns(Future.successful(Right(NrsResponse(nrsId))))
+      val nrsSubmission: Either[NrsFailure, NrsSubmission] =
+        service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, timestamp, userRequest.copy(request = FakeRequest().withHeaders()), AssistReportGenerated)
+      nrsSubmission shouldBe Left(NrsFailure.Exception("no beaker token for user"))
+    }
+
+    "when provided invalid submission request data" in new Test {
+      MockNrsConnector
+        .submitNrs(expectedPayload = expectedReportPayload.copy(payload="bad-payload"))
+        .returns(Future.successful(Right(NrsResponse(nrsId))))
+      val nrsSubmission: Either[NrsFailure, NrsSubmission] =
+        service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, null, userRequest, AssistReportGenerated)
+
+      nrsSubmission shouldBe Left(NrsFailure.Exception("failed to create submission request data"))
     }
   }
 
