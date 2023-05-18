@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.domain
 
-/**
-  * Represents a tax year for DES
+/** Represents a tax year for DES
   *
-  * @param value the tax year string (where 2018 represents 2017-18)
+  * @param value
+  *   the tax year string (where 2018 represents 2017-18)
   */
 case class DesTaxYear(value: String) extends AnyVal {
   override def toString: String = value
@@ -27,12 +27,13 @@ case class DesTaxYear(value: String) extends AnyVal {
 
 object DesTaxYear {
 
-  /**
-    * @param taxYear tax year in MTD format (e.g. 2017-18)
+  /** @param taxYear
+    *   tax year in MTD format (e.g. 2017-18)
     */
   def fromMtd(taxYear: String): DesTaxYear =
     DesTaxYear(taxYear.take(2) + taxYear.drop(5))
 
   def fromDesIntToString(taxYear: Int): String =
     s"${(taxYear - 1)}-${taxYear.toString.drop(2)}"
+
 }

@@ -89,9 +89,11 @@ object IdentityDataTestData {
       Some(Instant.parse("2016-11-01T12:00:00Z"))
     )
   )
+
 }
 
 object MetadataTestData {
+
   val correctJson: JsValue = Json.parse(
     s"""
        |{
@@ -128,47 +130,48 @@ object MetadataTestData {
     userSubmissionTimestamp = "2018-04-07T12:13:25Z",
     identityData = Some(IdentityDataTestData.correctModel),
     userAuthToken = "Bearer AbCdEf123456...",
-    headerData = Json.toJson(Map(
-      "Gov-Client-Public-IP" -> "127.0.0.0",
-      "Gov-Client-Public-Port" -> "12345",
-      "Gov-Client-Device-ID" -> "beec798b-b366-47fa-b1f8-92cede14a1ce",
-      "Gov-Client-User-ID" -> "alice_desktop",
-      "Gov-Client-Timezone" -> "GMT+3",
-      "Gov-Client-Local-IP" -> "10.1.2.3",
-      "Gov-Client-Screen-Resolution" -> "1920x1080",
-      "Gov-Client-Window-Size" -> "1256x803",
-      "Gov-Client-Colour-Depth" -> "24"
-    )),
-    searchKeys =
-      SearchKeys(
-        reportId = simpleReportId.toString
-      )
+    headerData = Json.toJson(
+      Map(
+        "Gov-Client-Public-IP"         -> "127.0.0.0",
+        "Gov-Client-Public-Port"       -> "12345",
+        "Gov-Client-Device-ID"         -> "beec798b-b366-47fa-b1f8-92cede14a1ce",
+        "Gov-Client-User-ID"           -> "alice_desktop",
+        "Gov-Client-Timezone"          -> "GMT+3",
+        "Gov-Client-Local-IP"          -> "10.1.2.3",
+        "Gov-Client-Screen-Resolution" -> "1920x1080",
+        "Gov-Client-Window-Size"       -> "1256x803",
+        "Gov-Client-Colour-Depth"      -> "24"
+      )),
+    searchKeys = SearchKeys(
+      reportId = simpleReportId.toString
+    )
   )
+
 }
 
 object FullRequestTestData {
+
   val correctJson: JsObject = Json.obj(
-    "payload" -> "XXX-base64checksum-XXX",
+    "payload"  -> "XXX-base64checksum-XXX",
     "metadata" -> MetadataTestData.correctJson
   )
 
-
   val correctModel: IFRequest =
-  IFRequest(
-    serviceRegime = "self-assessment-assist",
-    eventName = "GenerateReport",
-    eventTimestamp = OffsetDateTime.now(),
-    feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
-    metaData = List(
-      Map("nino" -> "nino"),
-      Map("taxYear" -> "2023-2024"),
-      Map("calculationId" -> "calculationId"),
-      Map("customerType" -> assessmentRequestForSelfAssessment.customerType.toString),
-      Map("agentReferenceNumber" -> assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
-      Map("calculationTimestamp" -> "timestamp")
-    ),
-    payload = Some(Messages(Some(Vector())))
-  )
+    IFRequest(
+      serviceRegime = "self-assessment-assist",
+      eventName = "GenerateReport",
+      eventTimestamp = OffsetDateTime.now(),
+      feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
+      metaData = List(
+        Map("nino"                 -> "nino"),
+        Map("taxYear"              -> "2023-2024"),
+        Map("calculationId"        -> "calculationId"),
+        Map("customerType"         -> assessmentRequestForSelfAssessment.customerType.toString),
+        Map("agentReferenceNumber" -> assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
+        Map("calculationTimestamp" -> "timestamp")
+      ),
+      payload = Some(Messages(Some(Vector())))
+    )
 
   val correctJsonString: String = IFRequest.formats.writes(correctModel).toString()
 }
@@ -184,4 +187,5 @@ object NrsResponseTestData {
       |}
     """.stripMargin
   )
+
 }

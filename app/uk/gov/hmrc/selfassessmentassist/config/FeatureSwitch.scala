@@ -41,10 +41,11 @@ case class FeatureSwitch(value: Option[Configuration]) {
   def isEnabled(feature: Feature): Boolean = {
 
     val enabled = for {
-      config <- value
+      config  <- value
       enabled <- config.getOptional[Boolean](s"${feature.name}.enabled")
     } yield enabled
 
     enabled.getOrElse(false)
   }
+
 }

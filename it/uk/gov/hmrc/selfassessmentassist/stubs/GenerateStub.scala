@@ -21,7 +21,9 @@ import play.api.http.Status.CREATED
 import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData
 
 object GenerateStub {
+
   def generate(url: String): StubMapping = {
     DownstreamStub.onSuccess(DownstreamStub.POST, url, CREATED, CommonTestData.rdsAssessmentAckJson)
   }
+
 }

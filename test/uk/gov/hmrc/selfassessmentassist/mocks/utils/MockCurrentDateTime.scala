@@ -29,14 +29,17 @@ trait MockCurrentDateTime extends MockFactory {
   object MockCurrentDateTime {
 
     def getDateTime(): CallHandler[OffsetDateTime] = {
-      (() => mockCurrentDateTime.getDateTime())
-        .expects.anyNumberOfTimes()
-        .returns(  OffsetDateTime.of(2022, Month.JANUARY.getValue,1 ,12, 0, 0, 0, ZoneOffset.UTC))
+      (() => mockCurrentDateTime.getDateTime()).expects
+        .anyNumberOfTimes()
+        .returns(OffsetDateTime.of(2022, Month.JANUARY.getValue, 1, 12, 0, 0, 0, ZoneOffset.UTC))
     }
 
     def dateString(currentDatetime: OffsetDateTime): CallHandler[OffsetDateTime] = {
-      (mockCurrentDateTime.dateString(_: OffsetDateTime))
+      (mockCurrentDateTime
+        .dateString(_: OffsetDateTime))
         .expects(*)
     }
+
   }
+
 }

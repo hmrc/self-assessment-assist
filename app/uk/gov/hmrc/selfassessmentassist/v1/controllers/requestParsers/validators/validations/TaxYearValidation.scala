@@ -22,10 +22,10 @@ object TaxYearValidation {
 
   def validate(inputTaxYear: String): List[MtdError] = {
     val correctRegex = inputTaxYear.matches("^[0-9]{4}-[0-9]{2}$")
-    if(correctRegex){
+    if (correctRegex) {
       val yearCheck1 = inputTaxYear.slice(2, 4).toInt
       val yearCheck2 = inputTaxYear.drop(5).toInt
-      if(yearCheck2.equals(yearCheck1 + 1)){
+      if (yearCheck2.equals(yearCheck1 + 1)) {
         NoValidationErrors
       } else {
         List(TaxYearRangeInvalid)
@@ -34,4 +34,5 @@ object TaxYearValidation {
       List(TaxYearFormatError)
     }
   }
+
 }

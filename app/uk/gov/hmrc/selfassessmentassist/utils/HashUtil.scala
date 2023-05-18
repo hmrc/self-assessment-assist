@@ -23,11 +23,11 @@ import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class HashUtil @Inject()() {
+class HashUtil @Inject() () {
 
   def encode(value: String): String =
     Base64.encodeBase64String(value.getBytes(StandardCharsets.UTF_8))
+
   def getHash(value: String): String = DigestUtils.sha256Hex(value)
 
 }
-

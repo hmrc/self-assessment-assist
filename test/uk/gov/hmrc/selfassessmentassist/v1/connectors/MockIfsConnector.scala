@@ -33,10 +33,11 @@ trait MockIfsConnector extends MockFactory {
     def submit(expectedPayload: IFRequest): CallHandler[Future[IfsOutcome]] = {
       (mockIfsConnector
         .submit(_: IFRequest)(_: HeaderCarrier, _: String))
-        .expects(where {
-          (ifsRequest: IFRequest, _: HeaderCarrier, _: String) => ifsRequest == expectedPayload
+        .expects(where { (ifsRequest: IFRequest, _: HeaderCarrier, _: String) =>
+          ifsRequest == expectedPayload
         })
     }
+
   }
 
 }

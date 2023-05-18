@@ -30,13 +30,13 @@ import scala.concurrent.Future
 import scala.util.Try
 
 @Singleton
-class NrsService @Inject()(connector: NrsConnector,
-                           hashUtil: HashUtil) extends Logging {
+class NrsService @Inject() (connector: NrsConnector, hashUtil: HashUtil) extends Logging {
 
   def buildNrsSubmission(payload: String,
-                                 reportId: String,
-                                 submissionTimestamp: OffsetDateTime,
-                                 request: UserRequest[_], notableEventType: NotableEventType)(implicit correlationId: String): Either[NrsFailure, NrsSubmission] = {
+                         reportId: String,
+                         submissionTimestamp: OffsetDateTime,
+                         request: UserRequest[_],
+                         notableEventType: NotableEventType)(implicit correlationId: String): Either[NrsFailure, NrsSubmission] = {
 
     logger.debug(s"$correlationId::[buildNrsSubmission] Building the NRS submission")
 
@@ -47,7 +47,7 @@ class NrsService @Inject()(connector: NrsConnector,
         Try {
           val encodedPayload = hashUtil.encode(payload)
           val sha256Checksum = hashUtil.getHash(payload)
-          val formattedDate = submissionTimestamp.format(DateUtils.isoInstantDateTimePattern)
+          val formattedDate  = submissionTimestamp.format(DateUtils.isoInstantDateTimePattern)
 
           NrsSubmission(
             payload = encodedPayload,
@@ -59,11 +59,10 @@ class NrsService @Inject()(connector: NrsConnector,
               userSubmissionTimestamp = formattedDate,
               identityData = request.userDetails.identityData,
               userAuthToken = token,
-              headerData = Json.toJson(request.headers.toMap.filterNot{case (k,v) => k.equals("authorization")}.map { h => h._1 -> h._2.head }),
-              searchKeys =
-                SearchKeys(
-                  reportId = reportId
-                )
+              headerData = Json.toJson(request.headers.toMap.filterNot { case (k, v) => k.equals("authorization") }.map { h => h._1 -> h._2.head }),
+              searchKeys = SearchKeys(
+                reportId = reportId
+              )
             )
           )
         }.fold(
@@ -81,13 +80,8 @@ class NrsService @Inject()(connector: NrsConnector,
         Left(NrsFailure.Exception("no beaker token for user"))
     }
 
-
   }
 
-    def submit(submission: NrsSubmission)(implicit hc: HeaderCarrier,
-                                            correlationId: String): Future[NrsOutcome] = connector.submit(submission)
-
-
-
+  def submit(submission: NrsSubmission)(implicit hc: HeaderCarrier, correlationId: String): Future[NrsOutcome] = connector.submit(submission)
 
 }

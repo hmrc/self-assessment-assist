@@ -39,34 +39,37 @@ class Module extends AbstractModule {
   def akkaScheduler(actorSystem: ActorSystem): Scheduler =
     actorSystem.scheduler
 
-
   import com.google.inject.Provides
 
   @Provides
   @Named("external-http-client")
   def provideExternalHttpClient(
-                                 auditConnector: HttpAuditing,
-                                 wsClient: WSClient,
-                                 actorSystem: ActorSystem,
-                                 config: Configuration
-                               ): HttpClient =
+      auditConnector: HttpAuditing,
+      wsClient: WSClient,
+      actorSystem: ActorSystem,
+      config: Configuration
+  ): HttpClient =
     new DefaultHttpClient(config, auditConnector, wsClient, actorSystem) with WSProxy {
+
       override def wsProxyServer: Option[WSProxyServer] =
         WSProxyConfiguration.buildWsProxyServer(config)
+
     }
 
   @Provides
   @Named("nohook-auth-http-client")
   def authExternalHttpClient(
-                              auditConnector: HttpAuditing,
-                              wsClient: WSClient,
-                              actorSystem: ActorSystem,
-                              config: Configuration
-                            ): HttpClient =
+      auditConnector: HttpAuditing,
+      wsClient: WSClient,
+      actorSystem: ActorSystem,
+      config: Configuration
+  ): HttpClient =
     new DefaultHttpClient(config, auditConnector, wsClient, actorSystem) with WSProxy {
       override val hooks: Seq[HttpHook] = NoneRequired
 
       override def wsProxyServer: Option[WSProxyServer] =
         WSProxyConfiguration.buildWsProxyServer(config)
+
     }
+
 }

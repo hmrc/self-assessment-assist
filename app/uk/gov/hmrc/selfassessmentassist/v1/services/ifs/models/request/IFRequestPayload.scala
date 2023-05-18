@@ -19,10 +19,10 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request
 import play.api.libs.json.{Format, Json}
 
 case class IFRequestPayload(
-                             messageId: String,
-                             englishAction: IFRequestPayloadAction,
-                             welshAction: IFRequestPayloadAction
-                           )
+    messageId: String,
+    englishAction: IFRequestPayloadAction,
+    welshAction: IFRequestPayloadAction
+)
 
 object IFRequestPayload {
   implicit val formats: Format[IFRequestPayload] = Json.format[IFRequestPayload]

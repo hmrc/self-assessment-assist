@@ -23,7 +23,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{FormatReportIdError, N
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.AcknowledgeReportRawData
 
 class AcknowledgeReportValidationSpec extends UnitSpec {
-  val validator:AcknowledgeReportValidator = new AcknowledgeReportValidator
+  val validator: AcknowledgeReportValidator = new AcknowledgeReportValidator
 
   "running a validation" should {
     "return no errors" when {
@@ -35,16 +35,19 @@ class AcknowledgeReportValidationSpec extends UnitSpec {
 
     "an invalid reportId." in {
 
-      val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNino, simpleReportIdStrangeCharsString, simpleRDSCorrelationId)
+      val acknowledgeReportRawData: AcknowledgeReportRawData =
+        AcknowledgeReportRawData(simpleNino, simpleReportIdStrangeCharsString, simpleRDSCorrelationId)
 
       validator.validate(acknowledgeReportRawData) shouldBe Seq(FormatReportIdError)
     }
 
     "return errors" when {
       "an invalid nino." in {
-        val acknowledgeReportRawData: AcknowledgeReportRawData = AcknowledgeReportRawData(simpleNinoInvalid, simpleReportId.toString, simpleRDSCorrelationId)
+        val acknowledgeReportRawData: AcknowledgeReportRawData =
+          AcknowledgeReportRawData(simpleNinoInvalid, simpleReportId.toString, simpleRDSCorrelationId)
         validator.validate(acknowledgeReportRawData) shouldBe Seq(NinoFormatError)
       }
     }
   }
+
 }

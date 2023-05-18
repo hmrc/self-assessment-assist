@@ -21,5 +21,5 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 
 package object services {
   type ServiceOutcome[Resp] = Either[ErrorWrapper, ResponseWrapper[Resp]]
-  type ParseOutcome[A] = Either[ErrorWrapper, A]
+  type ParseOutcome[A]      = Either[ErrorWrapper, A]
 }

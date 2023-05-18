@@ -24,13 +24,12 @@ import java.util.UUID
 
 class RdsAssessmentReportSpec extends UnitSpec {
 
-  val calculationId: UUID = UUID.randomUUID()
-  val correlationId: String = "some-correlationId"
-  val feedbackId: UUID = UUID.randomUUID()
-  val responseCode: Int = 211
-  val responseMessage: String = "some-message"
-  val calculationTimeStamp: String ="2023-04-04T11:11:11.000Z"
-
+  val calculationId: UUID          = UUID.randomUUID()
+  val correlationId: String        = "some-correlationId"
+  val feedbackId: UUID             = UUID.randomUUID()
+  val responseCode: Int            = 211
+  val responseMessage: String      = "some-message"
+  val calculationTimeStamp: String = "2023-04-04T11:11:11.000Z"
 
   val outputs: Seq[Output] = Seq(
     KeyValueWrapper("calculationId", Some(calculationId.toString)),
@@ -52,9 +51,7 @@ class RdsAssessmentReportSpec extends UnitSpec {
   val json: JsValue = Json.parse(
     s"\n    {\n  \"links\": [\"https://google.com\"],\n  \"version\": 2,\n  \"moduleId\": \"HMRC_ASSIST_ITSA_FINSUB_FEEDBACK_ACK\",\n  \"stepId\": \"execute\",\n  \"executionState\": \"completed\",\n  \"outputs\": [\n   {\n      \"name\": \"calculationId\",\n      \"value\": \"$calculationId\"\n    },\n    {\n      \"name\": \"correlationId\",\n      \"value\": \"$correlationId\"\n    },\n    {\n      \"name\": \"feedbackId\",\n      \"value\": \"$feedbackId\"\n    },\n    {\n      \"name\": \"responseCode\",\n      \"value\": $responseCode\n    },\n    {\n      \"name\": \"responseMessage\",\n      \"value\": \"$responseMessage\"\n    },\n    {\n      \"name\": \"calculationTimestamp\",\n      \"value\": \"$calculationTimeStamp\"\n    }\n   ]\n   }\n")
 
-
   "RdsAssessmentReport" when {
-
 
     "When a function is called" must {
       "return calculationId" in {

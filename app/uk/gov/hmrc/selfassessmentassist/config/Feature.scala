@@ -23,4 +23,3 @@ sealed trait Feature {
 case object AuthFeature extends Feature {
   override val name: String = "auth"
 }
-

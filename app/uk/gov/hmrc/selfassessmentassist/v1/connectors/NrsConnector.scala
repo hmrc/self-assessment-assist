@@ -32,22 +32,18 @@ import scala.util.control.NonFatal
 import scala.util.{Success, Try}
 
 @Singleton
-class NrsConnector @Inject()(val httpClient: HttpClient,
-                             appConfig: AppConfig)
-                            (implicit val scheduler: Scheduler, val ec: ExecutionContext)
-  extends Retrying
+class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(implicit val scheduler: Scheduler, val ec: ExecutionContext)
+    extends Retrying
     with Delayer
     with Logging {
 
   private lazy val url: String    = appConfig.nrsBaseUrl
   private lazy val apiKey: String = appConfig.nrsApiKey
 
-  def submit(nrsSubmission: NrsSubmission)(
-    implicit hc: HeaderCarrier, correlationId: String): Future[NrsOutcome] = {
+  def submit(nrsSubmission: NrsSubmission)(implicit hc: HeaderCarrier, correlationId: String): Future[NrsOutcome] = {
 
     val retryCondition: Try[NrsOutcome] => Boolean = {
-      case Success(Left(failure)) => failure.
-        retryable
+      case Success(Left(failure)) => failure.retryable
       case _                      => false
     }
 
@@ -67,11 +63,11 @@ class NrsConnector @Inject()(val httpClient: HttpClient,
             Left(NrsFailure.ErrorResponse(status))
           }
         }
-        .recover {
-          case NonFatal(e) =>
-            logger.error(s"$correlationId::[NrsConnector:submit] NRS submission failed with exception", e)
-            Left(NrsFailure.ExceptionThrown)
+        .recover { case NonFatal(e) =>
+          logger.error(s"$correlationId::[NrsConnector:submit] NRS submission failed with exception", e)
+          Left(NrsFailure.ExceptionThrown)
         }
     }
   }
+
 }

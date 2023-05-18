@@ -107,10 +107,7 @@ class ErrorWrapperSpec extends UnitSpec {
         error.auditErrors shouldBe Seq(AuditError(NinoFormatError.code), AuditError(TaxYearFormatError.code))
       }
       "received single mtd error" in {
-        val error = ErrorWrapper(
-          correlationId,
-          NinoFormatError,
-          None)
+        val error = ErrorWrapper(correlationId, NinoFormatError, None)
 
         error.auditErrors shouldBe Seq(AuditError(NinoFormatError.code))
       }

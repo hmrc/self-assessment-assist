@@ -23,30 +23,32 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsReques
 case class RdsRequest(inputs: Seq[Input])
 
 object RdsRequest {
+
   sealed trait Input {
     def name: String
     def value: Any
   }
 
   object Input {
+
     implicit val reads: Reads[Input] = {
-      case json@JsObject(values) =>
+      case json @ JsObject(values) =>
         values.get("value") match {
-          case Some(JsString(_)) => InputWithString.reads.reads(json)
-          case Some(JsNull) => InputWithString.reads.reads(json)
-          case Some(JsNumber(_)) => InputWithInt.reads.reads(json)
-          case Some(JsArray(_)) => InputWithObject.reads.reads(json)
+          case Some(JsString(_))  => InputWithString.reads.reads(json)
+          case Some(JsNull)       => InputWithString.reads.reads(json)
+          case Some(JsNumber(_))  => InputWithInt.reads.reads(json)
+          case Some(JsArray(_))   => InputWithObject.reads.reads(json)
           case Some(JsBoolean(_)) => InputWithBoolean.reads.reads(json)
-          case _ => throw new IllegalStateException("Input malformed")
+          case _                  => throw new IllegalStateException("Input malformed")
         }
       case _ => throw new IllegalStateException("Input malformed")
     }
 
     implicit val writes: Writes[Input] = {
-      case i@InputWithString(_, _) => InputWithString.writes.writes(i)
-      case i@InputWithInt(_, _) => InputWithInt.writes.writes(i)
-      case i@InputWithObject(_, _) => InputWithObject.writes.writes(i)
-      case i@InputWithBoolean(_, _) => InputWithBoolean.writes.writes(i)
+      case i @ InputWithString(_, _)  => InputWithString.writes.writes(i)
+      case i @ InputWithInt(_, _)     => InputWithInt.writes.writes(i)
+      case i @ InputWithObject(_, _)  => InputWithObject.writes.writes(i)
+      case i @ InputWithBoolean(_, _) => InputWithBoolean.writes.writes(i)
     }
 
   }
@@ -56,11 +58,13 @@ object RdsRequest {
   object InputWithString {
 
     val reads: Reads[InputWithString] =
-      (JsPath \ "name").read[String]
+      (JsPath \ "name")
+        .read[String]
         .and((JsPath \ "value").readWithDefault[String](null))(InputWithString.apply _)
 
     val writes: Writes[InputWithString] =
-      (JsPath \ "name").write[String]
+      (JsPath \ "name")
+        .write[String]
         .and((JsPath \ "value").write[String])(unlift(InputWithString.unapply))
 
   }
@@ -70,11 +74,13 @@ object RdsRequest {
   object InputWithInt {
 
     val reads: Reads[InputWithInt] =
-      (JsPath \ "name").read[String]
+      (JsPath \ "name")
+        .read[String]
         .and((JsPath \ "value").read[Int])(InputWithInt.apply _)
 
     val writes: Writes[InputWithInt] =
-      (JsPath \ "name").write[String]
+      (JsPath \ "name")
+        .write[String]
         .and((JsPath \ "value").write[Int])(unlift(InputWithInt.unapply))
 
   }
@@ -84,11 +90,13 @@ object RdsRequest {
   object InputWithObject {
 
     val reads: Reads[InputWithObject] =
-      (JsPath \ "name").read[String]
+      (JsPath \ "name")
+        .read[String]
         .and((JsPath \ "value").read[Seq[ObjectPart]])(InputWithObject.apply _)
 
     val writes: Writes[InputWithObject] =
-      (JsPath \ "name").write[String]
+      (JsPath \ "name")
+        .write[String]
         .and((JsPath \ "value").write[Seq[ObjectPart]])(unlift(InputWithObject.unapply))
 
   }
@@ -98,11 +106,13 @@ object RdsRequest {
   object InputWithBoolean {
 
     val reads: Reads[InputWithBoolean] =
-      (JsPath \ "name").read[String]
+      (JsPath \ "name")
+        .read[String]
         .and((JsPath \ "value").readWithDefault[Boolean](false))(InputWithBoolean.apply _)
 
     val writes: Writes[InputWithBoolean] =
-      (JsPath \ "name").write[String]
+      (JsPath \ "name")
+        .write[String]
         .and((JsPath \ "value").write[Boolean])(unlift(InputWithBoolean.unapply))
 
   }
@@ -112,18 +122,18 @@ object RdsRequest {
   object ObjectPart {
 
     implicit val reads: Reads[ObjectPart] = {
-      case json@JsObject(values) =>
+      case json @ JsObject(values) =>
         values.keys.toList match {
           case List("metadata") => MetadataWrapper.reads.reads(json)
-          case List("data") => DataWrapper.reads.reads(json)
-          case _ => throw new IllegalStateException("Object part malformed")
+          case List("data")     => DataWrapper.reads.reads(json)
+          case _                => throw new IllegalStateException("Object part malformed")
         }
       case _ => throw new IllegalStateException("Object part malformed")
     }
 
     implicit val writes: Writes[ObjectPart] = {
-      case o@MetadataWrapper(_) => MetadataWrapper.writes.writes(o)
-      case o@DataWrapper(_) => DataWrapper.writes.writes(o)
+      case o @ MetadataWrapper(_) => MetadataWrapper.writes.writes(o)
+      case o @ DataWrapper(_)     => DataWrapper.writes.writes(o)
     }
 
   }
@@ -139,7 +149,6 @@ object RdsRequest {
       (JsPath \ "metadata").write[Seq[Map[String, String]]].contramap(_.metadata)
 
   }
-
 
   case class DataWrapper(data: Seq[Seq[String]]) extends ObjectPart
 

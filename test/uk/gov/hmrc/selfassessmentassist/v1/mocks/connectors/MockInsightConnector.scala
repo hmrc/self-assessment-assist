@@ -29,13 +29,17 @@ import scala.concurrent.Future
 trait MockInsightConnector extends MockFactory with MockAppConfig {
 
   val mockInsightConnector: InsightConnector = mock[InsightConnector]
-  var port: Int = _
-  val cipFraudServiceBaseUrl: String = s"http://localhost:$port/fraud"
+  var port: Int                              = _
+  val cipFraudServiceBaseUrl: String         = s"http://localhost:$port/fraud"
 
   object MockInsightConnector {
+
     def assess(fraudRiskRequest: FraudRiskRequest): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
-      (mockInsightConnector.assess( _: FraudRiskRequest)( _:HeaderCarrier,_:String))
+      (mockInsightConnector
+        .assess(_: FraudRiskRequest)(_: HeaderCarrier, _: String))
         .expects(*, *, *)
     }
+
   }
+
 }

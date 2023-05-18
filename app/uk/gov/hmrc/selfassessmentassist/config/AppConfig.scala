@@ -34,8 +34,8 @@ trait AppConfig {
   // API Config
   def featureSwitch: Option[Configuration]
 
-  //SAS
-  def rdsSasBaseUrlForAuth : String
+  // SAS
+  def rdsSasBaseUrlForAuth: String
   def rdsAuthRequiredForThisEnv: Boolean
 
   // NRS config items
@@ -45,42 +45,42 @@ trait AppConfig {
   def nrsBaseUrl: String
   def rdsAuthCredential: AuthCredential
 
-  //MTD ID lookup
+  // MTD ID lookup
   def mtdIdBaseUrl: String
 
-  //IF
+  // IF
   def ifsBaseUrl: String
   def ifsToken: String
   def ifsEnv: String
-  def ifsEnvironmentHeaders:Option[Seq[String]]
+  def ifsEnvironmentHeaders: Option[Seq[String]]
 }
 
 @Singleton
-class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuration) extends AppConfig {
+class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configuration) extends AppConfig {
 
   val appName: String = config.getString("appName")
 
   def featureSwitch: Option[Configuration] = configuration.getOptional[Configuration](s"feature-switch")
 
   // NRS config items
-  private val nrsConfig = configuration.get[Configuration]("microservice.services.non-repudiation")
-  val nrsBaseUrl: String = config.baseUrl("non-repudiation")+nrsConfig.get[String]("submit-url")
-  val nrsApiKey: String = nrsConfig.get[String]("x-api-key")
+  private val nrsConfig  = configuration.get[Configuration]("microservice.services.non-repudiation")
+  val nrsBaseUrl: String = config.baseUrl("non-repudiation") + nrsConfig.get[String]("submit-url")
+  val nrsApiKey: String  = nrsConfig.get[String]("x-api-key")
 
-  private val cipConfig = configuration.get[Configuration]("microservice.services.cip-fraud-service")
-  val cipFraudServiceBaseUrl:String = config.baseUrl("cip-fraud-service")+cipConfig.get[String]("submit-url")
+  private val cipConfig              = configuration.get[Configuration]("microservice.services.cip-fraud-service")
+  val cipFraudServiceBaseUrl: String = config.baseUrl("cip-fraud-service") + cipConfig.get[String]("submit-url")
 
-  private val rdsConfig = configuration.get[Configuration]("microservice.services.rds")
-  val rdsBaseUrlForSubmit:String = config.baseUrl("rds")+rdsConfig.get[String]("submit-url")
-  val rdsBaseUrlForAcknowledge:String = config.baseUrl("rds")+rdsConfig.get[String]("acknowledge-url")
+  private val rdsConfig                = configuration.get[Configuration]("microservice.services.rds")
+  val rdsBaseUrlForSubmit: String      = config.baseUrl("rds") + rdsConfig.get[String]("submit-url")
+  val rdsBaseUrlForAcknowledge: String = config.baseUrl("rds") + rdsConfig.get[String]("acknowledge-url")
 
-  val rdsSasBaseUrlForAuth:String = config.baseUrl("rds.sas")+rdsConfig.get[String]("sas.auth-url")
+  val rdsSasBaseUrlForAuth: String       = config.baseUrl("rds.sas") + rdsConfig.get[String]("sas.auth-url")
   val rdsAuthRequiredForThisEnv: Boolean = rdsConfig.get[Boolean]("rdsAuthRequiredForThisEnv")
 
-  private val ifsConfig = configuration.get[Configuration]("microservice.services.ifs")
-  val ifsBaseUrl:String = config.baseUrl("ifs")+ifsConfig.get[String]("submit-url")
-  val ifsToken: String  = config.getString("microservice.services.ifs.token")
-  val ifsEnv: String    = config.getString("microservice.services.ifs.env")
+  private val ifsConfig                          = configuration.get[Configuration]("microservice.services.ifs")
+  val ifsBaseUrl: String                         = config.baseUrl("ifs") + ifsConfig.get[String]("submit-url")
+  val ifsToken: String                           = config.getString("microservice.services.ifs.token")
+  val ifsEnv: String                             = config.getString("microservice.services.ifs.env")
   val ifsEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.ifs.environmentHeaders")
 
   val mtdIdBaseUrl: String = config.baseUrl("mtd-id-lookup")
@@ -103,4 +103,5 @@ class AppConfigImpl @Inject()(config: ServicesConfig,configuration: Configuratio
       case _                 => throw new RuntimeException(s"Not a finite duration '$string' for $path")
     }
   }
+
 }

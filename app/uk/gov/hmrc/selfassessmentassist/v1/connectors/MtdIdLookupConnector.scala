@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError

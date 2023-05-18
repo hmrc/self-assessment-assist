@@ -26,9 +26,9 @@ class NinoValidationSpec extends UnitSpec {
   private val validator: NinoValidation.type = NinoValidation
 
   "running a validation" should {
-      "a valid request" in {
-        validator.validate(simpleNino) shouldBe Nil
-      }
+    "a valid request" in {
+      validator.validate(simpleNino) shouldBe Nil
+    }
 
     "return errors" when {
       "an invalid nino." in {
@@ -38,4 +38,5 @@ class NinoValidationSpec extends UnitSpec {
 
     }
   }
+
 }

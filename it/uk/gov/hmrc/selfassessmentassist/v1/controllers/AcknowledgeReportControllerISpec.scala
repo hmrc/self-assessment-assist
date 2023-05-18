@@ -18,9 +18,9 @@ package uk.gov.hmrc.selfassessmentassist.v1.controllers
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status.{BAD_REQUEST, NO_CONTENT}
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
-import play.api.test.Helpers.{await, defaultAwaitTimeout, ACCEPT, AUTHORIZATION}
+import play.api.test.Helpers.{ACCEPT, AUTHORIZATION, await, defaultAwaitTimeout}
 import uk.gov.hmrc.selfassessmentassist.stubs._
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
 import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData

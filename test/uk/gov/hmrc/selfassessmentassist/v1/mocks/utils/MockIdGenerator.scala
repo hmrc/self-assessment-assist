@@ -23,7 +23,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 
 trait MockIdGenerator extends MockFactory {
 
-  val mockIdGenerator: IdGenerator = mock[IdGenerator ]
+  val mockIdGenerator: IdGenerator = mock[IdGenerator]
 
   object MockProvideRandomCorrelationId {
 
@@ -32,5 +32,7 @@ trait MockIdGenerator extends MockFactory {
         .expects()
         .returns(correlationId)
     }
+
   }
+
 }

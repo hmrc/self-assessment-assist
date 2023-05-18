@@ -34,42 +34,41 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
           .replace("replaceCorrelationId", replaceCorrelationId)
       )
 
-
     val parsedContent = templateContent
       .map(Json.parse)
       .getOrElse(throw new IllegalStateException("Response template parsing failed"))
     parsedContent
   }
 
-  def loadAckResponseTemplate(feedbackId: String, nino: String, responseCode:Int):JsValue = {
+  def loadAckResponseTemplate(feedbackId: String, nino: String, responseCode: Int): JsValue = {
     val fileName = s"response/acknowledge/feedback-ack-$responseCode.json"
     val templateContent: Option[String] =
       findResource(fileName).map(
         _.replace("replaceFeedbackId", feedbackId)
           .replace("replaceNino", nino))
 
-
     val parsedContent: JsValue = templateContent
       .map(Json.parse)
-      .getOrElse(
-        throw new IllegalStateException("Acknowledge template parsing failed"))
+      .getOrElse(throw new IllegalStateException("Acknowledge template parsing failed"))
     parsedContent
   }
 
   def findResource(path: String): Option[String] = {
-    val classLoader = getClass.getClassLoader
+    val classLoader  = getClass.getClassLoader
     val resourcePath = classLoader.getResource(path)
 
-    val file = new File(resourcePath.getFile)
+    val file         = new File(resourcePath.getFile)
     val absolutePath = file.getAbsolutePath
-    val stream = new FileInputStream(absolutePath)
-    val json = try {
-      Json.parse(stream)
-    } finally {
-      stream.close()
-    }
+    val stream       = new FileInputStream(absolutePath)
+    val json =
+      try {
+        Json.parse(stream)
+      } finally {
+        stream.close()
+      }
     Some(json.toString)
   }
+
 }
 
 object StubResource extends StubResourceBase

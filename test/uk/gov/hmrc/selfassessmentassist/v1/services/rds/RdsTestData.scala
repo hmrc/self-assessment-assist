@@ -36,45 +36,45 @@ object RdsTestData {
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(
     score = 10,
-    riskCorrelationId= correlationId,
+    riskCorrelationId = correlationId,
     reasons = Seq("flag")
   )
 
   def rdsRequest: RdsRequest =
-      RdsRequest(
-        Seq(
-          RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
-          RdsRequest.InputWithString("nino", assessmentRequestForSelfAssessment.nino),
-          RdsRequest.InputWithInt("taxYear", Integer.parseInt(assessmentRequestForSelfAssessment.taxYear)),
-          RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
-          RdsRequest.InputWithString("agentRef", assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
-          RdsRequest.InputWithString("preferredLanguage", assessmentRequestForSelfAssessment.preferredLanguage.toString),
-          RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
-          RdsRequest.InputWithObject("fraudRiskReportHeaders",
-            Seq(
-              MetadataWrapper(
-                Seq(
-                  Map("KEY" -> "string"),
-                  Map("VALUE" -> "string")
-                )),
-              DataWrapper(Seq(Seq.empty))
-            )
-          ),
-          RdsRequest.InputWithObject("reason",
-            Seq(
-              MetadataWrapper(
-                Seq(
-                  Map("Reason" -> "string")
-                )),
-              DataWrapper(fraudRiskReport.reasons.map(value => Seq(value)))
-            )
-          )
-        )
-  )
+    RdsRequest(
+      Seq(
+        RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
+        RdsRequest.InputWithString("nino", assessmentRequestForSelfAssessment.nino),
+        RdsRequest.InputWithInt("taxYear", Integer.parseInt(assessmentRequestForSelfAssessment.taxYear)),
+        RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
+        RdsRequest.InputWithString("agentRef", assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
+        RdsRequest.InputWithString("preferredLanguage", assessmentRequestForSelfAssessment.preferredLanguage.toString),
+        RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
+        RdsRequest.InputWithObject(
+          "fraudRiskReportHeaders",
+          Seq(
+            MetadataWrapper(
+              Seq(
+                Map("KEY"   -> "string"),
+                Map("VALUE" -> "string")
+              )),
+            DataWrapper(Seq(Seq.empty))
+          )),
+        RdsRequest.InputWithObject(
+          "reason",
+          Seq(
+            MetadataWrapper(
+              Seq(
+                Map("Reason" -> "string")
+              )),
+            DataWrapper(fraudRiskReport.reasons.map(value => Seq(value)))
+          ))
+      )
+    )
+
   val acknowledgeReportRequest: AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
-  def rdsAcknowledgementRequest: RdsRequest
-  = {
+  def rdsAcknowledgementRequest: RdsRequest = {
     RdsRequest(
       Seq(
         RdsRequest.InputWithString("feedbackId", acknowledgeReportRequest.feedbackId),
@@ -96,19 +96,19 @@ object RdsTestData {
       "Turnover",
       "Your declared turnover of £80,000 appears to be lower than expected based on your income sources, please confirm all turnover is accounted for before submission.",
       "Check turnover",
-      List(Link("[Accounting for Income]","[www.itsa/incomecompliance.gov.uk]")),
+      List(Link("[Accounting for Income]", "[www.itsa/incomecompliance.gov.uk]")),
       "general/total_declared_turnover"
     )
   )
 
   val assessmentReport: AssessmentReport = AssessmentReport(
-    reportId =  simpleReportId,
+    reportId = simpleReportId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
-    taxYear = assessmentRequestForSelfAssessment.taxYear ,
+    taxYear = assessmentRequestForSelfAssessment.taxYear,
     calculationId = simpleCalculationId,
     rdsCorrelationId = simpleRDSCorrelationId
   )
 
-  val assessmentReportWrapper:AssessmentReportWrapper = AssessmentReportWrapper(simpleCalculationTimestamp,assessmentReport, rdsNewSubmissionReport)
+  val assessmentReportWrapper: AssessmentReportWrapper = AssessmentReportWrapper(simpleCalculationTimestamp, assessmentReport, rdsNewSubmissionReport)
 }

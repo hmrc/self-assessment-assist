@@ -22,16 +22,16 @@ import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import java.time.OffsetDateTime
 
 case class IFRequestMetadata(
-                              nino: String,
-                              taxYear: String,
-                              calculationId: String,
-                              customerType: String, //agent or individual
-                              agentReferenceNumber: Option[String],
-                              calculationTimestamp: OffsetDateTime
-                            )
+    nino: String,
+    taxYear: String,
+    calculationId: String,
+    customerType: String, // agent or individual
+    agentReferenceNumber: Option[String],
+    calculationTimestamp: OffsetDateTime
+)
 
 object IFRequestMetadata {
-  implicit val dateReads: Reads[OffsetDateTime] = DateUtils.offsetDateTimeFromLocalDateTimeFormatReads
+  implicit val dateReads: Reads[OffsetDateTime]   = DateUtils.offsetDateTimeFromLocalDateTimeFormatReads
   implicit val dateWrites: Writes[OffsetDateTime] = DateUtils.isoInstantDateTimeWrites
   implicit val formats: Format[IFRequestMetadata] = Json.format[IFRequestMetadata]
 }

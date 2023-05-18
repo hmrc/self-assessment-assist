@@ -32,9 +32,11 @@ trait MockAuthConnector extends MockFactory {
   object MockAuthConnector {
 
     def authorised[A](predicate: Predicate, retrievals: Retrieval[A]): CallHandler[Future[A]] = {
-      (mockAuthConnector.authorise[A](_: Predicate, _: Retrieval[A])(_: HeaderCarrier, _: ExecutionContext))
+      (mockAuthConnector
+        .authorise[A](_: Predicate, _: Retrieval[A])(_: HeaderCarrier, _: ExecutionContext))
         .expects(predicate, retrievals, *, *)
     }
+
   }
 
 }

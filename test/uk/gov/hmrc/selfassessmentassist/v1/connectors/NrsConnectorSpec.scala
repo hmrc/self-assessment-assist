@@ -35,7 +35,6 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.{NrsFail
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-
 class NrsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
   private val nrsSubmission: NrsSubmission    = FullRequestTestData.correctModel
@@ -50,8 +49,8 @@ class NrsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
 
   var port: Int = _
 
-  val actorSystem: ActorSystem              = inject[ActorSystem]
-  implicit val scheduler: Scheduler         = actorSystem.scheduler
+  val actorSystem: ActorSystem      = inject[ActorSystem]
+  implicit val scheduler: Scheduler = actorSystem.scheduler
 
   // Long delays to force a test to timeout if it does retry when we're not expecting it...
   val longDelays: List[FiniteDuration] = List(10.minutes)
@@ -178,4 +177,3 @@ class NrsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
   }
 
 }
-

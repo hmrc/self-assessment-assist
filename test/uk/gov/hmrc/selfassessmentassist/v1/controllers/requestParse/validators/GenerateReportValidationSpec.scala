@@ -28,7 +28,7 @@ class GenerateReportValidationSpec extends UnitSpec {
   "running a validation" should {
     "return no errors" when {
       "a valid request" in {
-       
+
         validator.validate(simpleGenerateReportRawData) shouldBe Nil
       }
 
@@ -45,23 +45,27 @@ class GenerateReportValidationSpec extends UnitSpec {
         }
 
         "an invalid nino and calculationId." in {
-          val generateReportRawData: GenerateReportRawData = simpleGenerateReportRawData.copy(calculationId = invalidUUID.toString, nino = simpleNinoInvalid)
+          val generateReportRawData: GenerateReportRawData =
+            simpleGenerateReportRawData.copy(calculationId = invalidUUID.toString, nino = simpleNinoInvalid)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, CalculationIdFormatError)
         }
 
         "an invalid nino and tax year." in {
-          val generateReportRawData: GenerateReportRawData = simpleGenerateReportRawData.copy( nino = simpleNinoInvalid,taxYear = simpleTaxYearInvalid2)
+          val generateReportRawData: GenerateReportRawData =
+            simpleGenerateReportRawData.copy(nino = simpleNinoInvalid, taxYear = simpleTaxYearInvalid2)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, TaxYearFormatError)
         }
 
         "an invalid nino and no sequential tax year." in {
-          val generateReportRawData: GenerateReportRawData = simpleGenerateReportRawData.copy(nino = simpleNinoInvalid, taxYear = simpleTaxYearInvalid1)
+          val generateReportRawData: GenerateReportRawData =
+            simpleGenerateReportRawData.copy(nino = simpleNinoInvalid, taxYear = simpleTaxYearInvalid1)
 
           validator.validate(generateReportRawData) shouldBe Seq(NinoFormatError, TaxYearRangeInvalid)
         }
       }
     }
   }
+
 }

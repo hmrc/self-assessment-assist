@@ -26,10 +26,9 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class InsightService @Inject()(connector: InsightConnector) extends Logging{
+class InsightService @Inject() (connector: InsightConnector) extends Logging {
 
-  def assess(fraudRiskRequest: FraudRiskRequest)(implicit hc: HeaderCarrier,
-                                                 correlationId: String): Future[ServiceOutcome[FraudRiskReport]] =
+  def assess(fraudRiskRequest: FraudRiskRequest)(implicit hc: HeaderCarrier, correlationId: String): Future[ServiceOutcome[FraudRiskReport]] =
     connector.assess(fraudRiskRequest)
-}
 
+}

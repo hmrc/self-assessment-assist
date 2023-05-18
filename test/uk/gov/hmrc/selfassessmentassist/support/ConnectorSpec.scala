@@ -22,18 +22,16 @@ import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData
 
 import scala.concurrent.ExecutionContext
 
-trait ConnectorSpec extends UnitSpec
-  with Status
-  with MimeTypes
-  with HeaderNames  {
+trait ConnectorSpec extends UnitSpec with Status with MimeTypes with HeaderNames {
 
-  lazy val baseUrl                   = "http://test-BaseUrl"
+  lazy val baseUrl                  = "http://test-BaseUrl"
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   implicit val correlationId: String = CommonTestData.correlationId
+
   val otherHeaders: Seq[(String, String)] = Seq(
     "Gov-Test-Scenario" -> "DEFAULT",
-    "AnotherHeader" -> "HeaderValue"
+    "AnotherHeader"     -> "HeaderValue"
   )
 
   val dummyHeaderCarrierConfig: HeaderCarrier.Config =
@@ -44,5 +42,5 @@ trait ConnectorSpec extends UnitSpec
     )
 
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
-  //implicit val hc: HeaderCarrier = HeaderCarrier(requestId = Some(RequestId("123")), otherHeaders = otherHeaders)
+  // implicit val hc: HeaderCarrier = HeaderCarrier(requestId = Some(RequestId("123")), otherHeaders = otherHeaders)
 }

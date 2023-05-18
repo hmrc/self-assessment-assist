@@ -33,27 +33,28 @@ trait MockAppConfig extends MockFactory {
     // MTD ID Lookup Config
     def mtdIdBaseUrl: CallHandler[String] = (() => mockAppConfig.mtdIdBaseUrl: String).expects()
     // RDS config items
-    def rdsBaseUrlForSubmit: CallHandler[String] = (() => mockAppConfig.rdsBaseUrlForSubmit).expects().anyNumberOfTimes()
-    def rdsBaseUrlForAcknowledge: CallHandler[String] = (() => mockAppConfig.rdsBaseUrlForAcknowledge).expects().anyNumberOfTimes()
+    def rdsBaseUrlForSubmit: CallHandler[String]        = (() => mockAppConfig.rdsBaseUrlForSubmit).expects().anyNumberOfTimes()
+    def rdsBaseUrlForAcknowledge: CallHandler[String]   = (() => mockAppConfig.rdsBaseUrlForAcknowledge).expects().anyNumberOfTimes()
     def rdsAuthRequiredForThisEnv: CallHandler[Boolean] = (() => mockAppConfig.rdsAuthRequiredForThisEnv).expects().anyNumberOfTimes()
-    def cipFraudServiceBaseUrl:CallHandler[String] = (() => mockAppConfig.cipFraudServiceBaseUrl).expects().anyNumberOfTimes()
+    def cipFraudServiceBaseUrl: CallHandler[String]     = (() => mockAppConfig.cipFraudServiceBaseUrl).expects().anyNumberOfTimes()
     // RDS Auth
-    def rdsSasBaseUrlForAuth:CallHandler[String] = (() => mockAppConfig.rdsSasBaseUrlForAuth).expects().anyNumberOfTimes()
-    def rdsAuthCredential:CallHandler[AuthCredential] = (() => mockAppConfig.rdsAuthCredential).expects().anyNumberOfTimes()
+    def rdsSasBaseUrlForAuth: CallHandler[String]      = (() => mockAppConfig.rdsSasBaseUrlForAuth).expects().anyNumberOfTimes()
+    def rdsAuthCredential: CallHandler[AuthCredential] = (() => mockAppConfig.rdsAuthCredential).expects().anyNumberOfTimes()
 
-    //API Config
+    // API Config
     def featureSwitch: CallHandler[Option[Configuration]] = (() => mockAppConfig.featureSwitch).expects()
 
     // NRS config items
-    def nrsApiKey: CallHandler[String] = (() => mockAppConfig.nrsApiKey).expects().anyNumberOfTimes()
-    def appName: CallHandler[String] = (() => mockAppConfig.appName).expects().anyNumberOfTimes()
-    def nrsBaseUrl: CallHandler[String] = (() => mockAppConfig.nrsBaseUrl).expects().anyNumberOfTimes()
+    def nrsApiKey: CallHandler[String]                = (() => mockAppConfig.nrsApiKey).expects().anyNumberOfTimes()
+    def appName: CallHandler[String]                  = (() => mockAppConfig.appName).expects().anyNumberOfTimes()
+    def nrsBaseUrl: CallHandler[String]               = (() => mockAppConfig.nrsBaseUrl).expects().anyNumberOfTimes()
     def nrsRetries: CallHandler[List[FiniteDuration]] = (() => mockAppConfig.nrsRetries).expects().anyNumberOfTimes()
 
     // IFS config items
-    def ifsBaseUrl: CallHandler[String] = (() => mockAppConfig.ifsBaseUrl).expects().anyNumberOfTimes()
-    def ifsToken: CallHandler[String] = (() => mockAppConfig.ifsToken).expects().anyNumberOfTimes()
-    def ifsEnv: CallHandler[String] = (() => mockAppConfig.ifsEnv).expects().anyNumberOfTimes()
+    def ifsBaseUrl: CallHandler[String]                         = (() => mockAppConfig.ifsBaseUrl).expects().anyNumberOfTimes()
+    def ifsToken: CallHandler[String]                           = (() => mockAppConfig.ifsToken).expects().anyNumberOfTimes()
+    def ifsEnv: CallHandler[String]                             = (() => mockAppConfig.ifsEnv).expects().anyNumberOfTimes()
     def ifsEnvironmentHeaders: CallHandler[Option[Seq[String]]] = (() => mockAppConfig.ifsEnvironmentHeaders).expects().anyNumberOfTimes()
   }
+
 }

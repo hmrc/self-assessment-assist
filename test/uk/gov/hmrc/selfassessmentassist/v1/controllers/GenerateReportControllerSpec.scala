@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.controllers
 
-
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
@@ -25,21 +24,21 @@ import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers.MockGenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.IdentityDataTestData
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.{Metadata, NrsSubmission, SearchKeys}
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData.assessmentReportWrapper
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers.MockGenerateReportRequestParser
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class GenerateReportControllerSpec
-  extends ControllerBaseSpec
+    extends ControllerBaseSpec
     with MockEnrolmentsAuthService
     with MockLookupConnector
     with MockNrsService
@@ -52,26 +51,28 @@ class GenerateReportControllerSpec
     with GuiceOneAppPerSuite {
 
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
-  private val formattedDate: String = timestamp.format(DateUtils.isoInstantDateTimePattern)
+  private val formattedDate: String     = timestamp.format(DateUtils.isoInstantDateTimePattern)
 
   private val appConfig = app.injector.instanceOf[AppConfig]
+
   trait Test {
 
     val controller: TestController = new TestController()
 
-    class TestController extends GenerateReportController(
-      cc = cc,
-      requestParser = mockGenerateReportRequestParser,
-      authService = mockEnrolmentsAuthService,
-      lookupConnector = mockLookupConnector,
-      nonRepudiationService = mockNrsService,
-      insightService = mockInsightService,
-      rdsService = mockRdsService,
-      currentDateTime = mockCurrentDateTime,
-      idGenerator = mockIdGenerator,
-      ifService = mockIfsService,
-      config = appConfig
-    )
+    class TestController
+        extends GenerateReportController(
+          cc = cc,
+          requestParser = mockGenerateReportRequestParser,
+          authService = mockEnrolmentsAuthService,
+          lookupConnector = mockLookupConnector,
+          nonRepudiationService = mockNrsService,
+          insightService = mockInsightService,
+          rdsService = mockRdsService,
+          currentDateTime = mockCurrentDateTime,
+          idGenerator = mockIdGenerator,
+          ifService = mockIfsService,
+          config = appConfig
+        )
 
   }
 
@@ -84,12 +85,15 @@ class GenerateReportControllerSpec
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockInsightService.assess(simpleFraudRiskRequest)
-        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, simpleAssessmentReportWrapper)
         MockCurrentDateTime.getDateTime()
-       // MockNrsService.stubAssessmentReport(simpleNRSResponseReportSubmission)
+        // MockNrsService.stubAssessmentReport(simpleNRSResponseReportSubmission)
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
-        MockIfsService.stubGenerateReportSubmit(simpleAssessmentReport, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
+        MockIfsService.stubGenerateReportSubmit(
+          simpleAssessmentReport,
+          simpleAssessmentReportWrapper.calculationTimestamp,
+          simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
@@ -105,12 +109,15 @@ class GenerateReportControllerSpec
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockInsightService.assess(simpleFraudRiskRequest)
-        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, simpleAssessmentReportWrapper)
         MockCurrentDateTime.getDateTime()
         MockNrsService.stubFailureReportDueToException()
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
-        MockIfsService.stubGenerateReportSubmit(simpleAssessmentReportWrapper.report, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
+        MockIfsService.stubGenerateReportSubmit(
+          simpleAssessmentReportWrapper.report,
+          simpleAssessmentReportWrapper.calculationTimestamp,
+          simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
         status(result) shouldBe OK
@@ -129,7 +136,8 @@ class GenerateReportControllerSpec
         MockGenerateReportRequestParser.parseRequestFail(rawDataNonSequentialTaxYear, TaxYearRangeInvalid)
         MockEnrolmentsAuthService.authoriseUser()
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid1)(fakePostRequest)
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid1)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
@@ -147,7 +155,8 @@ class GenerateReportControllerSpec
         MockGenerateReportRequestParser.parseRequestFail(rawDataInvalidTaxYear, TaxYearFormatError)
         MockEnrolmentsAuthService.authoriseUser()
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid2)(fakePostRequest)
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid2)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
@@ -166,7 +175,8 @@ class GenerateReportControllerSpec
         MockGenerateReportRequestParser.parseRequestFail(rawDataInvalidTaxYear, TaxYearFormatError)
         MockEnrolmentsAuthService.authoriseUser()
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid3)(fakePostRequest)
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearInvalid3)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
@@ -184,7 +194,8 @@ class GenerateReportControllerSpec
 
         MockCurrentDateTime.getDateTime()
         MockProvideRandomCorrelationId.IdGenerator
-        val result: Future[Result] = controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
@@ -195,7 +206,6 @@ class GenerateReportControllerSpec
 
       }
     }
-
 
     "a request fails due to failed EnrolmentsAuthService.authorised failure" should {
 
@@ -278,7 +288,7 @@ class GenerateReportControllerSpec
           val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          if(expectedBody.nonEmpty) {
+          if (expectedBody.nonEmpty) {
             contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody.get))
             contentType(result) shouldBe Some("application/json")
           }
@@ -299,8 +309,7 @@ class GenerateReportControllerSpec
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, Some(ClientOrAgentNotAuthorisedError.asJson)),
           (RdsAuthError, INTERNAL_SERVER_ERROR, Some(ForbiddenDownstreamError.asJson)),
           (BadRequestError, BAD_REQUEST, Some(BadRequestError.asJson)),
-          (InvalidJson, INTERNAL_SERVER_ERROR, Some(MatchingResourcesNotFoundError.asJson)),
-
+          (InvalidJson, INTERNAL_SERVER_ERROR, Some(MatchingResourcesNotFoundError.asJson))
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -312,20 +321,22 @@ class GenerateReportControllerSpec
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockInsightService.assess(simpleFraudRiskRequest)
-        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,assessmentReportWrapper)
+        MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, assessmentReportWrapper)
         MockCurrentDateTime.getDateTime()
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockProvideRandomCorrelationId.IdGenerator
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
         MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
-        MockIfsService.stubGenerateReportSubmit(assessmentReportWrapper.report, assessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment)
-
+        MockIfsService.stubGenerateReportSubmit(
+          assessmentReportWrapper.report,
+          assessmentReportWrapper.calculationTimestamp,
+          simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsJson(result)  shouldBe Json.toJson(Seq(DownstreamError))
+        contentAsJson(result) shouldBe Json.toJson(Seq(DownstreamError))
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -341,9 +352,13 @@ class GenerateReportControllerSpec
           MockEnrolmentsAuthService.authoriseUser()
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockInsightService.assess(simpleFraudRiskRequest)
-          MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin,simpleAssessmentReportWrapper)
+          MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, simpleAssessmentReportWrapper)
           MockCurrentDateTime.getDateTime()
-          MockIfsService.stubFailedSubmit(simpleAssessmentReport, simpleAssessmentReportWrapper.calculationTimestamp, simpleAssessmentRequestForSelfAssessment, mtdError)
+          MockIfsService.stubFailedSubmit(
+            simpleAssessmentReport,
+            simpleAssessmentReportWrapper.calculationTimestamp,
+            simpleAssessmentRequestForSelfAssessment,
+            mtdError)
 
           val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
           status(result) shouldBe expectedStatus
@@ -357,9 +372,11 @@ class GenerateReportControllerSpec
       runTest(ServerError, INTERNAL_SERVER_ERROR, DownstreamError.asJson)
     }
   }
+
   private val expectedReportPayload: NrsSubmission =
     NrsSubmission(
-      payload = "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIwMjIiLCJjYWxjdWxhdGlvbklkIjoiOTlkNzU4ZjYtYzRiZS00MzM5LTgwNGUtZjc5Y2YwNjEwZDRmIiwiY29ycmVsYXRpb25JZCI6ImU0MzI2NGM1LTUzMDEtNGVjZS1iM2QzLTFlOGE4ZGQ5M2I0YiJ9",
+      payload =
+        "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIwMjIiLCJjYWxjdWxhdGlvbklkIjoiOTlkNzU4ZjYtYzRiZS00MzM5LTgwNGUtZjc5Y2YwNjEwZDRmIiwiY29ycmVsYXRpb25JZCI6ImU0MzI2NGM1LTUzMDEtNGVjZS1iM2QzLTFlOGE4ZGQ5M2I0YiJ9",
       metadata = Metadata(
         businessId = "saa",
         notableEvent = "saa-report-generated",
@@ -368,16 +385,17 @@ class GenerateReportControllerSpec
         userSubmissionTimestamp = formattedDate,
         identityData = Some(IdentityDataTestData.correctModel),
         userAuthToken = "Bearer aaaa",
-        headerData = Json.toJson(Map(
-          "Host" -> "localhost",
-          "dummyHeader1" -> "dummyValue1",
-          "dummyHeader2" -> "dummyValue2",
-          "Authorization" -> "Bearer aaaa"
-        )),
-        searchKeys =
-          SearchKeys(
-            reportId = "db741dff-4054-478e-88d2-5993e925c7ab"
-          )
+        headerData = Json.toJson(
+          Map(
+            "Host"          -> "localhost",
+            "dummyHeader1"  -> "dummyValue1",
+            "dummyHeader2"  -> "dummyValue2",
+            "Authorization" -> "Bearer aaaa"
+          )),
+        searchKeys = SearchKeys(
+          reportId = "db741dff-4054-478e-88d2-5993e925c7ab"
+        )
       )
     )
+
 }

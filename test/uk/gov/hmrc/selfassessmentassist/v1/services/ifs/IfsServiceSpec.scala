@@ -55,10 +55,10 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     OffsetDateTime.parse("2022-01-01T12:00Z"),
     "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
     List(
-      Map("nino" -> "nino"),
-      Map("taxYear" -> "2021-2022"),
-      Map("calculationId" -> "99d758f6-c4be-4339-804e-f79cf0610d4f"),
-      Map("customerType" -> "Individual"),
+      Map("nino"                 -> "nino"),
+      Map("taxYear"              -> "2021-2022"),
+      Map("calculationId"        -> "99d758f6-c4be-4339-804e-f79cf0610d4f"),
+      Map("customerType"         -> "Individual"),
       Map("calculationTimestamp" -> "2022-01-01T12:00:00.000Z")
     ),
     Some(
@@ -140,8 +140,8 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       eventTimestamp = mockCurrentDateTime.getDateTime(),
       feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
       metaData = List(
-        Map("nino" -> CommonTestData.simpleAcknowledgeReportRequest.nino),
-        Map("customerType" -> "Individual"),
+        Map("nino"         -> CommonTestData.simpleAcknowledgeReportRequest.nino),
+        Map("customerType" -> "Individual")
       ),
       payload = None
     )
@@ -157,11 +157,16 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       "return the expected result" in new Test {
 
         MockCurrentDateTime.getDateTime()
-        MockIfsConnector.submit(expectedPayload = expectedReportGenerationPayload)
+        MockIfsConnector
+          .submit(expectedPayload = expectedReportGenerationPayload)
           .returns(Future.successful(Right(IfsResponse())))
 
         await(
-          service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.rdsNewSubmissionReport)
+          service.submitGenerateReportMessage(
+            rdsReport,
+            mockCurrentDateTime.getDateTime().toLocalDateTime,
+            assessmentRequestForSelfAssessment,
+            CommonTestData.rdsNewSubmissionReport)
         ) shouldBe Right(IfsResponse())
       }
 
@@ -172,11 +177,16 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       "return the expected result" in new Test {
 
         MockCurrentDateTime.getDateTime()
-        MockIfsConnector.submit(expectedPayload = expectedReportGenerationPayload)
+        MockIfsConnector
+          .submit(expectedPayload = expectedReportGenerationPayload)
           .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))))
 
         await(
-          service.submitGenerateReportMessage(rdsReport, mockCurrentDateTime.getDateTime().toLocalDateTime, assessmentRequestForSelfAssessment, CommonTestData.rdsNewSubmissionReport)
+          service.submitGenerateReportMessage(
+            rdsReport,
+            mockCurrentDateTime.getDateTime().toLocalDateTime,
+            assessmentRequestForSelfAssessment,
+            CommonTestData.rdsNewSubmissionReport)
         ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))
       }
 
@@ -187,11 +197,15 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       "return the expected result" in new Test {
 
         MockCurrentDateTime.getDateTime()
-        MockIfsConnector.submit(expectedPayload = expectedAcknowledgementPayload)
+        MockIfsConnector
+          .submit(expectedPayload = expectedAcknowledgementPayload)
           .returns(Future.successful(Right(IfsResponse())))
 
         await(
-          service.submitAcknowledgementMessage(CommonTestData.simpleAcknowledgeReportRequest, CommonTestData.simpleAcknowledgeNewRdsAssessmentReport, CommonTestData.simpleIndividualUserDetails)
+          service.submitAcknowledgementMessage(
+            CommonTestData.simpleAcknowledgeReportRequest,
+            CommonTestData.simpleAcknowledgeNewRdsAssessmentReport,
+            CommonTestData.simpleIndividualUserDetails)
         ) shouldBe Right(IfsResponse())
       }
     }
@@ -200,8 +214,9 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       "return the expected result" in new Test {
         service.customerTypeString(CustomerType.TaxPayer) shouldBe "Individual"
         service.customerTypeString(CustomerType.Agent) shouldBe "Agent"
-        an [IllegalStateException] shouldBe thrownBy(service.customerTypeString(CustomerType.Unknown))
+        an[IllegalStateException] shouldBe thrownBy(service.customerTypeString(CustomerType.Unknown))
       }
     }
   }
+
 }

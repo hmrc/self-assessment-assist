@@ -22,7 +22,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.GenerateRe
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.validators.GenerateReportValidator
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentRequestForSelfAssessment, CustomerType, PreferredLanguage}
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{ErrorWrapper, MtdError}
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.{GenerateReportRawData}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext

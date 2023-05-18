@@ -15,23 +15,23 @@
  */
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request
+
 import play.api.libs.json.{Format, Json}
 
 import java.time.OffsetDateTime
 
-
 case class IFRequest(
-                      serviceRegime: String,
-                      eventName: String,
-                      eventTimestamp: OffsetDateTime,
-                      feedbackId: String,
-                      metaData: List[Map[String, String]],
-                      payload: Option[Messages]
-                    )
+    serviceRegime: String,
+    eventName: String,
+    eventTimestamp: OffsetDateTime,
+    feedbackId: String,
+    metaData: List[Map[String, String]],
+    payload: Option[Messages]
+)
 
 case class Messages(messages: Option[Seq[IFRequestPayload]])
 
-  object IFRequest {
-    implicit val messageFormats: Format[Messages] = Json.format[Messages]
-    implicit val formats: Format[IFRequest] = Json.format[IFRequest]
+object IFRequest {
+  implicit val messageFormats: Format[Messages] = Json.format[Messages]
+  implicit val formats: Format[IFRequest]       = Json.format[IFRequest]
 }

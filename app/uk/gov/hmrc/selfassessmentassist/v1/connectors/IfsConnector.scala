@@ -16,21 +16,20 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
+import play.api.http.Status.NO_CONTENT
 import play.api.http.{HeaderNames, MimeTypes}
-import play.api.http.Status.{NO_CONTENT, SERVICE_UNAVAILABLE}
 import play.api.libs.json.Writes
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, HttpReads, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpReads, HttpResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request.IFRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsResponse
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsOutcome
 
 @Singleton
 class IfsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {

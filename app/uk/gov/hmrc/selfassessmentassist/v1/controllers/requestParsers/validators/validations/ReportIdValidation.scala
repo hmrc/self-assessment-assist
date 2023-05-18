@@ -19,11 +19,12 @@ package uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.validator
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{FormatReportIdError, MtdError}
 
 object ReportIdValidation {
+
   private val reportIdRegex =
     "^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$"
-
 
   def validate(reportId: String): List[MtdError] = {
     if (reportId != null && reportId.matches(reportIdRegex)) NoValidationErrors else List(FormatReportIdError)
   }
+
 }

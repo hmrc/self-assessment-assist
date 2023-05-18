@@ -25,21 +25,14 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
 
-class DocumentationIntegrationSpec
-  extends AnyWordSpec
-    with Matchers
-    with ScalaFutures
-    with IntegrationPatience
-    with GuiceOneServerPerSuite {
+class DocumentationIntegrationSpec extends AnyWordSpec with Matchers with ScalaFutures with IntegrationPatience with GuiceOneServerPerSuite {
 
   private val wsClient = app.injector.instanceOf[WSClient]
-  private val baseUrl = s"http://localhost:$port"
+  private val baseUrl  = s"http://localhost:$port"
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
-      .configure(
-        "metrics.enabled" -> false,
-        "auditing.enabled" -> false)
+      .configure("metrics.enabled" -> false, "auditing.enabled" -> false)
       .build()
 
   "a request for an OpenAPI Spec" should {
@@ -70,4 +63,5 @@ class DocumentationIntegrationSpec
       }
     }
   }
+
 }

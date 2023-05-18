@@ -30,15 +30,21 @@ trait MockLookupConnector extends MockFactory {
   object MockLookupConnector {
 
     def mockMtdIdLookupConnector(mtdItId: String): Unit = {
-      (mockLookupConnector.getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*,*,*).once()
+      (mockLookupConnector
+        .getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *)
+        .once()
         .returns(Future.successful(Right(mtdItId)))
     }
 
     def mockMtdIdLookupConnectorError(mtdError: MtdError): Unit = {
-      (mockLookupConnector.getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*,*,*).once()
+      (mockLookupConnector
+        .getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *)
+        .once()
         .returns(Future.successful(Left(mtdError)))
     }
+
   }
+
 }

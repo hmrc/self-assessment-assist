@@ -21,10 +21,10 @@ import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 
 import java.time.LocalDate
 
-case class SearchKeys( reportId: String )
+case class SearchKeys(reportId: String)
 
 object SearchKeys {
-  implicit val dateReads: Reads[LocalDate] = DateUtils.dateReads
+  implicit val dateReads: Reads[LocalDate]   = DateUtils.dateReads
   implicit val dateWrites: Writes[LocalDate] = DateUtils.dateWrites
-  implicit val format: OFormat[SearchKeys] = Json.format[SearchKeys]
+  implicit val format: OFormat[SearchKeys]   = Json.format[SearchKeys]
 }

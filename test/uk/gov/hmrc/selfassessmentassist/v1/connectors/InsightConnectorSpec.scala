@@ -22,7 +22,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
@@ -31,38 +31,27 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, Error
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.FraudRiskReport
 
+class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
-
-class InsightConnectorSpec extends ConnectorSpec
-  with BeforeAndAfterAll
-  with GuiceOneAppPerSuite
-  with Injecting
-  with MockAppConfig {
-
-
-  val actorSystem: ActorSystem = inject[ActorSystem]
+  val actorSystem: ActorSystem      = inject[ActorSystem]
   implicit val scheduler: Scheduler = actorSystem.scheduler
 
-
   var port: Int = _
-  val url = "/fraud"
+  val url       = "/fraud"
 
   private val successResponseJson: JsValue =
-    Json.parse(
-      """{"riskCorrelationId":"8d844f4a-0630-4568-99ef-d4606ae45d17",
+    Json.parse("""{"riskCorrelationId":"8d844f4a-0630-4568-99ef-d4606ae45d17",
         |"riskScore":50,
         |"reasons":["No NINO has path to something risky."]}""".stripMargin)
 
   private val malformedSuccessResponseJson: JsValue =
-    Json.parse(
-      """{"invalid":"8d844f4a-0630-4568-99ef-d4606ae45d17",
+    Json.parse("""{"invalid":"8d844f4a-0630-4568-99ef-d4606ae45d17",
         |"invalid2":50,
         |"invalid3":["No NINO has path to something risky."]}""".stripMargin)
 
   private val fraudRiskRequestJsonString: String = Json.toJson(simpleFraudRiskRequest).toString()
-  private val fraudRiskResponse = successResponseJson.validate[FraudRiskReport].get
-  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
-
+  private val fraudRiskResponse                  = successResponseJson.validate[FraudRiskReport].get
+  val httpClient: HttpClient                     = app.injector.instanceOf[HttpClient]
 
   class Test {
 
@@ -89,6 +78,7 @@ class InsightConnectorSpec extends ConnectorSpec
                 .withStatus(status)))
       }
     }
+
   }
 
   override def beforeAll(): Unit = {
@@ -102,43 +92,44 @@ class InsightConnectorSpec extends ConnectorSpec
   "Give InsightConnector" when {
     "is immediately successful then" must {
       "return the response" in new Test {
-        stubCIPResponse(Some(successResponseJson.toString),OK)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Right(ResponseWrapper(correlationId,fraudRiskResponse))
+        stubCIPResponse(Some(successResponseJson.toString), OK)
+        await(connector.assess(simpleFraudRiskRequest)) shouldBe Right(ResponseWrapper(correlationId, fraudRiskResponse))
       }
 
       "return invalid response" in new Test {
-        stubCIPResponse(Some(malformedSuccessResponseJson.toString),OK)
+        stubCIPResponse(Some(malformedSuccessResponseJson.toString), OK)
         await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
     }
 
     "fails with 400 status" must {
       "fail the request" in new Test {
-        stubCIPResponse(None,BAD_REQUEST)
+        stubCIPResponse(None, BAD_REQUEST)
         await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
     }
 
     "fails with 404(not found) status" must {
       "fail the request" in new Test {
-        stubCIPResponse(None,NOT_FOUND)
+        stubCIPResponse(None, NOT_FOUND)
         await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
     }
 
     "fails with 408(REQUEST_TIMEOUT) status" must {
       "fail the request" in new Test {
-        stubCIPResponse(None,REQUEST_TIMEOUT)
+        stubCIPResponse(None, REQUEST_TIMEOUT)
         await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
     }
 
     "fails with 500(INTERNAL SERVER ERROR) status" must {
       "fail the request" in new Test {
-        stubCIPResponse(None,INTERNAL_SERVER_ERROR)
+        stubCIPResponse(None, INTERNAL_SERVER_ERROR)
         await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
       }
     }
 
   }
+
 }

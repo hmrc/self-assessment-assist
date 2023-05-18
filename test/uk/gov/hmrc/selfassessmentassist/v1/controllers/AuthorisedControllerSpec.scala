@@ -20,8 +20,8 @@ import akka.util.ByteString
 import play.api.http.HttpEntity
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.Enrolment
+import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.MtdIdLookupConnector
@@ -33,15 +33,15 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 
-
 class AuthorisedControllerSpec extends ControllerBaseSpec {
+
   trait Test extends MockEnrolmentsAuthService with MockLookupConnector {
 
-    val hc: HeaderCarrier = HeaderCarrier()
+    val hc: HeaderCarrier                    = HeaderCarrier()
     val authorisedController: TestController = new TestController()
 
     class TestController extends AuthorisedController(cc) {
-      override val authService: EnrolmentsAuthService = mockEnrolmentsAuthService
+      override val authService: EnrolmentsAuthService    = mockEnrolmentsAuthService
       override val lookupConnector: MtdIdLookupConnector = mockLookupConnector
 
       def authorisedActionAysncSUT(nino: String): Action[AnyContent] = {
@@ -51,9 +51,10 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       }
 
     }
+
   }
 
-  val ninoIsCorrect: String = "AA000000B"
+  val ninoIsCorrect: String   = "AA000000B"
   val ninoIsIncorrect: String = "AA000000Z"
 
   "calling an action" when {
@@ -65,7 +66,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         private val resultFuture = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
-        val result: Result = Await.result(resultFuture, defaultTimeout)
+        val result: Result       = Await.result(resultFuture, defaultTimeout)
         result.header.status shouldBe OK
       }
     }
@@ -77,13 +78,13 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         MockEnrolmentsAuthService.authoriseUser()
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsIncorrect)(fakePostRequest)
-        val result: Result = Await.result(resultFuture, defaultTimeout)
+        val result: Result                       = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe BAD_REQUEST
 
-        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val body: HttpEntity.Strict       = result.body.asInstanceOf[HttpEntity.Strict]
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
-        val returnedError: String = returnedErrorJSon.utf8String
+        val returnedError: String         = returnedErrorJSon.utf8String
 
         val ninoErrorJSon: JsValue = Json.toJson(NinoFormatError)
 
@@ -95,16 +96,16 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       "return a 401 error response" in new Test {
         MockLookupConnector.mockMtdIdLookupConnectorError(InvalidBearerTokenError)
         private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
-        val result: Result = Await.result(resultFuture, defaultTimeout)
+        val result: Result                       = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe UNAUTHORIZED
 
-        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val body: HttpEntity.Strict       = result.body.asInstanceOf[HttpEntity.Strict]
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
-        val returnedError: String = returnedErrorJSon.utf8String
+        val returnedError: String         = returnedErrorJSon.utf8String
 
         val invalidBearerJson: JsValue = Json.toJson(Seq(InvalidBearerTokenError))
-        val ninoError: String = invalidBearerJson.toString()
+        val ninoError: String          = invalidBearerJson.toString()
 
         returnedError shouldBe ninoError
       }
@@ -114,16 +115,16 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       "return a 405 error response" in new Test {
         MockLookupConnector.mockMtdIdLookupConnectorError(UnauthorisedError)
         private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
-        val result: Result = Await.result(resultFuture, defaultTimeout)
+        val result: Result                       = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe FORBIDDEN
 
-        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val body: HttpEntity.Strict       = result.body.asInstanceOf[HttpEntity.Strict]
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
-        val returnedError: String = returnedErrorJSon.utf8String
+        val returnedError: String         = returnedErrorJSon.utf8String
 
         val invalidBearerJson: JsValue = Json.toJson(Seq(UnauthorisedError))
-        val ninoError: String = invalidBearerJson.toString()
+        val ninoError: String          = invalidBearerJson.toString()
 
         returnedError shouldBe ninoError
       }
@@ -133,16 +134,16 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       "return a 500 error response" in new Test {
         MockLookupConnector.mockMtdIdLookupConnectorError(ForbiddenRDSCorrelationIdError)
         private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
-        val result: Result = Await.result(resultFuture, defaultTimeout)
+        val result: Result                       = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe INTERNAL_SERVER_ERROR
 
-        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val body: HttpEntity.Strict       = result.body.asInstanceOf[HttpEntity.Strict]
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
-        val returnedError: String = returnedErrorJSon.utf8String
+        val returnedError: String         = returnedErrorJSon.utf8String
 
         val invalidBearerJson: JsValue = Json.toJson(Seq(DownstreamError))
-        val ninoError: String = invalidBearerJson.toString()
+        val ninoError: String          = invalidBearerJson.toString()
 
         returnedError shouldBe ninoError
       }
@@ -152,16 +153,16 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
       "return a 403 error response" in new Test {
         MockLookupConnector.mockMtdIdLookupConnectorError(NinoFormatError)
         private val resultFuture: Future[Result] = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
-        val result: Result = Await.result(resultFuture, defaultTimeout)
+        val result: Result                       = Await.result(resultFuture, defaultTimeout)
 
         (result.header.status) shouldBe FORBIDDEN
 
-        val body: HttpEntity.Strict = result.body.asInstanceOf[HttpEntity.Strict]
+        val body: HttpEntity.Strict       = result.body.asInstanceOf[HttpEntity.Strict]
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
-        val returnedError: String = returnedErrorJSon.utf8String
+        val returnedError: String         = returnedErrorJSon.utf8String
 
         val unauthorisedErrorJson: JsValue = Json.toJson(Seq(UnauthorisedError))
-        val unauthorisedError: String = unauthorisedErrorJson.toString()
+        val unauthorisedError: String      = unauthorisedErrorJson.toString()
 
         returnedError shouldBe unauthorisedError
       }
@@ -181,7 +182,8 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         s"a ${mtdError.code}/${mtdError.message} error is returned from the enrolments auth service" in new Test {
 
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
-          MockEnrolmentsAuthService.authorised(predicate("1234567890"))
+          MockEnrolmentsAuthService
+            .authorised(predicate("1234567890"))
             .returns(Future.successful(Left(mtdError)))
 
           private val actualResult = authorisedController.authorisedActionAysncSUT(ninoIsCorrect)(fakePostRequest)
@@ -208,4 +210,3 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
   }
 
 }
-

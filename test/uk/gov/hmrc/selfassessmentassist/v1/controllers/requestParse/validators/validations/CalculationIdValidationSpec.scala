@@ -45,4 +45,5 @@ class CalculationIdValidationSpec extends UnitSpec {
 
     }
   }
+
 }

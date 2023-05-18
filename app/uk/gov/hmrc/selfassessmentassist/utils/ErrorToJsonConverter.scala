@@ -20,7 +20,9 @@ import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
 
 object ErrorToJsonConverter {
+
   def convertErrorAsJson(mtdError: MtdError): JsValue = {
     Json.toJson(Seq(mtdError))
   }
+
 }
