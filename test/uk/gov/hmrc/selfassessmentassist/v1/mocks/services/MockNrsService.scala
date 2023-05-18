@@ -34,44 +34,60 @@ trait MockNrsService extends MockFactory {
   object MockNrsService {
 
     def stubBuildNrsSubmission(nrsSubmission: NrsSubmission): CallHandler[Either[NrsFailure, NrsSubmission]] = {
-      (mockNrsService.buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[_], _: NotableEventType)(_: String))
-        .expects(*, *, *, *, *, *).anyNumberOfTimes()
+      (mockNrsService
+        .buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[_], _: NotableEventType)(_: String))
+        .expects(*, *, *, *, *, *)
+        .anyNumberOfTimes()
         .returns((Right(nrsSubmission)))
     }
 
     def stubUnableToConstrucNrsSubmission(): CallHandler[Either[NrsFailure, NrsSubmission]] = {
-      (mockNrsService.buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[_], _: NotableEventType)(_: String))
-        .expects(*, *, *, *, *, *).anyNumberOfTimes()
+      (mockNrsService
+        .buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[_], _: NotableEventType)(_: String))
+        .expects(*, *, *, *, *, *)
+        .anyNumberOfTimes()
         .returns(Left(NrsFailure.Exception("no beaker token for user")))
     }
 
     def stubNrsSubmit(retNrsResponse: NrsResponse): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: NrsSubmission)(_:HeaderCarrier,_: String))
-        .expects(*, *, *).anyNumberOfTimes()
+      (mockNrsService
+        .submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *)
+        .anyNumberOfTimes()
         .returns(Future.successful(Right(retNrsResponse)))
     }
 
     def stubFailureReportDueToException(): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
-        .expects(*, *, *).anyNumberOfTimes()
+      (mockNrsService
+        .submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *)
+        .anyNumberOfTimes()
         .returns(Future.successful(Left(NrsFailure.Exception("GatewayTimeout"))))
     }
 
     def stubAcknowledgement(retNrsResponse: NrsResponse): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
-        .expects(*, *, *).anyNumberOfTimes()
+      (mockNrsService
+        .submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *)
+        .anyNumberOfTimes()
         .returns(Future.successful(Right(retNrsResponse)))
     }
 
     def stubFailureAcknowledgementDueToException(): CallHandler[Future[NrsOutcome]] = {
-      (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
-        .expects(*, *, *).anyNumberOfTimes()
+      (mockNrsService
+        .submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *)
+        .anyNumberOfTimes()
         .returns(Future.successful(Left(NrsFailure.Exception("GatewayTimeout"))))
     }
 
     def submitNeverCalled() = {
-      (mockNrsService.submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
-        .expects(*, *, *).never()
+      (mockNrsService
+        .submit(_: NrsSubmission)(_: HeaderCarrier, _: String))
+        .expects(*, *, *)
+        .never()
     }
+
   }
+
 }

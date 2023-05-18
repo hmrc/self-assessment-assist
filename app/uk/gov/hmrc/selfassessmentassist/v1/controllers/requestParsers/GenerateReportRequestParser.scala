@@ -22,20 +22,26 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentRequestForSe
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
 
-
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class GenerateReportRequestParser @Inject()(val validator: GenerateReportValidator)
-  extends RequestParser[GenerateReportRawData, AssessmentRequestForSelfAssessment]{
+class GenerateReportRequestParser @Inject() (val validator: GenerateReportValidator)
+    extends RequestParser[GenerateReportRawData, AssessmentRequestForSelfAssessment] {
 
   override protected def requestFor(data: GenerateReportRawData): Either[MtdError, AssessmentRequestForSelfAssessment] = {
     val taxYearValidation = TaxYearValidation.validate(data.taxYear)
-    if(taxYearValidation.isEmpty) {
+    if (taxYearValidation.isEmpty) {
       val taxYearInRDSFormat = DesTaxYear.fromMtd(data.taxYear).toString
-      Right(AssessmentRequestForSelfAssessment(UUID.fromString(data.calculationId), data.nino, data.preferredLanguage,
-        data.customerType, data.agentRef, taxYearInRDSFormat))
-    }else Left(taxYearValidation.head)
+      Right(
+        AssessmentRequestForSelfAssessment(
+          UUID.fromString(data.calculationId),
+          data.nino,
+          data.preferredLanguage,
+          data.customerType,
+          data.agentRef,
+          taxYearInRDSFormat))
+    } else Left(taxYearValidation.head)
   }
+
 }

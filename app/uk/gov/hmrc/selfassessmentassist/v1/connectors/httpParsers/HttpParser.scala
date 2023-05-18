@@ -38,4 +38,5 @@ trait HttpParser extends Logging {
     }
 
   }
+
 }

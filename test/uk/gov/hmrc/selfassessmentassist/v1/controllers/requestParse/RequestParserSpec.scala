@@ -20,7 +20,7 @@ import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.RequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.validators.Validator
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, MtdError, NinoFormatError}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.RawData
 
 import scala.concurrent.ExecutionContext
@@ -40,8 +40,9 @@ class RequestParserSpec extends UnitSpec {
     val parser: RequestParser[Raw, Request] = new RequestParser[Raw, Request] {
       val validator: Validator[Raw] = test.validator
 
-      protected def requestFor(data: Raw): Either[MtdError,Request] = Right(Request(data.nino))
+      protected def requestFor(data: Raw): Either[MtdError, Request] = Right(Request(data.nino))
     }
+
   }
 
   "parse" should {
@@ -57,15 +58,17 @@ class RequestParserSpec extends UnitSpec {
       "the validator returns a single error" in new Test {
         lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError)
 
-        await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(ErrorWrapper(correlationId, NinoFormatError, None))
+        await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(
+          ErrorWrapper(correlationId, NinoFormatError, None))
       }
     }
 
     "return multiple errors" when {
       "the validator returns multiple errors" in new Test {
-        lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError , DownstreamError)
+        lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError, DownstreamError)
 
-        await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
+        await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(
+          ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
       }
     }
   }

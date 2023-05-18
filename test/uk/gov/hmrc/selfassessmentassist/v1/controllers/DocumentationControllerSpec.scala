@@ -28,7 +28,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.mocks.utils.MockIdGenerator
 import scala.concurrent.Future
 
 class DocumentationControllerSpec
-  extends ControllerBaseSpec
+    extends ControllerBaseSpec
     with MockEnrolmentsAuthService
     with MockLookupConnector
     with MockNrsService
@@ -46,10 +46,11 @@ class DocumentationControllerSpec
 
     val controller: TestController = new TestController()
 
-    class TestController extends DocumentationController(
-      cc = cc,
-      assets = assets,
-    )
+    class TestController
+        extends DocumentationController(
+          cc = cc,
+          assets = assets
+        )
 
   }
 
@@ -71,4 +72,5 @@ class DocumentationControllerSpec
     }
 
   }
+
 }

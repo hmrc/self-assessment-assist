@@ -30,6 +30,7 @@ class MtdIdLookupConnectorSpec extends ConnectorSpec {
       http = mockHttpClient,
       appConfig = mockAppConfig
     )
+
     MockedAppConfig.mtdIdBaseUrl returns baseUrl
   }
 
@@ -65,4 +66,5 @@ class MtdIdLookupConnectorSpec extends ConnectorSpec {
       }
     }
   }
+
 }

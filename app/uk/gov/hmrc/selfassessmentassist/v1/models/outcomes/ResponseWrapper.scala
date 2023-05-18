@@ -16,4 +16,4 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.outcomes
 
-case class ResponseWrapper[+A](correlationId: String,  responseData: A)
+case class ResponseWrapper[+A](correlationId: String, responseData: A)

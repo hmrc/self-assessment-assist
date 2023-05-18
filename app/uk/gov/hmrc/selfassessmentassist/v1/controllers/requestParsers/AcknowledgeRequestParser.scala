@@ -24,10 +24,11 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.Acknowled
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class AcknowledgeRequestParser @Inject()(val validator: AcknowledgeReportValidator)
-  extends RequestParser[AcknowledgeReportRawData, AcknowledgeReportRequest] {
+class AcknowledgeRequestParser @Inject() (val validator: AcknowledgeReportValidator)
+    extends RequestParser[AcknowledgeReportRawData, AcknowledgeReportRequest] {
 
   override protected def requestFor(data: AcknowledgeReportRawData): Either[MtdError, AcknowledgeReportRequest] = {
-    Right(AcknowledgeReportRequest(data.nino, data.reportId, rdsCorrelationId=data.rdsCorrelationId))
+    Right(AcknowledgeReportRequest(data.nino, data.reportId, rdsCorrelationId = data.rdsCorrelationId))
   }
+
 }

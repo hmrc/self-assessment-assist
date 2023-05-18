@@ -22,14 +22,14 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
 
-class DocumentationController @Inject()(assets: Assets, cc: ControllerComponents) extends BackendController(cc) {
+class DocumentationController @Inject() (assets: Assets, cc: ControllerComponents) extends BackendController(cc) {
 
   def definition(): Action[AnyContent] = {
     assets.at(s"/public/api/conf", "definition.json")
   }
 
-
   def specification(version: String, file: String): Action[AnyContent] = {
     assets.at(s"/public/api/conf/$version", file)
   }
+
 }

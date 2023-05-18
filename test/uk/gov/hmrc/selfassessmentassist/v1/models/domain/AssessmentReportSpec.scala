@@ -20,11 +20,10 @@ import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 
-class AssessmentReportSpec extends  UnitSpec  {
+class AssessmentReportSpec extends UnitSpec {
   val assessmentReportModel: AssessmentReport = simpleAssessmentReport
 
-  val assessmentReportJson: JsValue = Json.parse(
-    s"""
+  val assessmentReportJson: JsValue = Json.parse(s"""
        |{
        |"reportId": "${assessmentReportModel.reportId.toString}",
        |"messages":[
@@ -48,11 +47,10 @@ class AssessmentReportSpec extends  UnitSpec  {
        | }
        |""".stripMargin)
 
-
   "AssessmentReport" when {
     "written to JSON" must {
       "product the specific JSON body " in {
-       Json.toJson(assessmentReportModel) shouldBe assessmentReportJson
+        Json.toJson(assessmentReportModel) shouldBe assessmentReportJson
       }
     }
   }

@@ -35,18 +35,22 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAsses
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class AcknowledgeReportController @Inject()(
-                                             val cc: ControllerComponents,
-                                             requestParser: AcknowledgeRequestParser,
-                                             val authService: EnrolmentsAuthService,
-                                             val lookupConnector: MtdIdLookupConnector,
-                                             nonRepudiationService: NrsService,
-                                             rdsService: RdsService,
-                                             currentDateTime: CurrentDateTime,
-                                             idGenerator: IdGenerator,
-                                             ifsService: IfsService,
-                                             config: AppConfig
-                                           )(implicit ec: ExecutionContext) extends AuthorisedController(cc) with ApiBaseController with BaseController with Logging {
+class AcknowledgeReportController @Inject() (
+    val cc: ControllerComponents,
+    requestParser: AcknowledgeRequestParser,
+    val authService: EnrolmentsAuthService,
+    val lookupConnector: MtdIdLookupConnector,
+    nonRepudiationService: NrsService,
+    rdsService: RdsService,
+    currentDateTime: CurrentDateTime,
+    idGenerator: IdGenerator,
+    ifsService: IfsService,
+    config: AppConfig
+)(implicit ec: ExecutionContext)
+    extends AuthorisedController(cc)
+    with ApiBaseController
+    with BaseController
+    with Logging {
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
     implicit val correlationId: String = idGenerator.getUid
@@ -54,53 +58,56 @@ class AcknowledgeReportController @Inject()(
 
     val submissionTimestamp = currentDateTime.getDateTime()
 
-    authorisedAction(nino).async {
-      implicit request =>
+    authorisedAction(nino).async { implicit request =>
+      val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
+        parsedRequest   <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
+        serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
+        _               <- EitherT(ifsService.submitAcknowledgementMessage(parsedRequest, serviceResponse.responseData, request.userDetails))
+      } yield {
+        serviceResponse.responseData
+      }
 
-        val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
-          parsedRequest <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
-          serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
-          _ <- EitherT(ifsService.submitAcknowledgementMessage(parsedRequest, serviceResponse.responseData, request.userDetails))
-        } yield {
-          serviceResponse.responseData
-        }
-
-        processRequest.fold(
+      processRequest
+        .fold(
           errorWrapper => errorHandler(errorWrapper, correlationId),
           assessmentReport => {
             logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge status ${assessmentReport.responseCode}")
-                nonRepudiationService.buildNrsSubmission(AcknowledgeReportId(reportId).stringify, reportId,
-                  submissionTimestamp, request, AssistReportAcknowledged).
-                  fold(
-                    error => {
-                      logger.error(s"$correlationId::[acknowledgeReport] NRS event generation failed")
-                      Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
-                    },
-                    success => {
-                      logger.debug(s"$correlationId::[acknowledgeReport] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
-                      nonRepudiationService.submit(success)
-                      logger.debug(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                      Future.successful(NoContent)
-                    }
-                  )
+            nonRepudiationService
+              .buildNrsSubmission(AcknowledgeReportId(reportId).stringify, reportId, submissionTimestamp, request, AssistReportAcknowledged)
+              .fold(
+                error => {
+                  logger.error(s"$correlationId::[acknowledgeReport] NRS event generation failed")
+                  Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
+                },
+                success => {
+                  logger.debug(s"$correlationId::[acknowledgeReport] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
+                  nonRepudiationService.submit(success)
+                  logger.debug(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
+                  Future.successful(NoContent)
+                }
+              )
           }
-        ).flatten.map(_.withApiHeaders(correlationId))
+        )
+        .flatten
+        .map(_.withApiHeaders(correlationId))
     }
   }
 
-  def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error,errorWrapper.errors) match {
-    case (ServerError | DownstreamError |ServiceUnavailableError,_) => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
-    case (ForbiddenDownstreamError,_) => Future.successful(Forbidden(convertErrorAsJson(ForbiddenDownstreamError)))
-    case (ForbiddenRDSCorrelationIdError,_) => Future.successful(Forbidden(convertErrorAsJson(ForbiddenRDSCorrelationIdError)))
-    case (FormatReportIdError,_) => Future.successful(BadRequest(convertErrorAsJson(FormatReportIdError)))
-    case (ClientOrAgentNotAuthorisedError,_) => Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
-    case (NinoFormatError,_) => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
-    case (MatchingResourcesNotFoundError | ResourceNotFoundError,_) => Future.successful(ServiceUnavailable(convertErrorAsJson(ServiceUnavailableError)))
-    case (error@_,Some(errs)) =>
+  def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error, errorWrapper.errors) match {
+    case (ServerError | DownstreamError | ServiceUnavailableError, _) => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
+    case (ForbiddenDownstreamError, _)                                => Future.successful(Forbidden(convertErrorAsJson(ForbiddenDownstreamError)))
+    case (ForbiddenRDSCorrelationIdError, _)  => Future.successful(Forbidden(convertErrorAsJson(ForbiddenRDSCorrelationIdError)))
+    case (FormatReportIdError, _)             => Future.successful(BadRequest(convertErrorAsJson(FormatReportIdError)))
+    case (ClientOrAgentNotAuthorisedError, _) => Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
+    case (NinoFormatError, _)                 => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
+    case (MatchingResourcesNotFoundError | ResourceNotFoundError, _) =>
+      Future.successful(ServiceUnavailable(convertErrorAsJson(ServiceUnavailableError)))
+    case (error @ _, Some(errs)) =>
       logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario with multiple errors $errs")
       Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
-    case (error@_,None) =>
+    case (error @ _, None) =>
       logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario $error")
       Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
   }
+
 }

@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
-import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
-import uk.gov.hmrc.auth.core.retrieve.{Retrieval}
+import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockAuthConnector
@@ -32,60 +31,75 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with Mock
 
   class Test {
     val authConnector = mock[AuthConnector]
-    val service = new EnrolmentsAuthService(authConnector)
+    val service       = new EnrolmentsAuthService(authConnector)
   }
 
   "EnrolmentsAuthService" when {
     "authorising" must {
       "500" in new Test {
 
-        (authConnector.authorise( _: Predicate, _: Retrieval[Any])( _:HeaderCarrier, _: ExecutionContext))
-          .expects(*, *,*, *).returns(() => {})
+        (authConnector
+          .authorise(_: Predicate, _: Retrieval[Any])(_: HeaderCarrier, _: ExecutionContext))
+          .expects(*, *, *, *)
+          .returns(() => {})
         val result: Future[AuthOutcome] = service.authorised(EmptyPredicate, "correlationId")
-        await(result) shouldBe Left(MtdError("INTERNAL_SERVER_ERROR","An internal server error occurred",None))
+        await(result) shouldBe Left(MtdError("INTERNAL_SERVER_ERROR", "An internal server error occurred", None))
       }
     }
 
     "createUserDetailsWithLogging individual" must {
       "pass" in new Test {
-        val result: Future[Right[MtdError, UserDetails]] = service.createUserDetailsWithLogging(AffinityGroup.Individual, Enrolments(Set(
-          Enrolment(
-            key = "MDTP-IT",
-            identifiers = Seq(
-              EnrolmentIdentifier(
-                "UTR",
-                "123"
+        val result: Future[Right[MtdError, UserDetails]] = service.createUserDetailsWithLogging(
+          AffinityGroup.Individual,
+          Enrolments(
+            Set(
+              Enrolment(
+                key = "MDTP-IT",
+                identifiers = Seq(
+                  EnrolmentIdentifier(
+                    "UTR",
+                    "123"
+                  )
+                ),
+                state = "Activated"
               )
-            ),
-            state = "Activated"
-          )
-        )), "correlationId", None)
-
-        await(result) shouldBe Right(UserDetails(
-          userType = AffinityGroup.Individual,
-          agentReferenceNumber = None,
-          clientID = "",
+            )),
+          "correlationId",
           None
-        ))
+        )
+
+        await(result) shouldBe Right(
+          UserDetails(
+            userType = AffinityGroup.Individual,
+            agentReferenceNumber = None,
+            clientID = "",
+            None
+          ))
       }
     }
 
     "createUserDetailsWithLogging agent" must {
       "pass" in new Test {
 
-        val result: Future[Right[MtdError, UserDetails]] = service.createUserDetailsWithLogging(AffinityGroup.Agent, Enrolments(Set(
-          Enrolment(
-            key = "MDTP-IT",
-            identifiers = Seq(
-              EnrolmentIdentifier(
-                "UTR",
-                "123"
+        val result: Future[Right[MtdError, UserDetails]] = service.createUserDetailsWithLogging(
+          AffinityGroup.Agent,
+          Enrolments(
+            Set(
+              Enrolment(
+                key = "MDTP-IT",
+                identifiers = Seq(
+                  EnrolmentIdentifier(
+                    "UTR",
+                    "123"
+                  )
+                ),
+                state = "Activated"
               )
-            ),
-            state = "Activated"
-          )
-        )), "correlationId", None)
-        await(result) shouldBe Right(UserDetails(AffinityGroup.Agent,None,"",None))
+            )),
+          "correlationId",
+          None
+        )
+        await(result) shouldBe Right(UserDetails(AffinityGroup.Agent, None, "", None))
       }
     }
 
@@ -138,4 +152,5 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with Mock
     }
 
   }
+
 }

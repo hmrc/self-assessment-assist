@@ -20,12 +20,12 @@ import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData._
 
-class AssessmentRequestForSelfAssessmentSpec extends  UnitSpec {
+class AssessmentRequestForSelfAssessmentSpec extends UnitSpec {
 
-  val agentRef: String = "ref"
+  val agentRef: String                                                            = "ref"
   val assessmentRequestForSelfAssessmentModel: AssessmentRequestForSelfAssessment = assessmentRequestForSelfAssessment.copy(agentRef = Some(agentRef))
-  val assessmentReportModelJson: JsValue = Json.parse(
-    s"""
+
+  val assessmentReportModelJson: JsValue = Json.parse(s"""
        |{
        |"calculationId": "${assessmentRequestForSelfAssessmentModel.calculationId.toString}",
        |"nino": "${assessmentRequestForSelfAssessmentModel.nino}",
@@ -43,4 +43,5 @@ class AssessmentRequestForSelfAssessmentSpec extends  UnitSpec {
       }
     }
   }
+
 }

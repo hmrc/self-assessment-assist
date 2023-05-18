@@ -22,12 +22,9 @@ import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData
 
 import scala.concurrent.ExecutionContext
 
-trait ServiceSpec extends UnitSpec
-  with Status
-  with MimeTypes
-  with HeaderNames {
+trait ServiceSpec extends UnitSpec with Status with MimeTypes with HeaderNames {
 
   implicit val correlationId: String = CommonTestData.correlationId
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  implicit val hc: HeaderCarrier     = HeaderCarrier()
+  implicit val ec: ExecutionContext  = scala.concurrent.ExecutionContext.global
 }

@@ -75,8 +75,8 @@ object AuthStub extends WireMockMethods {
       "groupIdentifier" -> "id",
       "credentialRole"  -> "Admin",
       "mdtpInformation" -> Json.obj(
-        "deviceId" -> "ID",
-          "sessionId" -> "sessionId"
+        "deviceId"  -> "ID",
+        "sessionId" -> "sessionId"
       ),
       "credentialStrength" -> "strong",
       "loginTimes" -> Json.obj(
@@ -84,13 +84,13 @@ object AuthStub extends WireMockMethods {
         "previousLogin" -> "2023-03-01T09:00:00Z"
       ),
       "itmpName" ->
-          Json.obj(
-            "givenName"  -> "foo",
-            "middleName" -> "bar",
-            "familyName" -> "baz"
-          ),
+        Json.obj(
+          "givenName"  -> "foo",
+          "middleName" -> "bar",
+          "familyName" -> "baz"
+        ),
       "itmpAddress" -> Json.obj(
-        "line1" -> "23 Baz Bar Road",
+        "line1"    -> "23 Baz Bar Road",
         "postcode" -> "GG67YY"
       )
     )

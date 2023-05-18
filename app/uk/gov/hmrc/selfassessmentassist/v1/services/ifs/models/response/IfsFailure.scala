@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response
 
-sealed trait IfsFailure {
-}
+sealed trait IfsFailure {}
 
 case object IfsFailure {
-  case class ErrorResponse(status: Int) extends IfsFailure {
-  }
-  case class Exception(reason: String) extends IfsFailure {
-  }
+  case class ErrorResponse(status: Int) extends IfsFailure {}
+  case class Exception(reason: String)  extends IfsFailure {}
 }

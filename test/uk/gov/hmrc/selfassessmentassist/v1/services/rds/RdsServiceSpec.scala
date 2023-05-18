@@ -42,8 +42,8 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
   var port: Int = _
 
   class Test(rdsRequired: Boolean = false) extends MockRdsConnector {
-    val submitBaseUrl: String = s"http://localhost:$port/submit"
-    val acknowledgeUrl: String = s"http://localhost:$port/acknowledge"
+    val submitBaseUrl: String                  = s"http://localhost:$port/submit"
+    val acknowledgeUrl: String                 = s"http://localhost:$port/acknowledge"
     val rdsAuthCredentials: RdsAuthCredentials = RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
 
     MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
@@ -52,23 +52,21 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
 
     implicit val userRequest: UserRequest[_] =
       UserRequest(
-        userDetails =
-          UserDetails(
-            userType = AffinityGroup.Individual,
-            agentReferenceNumber = None,
-            clientID = "aClientID",
-            identityData = Some(IdentityDataTestData.correctModel)
-          ),
+        userDetails = UserDetails(
+          userType = AffinityGroup.Individual,
+          agentReferenceNumber = None,
+          clientID = "aClientID",
+          identityData = Some(IdentityDataTestData.correctModel)
+        ),
         request = FakeRequest().withHeaders(
           "Authorization" -> "Bearer aaaa",
-          "dummyHeader1" -> "dummyValue1",
-          "dummyHeader2" -> "dummyValue2"
+          "dummyHeader1"  -> "dummyValue1",
+          "dummyHeader2"  -> "dummyValue2"
         )
       )
 
     val service = new RdsService(mockRdsAuthConnector, mockRdsConnector, mockAppConfig)
   }
-
 
   "service" when {
     "the submit method is called" must {
@@ -100,7 +98,8 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         val rdsAssessmentReportSO: ServiceOutcome[RdsAssessmentReport] = Right(ResponseWrapper(correlationId, rdsNewSubmissionReport))
         MockRdsConnector.submit(rdsRequest) returns Future.successful(rdsAssessmentReportSO)
 
-        private val assessmentReportSO: ServiceOutcome[AssessmentReportWrapper] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport))
+        private val assessmentReportSO: ServiceOutcome[AssessmentReportWrapper] =
+          await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport))
         assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReportWrapper))
       }
     }
@@ -139,4 +138,5 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
       }
     }
   }
+
 }

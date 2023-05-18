@@ -41,27 +41,36 @@ trait MockRdsService extends MockFactory {
 
     def submit(request: AssessmentRequestForSelfAssessment,
                fraudRiskReport: FraudRiskReport,
-               origin: Origin,simpleAssessmentReportWrapper:AssessmentReportWrapper): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
-      (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _:String))
-        .expects(*, *, *, *, *, *) returns Future(Right(ResponseWrapper(correlationId, simpleAssessmentReportWrapper) ))
+               origin: Origin,
+               simpleAssessmentReportWrapper: AssessmentReportWrapper): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
+      (mockRdsService
+        .submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
+        .expects(*, *, *, *, *, *) returns Future(Right(ResponseWrapper(correlationId, simpleAssessmentReportWrapper)))
     }
 
     def submitFail(request: AssessmentRequestForSelfAssessment,
-               fraudRiskReport: FraudRiskReport,
-               origin: Origin, error: MtdError): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
-      (mockRdsService.submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
+                   fraudRiskReport: FraudRiskReport,
+                   origin: Origin,
+                   error: MtdError): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
+      (mockRdsService
+        .submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
         .expects(*, *, *, *, *, *) returns Future(Left(ErrorWrapper(correlationId, error)))
     }
 
-
     def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[RdsAssessmentReport]]] = {
-      (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _:String))
-        .expects(*, *, *, *).anyNumberOfTimes().returns( Future( Right(ResponseWrapper( correlationId, simpleAcknowledgeNewRdsAssessmentReport ) ) ) )
+      (mockRdsService
+        .acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: String))
+        .expects(*, *, *, *)
+        .anyNumberOfTimes()
+        .returns(Future(Right(ResponseWrapper(correlationId, simpleAcknowledgeNewRdsAssessmentReport))))
     }
 
     def acknowlegeRdsFail(request: AcknowledgeReportRequest, error: MtdError): CallHandler[Future[ServiceOutcome[RdsAssessmentReport]]] = {
-      (mockRdsService.acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: String))
-        .expects(*, *, *, *).anyNumberOfTimes().returns(Future(Left(ErrorWrapper(correlationId, error))))
+      (mockRdsService
+        .acknowledge(_: AcknowledgeReportRequest)(_: HeaderCarrier, _: ExecutionContext, _: String))
+        .expects(*, *, *, *)
+        .anyNumberOfTimes()
+        .returns(Future(Left(ErrorWrapper(correlationId, error))))
     }
 
   }

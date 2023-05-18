@@ -29,17 +29,19 @@ trait RequestParser[Raw <: RawData, Request] extends Logging {
 
   protected def requestFor(data: Raw): Either[MtdError, Request]
 
-  def parseRequest(data: Raw)(implicit ec:ExecutionContext, correlationId: String): Future[ParseOutcome[Request]] = {
+  def parseRequest(data: Raw)(implicit ec: ExecutionContext, correlationId: String): Future[ParseOutcome[Request]] = {
     validator.validate(data) match {
-      case Nil => Future(requestFor(data).fold(e => Left(ErrorWrapper( correlationId, e, None)), r => Right(r)))
+      case Nil => Future(requestFor(data).fold(e => Left(ErrorWrapper(correlationId, e, None)), r => Right(r)))
       case err :: Nil =>
         logger.error(message = s"$correlationId::[RequestParser][parseRequest]" +
           s"Validation failed with ${err.code} error for the request")
-        Future(Left(ErrorWrapper( correlationId, err, None)))
+        Future(Left(ErrorWrapper(correlationId, err, None)))
       case errs =>
-        logger.error(s"$correlationId::[RequestParser][parseRequest]" +
-          s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request")
-        Future(Left(ErrorWrapper( correlationId, BadRequestError, Some(errs))))
+        logger.error(
+          s"$correlationId::[RequestParser][parseRequest]" +
+            s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request")
+        Future(Left(ErrorWrapper(correlationId, BadRequestError, Some(errs))))
     }
   }
+
 }

@@ -17,12 +17,12 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services.cip
 
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockInsightConnector
-import InsightTestData.{fraudRiskReport, fraudRiskRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData.{simpleNino, simpleNinoInvalid}
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockInsightConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
+import uk.gov.hmrc.selfassessmentassist.v1.services.cip.InsightTestData.{fraudRiskReport, fraudRiskRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.FraudRiskReport
 
 import scala.concurrent.Future
@@ -52,4 +52,5 @@ class InsightServiceSpec extends ServiceSpec with MockAppConfig {
       }
     }
   }
+
 }

@@ -30,8 +30,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InsightConnector @Inject()(val httpClient: HttpClient,
-                                 appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
+class InsightConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   def assess(fraudRiskRequest: FraudRiskRequest)(implicit hc: HeaderCarrier, correlationId: String): Future[ServiceOutcome[FraudRiskReport]] = {
     logger.info(s"$correlationId::[InsightConnector:assess] requesting fraud risk report")
@@ -42,21 +41,23 @@ class InsightConnector @Inject()(val httpClient: HttpClient,
         logger.info(s"$correlationId::[InsightConnector:assess] FraudRiskreport status is ${response.status}")
         response.status match {
           case OK =>
-            response.json.validate[FraudRiskReport].fold(
-              e=> {
-                logger.error(s"$correlationId::[InsightConnector:assess] CIP failed during validate $e")
-                Left(ErrorWrapper(correlationId, DownstreamError))
-              },
-              report => Right(ResponseWrapper(correlationId,report)))
+            response.json
+              .validate[FraudRiskReport]
+              .fold(
+                e => {
+                  logger.error(s"$correlationId::[InsightConnector:assess] CIP failed during validate $e")
+                  Left(ErrorWrapper(correlationId, DownstreamError))
+                },
+                report => Right(ResponseWrapper(correlationId, report))
+              )
           case _ =>
             logger.error(s"$correlationId::[InsightConnector:assess] CIP Fraudrisk report failed as unknown code returned ${response.status}")
             Left(ErrorWrapper(correlationId, DownstreamError))
         }
       }
-      .recover {
-        case ex@_ =>
-          logger.error(s"$correlationId::[InsightConnector:assess] CIP Unknown exception ",ex)
-          Left(ErrorWrapper(correlationId, DownstreamError))
+      .recover { case ex @ _ =>
+        logger.error(s"$correlationId::[InsightConnector:assess] CIP Unknown exception ", ex)
+        Left(ErrorWrapper(correlationId, DownstreamError))
       }
   }
 

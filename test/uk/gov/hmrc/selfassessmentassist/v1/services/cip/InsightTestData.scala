@@ -24,14 +24,13 @@ object InsightTestData {
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(
     score = 10,
-    riskCorrelationId= correlationId,
+    riskCorrelationId = correlationId,
     reasons = Seq("flag")
   )
 
   val badRequestError = Json.parse(s"""{"/nino":["Invalid nino"]}""".stripMargin)
 
-  def fraudRiskRequest(nino:String): FraudRiskRequest =
+  def fraudRiskRequest(nino: String): FraudRiskRequest =
     new FraudRiskRequest(nino = Some(nino), taxYear = Some(simpleTaxYear), fraudRiskHeaders = Map.empty[String, String])
-
 
 }

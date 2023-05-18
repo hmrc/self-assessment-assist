@@ -41,4 +41,5 @@ class ReportIdValidationSpec extends UnitSpec {
 
     }
   }
+
 }

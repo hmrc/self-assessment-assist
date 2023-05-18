@@ -43,13 +43,13 @@ trait MockHttpClient extends MockFactory {
            _: HttpReads[T],
            hc: HeaderCarrier,
            _: ExecutionContext) =>
-          {
-            actualUrl shouldBe url
-            actualParams shouldBe parameters
+            {
+              actualUrl shouldBe url
+              actualParams shouldBe parameters
 
-            val headersForUrl = hc.headersForUrl(config)(actualUrl)
-            assertHeaders(headersForUrl, requiredHeaders, excludedHeaders)
-          }
+              val headersForUrl = hc.headersForUrl(config)(actualUrl)
+              assertHeaders(headersForUrl, requiredHeaders, excludedHeaders)
+            }
         })
     }
 
@@ -60,5 +60,7 @@ trait MockHttpClient extends MockFactory {
       actualHeaders should contain allElementsOf requiredHeaders
       actualHeaders should contain noElementsOf excludedHeaders
     }
+
   }
+
 }

@@ -18,31 +18,47 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.GenerateReportRequestParser
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
-import uk.gov.hmrc.selfassessmentassist.v1.services.ParseOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentRequestForSelfAssessment
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{ErrorWrapper, MtdError}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
+import uk.gov.hmrc.selfassessmentassist.v1.services.ParseOutcome
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockGenerateReportRequestParser extends MockFactory{
+trait MockGenerateReportRequestParser extends MockFactory {
 
   val mockGenerateReportRequestParser: GenerateReportRequestParser = mock[GenerateReportRequestParser]
 
   object MockGenerateReportRequestParser {
 
     def parseRequest(rawData: GenerateReportRawData): CallHandler[Future[ParseOutcome[AssessmentRequestForSelfAssessment]]] = {
-      (mockGenerateReportRequestParser.parseRequest(_: GenerateReportRawData)(_:ExecutionContext, _:String)).expects(*,*,*).anyNumberOfTimes() returns
-        (Future(Right(AssessmentRequestForSelfAssessment(simpleCalculationId,simpleNino,simplePreferredLanguage,simpleCustomerType,simpleAgentRef,simpleTaxYear))))
+      (mockGenerateReportRequestParser
+        .parseRequest(_: GenerateReportRawData)(_: ExecutionContext, _: String))
+        .expects(*, *, *)
+        .anyNumberOfTimes() returns
+        (Future(
+          Right(
+            AssessmentRequestForSelfAssessment(
+              simpleCalculationId,
+              simpleNino,
+              simplePreferredLanguage,
+              simpleCustomerType,
+              simpleAgentRef,
+              simpleTaxYear))))
     }
 
-    def parseRequestFail(rawData: GenerateReportRawData, mtdError: MtdError): CallHandler[Future[ParseOutcome[AssessmentRequestForSelfAssessment]]] = {
-      (mockGenerateReportRequestParser.parseRequest(_: GenerateReportRawData)(_:ExecutionContext, _:String)).expects(*,*,*).anyNumberOfTimes() returns
+    def parseRequestFail(rawData: GenerateReportRawData,
+                         mtdError: MtdError): CallHandler[Future[ParseOutcome[AssessmentRequestForSelfAssessment]]] = {
+      (mockGenerateReportRequestParser
+        .parseRequest(_: GenerateReportRawData)(_: ExecutionContext, _: String))
+        .expects(*, *, *)
+        .anyNumberOfTimes() returns
         (Future(Left(ErrorWrapper(simpleTaxYear, mtdError))))
     }
+
   }
 
 }

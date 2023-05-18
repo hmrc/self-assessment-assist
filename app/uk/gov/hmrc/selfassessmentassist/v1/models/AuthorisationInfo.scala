@@ -18,4 +18,4 @@ package uk.gov.hmrc.selfassessmentassist.v1.models
 
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.CustomerType.CustomerType
 //Simulator
-case class AuthorisationInfo(nino: String, customerType: CustomerType, agentRef: Option[String]=None)
+case class AuthorisationInfo(nino: String, customerType: CustomerType, agentRef: Option[String] = None)

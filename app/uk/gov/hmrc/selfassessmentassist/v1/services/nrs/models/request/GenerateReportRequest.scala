@@ -26,5 +26,4 @@ case class GenerateReportRequest(calculationId: UUID,
                                  preferredLanguage: PreferredLanguage,
                                  customerType: CustomerType,
                                  agentRef: Option[String],
-                                 taxYear: String
-                                )
+                                 taxYear: String)

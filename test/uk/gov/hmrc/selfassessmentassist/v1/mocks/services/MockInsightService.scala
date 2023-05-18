@@ -36,13 +36,17 @@ trait MockInsightService extends MockFactory {
   object MockInsightService {
 
     def assess(fraudRiskRequest: FraudRiskRequest): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
-      (mockInsightService.assess(_: FraudRiskRequest)(_: HeaderCarrier,_: String))
-        .expects(*,*,*).returns(Future(Right(ResponseWrapper(correlationId, simpleFraudRiskReport))))
+      (mockInsightService
+        .assess(_: FraudRiskRequest)(_: HeaderCarrier, _: String))
+        .expects(*, *, *)
+        .returns(Future(Right(ResponseWrapper(correlationId, simpleFraudRiskReport))))
     }
 
     def assessFail(fraudRiskRequest: FraudRiskRequest, error: MtdError): CallHandler[Future[ServiceOutcome[FraudRiskReport]]] = {
-      (mockInsightService.assess(_: FraudRiskRequest)(_: HeaderCarrier, _: String))
-        .expects(*, *, *).returns(Future(Left(ErrorWrapper(correlationId, error))))
+      (mockInsightService
+        .assess(_: FraudRiskRequest)(_: HeaderCarrier, _: String))
+        .expects(*, *, *)
+        .returns(Future(Left(ErrorWrapper(correlationId, error))))
     }
 
   }

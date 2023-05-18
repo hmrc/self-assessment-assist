@@ -38,10 +38,7 @@ trait VersionRoutingMap extends Logging {
 }
 
 // Add routes corresponding to available versions...
-case class VersionRoutingMapImpl @Inject()(appConfig: AppConfig,
-                                           defaultRouter: Router,
-                                           v1Router: v1.Routes
-                                          ) extends VersionRoutingMap {
+case class VersionRoutingMapImpl @Inject() (appConfig: AppConfig, defaultRouter: Router, v1Router: v1.Routes) extends VersionRoutingMap {
 
   val featureSwitch: FeatureSwitch = FeatureSwitch(appConfig.featureSwitch)
 
@@ -50,8 +47,9 @@ case class VersionRoutingMapImpl @Inject()(appConfig: AppConfig,
 
   val map: Map[String, Router] = Map(
     VERSION_1 -> {
-        logger.info("[VersionRoutingMapImpl][map] using v1Router - pointing to new packages")
-        v1Router
-      }
+      logger.info("[VersionRoutingMapImpl][map] using v1Router - pointing to new packages")
+      v1Router
+    }
   )
+
 }

@@ -29,22 +29,23 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{InvalidAcceptHeaderErr
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class VersionRoutingRequestHandler @Inject()(versionRoutingMap: VersionRoutingMap,
-                                             errorHandler: HttpErrorHandler,
-                                             httpConfiguration: HttpConfiguration,
-                                             config: AppConfig,
-                                             filters: HttpFilters,
-                                             action: DefaultActionBuilder)
-  extends DefaultHttpRequestHandler(
-    webCommands = new DefaultWebCommands,
-    optDevContext = None,
-    router = versionRoutingMap.defaultRouter,
-    errorHandler = errorHandler,
-    configuration = httpConfiguration,
-    filters = filters.filters
-  ) with Logging {
+class VersionRoutingRequestHandler @Inject() (versionRoutingMap: VersionRoutingMap,
+                                              errorHandler: HttpErrorHandler,
+                                              httpConfiguration: HttpConfiguration,
+                                              config: AppConfig,
+                                              filters: HttpFilters,
+                                              action: DefaultActionBuilder)
+    extends DefaultHttpRequestHandler(
+      webCommands = new DefaultWebCommands,
+      optDevContext = None,
+      router = versionRoutingMap.defaultRouter,
+      errorHandler = errorHandler,
+      configuration = httpConfiguration,
+      filters = filters.filters
+    )
+    with Logging {
 
-  private val featureSwitch = FeatureSwitch(config.featureSwitch)
+  private val featureSwitch            = FeatureSwitch(config.featureSwitch)
   private val unsupportedVersionAction = action(Results.NotFound(Json.toJson(UnsupportedVersionError)))
   private val invalidAcceptHeaderError = action(Results.NotAcceptable(Json.toJson(InvalidAcceptHeaderError)))
 
@@ -58,7 +59,7 @@ class VersionRoutingRequestHandler @Inject()(versionRoutingMap: VersionRoutingMa
           case Some(versionRouter) if featureSwitch.isVersionEnabled(version) =>
             routeWith(versionRouter)(request)
           case Some(_) => Some(unsupportedVersionAction)
-          case None => Some(invalidAcceptHeaderError)
+          case None    => Some(invalidAcceptHeaderError)
         }
       case None =>
         logger.warn(s"\n$request\n")
@@ -73,10 +74,10 @@ class VersionRoutingRequestHandler @Inject()(versionRoutingMap: VersionRoutingMa
       .handlerFor(request)
       .orElse {
         if (request.path.endsWith("/")) {
-          val pathWithoutSlash = request.path.dropRight(1)
+          val pathWithoutSlash        = request.path.dropRight(1)
           val requestWithModifiedPath = request.withTarget(request.target.withPath(pathWithoutSlash))
           router.handlerFor(requestWithModifiedPath)
-        }
-        else None
+        } else None
       }
+
 }

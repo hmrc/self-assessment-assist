@@ -19,12 +19,12 @@ package uk.gov.hmrc.selfassessmentassist.v1.models.request
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.CustomerType.CustomerType
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.PreferredLanguage.PreferredLanguage
 
-
 case class GenerateReportRawData(calculationId: String,
-  nino: String,
-  preferredLanguage: PreferredLanguage,
-  customerType: CustomerType,
-  agentRef: Option[String],
-  taxYear: String
-  ) extends RawData
-case class AcknowledgeReportRawData(nino: String, reportId: String, rdsCorrelationId:String) extends RawData
+                                 nino: String,
+                                 preferredLanguage: PreferredLanguage,
+                                 customerType: CustomerType,
+                                 agentRef: Option[String],
+                                 taxYear: String)
+    extends RawData
+
+case class AcknowledgeReportRawData(nino: String, reportId: String, rdsCorrelationId: String) extends RawData

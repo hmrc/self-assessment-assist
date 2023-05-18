@@ -22,7 +22,9 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData
 
 object FraudStub {
+
   def submit(url: String): StubMapping = {
     DownstreamStub.onSuccess(DownstreamStub.POST, url, OK, Json.toJson(CommonTestData.simpleFraudRiskReport))
   }
+
 }

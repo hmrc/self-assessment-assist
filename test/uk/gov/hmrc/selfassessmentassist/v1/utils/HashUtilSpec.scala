@@ -26,7 +26,7 @@ class HashUtilSpec extends UnitSpec {
   "HashUtil" when {
     "the encode method is called" must {
       "correctly encode a string using Base64 algorithm" in {
-        val expectedValue = "dGVzdA=="
+        val expectedValue  = "dGVzdA=="
         val stringToEncode = "test"
 
         val result = hashUtil.encode(stringToEncode)
@@ -37,7 +37,7 @@ class HashUtilSpec extends UnitSpec {
 
     "the getHash method is called" must {
       "correctly encode a string using SHA-256 algorithm" in {
-        val expectedValue = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        val expectedValue  = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
         val stringToEncode = "test"
 
         val result = hashUtil.getHash(stringToEncode)

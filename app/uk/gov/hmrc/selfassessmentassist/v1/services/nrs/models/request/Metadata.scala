@@ -21,20 +21,19 @@ import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 
 import java.time.OffsetDateTime
 
-case class Metadata(
-                     businessId: String,
-                     notableEvent: String,
-                     payloadContentType: String,
-                     payloadSha256Checksum: String,
-                     userSubmissionTimestamp: String,
-                     identityData: Option[IdentityData],
-                     userAuthToken: String,
-                     headerData: JsValue,
-                     searchKeys: SearchKeys)
+case class Metadata(businessId: String,
+                    notableEvent: String,
+                    payloadContentType: String,
+                    payloadSha256Checksum: String,
+                    userSubmissionTimestamp: String,
+                    identityData: Option[IdentityData],
+                    userAuthToken: String,
+                    headerData: JsValue,
+                    searchKeys: SearchKeys)
 
 object Metadata {
-  implicit val idformat: OFormat[IdentityData] = IdentityData.format
-  implicit val dateReads: Reads[OffsetDateTime] = DateUtils.isoInstantDateTimeReads
+  implicit val idformat: OFormat[IdentityData]    = IdentityData.format
+  implicit val dateReads: Reads[OffsetDateTime]   = DateUtils.isoInstantDateTimeReads
   implicit val dateWrites: Writes[OffsetDateTime] = DateUtils.isoInstantDateTimeWrites
-  implicit val format: OFormat[Metadata] = Json.format[Metadata]
+  implicit val format: OFormat[Metadata]          = Json.format[Metadata]
 }

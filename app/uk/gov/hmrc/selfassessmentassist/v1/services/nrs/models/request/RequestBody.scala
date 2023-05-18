@@ -18,7 +18,8 @@ package uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request
 
 import play.api.libs.json.Json
 
-case class RequestBody(bodyContent:String, reportId:String)
-object RequestBody{
+case class RequestBody(bodyContent: String, reportId: String)
+
+object RequestBody {
   implicit val formatter = Json.format[RequestBody]
 }

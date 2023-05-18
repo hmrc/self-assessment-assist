@@ -36,35 +36,64 @@ trait MockIfsService extends MockFactory {
 
   object MockIfsService {
 
-    def stubGenerateReportSubmit(assesmentRerport: AssessmentReport, localDateTime: LocalDateTime, assessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment): CallHandler[Future[IfsOutcome]] = {
-      (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_: HeaderCarrier, _: String))
-        .expects(assesmentRerport, localDateTime, *, *, *, *).anyNumberOfTimes()
+    def stubGenerateReportSubmit(assesmentRerport: AssessmentReport,
+                                 localDateTime: LocalDateTime,
+                                 assessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment): CallHandler[Future[IfsOutcome]] = {
+      (
+        mockIfsService
+          .submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(
+            _: HeaderCarrier,
+            _: String
+          )
+        )
+        .expects(assesmentRerport, localDateTime, *, *, *, *)
+        .anyNumberOfTimes()
         .returns(Future.successful(Right(IfsResponse())))
     }
 
-    def stubFailedSubmit(assesmentRerport: AssessmentReport, localDateTime: LocalDateTime, assessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment, mtdError: MtdError): CallHandler[Future[IfsOutcome]] = {
-      (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_: HeaderCarrier, _: String))
-        .expects(assesmentRerport, localDateTime, *, *, *, *).anyNumberOfTimes()
+    def stubFailedSubmit(assesmentRerport: AssessmentReport,
+                         localDateTime: LocalDateTime,
+                         assessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment,
+                         mtdError: MtdError): CallHandler[Future[IfsOutcome]] = {
+      (
+        mockIfsService
+          .submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(
+            _: HeaderCarrier,
+            _: String
+          )
+        )
+        .expects(assesmentRerport, localDateTime, *, *, *, *)
+        .anyNumberOfTimes()
         .returns(Future.successful(Left(ErrorWrapper(assesmentRerport.rdsCorrelationId, mtdError))))
     }
 
     def stubAcknowledgeSubmit() = {
-      (mockIfsService.submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
-        .expects(*, *, *, *, *).anyNumberOfTimes()
+      (mockIfsService
+        .submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
+        .expects(*, *, *, *, *)
+        .anyNumberOfTimes()
         .returns(Future.successful(Right(IfsResponse())))
     }
 
-    def submitGenerateReportNeverCalled() ={
-      (mockIfsService.submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(_: HeaderCarrier, _: String))
+    def submitGenerateReportNeverCalled() = {
+      (
+        mockIfsService
+          .submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(
+            _: HeaderCarrier,
+            _: String
+          )
+        )
         .expects(*, *, *, *, *, *)
         .never()
     }
 
-    def submitAcknowledgmentNeverCalled() ={
-      (mockIfsService.submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
+    def submitAcknowledgmentNeverCalled() = {
+      (mockIfsService
+        .submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
         .expects(*, *, *, *, *)
         .never()
     }
+
   }
 
 }

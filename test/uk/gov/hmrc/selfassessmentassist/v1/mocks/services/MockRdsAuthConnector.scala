@@ -24,8 +24,8 @@ import uk.gov.hmrc.selfassessmentassist.v1.connectors.RdsAuthConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait MockRdsAuthConnector extends MockFactory {
@@ -34,13 +34,16 @@ trait MockRdsAuthConnector extends MockFactory {
 
   object MockRdsAuthConnector {
 
-    def retrieveAuthorisedBearer(): CallHandler[EitherT[Future,MtdError, RdsAuthCredentials]] = {
+    def retrieveAuthorisedBearer(): CallHandler[EitherT[Future, MtdError, RdsAuthCredentials]] = {
 
-        (mockRdsAuthConnector.retrieveAuthorisedBearer()(_: HeaderCarrier, _:String))
-          .expects(*,*).anyNumberOfTimes()
-          .returns(EitherT.fromEither(Right(RdsAuthCredentials(UUID.randomUUID().toString,"bearer",3600))))
+      (mockRdsAuthConnector
+        .retrieveAuthorisedBearer()(_: HeaderCarrier, _: String))
+        .expects(*, *)
+        .anyNumberOfTimes()
+        .returns(EitherT.fromEither(Right(RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600))))
 
     }
+
   }
 
 }

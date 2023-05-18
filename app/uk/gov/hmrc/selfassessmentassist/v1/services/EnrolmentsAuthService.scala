@@ -24,14 +24,14 @@ import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{BearerTokenExpiredError, DownstreamError, ForbiddenDownstreamError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
+import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
 import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.IdentityData
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logging {
+class EnrolmentsAuthService @Inject() (val connector: AuthConnector) extends Logging {
 
   private val authFunction: AuthorisedFunctions = new AuthorisedFunctions {
     override def authConnector: AuthConnector = connector
@@ -39,28 +39,41 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
 
   def authorised(predicate: Predicate, correlationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
 
-    authFunction.authorised(predicate).retrieve(affinityGroup and allEnrolments
-        and internalId and externalId and agentCode and credentials
-        and confidenceLevel and nino and saUtr and name and dateOfBirth
-        and email and agentInformation and groupIdentifier and credentialRole
-        and mdtpInformation and credentialStrength and loginTimes
-        and itmpName and itmpAddress
-      ) {
+    authFunction
+      .authorised(predicate)
+      .retrieve(
+        affinityGroup and allEnrolments
+          and internalId and externalId and agentCode and credentials
+          and confidenceLevel and nino and saUtr and name and dateOfBirth
+          and email and agentInformation and groupIdentifier and credentialRole
+          and mdtpInformation and credentialStrength and loginTimes
+          and itmpName and itmpAddress) {
         case Some(affGroup) ~ enrolments ~ inId ~ exId ~ agCode ~ creds
-          ~ confLevel ~ ni ~ saRef ~ nme ~ dob
-          ~ eml ~ agInfo ~ groupId ~ credRole
-          ~ mdtpInfo ~ credStrength ~ logins
-          ~ itmpName ~ itmpAddress =>
-
-          val emptyItmpName: ItmpName = ItmpName(None, None, None)
+            ~ confLevel ~ ni ~ saRef ~ nme ~ dob
+            ~ eml ~ agInfo ~ groupId ~ credRole
+            ~ mdtpInfo ~ credStrength ~ logins
+            ~ itmpName ~ itmpAddress =>
+          val emptyItmpName: ItmpName       = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
 
           val identityData =
             IdentityData(
-              inId, exId, agCode, creds,
-              confLevel, ni, saRef, nme, dob,
-              eml, agInfo, groupId,
-              credRole, mdtpInfo, itmpName.getOrElse(emptyItmpName), itmpDateOfBirth = None,
+              inId,
+              exId,
+              agCode,
+              creds,
+              confLevel,
+              ni,
+              saRef,
+              nme,
+              dob,
+              eml,
+              agInfo,
+              groupId,
+              credRole,
+              mdtpInfo,
+              itmpName.getOrElse(emptyItmpName),
+              itmpDateOfBirth = None,
               itmpAddress.getOrElse(emptyItmpAddress),
               Some(affGroup),
               credStrength,
@@ -73,17 +86,16 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
           Future.successful(Left(LegacyUnauthorisedError))
 
       } recoverWith unauthorisedError(correlationId)
-    }
-
-
+  }
 
   def createUserDetailsWithLogging(affinityGroup: AffinityGroup,
-                                           enrolments: Enrolments,
-                                           correlationId: String,
-                                           identityData: Option[IdentityData]): Future[Right[MtdError, UserDetails]] = {
+                                   enrolments: Enrolments,
+                                   correlationId: String,
+                                   identityData: Option[IdentityData]): Future[Right[MtdError, UserDetails]] = {
     val clientReference = getClientReferenceFromEnrolments(enrolments)
-    logger.debug(s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
-      s"fully-authorised organisation with client reference $clientReference.")
+    logger.debug(
+      s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
+        s"fully-authorised organisation with client reference $clientReference.")
 
     val userDetails = UserDetails(
       userType = affinityGroup,
@@ -128,8 +140,10 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) extends Logg
     case _: BearerTokenExpired =>
       logger.warn(s"$correlationId::[unauthorisedError] - BearerTokenExpired")
       Future.successful(Left(BearerTokenExpiredError))
-    case exception@_ =>
-      logger.warn(s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
+    case exception @ _ =>
+      logger.warn(
+        s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
       Future.successful(Left(DownstreamError))
   }
+
 }

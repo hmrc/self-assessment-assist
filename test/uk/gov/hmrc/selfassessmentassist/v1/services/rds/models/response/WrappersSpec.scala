@@ -20,27 +20,27 @@ import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport._
 
-class WrappersSpec extends UnitSpec{
+class WrappersSpec extends UnitSpec {
 
   val identifiers: Seq[Identifier] = Seq(Identifier("some-name", "some-value"))
 
-  val keyValueWrapper:KeyValueWrapper = KeyValueWrapper("some-name", Some("some-value"))
+  val keyValueWrapper: KeyValueWrapper       = KeyValueWrapper("some-name", Some("some-value"))
   val identifiersWrapper: IdentifiersWrapper = IdentifiersWrapper(identifiers)
-  val metadataWrapper: MetadataWrapper = MetadataWrapper(Some(Seq(Map("name"-> "some-name","value"-> "some-value"))))
-  val dataWrapper: DataWrapper = DataWrapper(Some(Seq(Seq("name", "value"))))
+  val metadataWrapper: MetadataWrapper       = MetadataWrapper(Some(Seq(Map("name" -> "some-name", "value" -> "some-value"))))
+  val dataWrapper: DataWrapper               = DataWrapper(Some(Seq(Seq("name", "value"))))
 
   val mainOutputWithMetadataWrapper: MainOutputWrapper = MainOutputWrapper("mainOutputWrapper", Some(Seq(metadataWrapper)))
-  val mainOutputWithDataWrapper: MainOutputWrapper = MainOutputWrapper("mainOutputWrapper", Some(Seq(dataWrapper)))
+  val mainOutputWithDataWrapper: MainOutputWrapper     = MainOutputWrapper("mainOutputWrapper", Some(Seq(dataWrapper)))
 
-  val identifiersWrapperJson: JsValue = getWrapperJson( "identifiers")
-val keyValuesJson: JsValue = Json.parse(
-  """
+  val identifiersWrapperJson: JsValue = getWrapperJson("identifiers")
+
+  val keyValuesJson: JsValue = Json.parse("""
     |{
     |"name": "some-name",
     |"value": "some-value"
     |}""".stripMargin)
-  val mainOutputMetadataWrapperJson:JsValue = Json.parse(
-    """{
+
+  val mainOutputMetadataWrapperJson: JsValue = Json.parse("""{
       |"name": "mainOutputWrapper",
       |"value": [
       |  {
@@ -55,8 +55,7 @@ val keyValuesJson: JsValue = Json.parse(
       |}
       |""".stripMargin)
 
-  val mainOutputDataWrapperJson: JsValue = Json.parse(
-    s"""{
+  val mainOutputDataWrapperJson: JsValue = Json.parse(s"""{
       |"name": "mainOutputWrapper",
       |"value": [
       |  {
@@ -66,9 +65,8 @@ val keyValuesJson: JsValue = Json.parse(
       |}
       |""".stripMargin)
 
-  def getWrapperJson(wrapperType:String):JsValue =
-    Json.parse(
-      s"""{
+  def getWrapperJson(wrapperType: String): JsValue =
+    Json.parse(s"""{
         | "$wrapperType":[
         |  {
         |     "name": "some-name",

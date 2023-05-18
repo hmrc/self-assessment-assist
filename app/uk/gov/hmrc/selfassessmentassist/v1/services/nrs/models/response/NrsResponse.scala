@@ -22,6 +22,6 @@ case class NrsResponse(nrSubmissionId: String)
 
 object NrsResponse {
 
-  implicit val reads: Reads[NrsResponse] = Json.reads[NrsResponse]
+  implicit val reads: Reads[NrsResponse]   = Json.reads[NrsResponse]
   implicit val writes: Writes[NrsResponse] = Json.writes[NrsResponse]
 }

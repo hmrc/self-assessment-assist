@@ -33,16 +33,18 @@ class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
 
   val actorSystem: ActorSystem      = inject[ActorSystem]
   implicit val scheduler: Scheduler = actorSystem.scheduler
-  val reportId      = "12345"
-  val ifsTokenValue = "ABCD1234"
-  val ifsEnv        = "local"
+  val reportId                      = "12345"
+  val ifsTokenValue                 = "ABCD1234"
+  val ifsEnv                        = "local"
+
   val ifsEnvironmentHeaders: Option[Seq[String]] = Some(
     Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id"))
-  val url = "/interaction-data/store-interactions"
-  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
+
+  val url                                     = "/interaction-data/store-interactions"
+  val httpClient: HttpClient                  = app.injector.instanceOf[HttpClient]
   private val ifsRequest: IFRequest           = FullRequestTestData.correctModel
   private val ifsSubmissionJsonString: String = FullRequestTestData.correctJsonString
-  var port: Int     = _
+  var port: Int                               = _
 
   override def beforeAll(): Unit = {
     wireMockServer.start()

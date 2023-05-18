@@ -38,23 +38,22 @@ import java.util.UUID
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-
-class DefaultRdsAuthConnectorSpec extends ConnectorSpec
-  with BeforeAndAfterAll
-  with GuiceOneAppPerSuite
-  with Injecting
-  with MockAppConfig with EitherValues{
+class DefaultRdsAuthConnectorSpec
+    extends ConnectorSpec
+    with BeforeAndAfterAll
+    with GuiceOneAppPerSuite
+    with Injecting
+    with MockAppConfig
+    with EitherValues {
   var port: Int = _
 
   private val actorSystem: ActorSystem    = actor.ActorSystem("unit-testing")
   implicit val materializer: Materializer = Materializer.matFromSystem(actorSystem)
-  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
+  val httpClient: HttpClient              = app.injector.instanceOf[HttpClient]
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
-      .configure(
-        "metrics.enabled" -> false,
-        "auditing.enabled" -> false)
+      .configure("metrics.enabled" -> false, "auditing.enabled" -> false)
       .build()
 
   override def beforeAll(): Unit = {
@@ -68,10 +67,11 @@ class DefaultRdsAuthConnectorSpec extends ConnectorSpec
     materializer.shutdown()
     Await.result(actorSystem.terminate(), 3.minutes)
   }
+
   class Test {
-    val submitBaseUrl: String = s"http://localhost:$port/submit"
+    val submitBaseUrl: String  = s"http://localhost:$port/submit"
     val acknowledgeUrl: String = s"http://localhost:$port/rds/assessments/self-assessment-assist/acknowledge"
-    val authToken = "YWM4Y2Q4ZDAtZjIxMi00NzA2LTg1ZDEtODJiNzc4NWFkMGIxOmJlYXJlcg=="
+    val authToken              = "YWM4Y2Q4ZDAtZjIxMi00NzA2LTg1ZDEtODJiNzc4NWFkMGIxOmJlYXJlcg=="
 
     println(UUID.randomUUID().toString)
 
@@ -82,41 +82,40 @@ class DefaultRdsAuthConnectorSpec extends ConnectorSpec
     val connector = new DefaultRdsAuthConnector(httpClient)(mockAppConfig, ec)
 
     def stubRdsAuthResponse(status: Int): StubMapping = {
-          wireMockServer.stubFor(
-            post(urlPathEqualTo("/submit"))
-              .withHeader("Content-Type", equalTo(MimeTypes.FORM))
-              .withHeader("Authorization", equalTo(s"Basic $authToken"))
-              .willReturn(aResponse()
-                .withStatus(status)
-                .withBody(
-                  Json.toJson(RdsAuthCredentials("access_token", "bearer", 20)).toString()
-                )
-              )
-
-          )
+      wireMockServer.stubFor(
+        post(urlPathEqualTo("/submit"))
+          .withHeader("Content-Type", equalTo(MimeTypes.FORM))
+          .withHeader("Authorization", equalTo(s"Basic $authToken"))
+          .willReturn(
+            aResponse()
+              .withStatus(status)
+              .withBody(
+                Json.toJson(RdsAuthCredentials("access_token", "bearer", 20)).toString()
+              ))
+      )
     }
 
-
-    }
-
+  }
 
   "DefaultRdsAuthConnector" when {
     "retrieveAuthorisedBearer method is called" must {
       "OK" in new Test {
         stubRdsAuthResponse(200)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Right(RdsAuthCredentials("access_token","bearer",20))
+        await(connector.retrieveAuthorisedBearer().value) shouldBe Right(RdsAuthCredentials("access_token", "bearer", 20))
       }
 
       "ACCEPTED" in new Test {
         stubRdsAuthResponse(202)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Right(RdsAuthCredentials("access_token","bearer",20))
+        await(connector.retrieveAuthorisedBearer().value) shouldBe Right(RdsAuthCredentials("access_token", "bearer", 20))
       }
 
       "return rds error when no auth" in new Test {
         stubRdsAuthResponse(403)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Left(MtdError("RDS_AUTH_ERROR","RDS authorisation could not be accomplished",None))
+        await(connector.retrieveAuthorisedBearer().value) shouldBe Left(
+          MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", None))
       }
 
     }
   }
+
 }

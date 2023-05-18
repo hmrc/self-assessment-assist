@@ -17,6 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request
 
 import play.api.libs.json.{Format, Json}
+
 case class AcknowledgeReportId(reportId: String) {
   def stringify: String = Json.stringify(Json.toJson(this))
 }

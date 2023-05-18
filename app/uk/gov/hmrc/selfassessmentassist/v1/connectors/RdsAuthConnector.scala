@@ -39,29 +39,31 @@ trait RdsAuthConnector[F[_]] {
   def retrieveAuthorisedBearer()(implicit hc: HeaderCarrier, correlationId: String): EitherT[F, MtdError, RdsAuthCredentials]
 }
 
-class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: HttpClient)(implicit
-                                                                                            appConfig: AppConfig,
-                                                                                            ec: ExecutionContext
-) extends RdsAuthConnector[Future] with Logging {
+class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http: HttpClient)(implicit
+    appConfig: AppConfig,
+    ec: ExecutionContext
+) extends RdsAuthConnector[Future]
+    with Logging {
 
   override def retrieveAuthorisedBearer()(implicit
-                                          hc: HeaderCarrier, correlationId: String
+      hc: HeaderCarrier,
+      correlationId: String
   ): EitherT[Future, MtdError, RdsAuthCredentials] = {
 
     val url = s"${appConfig.rdsSasBaseUrlForAuth}"
 
-    val utfEncodedClientId = URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")
-    val utfEncodedSecret = URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")
+    val utfEncodedClientId  = URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")
+    val utfEncodedSecret    = URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")
     val utfEncodedGrantType = URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")
 
     val body = s"grant_type=$utfEncodedGrantType"
 
-    val credentials = s"$utfEncodedClientId:$utfEncodedSecret"
+    val credentials              = s"$utfEncodedClientId:$utfEncodedSecret"
     val base64EncodedCredentials = Base64.getEncoder.encodeToString(credentials.getBytes)
 
     val reqHeaders = Seq(
-      "Content-type" -> "application/x-www-form-urlencoded",
-      "Accept" -> "application/json",
+      "Content-type"  -> "application/x-www-form-urlencoded",
+      "Accept"        -> "application/json",
       "Authorization" -> s"Basic $base64EncodedCredentials")
 
     logger.debug(s"$correlationId::[retrieveAuthorisedBearer] request info url=$url")
@@ -95,4 +97,5 @@ class DefaultRdsAuthConnector @Inject()(@Named("nohook-auth-http-client") http: 
 
   private def handleResponse(response: HttpResponse): Either[MtdError, RdsAuthCredentials] =
     response.json.asOpt[RdsAuthCredentials].toRight(RdsAuthError)
+
 }
