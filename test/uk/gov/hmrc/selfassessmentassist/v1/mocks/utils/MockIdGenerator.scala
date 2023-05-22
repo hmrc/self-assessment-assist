@@ -18,8 +18,8 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.utils
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.correlationId
 import uk.gov.hmrc.selfassessmentassist.utils.IdGenerator
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 
 trait MockIdGenerator extends MockFactory {
 

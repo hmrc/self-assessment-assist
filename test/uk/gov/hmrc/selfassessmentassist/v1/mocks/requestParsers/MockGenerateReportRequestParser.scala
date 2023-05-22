@@ -18,11 +18,11 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
-import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.GenerateReportRequestParser
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentRequestForSelfAssessment
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
+import uk.gov.hmrc.selfassessmentassist.v1.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.services.ParseOutcome
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,7 +39,7 @@ trait MockGenerateReportRequestParser extends MockFactory {
         .parseRequest(_: GenerateReportRawData)(_: ExecutionContext, _: String))
         .expects(*, *, *)
         .anyNumberOfTimes() returns
-        (Future(
+        Future(
           Right(
             AssessmentRequestForSelfAssessment(
               simpleCalculationId,
@@ -47,7 +47,7 @@ trait MockGenerateReportRequestParser extends MockFactory {
               simplePreferredLanguage,
               simpleCustomerType,
               simpleAgentRef,
-              simpleTaxYear))))
+              simpleTaxYear)))
     }
 
     def parseRequestFail(rawData: GenerateReportRawData,
@@ -56,7 +56,7 @@ trait MockGenerateReportRequestParser extends MockFactory {
         .parseRequest(_: GenerateReportRawData)(_: ExecutionContext, _: String))
         .expects(*, *, *)
         .anyNumberOfTimes() returns
-        (Future(Left(ErrorWrapper(simpleTaxYear, mtdError))))
+        Future(Left(ErrorWrapper(simpleTaxYear, mtdError)))
     }
 
   }

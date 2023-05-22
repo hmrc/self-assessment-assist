@@ -25,7 +25,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 
-import scala.language.postfixOps
+import scala.language.{implicitConversions, postfixOps}
 
 trait UnitSpec
     extends AnyWordSpecLike

@@ -18,8 +18,8 @@ package uk.gov.hmrc.selfassessmentassist.config
 
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
 import uk.gov.hmrc.selfassessmentassist.utils.Retrying
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.AuthCredential
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, FiniteDuration}

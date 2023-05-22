@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParse
 
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.{CustomerType, PreferredLanguage}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
-import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.GenerateReportRequestParser
-import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.validators.GenerateReportValidator
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentRequestForSelfAssessment, CustomerType, PreferredLanguage}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{ErrorWrapper, MtdError}
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentRequestForSelfAssessment
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
+import uk.gov.hmrc.selfassessmentassist.v1.requestParsers.GenerateReportRequestParser
+import uk.gov.hmrc.selfassessmentassist.v1.requestParsers.validators.GenerateReportValidator
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
@@ -32,7 +33,7 @@ class GenerateReportRequestParserSpec extends UnitSpec {
 
   val validator: GenerateReportValidator = new GenerateReportValidator
 
-  val validData = GenerateReportRawData(
+  val validData: GenerateReportRawData = GenerateReportRawData(
     calculationId = "0f14d0ab-9605-4a62-a9e4-5ed26688389b",
     nino = "NJ070957A",
     preferredLanguage = PreferredLanguage.English,

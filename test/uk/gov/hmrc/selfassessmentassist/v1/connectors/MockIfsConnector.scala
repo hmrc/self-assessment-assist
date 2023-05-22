@@ -19,8 +19,8 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request.IFRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
+import uk.gov.hmrc.selfassessmentassist.v1.services.IfsOutcome
 
 import scala.concurrent.Future
 

@@ -18,8 +18,8 @@ package uk.gov.hmrc.selfassessmentassist.v1.models.domain
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{JsPath, Reads}
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.CustomerType.CustomerType
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.PreferredLanguage.PreferredLanguage
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.CustomerType.CustomerType
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
 
 import java.util.UUID
 

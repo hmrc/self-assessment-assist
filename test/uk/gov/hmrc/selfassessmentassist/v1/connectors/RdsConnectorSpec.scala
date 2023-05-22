@@ -30,14 +30,14 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsValue
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{calculationIdWithNoFeedback, noCalculationFound, rdsAssessmentAckJson, rdsNewSubmissionReport, rdsSubmissionReportJson, simpleAcknowledgeNewRdsAssessmentReport, simpleNino, simpleRDSCorrelationId, simpleReportId}
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper, ForbiddenDownstreamError, ForbiddenRDSCorrelationIdError, MatchingCalculationIDNotFoundError, MtdError, NoAssessmentFeedbackFromRDS}
+import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
-import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData.{rdsAcknowledgementRequest, rdsRequest}
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{rdsAcknowledgementRequest, rdsRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
 import java.util.UUID

@@ -21,12 +21,12 @@ import play.api.http.{HeaderNames, MimeTypes}
 import play.api.libs.json.Writes
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpReads, HttpResponse}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request.IFRequest
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsResponse
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
+import uk.gov.hmrc.selfassessmentassist.v1.services.IfsOutcome
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,10 +54,9 @@ class IfsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(
       )(implicitly[Writes[IFRequest]], implicitly[HttpReads[HttpResponse]], hc.copy(authorization = None), ec)
       .map { response =>
         response.status match {
-          case NO_CONTENT => {
+          case NO_CONTENT =>
             logger.info(s"$correlationId::[IfsConnector:submit]  ${ifRequest.eventName} interaction stored successfully")
             Right(IfsResponse())
-          }
           case unexpectedStatus @ _ =>
             logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
             Left(ErrorWrapper(correlationId, DownstreamError))

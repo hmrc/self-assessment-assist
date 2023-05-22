@@ -17,8 +17,9 @@
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import cats.data.EitherT
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, RdsAuthError}
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
 
 import java.util.Base64
 //import cats.implicits.catsSyntaxEitherId
@@ -27,8 +28,6 @@ import play.api.http.Status.{ACCEPTED, OK}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.RdsAuthError
 
 import java.net.URLEncoder
 import javax.inject.{Inject, Named}

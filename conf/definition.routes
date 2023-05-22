@@ -1,2 +1,2 @@
-GET        /api/definition                  uk.gov.hmrc.selfassessmentassist.v1.controllers.DocumentationController.definition()
-GET        /api/conf/:version/*file         uk.gov.hmrc.selfassessmentassist.v1.controllers.DocumentationController.specification(version, file)
+GET        /api/definition                  uk.gov.hmrc.selfassessmentassist.api.controllers.DocumentationController.definition()
+GET        /api/conf/:version/*file         uk.gov.hmrc.selfassessmentassist.api.controllers.DocumentationController.specification(version, file)

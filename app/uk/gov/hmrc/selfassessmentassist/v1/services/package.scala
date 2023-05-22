@@ -16,10 +16,14 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1
 
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.ErrorWrapper
-import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.ErrorWrapper
+import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.{NrsFailure, NrsResponse}
 
 package object services {
   type ServiceOutcome[Resp] = Either[ErrorWrapper, ResponseWrapper[Resp]]
   type ParseOutcome[A]      = Either[ErrorWrapper, A]
+  type IfsOutcome = Either[ErrorWrapper, IfsResponse]
+  type NrsOutcome = Either[NrsFailure, NrsResponse]
 }

@@ -18,12 +18,12 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
-import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{ErrorWrapper, MtdError}
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.AcknowledgeReportRawData
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
+import uk.gov.hmrc.selfassessmentassist.v1.requestParsers.AcknowledgeRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.services.ParseOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.AcknowledgeReportRequest
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,7 +39,7 @@ trait MockAcknowledgeRequestParser extends MockFactory {
         .parseRequest(_: AcknowledgeReportRawData)(_: ExecutionContext, _: String))
         .expects(*, *, *)
         .anyNumberOfTimes() returns
-        (Future(Right(AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId))))
+        Future(Right(AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)))
     }
 
     def parseRequestFail(rawData: AcknowledgeReportRawData, error: MtdError): CallHandler[Future[ParseOutcome[AcknowledgeReportRequest]]] = {
@@ -47,7 +47,7 @@ trait MockAcknowledgeRequestParser extends MockFactory {
         .parseRequest(_: AcknowledgeReportRawData)(_: ExecutionContext, _: String))
         .expects(*, *, *)
         .anyNumberOfTimes() returns
-        (Future(Left(ErrorWrapper(correlationId, error))))
+        Future(Left(ErrorWrapper(correlationId, error)))
     }
 
   }

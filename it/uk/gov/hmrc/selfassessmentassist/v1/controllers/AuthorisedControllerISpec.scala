@@ -21,10 +21,10 @@ import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
 import play.api.test.Helpers.{ACCEPT, AUTHORIZATION, await, defaultAwaitTimeout}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 import uk.gov.hmrc.selfassessmentassist.stubs._
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
-import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors._
 
 import scala.collection.Seq
 

@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.support
 
 import play.api.http.{HeaderNames, MimeTypes, Status}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
 
 import scala.concurrent.ExecutionContext
 

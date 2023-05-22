@@ -28,9 +28,9 @@ import play.api.mvc._
 import play.api.routing.Router
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InvalidAcceptHeaderError, UnsupportedVersionError}
 import uk.gov.hmrc.selfassessmentassist.routing.{VersionRoutingMap, VersionRoutingRequestHandler}
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, UnitSpec}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{InvalidAcceptHeaderError, UnsupportedVersionError}
 
 class VersionRoutingRequestHandlerSpec extends UnitSpec with Inside with MockAppConfig with GuiceOneAppPerSuite {
   test =>

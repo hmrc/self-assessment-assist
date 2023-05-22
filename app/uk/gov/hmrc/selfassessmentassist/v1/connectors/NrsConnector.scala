@@ -22,9 +22,9 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{Delayer, Logging, Retrying}
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.NrsOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.NrsSubmission
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.NrsSubmission
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.{NrsFailure, NrsResponse}
+import uk.gov.hmrc.selfassessmentassist.v1.services.NrsOutcome
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

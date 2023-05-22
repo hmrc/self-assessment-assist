@@ -21,10 +21,10 @@ import play.api.libs.json.Json
 import play.api.mvc.{DefaultActionBuilder, Handler, RequestHeader, Results}
 import play.api.routing.Router
 import play.core.DefaultWebCommands
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InvalidAcceptHeaderError, UnsupportedVersionError}
 import uk.gov.hmrc.selfassessmentassist.config.{AppConfig, FeatureSwitch}
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{InvalidAcceptHeaderError, UnsupportedVersionError}
 
 import javax.inject.{Inject, Singleton}
 

@@ -1,10 +1,12 @@
 import scoverage.ScoverageKeys
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
+import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, integrationTestSettings}
 
 
 val appName = "self-assessment-assist"
 
 val silencerVersion = "1.7.12"
+
+lazy val ItTest = config("it") extend Test
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
@@ -30,8 +32,6 @@ lazy val microservice = Project(appName, file("."))
     //   Tests.Argument(TestFrameworks.ScalaTest, "-oD")
     // )
   )
-  .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
   .settings(inConfig(Test)(testSettings))
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(PlayKeys.playDefaultPort := 8342)
@@ -42,6 +42,16 @@ lazy val microservice = Project(appName, file("."))
       ".*ControllerConfiguration;.*testonly.*;",
     ScoverageKeys.coverageMinimumStmtTotal := 80)
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "resources")
+  .configs(ItTest)
+  .settings(
+    inConfig(ItTest)(Defaults.itSettings ++ headerSettings(ItTest) ++ automateHeaderSettings(ItTest)),
+    ItTest / fork := true,
+    ItTest / unmanagedSourceDirectories := Seq((ItTest / baseDirectory).value / "it"),
+    ItTest / unmanagedClasspath += baseDirectory.value / "resources",
+    Runtime / unmanagedClasspath += baseDirectory.value / "resources",
+    ItTest / parallelExecution := false,
+    addTestReportOption(ItTest, "int-test-reports"))
+
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   parallelExecution            := false,

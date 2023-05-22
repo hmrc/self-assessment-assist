@@ -20,9 +20,9 @@ import cats.data.EitherT
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.RdsAuthConnector
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -20,15 +20,15 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials.rdsAuthHeader
+import uk.gov.hmrc.selfassessmentassist.api.models.errors._
+import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials.rdsAuthHeader
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
-import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
 
 import javax.inject.{Inject, Named, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
