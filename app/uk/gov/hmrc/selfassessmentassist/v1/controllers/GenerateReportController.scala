@@ -19,22 +19,20 @@ package uk.gov.hmrc.selfassessmentassist.v1.controllers
 import cats.data.EitherT
 import play.api.libs.json._
 import play.api.mvc._
+import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
+import uk.gov.hmrc.selfassessmentassist.api.controllers.{ApiBaseController, AuthorisedController}
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BadRequestError, CalculationIdFormatError, ClientOrAgentNotAuthorisedError, DownstreamError, ErrorWrapper, ForbiddenDownstreamError, InvalidCredentialsError, MatchingCalculationIDNotFoundError, MatchingResourcesNotFoundError, NinoFormatError, NoAssessmentFeedbackFromRDS, RdsAuthError, ServerError, ServiceUnavailableError, TaxYearFormatError, TaxYearRangeInvalid}
+import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.selfassessmentassist.utils.{CurrentDateTime, IdGenerator, Logging}
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.MtdIdLookupConnector
-import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
-import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
-import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService
-import uk.gov.hmrc.selfassessmentassist.v1.services.cip.InsightService
-import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.FraudRiskRequest
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsService
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.NrsService
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.AssistReportGenerated
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsService
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AssistReportGenerated
+import uk.gov.hmrc.selfassessmentassist.v1.requestParsers.GenerateReportRequestParser
+import uk.gov.hmrc.selfassessmentassist.v1.services._
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -64,7 +62,7 @@ class GenerateReportController @Inject() (
 
     authorisedAction(nino).async { implicit request =>
       val customerType        = request.userDetails.toCustomerType
-      val submissionTimestamp = currentDateTime.getDateTime()
+      val submissionTimestamp = currentDateTime.getDateTime
       val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] =
         for {
           assessmentRequestForSelfAssessment <- EitherT(

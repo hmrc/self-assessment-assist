@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.models.domain
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsTestData._
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData._
 
 class AssessmentRequestForSelfAssessmentSpec extends UnitSpec {
 

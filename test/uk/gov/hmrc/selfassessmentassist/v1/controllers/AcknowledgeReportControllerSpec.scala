@@ -20,18 +20,19 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.controllers.ControllerBaseSpec
+import uk.gov.hmrc.selfassessmentassist.api.models.errors._
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers._
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.utils.MockIdGenerator
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.IdentityDataTestData
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.{Metadata, NrsSubmission, SearchKeys}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NrsSubmission, SearchKeys}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.{AcknowledgeReportRawData, nrs}
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -77,13 +78,13 @@ class AcknowledgeReportControllerSpec
       NrsSubmission(
         payload =
           "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIwMjIiLCJjYWxjdWxhdGlvbklkIjoiOTlkNzU4ZjYtYzRiZS00MzM5LTgwNGUtZjc5Y2YwNjEwZDRmIiwiY29ycmVsYXRpb25JZCI6ImU0MzI2NGM1LTUzMDEtNGVjZS1iM2QzLTFlOGE4ZGQ5M2I0YiJ9",
-        metadata = Metadata(
+        metadata = nrs.Metadata(
           businessId = "saa",
           notableEvent = "saa-report-generated",
           payloadContentType = "application/json",
           payloadSha256Checksum = "acdf5c0add9e434375e81797ad21fd409bc55f6d4f264d7aa302ca1ef4a01058",
           userSubmissionTimestamp = formattedDate,
-          identityData = Some(IdentityDataTestData.correctModel),
+          identityData = Some(CommonTestData.identityCorrectModel),
           userAuthToken = "Bearer aaaa",
           headerData = Json.toJson(
             Map(
@@ -112,7 +113,7 @@ class AcknowledgeReportControllerSpec
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
-        MockCurrentDateTime.getDateTime()
+        MockCurrentDateTime.getDateTime
         MockNrsService.stubBuildNrsSubmission(dummyReportPayload)
         MockNrsService.stubAcknowledgement(simpleNRSResponseAcknowledgeSubmission)
         MockIfsService.stubAcknowledgeSubmit()
@@ -135,7 +136,7 @@ class AcknowledgeReportControllerSpec
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
-        MockCurrentDateTime.getDateTime()
+        MockCurrentDateTime.getDateTime
         MockNrsService.stubBuildNrsSubmission(dummyReportPayload)
         MockNrsService.stubFailureAcknowledgementDueToException()
         MockIfsService.stubAcknowledgeSubmit()
@@ -155,7 +156,7 @@ class AcknowledgeReportControllerSpec
 
       s"return the NinoFormatError error  to indicate that the nino is  invalid. " in new Test {
 
-        MockCurrentDateTime.getDateTime()
+        MockCurrentDateTime.getDateTime
         MockProvideRandomCorrelationId.IdGenerator
 
         val result: Future[Result] =
@@ -177,7 +178,7 @@ class AcknowledgeReportControllerSpec
 
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockEnrolmentsAuthService.authoriseUserFail(mtdError)
-          MockCurrentDateTime.getDateTime()
+          MockCurrentDateTime.getDateTime
           MockProvideRandomCorrelationId.IdGenerator
 
           val result: Future[Result] =
@@ -212,7 +213,7 @@ class AcknowledgeReportControllerSpec
           MockEnrolmentsAuthService.authoriseUser()
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockAcknowledgeRequestParser.parseRequestFail(acknowledgeReportRawData, mtdError)
-          MockCurrentDateTime.getDateTime()
+          MockCurrentDateTime.getDateTime
           MockProvideRandomCorrelationId.IdGenerator
 
           val result: Future[Result] =
@@ -247,7 +248,7 @@ class AcknowledgeReportControllerSpec
           MockLookupConnector.mockMtdIdLookupConnector("1234567890")
           MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
           MockRdsService.acknowlegeRdsFail(simpleAcknowledgeReportRequest, mtdError)
-          MockCurrentDateTime.getDateTime()
+          MockCurrentDateTime.getDateTime
 
           MockProvideRandomCorrelationId.IdGenerator
 
@@ -285,7 +286,7 @@ class AcknowledgeReportControllerSpec
         MockLookupConnector.mockMtdIdLookupConnector("1234567890")
         MockAcknowledgeRequestParser.parseRequest(acknowledgeReportRawData)
         MockRdsService.acknowlegeRds(simpleAcknowledgeReportRequest)
-        MockCurrentDateTime.getDateTime()
+        MockCurrentDateTime.getDateTime
         MockProvideRandomCorrelationId.IdGenerator
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockIfsService.stubAcknowledgeSubmit()

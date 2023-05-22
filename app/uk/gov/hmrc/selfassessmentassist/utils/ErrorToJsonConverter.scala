@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.utils
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 
 object ErrorToJsonConverter {
 

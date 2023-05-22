@@ -19,7 +19,6 @@ package uk.gov.hmrc.selfassessmentassist.stubs
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status.CREATED
 import play.api.libs.json.Json
-import uk.gov.hmrc.selfassessmentassist.support.TestData.CommonTestData
 
 object RdsStub {
 

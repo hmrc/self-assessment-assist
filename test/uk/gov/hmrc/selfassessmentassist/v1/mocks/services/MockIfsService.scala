@@ -19,13 +19,13 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.services
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.UserDetails
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, AssessmentRequestForSelfAssessment}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{ErrorWrapper, MtdError}
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsResponse
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.{IfsOutcome, IfsService}
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.AcknowledgeReportRequest
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
+import uk.gov.hmrc.selfassessmentassist.v1.services.{IfsOutcome, IfsService}
 
 import java.time.LocalDateTime
 import scala.concurrent.Future
@@ -67,7 +67,7 @@ trait MockIfsService extends MockFactory {
         .returns(Future.successful(Left(ErrorWrapper(assesmentRerport.rdsCorrelationId, mtdError))))
     }
 
-    def stubAcknowledgeSubmit() = {
+    def stubAcknowledgeSubmit(): CallHandler[Future[IfsOutcome]] = {
       (mockIfsService
         .submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
         .expects(*, *, *, *, *)
@@ -75,7 +75,7 @@ trait MockIfsService extends MockFactory {
         .returns(Future.successful(Right(IfsResponse())))
     }
 
-    def submitGenerateReportNeverCalled() = {
+    def submitGenerateReportNeverCalled(): CallHandler[Future[IfsOutcome]] = {
       (
         mockIfsService
           .submitGenerateReportMessage(_: AssessmentReport, _: LocalDateTime, _: AssessmentRequestForSelfAssessment, _: RdsAssessmentReport)(
@@ -87,7 +87,7 @@ trait MockIfsService extends MockFactory {
         .never()
     }
 
-    def submitAcknowledgmentNeverCalled() = {
+    def submitAcknowledgmentNeverCalled(): CallHandler[Future[IfsOutcome]] = {
       (mockIfsService
         .submitAcknowledgementMessage(_: AcknowledgeReportRequest, _: RdsAssessmentReport, _: UserDetails)(_: HeaderCarrier, _: String))
         .expects(*, *, *, *, *)

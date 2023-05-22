@@ -17,8 +17,9 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.errors
 
 import play.api.libs.json.Json
+import uk.gov.hmrc.selfassessmentassist.api.models.audit.AuditError
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BadRequestError, ErrorWrapper, NinoFormatError, TaxYearFormatError}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.audit.AuditError
 
 class ErrorWrapperSpec extends UnitSpec {
 

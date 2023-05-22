@@ -25,11 +25,11 @@ import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleFraudRiskRequest
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData.simpleFraudRiskRequest
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
-import uk.gov.hmrc.selfassessmentassist.v1.models.outcomes.ResponseWrapper
-import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.FraudRiskReport
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
 
 class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 

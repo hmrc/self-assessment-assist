@@ -18,8 +18,8 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors
 
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.MtdIdLookupConnector
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
+import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -21,8 +21,8 @@ import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService
 
 import scala.concurrent.{ExecutionContext, Future}

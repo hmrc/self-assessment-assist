@@ -20,17 +20,17 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockAuthConnector
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.MtdError
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with MockAuthConnector {
 
   class Test {
-    val authConnector = mock[AuthConnector]
+    val authConnector: AuthConnector = mock[AuthConnector]
     val service       = new EnrolmentsAuthService(authConnector)
   }
 

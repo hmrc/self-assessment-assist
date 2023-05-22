@@ -17,8 +17,9 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.domain
 
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.DesTaxYear
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.TestData.CommonTestData._
 
 class AssessmentReportSpec extends UnitSpec {
   val assessmentReportModel: AssessmentReport = simpleAssessmentReport

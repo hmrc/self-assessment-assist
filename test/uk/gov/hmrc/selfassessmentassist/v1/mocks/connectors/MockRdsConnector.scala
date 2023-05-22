@@ -19,11 +19,11 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.RdsConnector
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.RdsAuthCredentials
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.request.RdsRequest
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
 
 import scala.concurrent.{ExecutionContext, Future}
 

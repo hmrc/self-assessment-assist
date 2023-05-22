@@ -21,8 +21,8 @@ import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.support.MockAppConfig
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.InsightConnector
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.cip.models.{FraudRiskReport, FraudRiskRequest}
 
 import scala.concurrent.Future
 

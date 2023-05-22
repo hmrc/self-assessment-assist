@@ -23,11 +23,11 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper}
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors.{DownstreamError, ErrorWrapper}
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.FullRequestTestData
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.request.IFRequest
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.models.response.IfsResponse
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.IfsTestData
 
 class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
@@ -42,8 +42,8 @@ class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
 
   val url                                     = "/interaction-data/store-interactions"
   val httpClient: HttpClient                  = app.injector.instanceOf[HttpClient]
-  private val ifsRequest: IFRequest           = FullRequestTestData.correctModel
-  private val ifsSubmissionJsonString: String = FullRequestTestData.correctJsonString
+  private val ifsRequest: IFRequest           = IfsTestData.correctModel
+  private val ifsSubmissionJsonString: String = IfsTestData.correctJsonString
   var port: Int                               = _
 
   override def beforeAll(): Unit = {

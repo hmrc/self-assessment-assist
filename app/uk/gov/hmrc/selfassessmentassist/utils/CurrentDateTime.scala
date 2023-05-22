@@ -22,7 +22,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class CurrentDateTime @Inject() () {
 
-  def getDateTime(): OffsetDateTime = {
+  def getDateTime: OffsetDateTime = {
     val formatted = OffsetDateTime.now().format(DateUtils.dateTimePattern)
     OffsetDateTime.parse(formatted)
   }

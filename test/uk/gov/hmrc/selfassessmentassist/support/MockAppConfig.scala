@@ -19,8 +19,8 @@ package uk.gov.hmrc.selfassessmentassist.support
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import play.api.Configuration
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
-import uk.gov.hmrc.selfassessmentassist.v1.models.auth.AuthCredential
 
 import scala.concurrent.duration.FiniteDuration
 

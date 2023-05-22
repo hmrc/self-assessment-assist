@@ -29,16 +29,16 @@ import play.api.test.Injecting
 import play.api.{Application, Environment, Mode}
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.FullRequestTestData
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.NrsSubmission
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.response.{NrsFailure, NrsResponse}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.NrsSubmission
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.{NrsFailure, NrsResponse}
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.NrsTestData
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class NrsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
-  private val nrsSubmission: NrsSubmission    = FullRequestTestData.correctModel
-  private val nrsSubmissionJsonString: String = FullRequestTestData.correctJsonString
+  private val nrsSubmission: NrsSubmission    = NrsTestData.correctModel
+  private val nrsSubmissionJsonString: String = NrsTestData.correctJsonString
 
   override lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))

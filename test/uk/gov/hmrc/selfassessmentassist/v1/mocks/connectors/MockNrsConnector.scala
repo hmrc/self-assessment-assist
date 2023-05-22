@@ -20,8 +20,8 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.NrsConnector
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.NrsOutcome
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.NrsSubmission
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.NrsSubmission
+import uk.gov.hmrc.selfassessmentassist.v1.services.NrsOutcome
 
 import scala.concurrent.Future
 

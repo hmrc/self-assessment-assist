@@ -18,19 +18,17 @@ package uk.gov.hmrc.selfassessmentassist.v1.controllers
 
 import cats.data.EitherT
 import play.api.mvc._
+import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
+import uk.gov.hmrc.selfassessmentassist.api.controllers.{ApiBaseController, AuthorisedController}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors._
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.selfassessmentassist.utils.{CurrentDateTime, IdGenerator, Logging}
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.MtdIdLookupConnector
-import uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParsers.AcknowledgeRequestParser
-import uk.gov.hmrc.selfassessmentassist.v1.models.errors._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService
-import uk.gov.hmrc.selfassessmentassist.v1.services.ifs.IfsService
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.NrsService
-import uk.gov.hmrc.selfassessmentassist.v1.services.nrs.models.request.{AcknowledgeReportId, AssistReportAcknowledged}
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.RdsService
-import uk.gov.hmrc.selfassessmentassist.v1.services.rds.models.response.RdsAssessmentReport
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{AcknowledgeReportId, AssistReportAcknowledged}
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
+import uk.gov.hmrc.selfassessmentassist.v1.requestParsers.AcknowledgeRequestParser
+import uk.gov.hmrc.selfassessmentassist.v1.services.{EnrolmentsAuthService, IfsService, NrsService, RdsService}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -56,7 +54,7 @@ class AcknowledgeReportController @Inject() (
     implicit val correlationId: String = idGenerator.getUid
     logger.debug(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
 
-    val submissionTimestamp = currentDateTime.getDateTime()
+    val submissionTimestamp = currentDateTime.getDateTime
 
     authorisedAction(nino).async { implicit request =>
       val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
@@ -75,7 +73,7 @@ class AcknowledgeReportController @Inject() (
             nonRepudiationService
               .buildNrsSubmission(AcknowledgeReportId(reportId).stringify, reportId, submissionTimestamp, request, AssistReportAcknowledged)
               .fold(
-                error => {
+                _ => {
                   logger.error(s"$correlationId::[acknowledgeReport] NRS event generation failed")
                   Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
                 },
@@ -102,7 +100,7 @@ class AcknowledgeReportController @Inject() (
     case (NinoFormatError, _)                 => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
     case (MatchingResourcesNotFoundError | ResourceNotFoundError, _) =>
       Future.successful(ServiceUnavailable(convertErrorAsJson(ServiceUnavailableError)))
-    case (error @ _, Some(errs)) =>
+    case (_, Some(errs)) =>
       logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario with multiple errors $errs")
       Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
     case (error @ _, None) =>
