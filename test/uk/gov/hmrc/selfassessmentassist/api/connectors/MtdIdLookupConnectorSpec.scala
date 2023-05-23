@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.connectors
 
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.DownstreamError
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.InternalError
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.MockHttpClient
 
@@ -59,10 +59,10 @@ class MtdIdLookupConnectorSpec extends ConnectorSpec {
             url = s"$baseUrl/mtd-identifier-lookup/nino/$nino",
             config = dummyHeaderCarrierConfig
           )
-          .returns(Future.successful(Left(DownstreamError)))
+          .returns(Future.successful(Left(InternalError)))
 
         val result: MtdIdLookupOutcome = await(connector.getMtdId(nino))
-        result shouldBe Left(DownstreamError)
+        result shouldBe Left(InternalError)
       }
     }
   }

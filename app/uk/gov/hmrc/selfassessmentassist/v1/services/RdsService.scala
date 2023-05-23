@@ -21,7 +21,7 @@ import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper, MatchingCalculationIDNotFoundError, NoAssessmentFeedbackFromRDS}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError, MatchingCalculationIDNotFoundError, NoAssessmentFeedbackFromRDS}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, Logging}
@@ -151,13 +151,13 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
 
           case None =>
             logger.warn(s"$correlationId::[RdsService][toAssessmentReport]Unable to find rdsCorrelationId")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
         }
 
       case (_, _, _) =>
         logger.warn(
           s"$correlationId::[RdsService][toAssessmentReport] Either calculationId or feedbackId or calculationTimestamp missing in RDS response")
-        Left(ErrorWrapper(correlationId, DownstreamError))
+        Left(ErrorWrapper(correlationId, InternalError))
     }
   }
 

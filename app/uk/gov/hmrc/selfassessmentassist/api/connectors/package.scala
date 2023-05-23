@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.selfassessmentassist.api
 
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, MtdError}
+import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 
 package object connectors {
 
   type MtdIdLookupOutcome = Either[MtdError, String]
+  type DownstreamOutcome[A] = Either[ResponseWrapper[DownstreamError], ResponseWrapper[A]]
 }

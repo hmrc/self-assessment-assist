@@ -232,8 +232,8 @@ class GenerateReportControllerSpec
       val errorInErrorOut =
         Seq(
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
-          (ForbiddenDownstreamError, FORBIDDEN, DownstreamError.asJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.asJson)
+          (ForbiddenDownstreamError, FORBIDDEN, InternalError.asJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, InternalError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -262,7 +262,7 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.asJson),
+          (ServerError, INTERNAL_SERVER_ERROR, InternalError.asJson),
           (ServiceUnavailableError, INTERNAL_SERVER_ERROR, ServiceUnavailableError.asJson)
         )
 
@@ -299,7 +299,7 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ServerError, INTERNAL_SERVER_ERROR, Some(DownstreamError.asJson)),
+          (ServerError, INTERNAL_SERVER_ERROR, Some(InternalError.asJson)),
           (ServiceUnavailableError, INTERNAL_SERVER_ERROR, Some(ServiceUnavailableError.asJson)),
           (MatchingResourcesNotFoundError, NOT_FOUND, Some(MatchingResourcesNotFoundError.asJson)),
           (InvalidCredentialsError, UNAUTHORIZED, Some(InvalidCredentialsError.asJson)),
@@ -337,7 +337,7 @@ class GenerateReportControllerSpec
         val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsJson(result) shouldBe Json.toJson(Seq(DownstreamError))
+        contentAsJson(result) shouldBe Json.toJson(Seq(InternalError))
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -370,7 +370,7 @@ class GenerateReportControllerSpec
         }
       }
 
-      runTest(ServerError, INTERNAL_SERVER_ERROR, DownstreamError.asJson)
+      runTest(ServerError, INTERNAL_SERVER_ERROR, InternalError.asJson)
     }
   }
 

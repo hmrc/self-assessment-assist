@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers
 import play.api.http.Status.{FORBIDDEN, OK, UNAUTHORIZED}
 import play.api.libs.json.{Reads, __}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, InvalidBearerTokenError, MtdError, NinoFormatError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, InvalidBearerTokenError, MtdError, NinoFormatError}
 
 
 object MtdIdLookupHttpParser extends HttpParser {
@@ -31,11 +31,11 @@ object MtdIdLookupHttpParser extends HttpParser {
       case OK =>
         response.validateJson[String](mtdIdJsonReads) match {
           case Some(mtdId) => Right(mtdId)
-          case _           => Left(DownstreamError)
+          case _ => Left(InternalError)
         }
       case FORBIDDEN    => Left(NinoFormatError)
       case UNAUTHORIZED => Left(InvalidBearerTokenError)
-      case _            => Left(DownstreamError)
+      case _ => Left(InternalError)
     }
   }
 

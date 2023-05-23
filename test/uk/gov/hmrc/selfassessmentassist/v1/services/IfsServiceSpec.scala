@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.CustomerType
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.MockIfsConnector
@@ -180,7 +180,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
         MockCurrentDateTime.getDateTime
         MockIfsConnector
           .submit(expectedPayload = expectedReportGenerationPayload)
-          .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))))
+          .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))))
 
         await(
           service.submitGenerateReportMessage(
@@ -188,7 +188,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
             mockCurrentDateTime.getDateTime.toLocalDateTime,
             assessmentRequestForSelfAssessment,
             CommonTestData.rdsNewSubmissionReport)
-        ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, DownstreamError))
+        ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))
       }
 
     }

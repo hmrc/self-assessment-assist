@@ -73,11 +73,11 @@ class GenerateReportRequestParserSpec extends UnitSpec {
         result shouldBe Left(
           ErrorWrapper(
             "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
-            MtdError("INVALID_REQUEST", "Invalid request", None),
+            MtdError("INVALID_REQUEST", "Invalid request", 400),
             Some(
               List(
-                MtdError("FORMAT_NINO", "The provided NINO is invalid", None),
-                MtdError("FORMAT_TAX_YEAR", "The provided tax year is invalid", None)))
+                MtdError("FORMAT_NINO", "The provided NINO is invalid", 400),
+                MtdError("FORMAT_TAX_YEAR", "The provided tax year is invalid", 400)))
           ))
       }
 
@@ -91,7 +91,7 @@ class GenerateReportRequestParserSpec extends UnitSpec {
         result shouldBe Left(
           ErrorWrapper(
             "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
-            MtdError("RULE_TAX_YEAR_RANGE_INVALID", "Tax year range invalid. A tax year range of one year is required.", None),
+            MtdError("RULE_TAX_YEAR_RANGE_INVALID", "Tax year range invalid. A tax year range of one year is required.", 400),
             None
           ))
       }

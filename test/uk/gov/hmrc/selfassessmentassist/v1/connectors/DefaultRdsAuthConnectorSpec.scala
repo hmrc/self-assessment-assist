@@ -112,7 +112,7 @@ class DefaultRdsAuthConnectorSpec
       "return rds error when no auth" in new Test {
         stubRdsAuthResponse(403)
         await(connector.retrieveAuthorisedBearer().value) shouldBe Left(
-          MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", None))
+          MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", 403))
       }
 
     }

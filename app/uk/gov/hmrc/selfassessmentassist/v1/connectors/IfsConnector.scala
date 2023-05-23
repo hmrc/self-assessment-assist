@@ -21,7 +21,7 @@ import play.api.http.{HeaderNames, MimeTypes}
 import play.api.libs.json.Writes
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpReads, HttpResponse}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
@@ -59,12 +59,12 @@ class IfsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(
             Right(IfsResponse())
           case unexpectedStatus @ _ =>
             logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
         }
       }
       .recover { case e: HttpException =>
         logger.error(s"$correlationId::[IfsConnector:submit] IFS response : failed with exception", e)
-        Left(ErrorWrapper(correlationId, DownstreamError))
+        Left(ErrorWrapper(correlationId, InternalError))
       }
   }
 

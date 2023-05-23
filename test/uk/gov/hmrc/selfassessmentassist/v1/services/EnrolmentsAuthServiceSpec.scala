@@ -43,7 +43,7 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with Mock
           .expects(*, *, *, *)
           .returns(() => {})
         val result: Future[AuthOutcome] = service.authorised(EmptyPredicate, "correlationId")
-        await(result) shouldBe Left(MtdError("INTERNAL_SERVER_ERROR", "An internal server error occurred", None))
+        await(result) shouldBe Left(MtdError("INTERNAL_SERVER_ERROR", "An internal server error occurred", 500))
       }
     }
 

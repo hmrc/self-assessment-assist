@@ -56,7 +56,7 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
               .fold(
                 e => {
                   logger.error(s"$correlationId::[RdsConnector][submit] validation failed while transforming the response $e")
-                  Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
+                  Left(ErrorWrapper(correlationId, InternalError, Some(Seq(MtdError(InternalError.code, "unexpected response from downstream")))))
                 },
                 assessmentReport =>
                   assessmentReport.responseCode match {
@@ -77,44 +77,44 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
                       Left(
                         ErrorWrapper(
                           correlationId,
-                          DownstreamError,
-                          Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
+                          InternalError,
+                          Some(Seq(MtdError(InternalError.code, "unexpected response from downstream")))))
                   }
               )
 
           case BAD_REQUEST =>
             logger.error(s"$correlationId::[RdsConnector:submit] RDS response : BAD request")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
           case NOT_FOUND =>
             logger.error(s"$correlationId::[RdsConnector:submit] RDS not reachable")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
           case REQUEST_TIMEOUT =>
             logger.error(s"$correlationId::[RdsConnector:submit] Rds request timeout")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
           case UNAUTHORIZED =>
             logger.error(s"$correlationId::[RdsConnector:submit] Rds request failed as unauthorized")
             Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
           case SERVICE_UNAVAILABLE =>
             logger.error(s"$correlationId::[RdsConnector:submit] Rds returned service unavailable")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
           case unexpectedStatus @ _ =>
             logger.error(
               s"$correlationId::[RdsConnector:submit] Rds unable to submit the report due to unexpected status code returned $unexpectedStatus")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
         }
       }
       .recover {
         case ex: BadRequestException =>
           logger.error(s"$correlationId::[RdsConnector:submit] RDS BadRequestException $ex")
-          Left(ErrorWrapper(correlationId, DownstreamError))
+          Left(ErrorWrapper(correlationId, InternalError))
 
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationId::[RdsConnector:submit] RDS UpstreamErrorResponse $ex")
           ex.statusCode match {
-            case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, DownstreamError))
-            case UNAUTHORIZED    => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case FORBIDDEN       => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case _               => Left(ErrorWrapper(correlationId, DownstreamError))
+            case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, InternalError))
+            case UNAUTHORIZED => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case FORBIDDEN => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case _ => Left(ErrorWrapper(correlationId, InternalError))
           }
 
         case ex: HttpException =>
@@ -146,7 +146,7 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
               .fold(
                 e => {
                   logger.error(s"$correlationId::[RdsConnector][acknowledgeRds] validation failed while transforming the response $e")
-                  Left(ErrorWrapper(correlationId, DownstreamError, Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
+                  Left(ErrorWrapper(correlationId, InternalError, Some(Seq(MtdError(InternalError.code, "unexpected response from downstream")))))
                 },
                 assessmentReport =>
                   assessmentReport.responseCode match {
@@ -161,45 +161,45 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
                       Left(
                         ErrorWrapper(
                           correlationId,
-                          DownstreamError,
-                          Some(Seq(MtdError(DownstreamError.code, "unexpected response from downstream")))))
+                          InternalError,
+                          Some(Seq(MtdError(InternalError.code, "unexpected response from downstream")))))
 
                   }
               )
           case BAD_REQUEST =>
             logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS response : BAD request")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
           case NOT_FOUND =>
             logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS not reachable")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
           case UNAUTHORIZED =>
             logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Rds request failed as unauthorized")
             Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
           case REQUEST_TIMEOUT =>
             logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Rds request timeout")
-            Left(ErrorWrapper(correlationId, DownstreamError))
-          case _ => Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
+          case _ => Left(ErrorWrapper(correlationId, InternalError))
         }
       }
       .recover {
         case ex: BadRequestException =>
           logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS BadRequestException $ex")
-          Left(ErrorWrapper(correlationId, DownstreamError))
+          Left(ErrorWrapper(correlationId, InternalError))
         case ex: HttpException =>
           logger.error(s"$correlationId::[RdsConnector:submit] RDS HttpException $ex")
-          Left(ErrorWrapper(correlationId, DownstreamError))
+          Left(ErrorWrapper(correlationId, InternalError))
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS UpstreamErrorResponse $ex")
           ex.statusCode match {
-            case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, DownstreamError))
-            case UNAUTHORIZED    => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case FORBIDDEN       => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case NOT_FOUND       => Left(ErrorWrapper(correlationId, DownstreamError))
-            case _               => Left(ErrorWrapper(correlationId, DownstreamError))
+            case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, InternalError))
+            case UNAUTHORIZED => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case FORBIDDEN => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+            case NOT_FOUND => Left(ErrorWrapper(correlationId, InternalError))
+            case _ => Left(ErrorWrapper(correlationId, InternalError))
           }
         case ex @ _ =>
           logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS Unknown exception $ex")
-          Left(ErrorWrapper(correlationId, DownstreamError))
+          Left(ErrorWrapper(correlationId, InternalError))
       }
   }
 

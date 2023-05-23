@@ -21,10 +21,9 @@ import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
 import play.api.test.Helpers.{ACCEPT, AUTHORIZATION, await, defaultAwaitTimeout}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, _}
 import uk.gov.hmrc.selfassessmentassist.stubs._
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
-import uk.gov.hmrc.selfassessmentassist.api.models.errors._
 
 import scala.collection.Seq
 
@@ -66,14 +65,14 @@ class AuthorisedControllerISpec extends IntegrationBaseSpec {
         val input = Seq(
           ("InvalidBearerToken", FORBIDDEN, InvalidCredentialsError),
           ("InsufficientConfidenceLevel", FORBIDDEN, LegacyUnauthorisedError),
-          ("UnsupportedAffinityGroup", INTERNAL_SERVER_ERROR, DownstreamError),
-          ("UnsupportedCredentialRole", INTERNAL_SERVER_ERROR, DownstreamError),
-          ("UnsupportedAuthProvider", INTERNAL_SERVER_ERROR, DownstreamError),
+          ("UnsupportedAffinityGroup", INTERNAL_SERVER_ERROR, InternalError),
+          ("UnsupportedCredentialRole", INTERNAL_SERVER_ERROR, InternalError),
+          ("UnsupportedAuthProvider", INTERNAL_SERVER_ERROR, InternalError),
           ("BearerTokenExpired", FORBIDDEN, InvalidCredentialsError),
-          ("IncorrectCredentialStrength", INTERNAL_SERVER_ERROR, DownstreamError),
+          ("IncorrectCredentialStrength", INTERNAL_SERVER_ERROR, InternalError),
           ("InsufficientEnrolments", FORBIDDEN, LegacyUnauthorisedError),
-          ("FailedRelationship", INTERNAL_SERVER_ERROR, DownstreamError),
-          ("other_error", INTERNAL_SERVER_ERROR, DownstreamError)
+          ("FailedRelationship", INTERNAL_SERVER_ERROR, InternalError),
+          ("other_error", INTERNAL_SERVER_ERROR, InternalError)
         )
 
         input.foreach(args => (validationErrorTest _).tupled(args))

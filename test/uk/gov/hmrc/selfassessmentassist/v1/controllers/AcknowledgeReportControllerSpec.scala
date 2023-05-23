@@ -195,8 +195,8 @@ class AcknowledgeReportControllerSpec
       val errorInErrorOut =
         Seq(
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
-          (ForbiddenDownstreamError, FORBIDDEN, DownstreamError.asJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, DownstreamError.asJson)
+          (ForbiddenDownstreamError, FORBIDDEN, InternalError.asJson),
+          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, InternalError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -265,13 +265,13 @@ class AcknowledgeReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ServerError, INTERNAL_SERVER_ERROR, DownstreamError.asJson),
+          (ServerError, INTERNAL_SERVER_ERROR, InternalError.asJson),
           (ForbiddenDownstreamError, FORBIDDEN, ForbiddenDownstreamError.asJson),
           (ForbiddenRDSCorrelationIdError, FORBIDDEN, ForbiddenRDSCorrelationIdError.asJson),
-          (DownstreamError, INTERNAL_SERVER_ERROR, DownstreamError.asJson),
+          (InternalError, INTERNAL_SERVER_ERROR, InternalError.asJson),
           (MatchingResourcesNotFoundError, SERVICE_UNAVAILABLE, ServiceUnavailableError.asJson),
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
-          (InvalidBodyTypeError, SERVICE_UNAVAILABLE, DownstreamError.asJson)
+          (InvalidBodyTypeError, SERVICE_UNAVAILABLE, InternalError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -295,7 +295,7 @@ class AcknowledgeReportControllerSpec
           controller.acknowledgeReportForSelfAssessment(simpleNino, simpleCalculationId.toString, simpleRDSCorrelationId)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        contentAsJson(result) shouldBe Json.toJson(Seq(DownstreamError.asJson))
+        contentAsJson(result) shouldBe Json.toJson(Seq(InternalError.asJson))
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
 
