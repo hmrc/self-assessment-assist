@@ -57,7 +57,7 @@ class GenerateReportController @Inject() (
 
   def generateReportInternal(nino: String, taxYear: String, calculationId: String): Action[AnyContent] = {
 
-    implicit val correlationId: String = idGenerator.getUid
+    implicit val correlationId: String = idGenerator.generateCorrelationId
     logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
 
     authorisedAction(nino).async { implicit request =>

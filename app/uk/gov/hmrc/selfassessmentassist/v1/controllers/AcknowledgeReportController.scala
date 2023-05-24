@@ -51,7 +51,7 @@ class AcknowledgeReportController @Inject() (
     with Logging {
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
-    implicit val correlationId: String = idGenerator.getUid
+    implicit val correlationId: String = idGenerator.generateCorrelationId
     logger.debug(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
 
     val submissionTimestamp = currentDateTime.getDateTime

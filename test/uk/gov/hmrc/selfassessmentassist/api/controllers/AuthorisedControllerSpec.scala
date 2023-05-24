@@ -26,8 +26,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.correlationId
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, ClientOrAgentNotAuthorisedError, ForbiddenDownstreamError, ForbiddenRDSCorrelationIdError, InternalError, InvalidBearerTokenError, InvalidCredentialsError, LegacyUnauthorisedError, MtdError, NinoFormatError, RdsAuthError, UnauthorisedError}
+import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -86,7 +86,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
         val returnedError: String         = returnedErrorJSon.utf8String
 
-        val ninoErrorJSon: JsValue = Json.toJson(NinoFormatError)
+        val ninoErrorJSon: JsValue = NinoFormatError.asJson
 
         returnedError shouldBe Json.toJson(Seq(ninoErrorJSon)).toString()
       }
@@ -196,13 +196,13 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
 
       val authServiceErrors =
         Seq(
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, Json.toJson(ClientOrAgentNotAuthorisedError)),
-          (ForbiddenDownstreamError, FORBIDDEN, Json.toJson(InternalError)),
-          (InvalidBearerTokenError, FORBIDDEN, Json.toJson(InvalidCredentialsError)),
-          (BearerTokenExpiredError, FORBIDDEN, Json.toJson(InvalidCredentialsError)),
-          (LegacyUnauthorisedError, FORBIDDEN, Json.toJson(LegacyUnauthorisedError)),
-          (RdsAuthError, INTERNAL_SERVER_ERROR, Json.toJson(InternalError)),
-          (unexpectedError, INTERNAL_SERVER_ERROR, Json.toJson(InternalError))
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
+          (ForbiddenDownstreamError, FORBIDDEN, InternalError.asJson),
+          (InvalidBearerTokenError, FORBIDDEN, InvalidCredentialsError.asJson),
+          (BearerTokenExpiredError, FORBIDDEN, InvalidCredentialsError.asJson),
+          (LegacyUnauthorisedError, FORBIDDEN, LegacyUnauthorisedError.asJson),
+          (RdsAuthError, INTERNAL_SERVER_ERROR, InternalError.asJson),
+          (unexpectedError, INTERNAL_SERVER_ERROR, InternalError.asJson)
         )
 
       authServiceErrors.foreach(args => (serviceErrors _).tupled(args))

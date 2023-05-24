@@ -26,6 +26,7 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors._
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
+import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers.MockGenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._

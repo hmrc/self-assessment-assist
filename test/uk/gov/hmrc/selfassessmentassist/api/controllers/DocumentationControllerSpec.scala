@@ -19,11 +19,12 @@ package uk.gov.hmrc.selfassessmentassist.api.controllers
 import controllers.Assets
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.Result
+import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers.MockGenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.utils.MockIdGenerator
+import uk.gov.hmrc.selfassessmentassist.api.mocks.MockIdGenerator
 
 import scala.concurrent.Future
 
