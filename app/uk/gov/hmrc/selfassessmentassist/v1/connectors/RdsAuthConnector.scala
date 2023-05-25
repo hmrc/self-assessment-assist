@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import cats.data.EitherT
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, RdsAuthError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, RdsAuthDownstreamError, RdsAuthError}
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
 import java.util.Base64
@@ -80,21 +80,21 @@ class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http:
               handleResponse(response)
             case errorStatusCode =>
               logger.error(s"$correlationId::[retrieveAuthorisedBearer] failed $errorStatusCode")
-              Left(RdsAuthError)
+              Left(RdsAuthDownstreamError)
           }
         }
         .recover {
           case ex: HttpException =>
             logger.error(s"$correlationId::[retrieveAuthorisedBearer] HttpException=$ex")
-            Left(RdsAuthError)
+            Left(RdsAuthDownstreamError)
           case ex: UpstreamErrorResponse =>
             logger.error(s"$correlationId::[retrieveAuthorisedBearer] UpstreamErrorResponse=$ex")
-            Left(RdsAuthError)
+            Left(RdsAuthDownstreamError)
         }
     }
   }
 
   private def handleResponse(response: HttpResponse): Either[MtdError, RdsAuthCredentials] =
-    response.json.asOpt[RdsAuthCredentials].toRight(RdsAuthError)
+    response.json.asOpt[RdsAuthCredentials].toRight(RdsAuthDownstreamError)
 
 }

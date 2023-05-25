@@ -20,25 +20,25 @@ import play.api.http.Status._
 
 
 //NRS error
-object NrsError extends MtdError("NRS_SUBMISSION_FAILURE", "The submission to NRS from MDTP failed")
+object NrsError extends MtdError("NRS_SUBMISSION_FAILURE", "The submission to NRS from MDTP failed", BAD_REQUEST)
 
-object FormatReportIdError extends MtdError("FORMAT_REPORT_ID", "The provided Report ID is invalid")
+object FormatReportIdError extends MtdError("FORMAT_REPORT_ID", "The provided Report ID is invalid", BAD_REQUEST)
 
 // Format Errors
-object NinoFormatError extends MtdError("FORMAT_NINO", "The provided NINO is invalid")
+object NinoFormatError extends MtdError("FORMAT_NINO", "The provided NINO is invalid", BAD_REQUEST)
 
-object NinoFormatDesError extends MtdError("FORMAT_NINO", "The provided NINO is invalid", UNAUTHORIZED)
+object NinoFormatDesError extends MtdError("NINO_INVALID", "The provided NINO is invalid", UNAUTHORIZED)
 
-object NinoNotFound extends MtdError("NINO_NOT_FOUND", "The provided NINO was not found")
+object NinoNotFound extends MtdError("NINO_NOT_FOUND", "The provided NINO was not found", BAD_REQUEST)
 
-object CalculationIdFormatError extends MtdError(code = "FORMAT_CALC_ID", message = "The provided Calculation ID is invalid")
+object CalculationIdFormatError extends MtdError(code = "FORMAT_CALC_ID", message = "The provided Calculation ID is invalid", BAD_REQUEST)
 
-object TaxYearFormatError extends MtdError("FORMAT_TAX_YEAR", "The provided tax year is invalid")
+object TaxYearFormatError extends MtdError("FORMAT_TAX_YEAR", "The provided tax year is invalid", BAD_REQUEST)
 
-object TaxYearRangeInvalid extends MtdError("RULE_TAX_YEAR_RANGE_INVALID", "Tax year range invalid. A tax year range of one year is required.")
+object TaxYearRangeInvalid extends MtdError("RULE_TAX_YEAR_RANGE_INVALID", "Tax year range invalid. A tax year range of one year is required.", BAD_REQUEST)
 
 // Standard Errors
-object ResourceNotFoundError extends MtdError("RESOURCE_NOT_FOUND", "Matching resource not found", NOT_FOUND)
+object ResourceNotFoundError extends MtdError("RESOURCE_NOT_FOUND", "Matching resource not found", SERVICE_UNAVAILABLE)
 
 object InternalError extends MtdError("INTERNAL_SERVER_ERROR", "An internal server error occurred", INTERNAL_SERVER_ERROR)
 
@@ -46,14 +46,14 @@ object BadRequestError extends MtdError("INVALID_REQUEST", "Invalid request", BA
 
 object ServiceUnavailableError extends MtdError("SERVICE_UNAVAILABLE", "Internal server error", INTERNAL_SERVER_ERROR)
 
-object InvalidJson extends MtdError("INVALID_JSON", "Invalid JSON received")
+object InvalidJson extends MtdError("INVALID_JSON", "Invalid JSON received", BAD_REQUEST)
 
 // Authorisation Errors
 object UnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised", FORBIDDEN)
 
 object InvalidBearerTokenError extends MtdError("UNAUTHORIZED", "Bearer token is missing or not authorized", UNAUTHORIZED)
 
-object InvalidCredentialsError extends MtdError("INVALID_CREDENTIALS", "Invalid Authentication information provided", FORBIDDEN)
+object InvalidCredentialsError extends MtdError("INVALID_CREDENTIALS", "Invalid Authentication information provided", UNAUTHORIZED)
 
 object BearerTokenExpiredError extends MtdError("INVALID_CREDENTIALS", "Invalid Authentication information provided", FORBIDDEN)
 
@@ -68,7 +68,7 @@ object ForbiddenRDSCorrelationIdError
   extends MtdError(
     code = "CORRELATION_ID_NOT_AUTHORISED",
     message = "The Correlation ID is not the expected value for this report",
-    INTERNAL_SERVER_ERROR
+    FORBIDDEN
   )
 
 // Accept header Errors
@@ -76,15 +76,16 @@ object InvalidAcceptHeaderError extends MtdError("ACCEPT_HEADER_INVALID", "The a
 
 object UnsupportedVersionError extends MtdError("NOT_FOUND", "The requested resource could not be found", NOT_FOUND)
 
-object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body")
+object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body", BAD_REQUEST)
 
 object MatchingCalculationIDNotFoundError
-  extends MtdError("MATCHING_CALCULATION_ID_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later.")
+  extends MtdError("MATCHING_CALCULATION_ID_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later.", NOT_FOUND)
 
-object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "A resource with the name in the request can not be found.")
+object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "A resource with the name in the request can not be found.", SERVICE_UNAVAILABLE)
 
-object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", FORBIDDEN)
+object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", INTERNAL_SERVER_ERROR)
 
+object RdsAuthDownstreamError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", FORBIDDEN)
 object ServerError extends MtdError("SERVER_ERROR", "Server error", INTERNAL_SERVER_ERROR)
 
-object NoAssessmentFeedbackFromRDS extends MtdError("204", "No Content")
+object NoAssessmentFeedbackFromRDS extends MtdError("204", "No Content", NO_CONTENT)

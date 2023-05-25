@@ -192,7 +192,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec {
         }
       }
 
-      object unexpectedError extends MtdError(code = "UNEXPECTED_ERROR", message = "This is an unexpected error")
+      object unexpectedError extends MtdError(code = "UNEXPECTED_ERROR", message = "This is an unexpected error", INTERNAL_SERVER_ERROR)
 
       val authServiceErrors =
         Seq(

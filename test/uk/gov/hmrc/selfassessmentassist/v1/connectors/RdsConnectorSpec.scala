@@ -154,7 +154,7 @@ class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest, Some(rdsAuthCredentials)))
         feedbackReport shouldBe Left(
-          ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", "No feedback applicable")))))
+          ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", "No feedback applicable", NOT_FOUND)))))
       }
 
       "return Internal Server Error, if RDS returns http status 400" in new Test {

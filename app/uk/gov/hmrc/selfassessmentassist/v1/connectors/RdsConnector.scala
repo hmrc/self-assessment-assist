@@ -56,7 +56,7 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
               .fold(
                 e => {
                   logger.error(s"$correlationId::[RdsConnector][submit] validation failed while transforming the response $e")
-                  Left(ErrorWrapper(correlationId, InternalError, Some(Seq(MtdError(InternalError.code, "unexpected response from downstream")))))
+                  Left(ErrorWrapper(correlationId, InternalError, Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))))
                 },
                 assessmentReport =>
                   assessmentReport.responseCode match {
@@ -70,7 +70,7 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
                       logger.info(s"$correlationId::[RdsConnector:submit] RDS response calculationId Not Found, body status code is $NOT_FOUND")
                       val errorMessage = assessmentReport.responseMessage.getOrElse("CalculationId Not Found")
                       logger.info(s"$correlationId::[RdsService][submit] $errorMessage")
-                      Left(ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", errorMessage)))))
+                      Left(ErrorWrapper(correlationId, MatchingCalculationIDNotFoundError, Some(Seq(MtdError("404", errorMessage, NOT_FOUND)))))
                     case Some(_) | None =>
                       logger.error(
                         s"$correlationId::[RdsService][submit] RDS unexpected response, body status code is ${assessmentReport.responseCode}")
@@ -78,7 +78,7 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
                         ErrorWrapper(
                           correlationId,
                           InternalError,
-                          Some(Seq(MtdError(InternalError.code, "unexpected response from downstream")))))
+                          Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))))
                   }
               )
 
@@ -146,7 +146,7 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
               .fold(
                 e => {
                   logger.error(s"$correlationId::[RdsConnector][acknowledgeRds] validation failed while transforming the response $e")
-                  Left(ErrorWrapper(correlationId, InternalError, Some(Seq(MtdError(InternalError.code, "unexpected response from downstream")))))
+                  Left(ErrorWrapper(correlationId, InternalError, Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))))
                 },
                 assessmentReport =>
                   assessmentReport.responseCode match {
@@ -162,7 +162,7 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
                         ErrorWrapper(
                           correlationId,
                           InternalError,
-                          Some(Seq(MtdError(InternalError.code, "unexpected response from downstream")))))
+                          Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))))
 
                   }
               )

@@ -20,7 +20,7 @@ import play.api.http.Status._
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsObject, JsPath, Json, OWrites}
 
-case class MtdError(code: String, message: String, httpStatus: Int = BAD_REQUEST, paths: Option[Seq[String]] = None) {
+case class MtdError(code: String, message: String, httpStatus: Int, paths: Option[Seq[String]] = None) {
   val asJson: JsObject = Json.toJson(this).as[JsObject]
 }
 
