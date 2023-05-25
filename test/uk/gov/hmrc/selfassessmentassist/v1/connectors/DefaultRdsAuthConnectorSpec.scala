@@ -31,7 +31,7 @@ import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthCredential, RdsAuthCredentials}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, RdsAuthDownstreamError}
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 
 import java.util.UUID
@@ -111,8 +111,7 @@ class DefaultRdsAuthConnectorSpec
 
       "return rds error when no auth" in new Test {
         stubRdsAuthResponse(403)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Left(
-          MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", None))
+        await(connector.retrieveAuthorisedBearer().value) shouldBe Left(RdsAuthDownstreamError)
       }
 
     }

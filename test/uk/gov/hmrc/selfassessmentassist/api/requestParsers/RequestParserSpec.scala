@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.api.requestParsers
 
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{correlationId, simpleNino}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BadRequestError, DownstreamError, ErrorWrapper, MtdError, NinoFormatError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BadRequestError, ErrorWrapper, InternalError, MtdError, NinoFormatError}
 import uk.gov.hmrc.selfassessmentassist.api.models.request.RawData
 import uk.gov.hmrc.selfassessmentassist.api.requestParsers.validators.Validator
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
@@ -64,10 +64,10 @@ class RequestParserSpec extends UnitSpec {
 
     "return multiple errors" when {
       "the validator returns multiple errors" in new Test {
-        lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError, DownstreamError)
+        lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError, InternalError)
 
         await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(
-          ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, DownstreamError))))
+          ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, InternalError))))
       }
     }
   }

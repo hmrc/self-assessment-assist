@@ -24,7 +24,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.NinoChecker
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, ClientOrAgentNotAuthorisedError, DownstreamError, ForbiddenDownstreamError, InvalidBearerTokenError, InvalidCredentialsError, LegacyUnauthorisedError, NinoFormatError, UnauthorisedError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors._
 import uk.gov.hmrc.selfassessmentassist.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService
@@ -61,11 +61,11 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
           .authorised(predicate(mtdId), correlationId)
           .flatMap[Result] {
             case Right(userDetails) => block(UserRequest(userDetails.copy(clientID = clientID), request))
-            case Left(ClientOrAgentNotAuthorisedError) =>
+            case Left(ClientOrAgentNotAuthorisedError) => convertErrorAsJson(ClientOrAgentNotAuthorisedError)
               Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
             case Left(ForbiddenDownstreamError) =>
               logger.warn(s"$correlationId::[invokeBlock]Forbidden downstream error")
-              Future.successful(Forbidden(convertErrorAsJson(DownstreamError)))
+              Future.successful(Forbidden(convertErrorAsJson(InternalError)))
             case Left(InvalidBearerTokenError) =>
               Future.successful(Forbidden(convertErrorAsJson(InvalidCredentialsError)))
             case Left(BearerTokenExpiredError) =>
@@ -74,10 +74,10 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
               Future.successful(Forbidden(convertErrorAsJson(LegacyUnauthorisedError)))
             case Left(_) =>
               logger.warn(s"$correlationId::[invokeBlock]Downstream")
-              Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
+              Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
             case _ =>
               logger.error(s"$correlationId::[invokeBlock]Unknown error")
-              Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
+              Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
           }
           .map(_.withApiHeaders(correlationId))
       }
@@ -95,7 +95,7 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
               Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
             case Left(UnauthorisedError)       => Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
             case Left(InvalidBearerTokenError) => Future.successful(Unauthorized(convertErrorAsJson(InvalidBearerTokenError)))
-            case Left(_)                       => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
+            case Left(_) => Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
           }
         } else {
           logger.warn(s"$correlationId::[invokeBlock]Error in nino format")

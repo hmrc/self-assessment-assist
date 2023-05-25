@@ -22,7 +22,7 @@ import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupOutcome
 import uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers.MtdIdLookupHttpParser.mtdIdLookupHttpReads
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, InvalidBearerTokenError, NinoFormatError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, InvalidBearerTokenError, NinoFormatError}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
 class MtdIdLookupHttpParserSpec extends UnitSpec {
@@ -49,21 +49,21 @@ class MtdIdLookupHttpParserSpec extends UnitSpec {
         val response                   = HttpResponse(OK, invalidJson, Map.empty[String, Seq[String]])
         val result: MtdIdLookupOutcome = mtdIdLookupHttpReads.read(method, url, response)
 
-        result shouldBe Left(DownstreamError)
+        result shouldBe Left(InternalError)
       }
 
       "backend doesn't return any data" in {
         val response                   = HttpResponse(OK, "")
         val result: MtdIdLookupOutcome = mtdIdLookupHttpReads.read(method, url, response)
 
-        result shouldBe Left(DownstreamError)
+        result shouldBe Left(InternalError)
       }
 
       "the json cannot be read" in {
         val response                   = HttpResponse(OK, None.orNull)
         val result: MtdIdLookupOutcome = mtdIdLookupHttpReads.read(method, url, response)
 
-        result shouldBe Left(DownstreamError)
+        result shouldBe Left(InternalError)
       }
     }
 
@@ -90,7 +90,7 @@ class MtdIdLookupHttpParserSpec extends UnitSpec {
         val response                   = HttpResponse(INTERNAL_SERVER_ERROR, None.orNull)
         val result: MtdIdLookupOutcome = mtdIdLookupHttpReads.read(method, url, response)
 
-        result shouldBe Left(DownstreamError)
+        result shouldBe Left(InternalError)
       }
     }
   }

@@ -22,7 +22,7 @@ import play.api.mvc._
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.selfassessmentassist.api.controllers.{ApiBaseController, AuthorisedController}
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BadRequestError, CalculationIdFormatError, ClientOrAgentNotAuthorisedError, DownstreamError, ErrorWrapper, ForbiddenDownstreamError, InvalidCredentialsError, MatchingCalculationIDNotFoundError, MatchingResourcesNotFoundError, NinoFormatError, NoAssessmentFeedbackFromRDS, RdsAuthError, ServerError, ServiceUnavailableError, TaxYearFormatError, TaxYearRangeInvalid}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BadRequestError, CalculationIdFormatError, ClientOrAgentNotAuthorisedError, ErrorWrapper, ForbiddenDownstreamError, InternalError, InvalidCredentialsError, MatchingCalculationIDNotFoundError, MatchingResourcesNotFoundError, NinoFormatError, NoAssessmentFeedbackFromRDS, RdsAuthError, ServerError, ServiceUnavailableError, TaxYearFormatError, TaxYearRangeInvalid}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.ErrorToJsonConverter.convertErrorAsJson
@@ -57,7 +57,7 @@ class GenerateReportController @Inject() (
 
   def generateReportInternal(nino: String, taxYear: String, calculationId: String): Action[AnyContent] = {
 
-    implicit val correlationId: String = idGenerator.getUid
+    implicit val correlationId: String = idGenerator.generateCorrelationId
     logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
 
     authorisedAction(nino).async { implicit request =>
@@ -93,7 +93,7 @@ class GenerateReportController @Inject() (
                 request,
                 AssistReportGenerated)
               .fold(
-                _ => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError))),
+                _ => Future.successful(InternalServerError(convertErrorAsJson(InternalError))),
                 success => {
                   logger.debug(s"$correlationId::[generateReport] Request initiated to store ${AssistReportGenerated.value} content to NRS")
                   nonRepudiationService.submit(success)
@@ -109,8 +109,8 @@ class GenerateReportController @Inject() (
   }
 
   def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error, errorWrapper.errors) match {
-    case (ServerError | DownstreamError, _)      => Future(InternalServerError(convertErrorAsJson(DownstreamError)))
-    case (NinoFormatError, _)                    => Future(BadRequest(convertErrorAsJson(NinoFormatError)))
+    case (ServerError | InternalError, _) => Future(InternalServerError(convertErrorAsJson(InternalError)))
+    case (NinoFormatError, _) => Future(BadRequest(convertErrorAsJson(NinoFormatError)))
     case (NoAssessmentFeedbackFromRDS, _)        => Future(NoContent)
     case (TaxYearRangeInvalid, _)                => Future(BadRequest(convertErrorAsJson(TaxYearRangeInvalid)))
     case (TaxYearFormatError, _)                 => Future(BadRequest(convertErrorAsJson(TaxYearFormatError)))

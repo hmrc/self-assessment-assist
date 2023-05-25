@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{simpleNino, simpleNinoInvalid}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockInsightConnector
@@ -44,10 +44,10 @@ class InsightServiceSpec extends ServiceSpec with MockAppConfig {
 
     "the assess method is called with invalid request to fetch fraud risk details then" must {
       "return error" in new Test {
-        MockInsightConnector.assess(fraudRiskRequest(simpleNinoInvalid)) returns Future.successful(Left(ErrorWrapper(correlationId, DownstreamError)))
+        MockInsightConnector.assess(fraudRiskRequest(simpleNinoInvalid)) returns Future.successful(Left(ErrorWrapper(correlationId, InternalError)))
 
         val fraudRiskReportSO: ServiceOutcome[FraudRiskReport] = await(service.assess(fraudRiskRequest(simpleNinoInvalid)))
-        fraudRiskReportSO shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
+        fraudRiskReportSO shouldBe Left(ErrorWrapper(correlationId, InternalError))
       }
     }
   }

@@ -26,7 +26,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleFraudRiskRequest
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
@@ -98,35 +98,35 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
 
       "return invalid response" in new Test {
         stubCIPResponse(Some(malformedSuccessResponseJson.toString), OK)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
+        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
       }
     }
 
     "fails with 400 status" must {
       "fail the request" in new Test {
         stubCIPResponse(None, BAD_REQUEST)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
+        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
       }
     }
 
     "fails with 404(not found) status" must {
       "fail the request" in new Test {
         stubCIPResponse(None, NOT_FOUND)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
+        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
       }
     }
 
     "fails with 408(REQUEST_TIMEOUT) status" must {
       "fail the request" in new Test {
         stubCIPResponse(None, REQUEST_TIMEOUT)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
+        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
       }
     }
 
     "fails with 500(INTERNAL SERVER ERROR) status" must {
       "fail the request" in new Test {
         stubCIPResponse(None, INTERNAL_SERVER_ERROR)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, DownstreamError))
+        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
       }
     }
 

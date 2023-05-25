@@ -51,7 +51,7 @@ class AcknowledgeReportController @Inject() (
     with Logging {
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
-    implicit val correlationId: String = idGenerator.getUid
+    implicit val correlationId: String = idGenerator.generateCorrelationId
     logger.debug(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
 
     val submissionTimestamp = currentDateTime.getDateTime
@@ -75,7 +75,7 @@ class AcknowledgeReportController @Inject() (
               .fold(
                 _ => {
                   logger.error(s"$correlationId::[acknowledgeReport] NRS event generation failed")
-                  Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
+                  Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
                 },
                 success => {
                   logger.debug(s"$correlationId::[acknowledgeReport] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
@@ -92,8 +92,8 @@ class AcknowledgeReportController @Inject() (
   }
 
   def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error, errorWrapper.errors) match {
-    case (ServerError | DownstreamError | ServiceUnavailableError, _) => Future.successful(InternalServerError(convertErrorAsJson(DownstreamError)))
-    case (ForbiddenDownstreamError, _)                                => Future.successful(Forbidden(convertErrorAsJson(ForbiddenDownstreamError)))
+    case (ServerError | InternalError | ServiceUnavailableError, _) => Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
+    case (ForbiddenDownstreamError, _) => Future.successful(Forbidden(convertErrorAsJson(ForbiddenDownstreamError)))
     case (ForbiddenRDSCorrelationIdError, _)  => Future.successful(Forbidden(convertErrorAsJson(ForbiddenRDSCorrelationIdError)))
     case (FormatReportIdError, _)             => Future.successful(BadRequest(convertErrorAsJson(FormatReportIdError)))
     case (ClientOrAgentNotAuthorisedError, _) => Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
@@ -102,10 +102,10 @@ class AcknowledgeReportController @Inject() (
       Future.successful(ServiceUnavailable(convertErrorAsJson(ServiceUnavailableError)))
     case (_, Some(errs)) =>
       logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario with multiple errors $errs")
-      Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
+      Future.successful(ServiceUnavailable(convertErrorAsJson(InternalError)))
     case (error @ _, None) =>
       logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario $error")
-      Future.successful(ServiceUnavailable(convertErrorAsJson(DownstreamError)))
+      Future.successful(ServiceUnavailable(convertErrorAsJson(InternalError)))
   }
 
 }

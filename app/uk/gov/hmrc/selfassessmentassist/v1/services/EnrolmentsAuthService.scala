@@ -23,7 +23,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, DownstreamError, ForbiddenDownstreamError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, ForbiddenDownstreamError, InternalError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 
@@ -143,7 +143,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector) extends Log
     case exception @ _ =>
       logger.warn(
         s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
-      Future.successful(Left(DownstreamError))
+      Future.successful(Left(InternalError))
   }
 
 }

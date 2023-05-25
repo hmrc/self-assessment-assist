@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 import play.api.http.Status.OK
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, ErrorWrapper}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
@@ -46,18 +46,18 @@ class InsightConnector @Inject() (val httpClient: HttpClient, appConfig: AppConf
               .fold(
                 e => {
                   logger.error(s"$correlationId::[InsightConnector:assess] CIP failed during validate $e")
-                  Left(ErrorWrapper(correlationId, DownstreamError))
+                  Left(ErrorWrapper(correlationId, InternalError))
                 },
                 report => Right(ResponseWrapper(correlationId, report))
               )
           case _ =>
             logger.error(s"$correlationId::[InsightConnector:assess] CIP Fraudrisk report failed as unknown code returned ${response.status}")
-            Left(ErrorWrapper(correlationId, DownstreamError))
+            Left(ErrorWrapper(correlationId, InternalError))
         }
       }
       .recover { case ex @ _ =>
         logger.error(s"$correlationId::[InsightConnector:assess] CIP Unknown exception ", ex)
-        Left(ErrorWrapper(correlationId, DownstreamError))
+        Left(ErrorWrapper(correlationId, InternalError))
       }
   }
 

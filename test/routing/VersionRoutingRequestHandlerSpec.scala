@@ -111,7 +111,7 @@ class VersionRoutingRequestHandlerSpec extends UnitSpec with Inside with MockApp
         val result = a.apply(request)
 
         status(result) shouldBe NOT_ACCEPTABLE
-        contentAsJson(result) shouldBe Json.toJson(InvalidAcceptHeaderError)
+        contentAsJson(result) shouldBe InvalidAcceptHeaderError.asJson
       }
     }
   }
@@ -136,7 +136,7 @@ class VersionRoutingRequestHandlerSpec extends UnitSpec with Inside with MockApp
         val result = a.apply(request)
 
         status(result) shouldBe NOT_ACCEPTABLE
-        contentAsJson(result) shouldBe Json.toJson(InvalidAcceptHeaderError)
+        contentAsJson(result) shouldBe InvalidAcceptHeaderError.asJson
       }
     }
   }
@@ -152,7 +152,7 @@ class VersionRoutingRequestHandlerSpec extends UnitSpec with Inside with MockApp
           val result = a.apply(request)
 
           status(result) shouldBe NOT_FOUND
-          contentAsJson(result) shouldBe Json.toJson(UnsupportedVersionError)
+          contentAsJson(result) shouldBe UnsupportedVersionError.asJson
 
         }
       }

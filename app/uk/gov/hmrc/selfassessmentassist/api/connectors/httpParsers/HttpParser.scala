@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers
 
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Reads}
+import play.api.libs.json._
 import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, DownstreamErrorCode, DownstreamErrors, InternalError, OutboundError}
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
 import scala.util.Try
@@ -38,5 +39,22 @@ trait HttpParser extends Logging {
     }
 
   }
+
+  private val multipleErrorReads: Reads[Seq[DownstreamErrorCode]] = (__ \ "failures").read[Seq[DownstreamErrorCode]]
+
+  def retrieveCorrelationId(response: HttpResponse): String = response.header("CorrelationId").getOrElse("")
+
+  def parseErrors(response: HttpResponse): DownstreamError = {
+    val singleError = response.validateJson[DownstreamErrorCode].map(err => DownstreamErrors(List(err)))
+    lazy val multipleErrors = response.validateJson(multipleErrorReads).map(errs => DownstreamErrors(errs))
+
+    lazy val unableToParseJsonError = {
+      logger.warn(s"unable to parse errors from response: ${response.body}")
+      OutboundError(InternalError)
+    }
+
+    singleError orElse multipleErrors getOrElse unableToParseJsonError
+  }
+
 
 }
