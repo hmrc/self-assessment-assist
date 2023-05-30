@@ -64,7 +64,7 @@ class AcknowledgeReportControllerSpec
     class TestController
         extends AcknowledgeReportController(
           cc = cc,
-          requestParser = mockAcknowledgeRequestParser,
+          parser = mockAcknowledgeRequestParser,
           authService = mockEnrolmentsAuthService,
           lookupConnector = mockLookupConnector,
           nonRepudiationService = mockNrsService,
@@ -72,7 +72,6 @@ class AcknowledgeReportControllerSpec
           currentDateTime = mockCurrentDateTime,
           idGenerator = mockIdGenerator,
           ifsService = mockIfsService,
-          config = appConfig
         )
 
     val dummyReportPayload: NrsSubmission =

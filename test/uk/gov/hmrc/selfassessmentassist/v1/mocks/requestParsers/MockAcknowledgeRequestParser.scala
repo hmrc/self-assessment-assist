@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.http.Request
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.AcknowledgeReportRawData
@@ -34,20 +35,20 @@ trait MockAcknowledgeRequestParser extends MockFactory {
 
   object MockAcknowledgeRequestParser {
 
-    def parseRequest(rawData: AcknowledgeReportRawData): CallHandler[Future[ParseOutcome[AcknowledgeReportRequest]]] = {
+    def parseRequest(rawData: AcknowledgeReportRawData): CallHandler[Either[ErrorWrapper, AcknowledgeReportRequest]] = {
       (mockAcknowledgeRequestParser
-        .parseRequest(_: AcknowledgeReportRawData)(_: ExecutionContext, _: String))
+        .parseOrchestratedRequest(_: AcknowledgeReportRawData)(_: ExecutionContext, _: String))
         .expects(*, *, *)
         .anyNumberOfTimes() returns
-        Future(Right(AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)))
+        Right(AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId))
     }
 
-    def parseRequestFail(rawData: AcknowledgeReportRawData, error: MtdError): CallHandler[Future[ParseOutcome[AcknowledgeReportRequest]]] = {
+    def parseRequestFail(rawData: AcknowledgeReportRawData, error: MtdError): CallHandler[Either[ErrorWrapper, AcknowledgeReportRequest]] = {
       (mockAcknowledgeRequestParser
-        .parseRequest(_: AcknowledgeReportRawData)(_: ExecutionContext, _: String))
+        .parseOrchestratedRequest(_: AcknowledgeReportRawData)(_: ExecutionContext, _: String))
         .expects(*, *, *)
         .anyNumberOfTimes() returns
-        Future(Left(ErrorWrapper(correlationId, error)))
+        Left(ErrorWrapper(correlationId, error))
     }
 
   }

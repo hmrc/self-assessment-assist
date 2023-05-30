@@ -16,96 +16,54 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.controllers
 
-import cats.data.EitherT
 import play.api.mvc._
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
-import uk.gov.hmrc.selfassessmentassist.api.controllers.{ApiBaseController, AuthorisedController}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors._
-import uk.gov.hmrc.selfassessmentassist.config.AppConfig
-import uk.gov.hmrc.selfassessmentassist.utils.ErrorToJsonConverter.convertErrorAsJson
+import uk.gov.hmrc.selfassessmentassist.api.controllers._
 import uk.gov.hmrc.selfassessmentassist.utils.{CurrentDateTime, IdGenerator, Logging}
+import uk.gov.hmrc.selfassessmentassist.v1.Orchestrator
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.AcknowledgeReportRawData
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{AcknowledgeReportId, AssistReportAcknowledged}
-import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.requestParsers.AcknowledgeRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.services.{EnrolmentsAuthService, IfsService, NrsService, RdsService}
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class AcknowledgeReportController @Inject() (
     val cc: ControllerComponents,
-    requestParser: AcknowledgeRequestParser,
+    parser: AcknowledgeRequestParser,
     val authService: EnrolmentsAuthService,
     val lookupConnector: MtdIdLookupConnector,
     nonRepudiationService: NrsService,
     rdsService: RdsService,
     currentDateTime: CurrentDateTime,
     idGenerator: IdGenerator,
-    ifsService: IfsService,
-    config: AppConfig
+    ifsService: IfsService
 )(implicit ec: ExecutionContext)
     extends AuthorisedController(cc)
-    with ApiBaseController
-    with BaseController
     with Logging {
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
     implicit val correlationId: String = idGenerator.generateCorrelationId
+    implicit val endpointLogContext: EndpointLogContext =
+      EndpointLogContext(controllerName = "AcknowledgeReportController", endpointName = "reportsAcknowledge")
+
     logger.debug(s"$correlationId::[acknowledgeReportForSelfAssessment]Received request to acknowledge assessment report")
 
     val submissionTimestamp = currentDateTime.getDateTime
 
     authorisedAction(nino).async { implicit request =>
-      val processRequest: EitherT[Future, ErrorWrapper, RdsAssessmentReport] = for {
-        parsedRequest   <- EitherT(requestParser.parseRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId)))
-        serviceResponse <- EitherT(rdsService.acknowledge(parsedRequest))
-        _               <- EitherT(ifsService.submitAcknowledgementMessage(parsedRequest, serviceResponse.responseData, request.userDetails))
-      } yield {
-        serviceResponse.responseData
-      }
+      implicit val ctx: RequestContext = RequestContext.from(correlationId, endpointLogContext)
 
-      processRequest
-        .fold(
-          errorWrapper => errorHandler(errorWrapper, correlationId),
-          assessmentReport => {
-            logger.debug(s"$correlationId::[acknowledgeReport] ... RDS acknowledge status ${assessmentReport.responseCode}")
-            nonRepudiationService
-              .buildNrsSubmission(AcknowledgeReportId(reportId).stringify, reportId, submissionTimestamp, request, AssistReportAcknowledged)
-              .fold(
-                _ => {
-                  logger.error(s"$correlationId::[acknowledgeReport] NRS event generation failed")
-                  Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
-                },
-                success => {
-                  logger.debug(s"$correlationId::[acknowledgeReport] Request initiated to store ${AssistReportAcknowledged.value} content to NRS")
-                  nonRepudiationService.submit(success)
-                  logger.debug(s"$correlationId::[acknowledgeReport] ... report submitted to NRS")
-                  Future.successful(NoContent)
-                }
-              )
-          }
-        )
-        .flatten
-        .map(_.withApiHeaders(correlationId))
+      val orchestrator = new Orchestrator(rdsService, ifsService, nonRepudiationService)
+
+      val requestHandler =
+        RequestHandler
+          .withParser(parser)
+          .withService(orchestrator.orchestrate(_, request, reportId, submissionTimestamp))
+          .withNoContentResult()
+
+      requestHandler.handleRequest(AcknowledgeReportRawData(nino, reportId, rdsCorrelationId))
     }
-  }
-
-  def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error, errorWrapper.errors) match {
-    case (ServerError | InternalError | ServiceUnavailableError, _) => Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
-    case (ForbiddenDownstreamError, _) => Future.successful(Forbidden(convertErrorAsJson(ForbiddenDownstreamError)))
-    case (ForbiddenRDSCorrelationIdError, _)  => Future.successful(Forbidden(convertErrorAsJson(ForbiddenRDSCorrelationIdError)))
-    case (FormatReportIdError, _)             => Future.successful(BadRequest(convertErrorAsJson(FormatReportIdError)))
-    case (ClientOrAgentNotAuthorisedError, _) => Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
-    case (NinoFormatError, _)                 => Future.successful(BadRequest(convertErrorAsJson(NinoFormatError)))
-    case (MatchingResourcesNotFoundError | ResourceNotFoundError, _) =>
-      Future.successful(ServiceUnavailable(convertErrorAsJson(ServiceUnavailableError)))
-    case (_, Some(errs)) =>
-      logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario with multiple errors $errs")
-      Future.successful(ServiceUnavailable(convertErrorAsJson(InternalError)))
-    case (error @ _, None) =>
-      logger.error(s"$correlationId::[AcknowledgeReportController] Error handled in general scenario $error")
-      Future.successful(ServiceUnavailable(convertErrorAsJson(InternalError)))
   }
 
 }
