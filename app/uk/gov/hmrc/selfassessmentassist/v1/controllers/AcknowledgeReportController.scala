@@ -93,7 +93,7 @@ class AcknowledgeReportController @Inject() (
 
   def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error, errorWrapper.errors) match {
     case (ServerError | InternalError | ServiceUnavailableError, _) => Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
-    case (ForbiddenDownstreamError, _) => Future.successful(Forbidden(convertErrorAsJson(ForbiddenDownstreamError)))
+    case (ForbiddenDownstreamError, _)                              => Future.successful(Forbidden(convertErrorAsJson(ForbiddenDownstreamError)))
     case (ForbiddenRDSCorrelationIdError, _)  => Future.successful(Forbidden(convertErrorAsJson(ForbiddenRDSCorrelationIdError)))
     case (FormatReportIdError, _)             => Future.successful(BadRequest(convertErrorAsJson(FormatReportIdError)))
     case (ClientOrAgentNotAuthorisedError, _) => Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
