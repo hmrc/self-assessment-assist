@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import cats.data.EitherT
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, RdsAuthDownstreamError, RdsAuthError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, RdsAuthDownstreamError}
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
 import java.util.Base64
