@@ -31,7 +31,6 @@ trait ApiBaseController {
         "X-Content-Type-Options" -> "nosniff",
         "Content-Type" -> "application/json"
       )
-
       result.copy(header = result.header.copy(headers = result.header.headers ++ newHeaders))
     }
 
