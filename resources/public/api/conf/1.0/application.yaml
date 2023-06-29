@@ -37,11 +37,11 @@ info:
     [reference guide](/api-documentation/docs/reference-guide#errors) for more on errors.
 
     # Changelog
-    You can find the changelog in the [self-assessment-assist-changelog](https://github.com/hmrc/income-tax-mtd-changelog/wiki) GitHub wiki.
+    You can find the changelog in the [self-assessment-assist-changelog](https://github.com/hmrc/income-tax-mtd-changelog) GitHub wiki.
 
     # Support
     * Raise non-technical or platform-related issues with the [Software Development Support Team (SDST)](https://developer.service.hmrc.gov.uk/developer/support).
-    * Raise technical issues on the [self-assessment-assist-changelog](https://github.com/hmrc/income-tax-mtd-changelog/wiki) GitHub page.
+    * Raise technical issues on the [self-assessment-assist-changelog](https://github.com/hmrc/income-tax-mtd-changelog) GitHub page.
 
     # Testing
     You can use the sandbox environment to <a href="/api-documentation/docs/testing">test this API</a>. You can use the <a href="/api-documentation/docs/api/service/api-platform-test-user/1.0">Create Test User API</a> or it's frontend service to create test users.
