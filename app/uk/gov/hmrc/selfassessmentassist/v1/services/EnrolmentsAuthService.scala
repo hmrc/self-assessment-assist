@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 
 import play.api.libs.json.JsResultException
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
@@ -29,18 +30,26 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 
 @Singleton
-class EnrolmentsAuthService @Inject() (val connector: AuthConnector) extends Logging {
+class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConfig: AppConfig) extends Logging {
 
   private val authFunction: AuthorisedFunctions = new AuthorisedFunctions {
     override def authConnector: AuthConnector = connector
   }
 
+  def buildPredicate(predicate: Predicate): Predicate =
+    if (appConfig.confidenceLevelConfig.authValidationEnabled) {
+      predicate and ((Individual and ConfidenceLevel.L200) or Organisation or Agent)
+    } else {
+      predicate
+    }
+
   def authorised(predicate: Predicate, correlationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
 
     authFunction
-      .authorised(predicate)
+      .authorised(buildPredicate(predicate))
       .retrieve(
         affinityGroup and allEnrolments
           and internalId and externalId and agentCode and credentials
