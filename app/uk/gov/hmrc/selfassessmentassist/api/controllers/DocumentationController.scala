@@ -17,15 +17,17 @@
 package uk.gov.hmrc.selfassessmentassist.api.controllers
 
 import controllers.Assets
+import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.libs.json.Json
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
 
-class DocumentationController @Inject() (assets: Assets, cc: ControllerComponents) extends BackendController(cc) {
+class DocumentationController @Inject() (apiDefinition: ApiDefinitionFactory, assets: Assets, cc: ControllerComponents) extends BackendController(cc) {
 
-  def definition(): Action[AnyContent] = {
-    assets.at(s"/public/api/conf", "definition.json")
+  def definition(): Action[AnyContent] = Action {
+    Ok(Json.toJson(apiDefinition.definition))
   }
 
   def specification(version: String, file: String): Action[AnyContent] = {

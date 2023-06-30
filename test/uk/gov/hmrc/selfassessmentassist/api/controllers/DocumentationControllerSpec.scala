@@ -19,6 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.api.controllers
 import controllers.Assets
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.Result
+import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
 import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
@@ -43,12 +44,15 @@ class DocumentationControllerSpec
 
   private val assets = app.injector.instanceOf[Assets]
 
+  private val apiDefinition = app.injector.instanceOf[ApiDefinitionFactory]
+
   trait Test {
 
     val controller: TestController = new TestController()
 
     class TestController
         extends DocumentationController(
+          apiDefinition = apiDefinition,
           cc = cc,
           assets = assets
         )

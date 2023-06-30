@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.config
 
-import play.api.Configuration
+import com.typesafe.config.Config
+import play.api.{ConfigLoader, Configuration}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
 import uk.gov.hmrc.selfassessmentassist.utils.Retrying
@@ -32,6 +33,9 @@ trait AppConfig {
   def rdsBaseUrlForAcknowledge: String
 
   // API Config
+  def apiGatewayContext: String
+  def apiStatus(version: String): String
+  def endpointsEnabled(version: String): Boolean
   def featureSwitch: Option[Configuration]
 
   // SAS
@@ -60,7 +64,12 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
 
   val appName: String = config.getString("appName")
 
+  //API config items
   def featureSwitch: Option[Configuration] = configuration.getOptional[Configuration](s"feature-switch")
+  val apiGatewayContext: String                    = config.getString("api.gateway.context")
+  def apiStatus(version: String): String           = config.getString(s"api.$version.status")
+  def endpointsEnabled(version: String): Boolean   = config.getBoolean(s"feature-switch.version-$version.enabled")
+
 
   // NRS config items
   private val nrsConfig  = configuration.get[Configuration]("microservice.services.non-repudiation")
