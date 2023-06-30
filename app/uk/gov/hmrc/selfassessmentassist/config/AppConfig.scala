@@ -18,9 +18,11 @@ package uk.gov.hmrc.selfassessmentassist.config
 
 import com.typesafe.config.Config
 import play.api.{ConfigLoader, Configuration}
+import uk.gov.hmrc.auth.core.ConfidenceLevel
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
 import uk.gov.hmrc.selfassessmentassist.utils.Retrying
+
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, FiniteDuration}
@@ -34,6 +36,7 @@ trait AppConfig {
 
   // API Config
   def apiGatewayContext: String
+  def confidenceLevelConfig: ConfidenceLevelConfig
   def apiStatus(version: String): String
   def endpointsEnabled(version: String): Boolean
   def featureSwitch: Option[Configuration]
@@ -67,6 +70,7 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
   //API config items
   def featureSwitch: Option[Configuration] = configuration.getOptional[Configuration](s"feature-switch")
   val apiGatewayContext: String                    = config.getString("api.gateway.context")
+  val confidenceLevelConfig: ConfidenceLevelConfig = configuration.get[ConfidenceLevelConfig](s"api.confidence-level-check")
   def apiStatus(version: String): String           = config.getString(s"api.$version.status")
   def endpointsEnabled(version: String): Boolean   = config.getBoolean(s"feature-switch.version-$version.enabled")
 
@@ -111,6 +115,21 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
       case f: FiniteDuration => f
       case _                 => throw new RuntimeException(s"Not a finite duration '$string' for $path")
     }
+  }
+
+}
+
+case class ConfidenceLevelConfig(confidenceLevel: ConfidenceLevel, definitionEnabled: Boolean, authValidationEnabled: Boolean)
+
+object ConfidenceLevelConfig {
+
+  implicit val configLoader: ConfigLoader[ConfidenceLevelConfig] = (rootConfig: Config, path: String) => {
+    val config = rootConfig.getConfig(path)
+    ConfidenceLevelConfig(
+      confidenceLevel = ConfidenceLevel.fromInt(config.getInt("confidence-level")).getOrElse(ConfidenceLevel.L200),
+      definitionEnabled = config.getBoolean("definition.enabled"),
+      authValidationEnabled = config.getBoolean("auth-validation.enabled")
+    )
   }
 
 }

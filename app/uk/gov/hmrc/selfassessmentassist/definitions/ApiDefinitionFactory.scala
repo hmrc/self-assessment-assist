@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.definitions
 
-
+import uk.gov.hmrc.auth.core.ConfidenceLevel
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions._
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
@@ -29,6 +29,11 @@ class ApiDefinitionFactory @Inject() (appConfig: AppConfig) extends Logging {
   private val readScope  = "read:self-assessment-assist"
   private val writeScope = "write:self-assessment-assist"
 
+  lazy val confidenceLevel: ConfidenceLevel = {
+    val clConfig = appConfig.confidenceLevelConfig
+    if (clConfig.definitionEnabled) clConfig.confidenceLevel else ConfidenceLevel.L200
+  }
+
   lazy val definition: Definition =
     Definition(
       scopes = Seq(
@@ -36,11 +41,13 @@ class ApiDefinitionFactory @Inject() (appConfig: AppConfig) extends Logging {
           key = readScope,
           name = "Read self assessment assist data",
           description = "Allows the ability to generate and return a self assessment assist report",
+          confidenceLevel = confidenceLevel
         ),
         Scope(
           key = writeScope,
           name = "Write self assessment assist data",
           description = "Acknowledges the self assessment assist report has been read",
+          confidenceLevel = confidenceLevel
         )
       ),
       api = APIDefinition(
@@ -59,7 +66,7 @@ class ApiDefinitionFactory @Inject() (appConfig: AppConfig) extends Logging {
       )
     )
 
-  private[definitions] def buildAPIStatus(version: String): APIStatus = {
+  def buildAPIStatus(version: String): APIStatus = {
     lazy val apiStatus = appConfig.apiStatus(version)
     APIStatus.parser
       .lift(apiStatus)

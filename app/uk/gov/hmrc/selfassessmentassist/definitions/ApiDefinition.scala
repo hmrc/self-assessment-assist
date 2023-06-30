@@ -19,6 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.definitions
 
 import play.api.libs.json.{Format, Json, OFormat}
 import utils.enums.Enums
+import uk.gov.hmrc.auth.core.ConfidenceLevel
 
 case class Parameter(name: String, required: Boolean = false)
 
@@ -77,7 +78,7 @@ object APIDefinition {
   implicit val formatAPIDefinition: OFormat[APIDefinition] = Json.format[APIDefinition]
 }
 
-case class Scope(key: String, name: String, description: String)
+case class Scope(key: String, name: String, description: String, confidenceLevel: ConfidenceLevel)
 
 object Scope {
   implicit val formatScope: OFormat[Scope] = Json.format[Scope]
