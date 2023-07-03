@@ -16,24 +16,18 @@
 
 package definitions
 
-import play.api.Configuration
-import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
-import uk.gov.hmrc.selfassessmentassist.support._
-import uk.gov.hmrc.selfassessmentassist.definitions.{APIDefinition, ApiDefinitionFactory, APIVersion, Definition, Scope}
-import uk.gov.hmrc.selfassessmentassist.definitions.APIStatus.{ ALPHA, BETA }
-
-import uk.gov.hmrc.selfassessmentassist.definitions.Versions.VERSION_1
-import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-
 import uk.gov.hmrc.auth.core.ConfidenceLevel
+import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
+import uk.gov.hmrc.selfassessmentassist.definitions.APIStatus.{ALPHA, BETA}
+import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
+import uk.gov.hmrc.selfassessmentassist.definitions.Versions.VERSION_1
+import uk.gov.hmrc.selfassessmentassist.support._
 
 class ApiDefinitionFactorySpec extends UnitSpec with MockAppConfig {
 
   class Test {
     val factory = new ApiDefinitionFactory(mockAppConfig)
   }
-
-  private val confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200
 
   "confidenceLevel" when {
     Seq(

@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.selfassessmentassist.v1.services
-
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
@@ -30,8 +29,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with MockAuthConnector {
 
   class Test {
+
     val authConnector: AuthConnector = mock[AuthConnector]
-    val service       = new EnrolmentsAuthService(authConnector)
+    val service       = new EnrolmentsAuthService(authConnector, mockAppConfig)
   }
 
   "EnrolmentsAuthService" when {
