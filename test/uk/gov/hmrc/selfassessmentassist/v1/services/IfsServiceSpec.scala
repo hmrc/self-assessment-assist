@@ -45,7 +45,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       )
     ),
     nino = "nino",
-    taxYear = "2021-2022",
+    taxYear = "2022",
     calculationId = UUID.fromString("99d758f6-c4be-4339-804e-f79cf0610d4f"),
     rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
   )
@@ -57,7 +57,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
     List(
       Map("nino"                 -> "nino"),
-      Map("taxYear"              -> "2021-2022"),
+      Map("taxYear"              -> "2021-22"),
       Map("calculationId"        -> "99d758f6-c4be-4339-804e-f79cf0610d4f"),
       Map("customerType"         -> "Individual"),
       Map("calculationTimestamp" -> "2022-01-01T12:00:00.000Z")
