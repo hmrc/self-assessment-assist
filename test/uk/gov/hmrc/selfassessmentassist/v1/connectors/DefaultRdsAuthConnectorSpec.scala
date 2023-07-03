@@ -31,7 +31,7 @@ import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthCredential, RdsAuthCredentials}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, RdsAuthDownstreamError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.RdsAuthDownstreamError
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 
 import java.util.UUID
