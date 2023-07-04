@@ -18,8 +18,8 @@ package uk.gov.hmrc.selfassessmentassist.definitions
 
 
 import play.api.libs.json.{Format, Json, OFormat}
-import utils.enums.Enums
 import uk.gov.hmrc.auth.core.ConfidenceLevel
+import uk.gov.hmrc.selfassessmentassist.utils.enums.Enums
 
 case class Parameter(name: String, required: Boolean = false)
 

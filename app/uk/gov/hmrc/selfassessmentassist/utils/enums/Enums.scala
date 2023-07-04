@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils.enums
+package uk.gov.hmrc.selfassessmentassist.utils.enums
 
 import cats.Show
 import play.api.libs.json._
