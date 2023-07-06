@@ -22,6 +22,7 @@ import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
+import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockAuthConnector
 
@@ -29,14 +30,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with MockAuthConnector {
 
-  class Test {
-    val authConnector: AuthConnector = mock[AuthConnector]
-    val service       = new EnrolmentsAuthService(authConnector)
-  }
-
   "EnrolmentsAuthService" when {
     "authorising" must {
       "500" in new Test {
+
+        mockConfidenceLevelCheckConfig()
 
         (authConnector
           .authorise(_: Predicate, _: Retrieval[Any])(_: HeaderCarrier, _: ExecutionContext))
@@ -149,6 +147,23 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with Mock
           service.getClientReferenceFromEnrolments(enrolments) shouldBe None
         }
       }
+    }
+
+  }
+
+  trait Test {
+
+    val authConnector: AuthConnector = mock[AuthConnector]
+    val service                      = new EnrolmentsAuthService(authConnector, mockAppConfig)
+
+    def mockConfidenceLevelCheckConfig(authValidationEnabled: Boolean = true, confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200): Unit = {
+      MockedAppConfig.confidenceLevelCheckEnabled.returns(
+        ConfidenceLevelConfig(
+          confidenceLevel = confidenceLevel,
+          definitionEnabled = true,
+          authValidationEnabled = authValidationEnabled
+        )
+      )
     }
 
   }

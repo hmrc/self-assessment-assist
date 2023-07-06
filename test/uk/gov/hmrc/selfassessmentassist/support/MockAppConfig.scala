@@ -20,7 +20,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import play.api.Configuration
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
-import uk.gov.hmrc.selfassessmentassist.config.AppConfig
+import uk.gov.hmrc.selfassessmentassist.config.{AppConfig, ConfidenceLevelConfig}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -42,7 +42,12 @@ trait MockAppConfig extends MockFactory {
     def rdsAuthCredential: CallHandler[AuthCredential] = (() => mockAppConfig.rdsAuthCredential).expects().anyNumberOfTimes()
 
     // API Config
-    def featureSwitch: CallHandler[Option[Configuration]] = (() => mockAppConfig.featureSwitch).expects()
+    def featureSwitch: CallHandler[Option[Configuration]]       = (() => mockAppConfig.featureSwitch).expects()
+    def apiGatewayContext: CallHandler[String]                  = (() => mockAppConfig.apiGatewayContext: String).expects()
+    def apiStatus(status: String): CallHandler[String]          = (mockAppConfig.apiStatus: String => String).expects(status)
+    def endpointsEnabled(version: String): CallHandler[Boolean] = (mockAppConfig.endpointsEnabled: String => Boolean).expects(version)
+    def confidenceLevelCheckEnabled: CallHandler[ConfidenceLevelConfig] =
+      (() => mockAppConfig.confidenceLevelConfig: ConfidenceLevelConfig).expects()
 
     // NRS config items
     def nrsApiKey: CallHandler[String]                = (() => mockAppConfig.nrsApiKey).expects().anyNumberOfTimes()
