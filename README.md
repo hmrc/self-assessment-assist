@@ -10,15 +10,15 @@ The Self-Assessment-Assist API allows a developer to:
 - allow the client to acknowledge the report
 
 ## Requirements
-- Scala 2.12.x
-- Java 8
-- sbt 1.6.x
+- Scala 2.13.8
+- Java 11 
+- sbt 1.7.2
 - [Service Manager](https://github.com/hmrc/service-manager)
 
 ## Development Setup
-Run the microservice from the console using: `sbt run`
+Run the microservice from the console using: `sbt run` (starts on port 8342)
 
-Start the service manager profile: `sm --start`
+Start the service manager profile: `sm --start SELF_ASSESSMENT_ASSIST_STUBS`
 
 ## Run Tests
 Run unit tests: `sbt test`
