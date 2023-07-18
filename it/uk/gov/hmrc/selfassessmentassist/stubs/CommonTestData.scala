@@ -257,4 +257,42 @@ object CommonTestData {
       |}
     """.stripMargin
   )
+
+  val generateReportResponseJson: JsValue = Json.parse(
+    s"""
+       |{
+       |  "reportId": "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
+       |  "messages": [
+       |    {
+       |      "title": "Non-Business Income Source",
+       |      "body": "You have declared family loan as a source of your income. There have been changes to the rules around non-business sources you may declare, please check the appropriate guidance to see how this impacts you.",
+       |      "action": "Check guidance",
+       |      "links": [
+       |        {
+       |          "title": "[ITSA Guidance, Income Source Guidance]",
+       |          "url": "[www.itsa.gov.uk, www.itsa/incomesources.gov.uk]"
+       |        }
+       |      ],
+       |      "path": "general/non_business_income_sources/income_source"
+       |    },
+       |    {
+       |      "title": "Turnover",
+       |      "body": "Your declared turnover of £80,000 appears to be lower than expected based on your income sources, please confirm all turnover is accounted for before submission.",
+       |      "action": "Check turnover",
+       |      "links": [
+       |        {
+       |          "title": "[Accounting for Income]",
+       |          "url": "[www.itsa/incomecompliance.gov.uk]"
+       |        }
+       |      ],
+       |      "path": "general/total_declared_turnover"
+       |    }
+       |  ],
+       |  "nino": "AA123456A",
+       |  "taxYear": "2018-19",
+       |  "calculationId": "f2fb30e5-4ab6-4a29-b3c1-c00000000001",
+       |  "correlationId": "5fht738957jfjf845jgjf855"
+       |}
+    """.stripMargin)
+
 }

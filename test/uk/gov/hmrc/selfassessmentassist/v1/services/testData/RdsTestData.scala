@@ -106,7 +106,7 @@ object RdsTestData {
     reportId = simpleReportId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
-    taxYear = assessmentRequestForSelfAssessment.taxYear,
+    taxYear = "2020-21",
     calculationId = simpleCalculationId,
     rdsCorrelationId = simpleRDSCorrelationId
   )

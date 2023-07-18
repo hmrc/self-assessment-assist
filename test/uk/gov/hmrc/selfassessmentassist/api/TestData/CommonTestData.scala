@@ -88,7 +88,7 @@ object CommonTestData {
         links = Seq(Link(simpleLinkTitle, simpleLinkUrl)),
         path = simplePath)),
     nino = simpleNino,
-    taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString,
+    taxYear = simpleTaxYear,
     calculationId = simpleCalculationId,
     rdsCorrelationId = simpleRDSCorrelationId
   )
@@ -258,4 +258,5 @@ object CommonTestData {
       |}
     """.stripMargin
   )
+
 }
