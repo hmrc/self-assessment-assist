@@ -42,6 +42,7 @@ class GenerateReportControllerISpec extends IntegrationBaseSpec {
 
         val response: WSResponse = await(request().post(emptyJson))
         response.status shouldBe OK
+        response.json shouldBe CommonTestData.generateReportResponseJson
       }
     }
 

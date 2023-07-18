@@ -18,7 +18,6 @@ package uk.gov.hmrc.selfassessmentassist.v1.models.domain
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.DesTaxYear
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
 class AssessmentReportSpec extends UnitSpec {
@@ -42,7 +41,7 @@ class AssessmentReportSpec extends UnitSpec {
        |     }
        |    ],
        |    "nino": "$simpleNino",
-       |    "taxYear": "${DesTaxYear.fromMtd(simpleTaxYear).toString}",
+       |    "taxYear": "$simpleTaxYear",
        |    "calculationId": "$simpleCalculationId",
        |    "correlationId": "$simpleRDSCorrelationId"
        | }

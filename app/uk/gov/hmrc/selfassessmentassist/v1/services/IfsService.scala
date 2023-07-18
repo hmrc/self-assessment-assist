@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.CustomerType.{Agent, CustomerType, TaxPayer}
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.{DesTaxYear, PreferredLanguage}
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.utils.{CurrentDateTime, DateUtils, Logging}
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.IfsConnector
@@ -71,7 +71,7 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
       feedbackId = rdsAssessmentReport.feedbackId.fold("")(_.toString),
       metaData = List(
         Map("nino"                 -> assessmentReport.nino),
-        Map("taxYear"              -> DesTaxYear.fromDesIntToString(assessmentReport.taxYear.toInt)),
+        Map("taxYear"              -> assessmentReport.taxYear),
         Map("calculationId"        -> assessmentReport.calculationId.toString),
         Map("customerType"         -> customerTypeString(request.customerType)),
         Map("calculationTimestamp" -> calculationTimestamp.format(DateUtils.dateTimePattern))

@@ -19,9 +19,14 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.{DesTaxYear, PreferredLanguage}
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError, MatchingCalculationIDNotFoundError, NoAssessmentFeedbackFromRDS}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
+  ErrorWrapper,
+  InternalError,
+  MatchingCalculationIDNotFoundError,
+  NoAssessmentFeedbackFromRDS
+}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, Logging}
@@ -141,7 +146,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
                     reportId = reportId,
                     risks = risks(report, request.preferredLanguage),
                     nino = request.nino,
-                    taxYear = request.taxYear,
+                    taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
                     calculationId = calculationId,
                     rdsCorrelationID
                   ),
