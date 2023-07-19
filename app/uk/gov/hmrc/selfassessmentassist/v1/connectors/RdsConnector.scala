@@ -150,7 +150,9 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
                 },
                 assessmentReport =>
                   assessmentReport.responseCode match {
-                    case Some(ACCEPTED) => Right(ResponseWrapper(correlationId, assessmentReport))
+                    case Some(ACCEPTED) =>
+                      logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] RDS response body status code is $ACCEPTED")
+                      Right(ResponseWrapper(correlationId, assessmentReport))
                     case Some(UNAUTHORIZED) =>
                       logger.error(
                         s"$correlationId::[RdsConnector:acknowledgeRds] RDS body status code is $UNAUTHORIZED unauthorized with message  ${assessmentReport.responseMessage}")
