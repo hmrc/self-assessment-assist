@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.requestParsers
 
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.DesTaxYear
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.TaxYear
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 import uk.gov.hmrc.selfassessmentassist.api.requestParsers.RequestParser
 import uk.gov.hmrc.selfassessmentassist.api.requestParsers.validators.validations.TaxYearValidation
@@ -34,7 +34,6 @@ class GenerateReportRequestParser @Inject() (val validator: GenerateReportValida
   override protected def requestFor(data: GenerateReportRawData): Either[MtdError, AssessmentRequestForSelfAssessment] = {
     val taxYearValidation = TaxYearValidation.validate(data.taxYear)
     if (taxYearValidation.isEmpty) {
-      val taxYearInRDSFormat = DesTaxYear.fromMtd(data.taxYear).toString
       Right(
         AssessmentRequestForSelfAssessment(
           UUID.fromString(data.calculationId),
@@ -42,7 +41,7 @@ class GenerateReportRequestParser @Inject() (val validator: GenerateReportValida
           data.preferredLanguage,
           data.customerType,
           data.agentRef,
-          taxYearInRDSFormat))
+          TaxYear.fromMtd(data.taxYear)))
     } else Left(taxYearValidation.head)
   }
 

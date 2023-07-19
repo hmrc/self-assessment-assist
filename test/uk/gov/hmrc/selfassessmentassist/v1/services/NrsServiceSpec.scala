@@ -20,6 +20,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleTaxYear
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
@@ -52,7 +53,7 @@ class NrsServiceSpec extends ServiceSpec {
       )
     ),
     nino = "nino",
-    taxYear = "2021-2022",
+    taxYear = simpleTaxYear,
     calculationId = UUID.fromString("99d758f6-c4be-4339-804e-f79cf0610d4f"),
     rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
   )
@@ -60,12 +61,12 @@ class NrsServiceSpec extends ServiceSpec {
   private val expectedReportPayload: NrsSubmission =
     NrsSubmission(
       payload =
-        "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIwMjIiLCJjYWxjdWxhdGlvbklkIjoiOTlkNzU4ZjYtYzRiZS00MzM5LTgwNGUtZjc5Y2YwNjEwZDRmIiwiY29ycmVsYXRpb25JZCI6ImU0MzI2NGM1LTUzMDEtNGVjZS1iM2QzLTFlOGE4ZGQ5M2I0YiJ9",
+        "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIyIiwiY2FsY3VsYXRpb25JZCI6Ijk5ZDc1OGY2LWM0YmUtNDMzOS04MDRlLWY3OWNmMDYxMGQ0ZiIsImNvcnJlbGF0aW9uSWQiOiJlNDMyNjRjNS01MzAxLTRlY2UtYjNkMy0xZThhOGRkOTNiNGIifQ==",
       metadata = nrs.Metadata(
         businessId = "saa",
         notableEvent = "saa-report-generated",
         payloadContentType = "application/json",
-        payloadSha256Checksum = "acdf5c0add9e434375e81797ad21fd409bc55f6d4f264d7aa302ca1ef4a01058",
+        payloadSha256Checksum = "346b1569969634b9cf0cba5317394fb08bfe7efef6f2b69f0a240b776794cb19",
         userSubmissionTimestamp = formattedDate,
         identityData = Some(CommonTestData.identityCorrectModel),
         userAuthToken = "Bearer aaaa",

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParse
 
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.{CustomerType, PreferredLanguage}
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.{CustomerType, PreferredLanguage, TaxYear}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentRequestForSelfAssessment
@@ -57,7 +57,7 @@ class GenerateReportRequestParserSpec extends UnitSpec {
             PreferredLanguage.English,
             CustomerType.Agent,
             None,
-            "2022"
+            TaxYear("2022")
           ))
       }
     }
@@ -97,34 +97,6 @@ class GenerateReportRequestParserSpec extends UnitSpec {
       }
     }
 
-    "return a Request with tax year in the expected format" when {
-      "the validator returns no errors" in {
-        val parser: GenerateReportRequestParser = new GenerateReportRequestParser(validator)
-        val result = await(
-          parser.parseRequest(validData)(implicitly[ExecutionContext], correlationId)
-        )
-
-        result shouldBe Right(
-          AssessmentRequestForSelfAssessment(
-            UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
-            "NJ070957A",
-            PreferredLanguage.English,
-            CustomerType.Agent,
-            None,
-            "2022"
-          ))
-
-        result should not equal Right(
-          AssessmentRequestForSelfAssessment(
-            UUID.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b"),
-            "NJ070957A",
-            PreferredLanguage.English,
-            CustomerType.Agent,
-            None,
-            "2021-22"
-          ))
-      }
-    }
   }
 
 }

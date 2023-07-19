@@ -56,7 +56,7 @@ trait MockGenerateReportRequestParser extends MockFactory {
         .parseRequest(_: GenerateReportRawData)(_: ExecutionContext, _: String))
         .expects(*, *, *)
         .anyNumberOfTimes() returns
-        Future(Left(ErrorWrapper(simpleTaxYear, mtdError)))
+        Future(Left(ErrorWrapper(correlationId, mtdError)))
     }
 
   }

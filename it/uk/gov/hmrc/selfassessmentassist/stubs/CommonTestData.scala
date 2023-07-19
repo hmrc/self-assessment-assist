@@ -45,14 +45,16 @@ object CommonTestData {
   val correlationId: String             = "f2fb30e5-4ab6-4a29-b3c1-c00000011111"
   val simpleReportId: UUID              = UUID.fromString(correlationId)
 
-  val simpleRiskTitle     = "title"
-  val simpleRiskBody      = "body"
-  val simpleRiskAction    = "action"
-  val simpleLinkTitle     = "title"
-  val simpleLinkUrl       = "url"
-  val simplePath          = "path"
-  val simpleTaxYearEndInt = 2022
-  val simpleTaxYear       = "2021-22"
+  val simpleRiskTitle         = "title"
+  val simpleRiskBody          = "body"
+  val simpleRiskAction        = "action"
+  val simpleLinkTitle         = "title"
+  val simpleLinkUrl           = "url"
+  val simplePath              = "path"
+  val simpleTaxYearEndInt     = 2022
+  val simpleTaxYear           = TaxYear("2022")
+  val simpleTaxYearFullString = "2021-22"
+  val simpleTaxYearEndString  = "2022"
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal
@@ -68,15 +70,6 @@ object CommonTestData {
   val simplePreferredLanguage: PreferredLanguage = PreferredLanguage.English
   val simpleAgentRef: Option[Nothing]            = None
 
-  val simpleAssessmentRequestForSelfAssessment: AssessmentRequestForSelfAssessment = AssessmentRequestForSelfAssessment(
-    calculationId = simpleCalculationId,
-    nino = simpleNino,
-    preferredLanguage = PreferredLanguage.English,
-    customerType = CustomerType.TaxPayer,
-    agentRef = None,
-    taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString
-  )
-
   val simpleAssessmentReport: AssessmentReport = AssessmentReport(
     reportId = simpleReportId,
     risks = Seq(
@@ -87,7 +80,7 @@ object CommonTestData {
         links = Seq(Link(simpleLinkTitle, simpleLinkUrl)),
         path = simplePath)),
     nino = simpleNino,
-    taxYear = DesTaxYear.fromMtd(simpleTaxYear).toString,
+    taxYear = simpleTaxYear,
     calculationId = simpleCalculationId,
     rdsCorrelationId = simpleRDSCorrelationId
   )
@@ -95,12 +88,12 @@ object CommonTestData {
   val simpleCalculationTimestamp: LocalDateTime = LocalDateTime.parse("2019-02-15T09:35:15.094Z", DateUtils.dateTimePattern)
 
   val simpleGenerateReportRawData: GenerateReportRawData =
-    GenerateReportRawData(simpleCalculationId.toString, simpleNino, PreferredLanguage.English, CustomerType.TaxPayer, None, simpleTaxYear)
+    GenerateReportRawData(simpleCalculationId.toString, simpleNino, PreferredLanguage.English, CustomerType.TaxPayer, None, simpleTaxYearFullString)
 
   val simpleAssessmentReportMtdJson: JsValue = Json.toJson[AssessmentReport](simpleAssessmentReport)
 
   val simpleFraudRiskRequest: FraudRiskRequest =
-    new FraudRiskRequest(nino = Some(simpleNino), taxYear = Some(simpleTaxYear), fraudRiskHeaders = Map.empty[String, String])
+    new FraudRiskRequest(nino = Some(simpleNino), taxYear = Some(simpleTaxYearFullString), fraudRiskHeaders = Map.empty[String, String])
 
   val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(0, simpleCIPCorrelationId, Seq.empty)
 
@@ -115,7 +108,9 @@ object CommonTestData {
 
   val simpleAcknowledgeReportRequest: AcknowledgeReportRequest = AcknowledgeReportRequest(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)
 
-  val rdsSubmissionReportJson: JsValue = StubResource.loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId)
+  val rdsSubmissionReportJson: JsValue =
+    StubResource.loadSubmitResponseTemplate(simpleCalculationId.toString, simpleReportId.toString, simpleRDSCorrelationId)
+
   val rdsNewSubmissionReport: RdsAssessmentReport = rdsSubmissionReportJson.as[RdsAssessmentReport]
 
   val simpleAssessmentReportWrapper: AssessmentReportWrapper =
@@ -258,8 +253,7 @@ object CommonTestData {
     """.stripMargin
   )
 
-  val generateReportResponseJson: JsValue = Json.parse(
-    s"""
+  val generateReportResponseJson: JsValue = Json.parse(s"""
        |{
        |  "reportId": "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
        |  "messages": [

@@ -16,32 +16,15 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.domain
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.CustomerType.CustomerType
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.TaxYear
 
 import java.util.UUID
-
-sealed trait IdError
-case object InvalidFormatOrValue extends IdError
 
 case class AssessmentRequestForSelfAssessment(calculationId: UUID,
                                               nino: String,
                                               preferredLanguage: PreferredLanguage,
                                               customerType: CustomerType,
                                               agentRef: Option[String],
-                                              taxYear: String)
-
-object AssessmentRequestForSelfAssessment {
-
-  implicit val reads: Reads[AssessmentRequestForSelfAssessment] =
-    (JsPath \ "calculationId")
-      .read[UUID]
-      .and((JsPath \ "nino").read[String])
-      .and((JsPath \ "preferred_language").read[PreferredLanguage])
-      .and((JsPath \ "customer_type").read[CustomerType])
-      .and((JsPath \ "agent_ref").readNullable[String])
-      .and((JsPath \ "tax_year").read[String])(AssessmentRequestForSelfAssessment.apply _)
-
-}
+                                              taxYear: TaxYear)

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services.testData
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{correlationId, simpleTaxYear}
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{correlationId, simpleTaxYear, simpleTaxYearFullString}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, FraudRiskRequest}
 
 object InsightTestData {
@@ -31,6 +31,6 @@ object InsightTestData {
   val badRequestError: JsValue = Json.parse(s"""{"/nino":["Invalid nino"]}""".stripMargin)
 
   def fraudRiskRequest(nino: String): FraudRiskRequest =
-    new FraudRiskRequest(nino = Some(nino), taxYear = Some(simpleTaxYear), fraudRiskHeaders = Map.empty[String, String])
+    new FraudRiskRequest(nino = Some(nino), taxYear = Some(simpleTaxYearFullString), fraudRiskHeaders = Map.empty[String, String])
 
 }

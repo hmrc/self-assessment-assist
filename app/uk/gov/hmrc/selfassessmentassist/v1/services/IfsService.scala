@@ -71,7 +71,7 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
       feedbackId = rdsAssessmentReport.feedbackId.fold("")(_.toString),
       metaData = List(
         Map("nino"                 -> assessmentReport.nino),
-        Map("taxYear"              -> assessmentReport.taxYear),
+        Map("taxYear"              -> assessmentReport.taxYear.asMtd),
         Map("calculationId"        -> assessmentReport.calculationId.toString),
         Map("customerType"         -> customerTypeString(request.customerType)),
         Map("calculationTimestamp" -> calculationTimestamp.format(DateUtils.dateTimePattern))

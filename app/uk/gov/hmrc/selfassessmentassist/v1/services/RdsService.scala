@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.{DesTaxYear, PreferredLanguage}
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
   ErrorWrapper,
@@ -146,7 +146,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
                     reportId = reportId,
                     risks = risks(report, request.preferredLanguage),
                     nino = request.nino,
-                    taxYear = DesTaxYear.fromDesIntToString(request.taxYear.toInt),
+                    taxYear = request.taxYear,
                     calculationId = calculationId,
                     rdsCorrelationID
                   ),
@@ -198,7 +198,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
     Seq(
       RdsRequest.InputWithString("calculationId", request.calculationId.toString),
       RdsRequest.InputWithString("nino", request.nino),
-      RdsRequest.InputWithInt("taxYear", Integer.parseInt(request.taxYear)),
+      RdsRequest.InputWithInt("taxYear", request.taxYear.asRds),
       RdsRequest.InputWithString("customerType", request.customerType.toString),
       RdsRequest.InputWithString("agentRef", request.agentRef.getOrElse("")),
       RdsRequest.InputWithString("preferredLanguage", request.preferredLanguage.toString),

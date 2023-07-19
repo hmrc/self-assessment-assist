@@ -17,6 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleTaxYear
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.CustomerType
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
@@ -45,7 +46,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       )
     ),
     nino = "nino",
-    taxYear = "2021-22",
+    taxYear = simpleTaxYear,
     calculationId = UUID.fromString("99d758f6-c4be-4339-804e-f79cf0610d4f"),
     rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
   )
