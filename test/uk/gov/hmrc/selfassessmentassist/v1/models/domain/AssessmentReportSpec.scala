@@ -41,7 +41,7 @@ class AssessmentReportSpec extends UnitSpec {
        |     }
        |    ],
        |    "nino": "$simpleNino",
-       |    "taxYear": "$simpleTaxYear",
+       |    "taxYear": "$simpleTaxYearFullString",
        |    "calculationId": "$simpleCalculationId",
        |    "correlationId": "$simpleRDSCorrelationId"
        | }

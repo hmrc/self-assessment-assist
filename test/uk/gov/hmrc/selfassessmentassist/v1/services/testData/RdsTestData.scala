@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services.testData
 
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.{CustomerType, PreferredLanguage}
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.{CustomerType, PreferredLanguage, TaxYear}
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
@@ -32,7 +32,7 @@ object RdsTestData {
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
     agentRef = None,
-    taxYear = "2021"
+    taxYear = TaxYear("2022")
   )
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(
@@ -46,7 +46,7 @@ object RdsTestData {
       Seq(
         RdsRequest.InputWithString("calculationId", assessmentRequestForSelfAssessment.calculationId.toString),
         RdsRequest.InputWithString("nino", assessmentRequestForSelfAssessment.nino),
-        RdsRequest.InputWithInt("taxYear", Integer.parseInt(assessmentRequestForSelfAssessment.taxYear)),
+        RdsRequest.InputWithInt("taxYear", 2022),
         RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
         RdsRequest.InputWithString("agentRef", assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
         RdsRequest.InputWithString("preferredLanguage", assessmentRequestForSelfAssessment.preferredLanguage.toString),
@@ -56,7 +56,7 @@ object RdsTestData {
           Seq(
             MetadataWrapper(
               Seq(
-                Map("KEY" -> "string"),
+                Map("KEY"   -> "string"),
                 Map("VALUE" -> "string")
               )),
             DataWrapper(Seq(Seq.empty))
@@ -106,7 +106,7 @@ object RdsTestData {
     reportId = simpleReportId,
     risks = risks,
     nino = assessmentRequestForSelfAssessment.nino,
-    taxYear = "2020-21",
+    taxYear = simpleTaxYear,
     calculationId = simpleCalculationId,
     rdsCorrelationId = simpleRDSCorrelationId
   )

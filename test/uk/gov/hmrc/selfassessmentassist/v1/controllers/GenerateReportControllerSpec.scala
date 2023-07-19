@@ -97,7 +97,7 @@ class GenerateReportControllerSpec
           simpleAssessmentReportWrapper.calculationTimestamp,
           simpleAssessmentRequestForSelfAssessment)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAssessmentReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -121,7 +121,7 @@ class GenerateReportControllerSpec
           simpleAssessmentReportWrapper.calculationTimestamp,
           simpleAssessmentRequestForSelfAssessment)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAssessmentReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -197,7 +197,7 @@ class GenerateReportControllerSpec
         MockCurrentDateTime.getDateTime
         MockProvideRandomCorrelationId.IdGenerator
         val result: Future[Result] =
-          controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+          controller.generateReportInternal(simpleNinoInvalid, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
         status(result) shouldBe BAD_REQUEST
         Thread.sleep(1000)
@@ -220,7 +220,7 @@ class GenerateReportControllerSpec
           MockProvideRandomCorrelationId.IdGenerator
           MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
@@ -252,7 +252,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
@@ -287,7 +287,7 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           if (expectedBody.nonEmpty) {
@@ -335,7 +335,7 @@ class GenerateReportControllerSpec
           assessmentReportWrapper.calculationTimestamp,
           simpleAssessmentRequestForSelfAssessment)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
         contentAsJson(result) shouldBe Json.toJson(Seq(InternalError))
@@ -362,7 +362,7 @@ class GenerateReportControllerSpec
             simpleAssessmentRequestForSelfAssessment,
             mtdError)
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYear)(fakePostRequest)
+          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")

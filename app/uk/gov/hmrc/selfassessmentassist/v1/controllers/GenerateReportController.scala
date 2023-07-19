@@ -135,7 +135,7 @@ class GenerateReportController @Inject() (
                                        fraudRiskHeaders: FraudRiskRequest.FraudRiskHeaders): FraudRiskRequest = {
     val fraudRiskRequest = new FraudRiskRequest(
       nino = Some(request.nino),
-      taxYear = Some(request.taxYear),
+      taxYear = Some(request.taxYear.asFraudRisk),
       fraudRiskHeaders = fraudRiskHeaders
     )
     fraudRiskRequest
