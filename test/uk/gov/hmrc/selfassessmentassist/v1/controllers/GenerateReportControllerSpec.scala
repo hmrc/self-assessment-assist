@@ -24,9 +24,9 @@ import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.controllers.ControllerBaseSpec
 import uk.gov.hmrc.selfassessmentassist.api.models.errors._
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
+import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
-import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers.MockGenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._
@@ -97,7 +97,8 @@ class GenerateReportControllerSpec
           simpleAssessmentReportWrapper.calculationTimestamp,
           simpleAssessmentRequestForSelfAssessment)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAssessmentReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -121,7 +122,8 @@ class GenerateReportControllerSpec
           simpleAssessmentReportWrapper.calculationTimestamp,
           simpleAssessmentRequestForSelfAssessment)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
         status(result) shouldBe OK
         contentAsJson(result) shouldBe simpleAssessmentReportMtdJson
         contentType(result) shouldBe Some("application/json")
@@ -220,7 +222,8 @@ class GenerateReportControllerSpec
           MockProvideRandomCorrelationId.IdGenerator
           MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+          val result: Future[Result] =
+            controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
@@ -252,7 +255,8 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+          val result: Future[Result] =
+            controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
@@ -287,7 +291,8 @@ class GenerateReportControllerSpec
           MockCurrentDateTime.getDateTime
           MockProvideRandomCorrelationId.IdGenerator
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+          val result: Future[Result] =
+            controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
           if (expectedBody.nonEmpty) {
@@ -335,7 +340,8 @@ class GenerateReportControllerSpec
           assessmentReportWrapper.calculationTimestamp,
           simpleAssessmentRequestForSelfAssessment)
 
-        val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
         status(result) shouldBe INTERNAL_SERVER_ERROR
         contentAsJson(result) shouldBe Json.toJson(Seq(InternalError))
@@ -362,7 +368,8 @@ class GenerateReportControllerSpec
             simpleAssessmentRequestForSelfAssessment,
             mtdError)
 
-          val result: Future[Result] = controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+          val result: Future[Result] =
+            controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
           status(result) shouldBe expectedStatus
           contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
           contentType(result) shouldBe Some("application/json")

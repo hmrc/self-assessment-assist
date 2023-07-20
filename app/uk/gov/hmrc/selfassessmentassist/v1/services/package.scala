@@ -24,6 +24,6 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.{NrsFailure, NrsR
 package object services {
   type ServiceOutcome[Resp] = Either[ErrorWrapper, ResponseWrapper[Resp]]
   type ParseOutcome[A]      = Either[ErrorWrapper, A]
-  type IfsOutcome = Either[ErrorWrapper, IfsResponse]
-  type NrsOutcome = Either[NrsFailure, NrsResponse]
+  type IfsOutcome           = Either[ErrorWrapper, IfsResponse]
+  type NrsOutcome           = Either[NrsFailure, NrsResponse]
 }

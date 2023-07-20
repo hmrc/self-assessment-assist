@@ -18,7 +18,6 @@ package uk.gov.hmrc.selfassessmentassist.api.models.errors
 
 import play.api.http.Status._
 
-
 //NRS error
 object NrsError extends MtdError("NRS_SUBMISSION_FAILURE", "The submission to NRS from MDTP failed", BAD_REQUEST)
 
@@ -35,7 +34,8 @@ object CalculationIdFormatError extends MtdError(code = "FORMAT_CALC_ID", messag
 
 object TaxYearFormatError extends MtdError("FORMAT_TAX_YEAR", "The provided tax year is invalid", BAD_REQUEST)
 
-object TaxYearRangeInvalid extends MtdError("RULE_TAX_YEAR_RANGE_INVALID", "Tax year range invalid. A tax year range of one year is required.", BAD_REQUEST)
+object TaxYearRangeInvalid
+    extends MtdError("RULE_TAX_YEAR_RANGE_INVALID", "Tax year range invalid. A tax year range of one year is required.", BAD_REQUEST)
 
 // Standard Errors
 object ResourceNotFoundError extends MtdError("RESOURCE_NOT_FOUND", "Matching resource not found", SERVICE_UNAVAILABLE)
@@ -65,11 +65,11 @@ object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUT
 object ForbiddenDownstreamError extends MtdError(code = "Forbidden", message = "Request not authorised, forbidden", FORBIDDEN)
 
 object ForbiddenRDSCorrelationIdError
-  extends MtdError(
-    code = "CORRELATION_ID_NOT_AUTHORISED",
-    message = "The Correlation ID is not the expected value for this report",
-    FORBIDDEN
-  )
+    extends MtdError(
+      code = "CORRELATION_ID_NOT_AUTHORISED",
+      message = "The Correlation ID is not the expected value for this report",
+      FORBIDDEN
+    )
 
 // Accept header Errors
 object InvalidAcceptHeaderError extends MtdError("ACCEPT_HEADER_INVALID", "The accept header is missing or invalid", NOT_ACCEPTABLE)
@@ -79,13 +79,14 @@ object UnsupportedVersionError extends MtdError("NOT_FOUND", "The requested reso
 object InvalidBodyTypeError extends MtdError("INVALID_BODY_TYPE", "Expecting text/json or application/json body", BAD_REQUEST)
 
 object MatchingCalculationIDNotFoundError
-  extends MtdError("MATCHING_CALCULATION_ID_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later.", NOT_FOUND)
+    extends MtdError("MATCHING_CALCULATION_ID_NOT_FOUND", "The Calculation ID was not found at this time. You can try again later.", NOT_FOUND)
 
-object MatchingResourcesNotFoundError extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "A resource with the name in the request can not be found.", SERVICE_UNAVAILABLE)
+object MatchingResourcesNotFoundError
+    extends MtdError("MATCHING_RESOURCE_NOT_FOUND", "A resource with the name in the request can not be found.", SERVICE_UNAVAILABLE)
 
 object RdsAuthError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", INTERNAL_SERVER_ERROR)
 
 object RdsAuthDownstreamError extends MtdError("RDS_AUTH_ERROR", "RDS authorisation could not be accomplished", FORBIDDEN)
-object ServerError extends MtdError("SERVER_ERROR", "Server error", INTERNAL_SERVER_ERROR)
+object ServerError            extends MtdError("SERVER_ERROR", "Server error", INTERNAL_SERVER_ERROR)
 
 object NoAssessmentFeedbackFromRDS extends MtdError("204", "No Content", NO_CONTENT)

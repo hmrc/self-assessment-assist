@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.cip
 
 import play.api.libs.json.{Json, OFormat}
-import FraudRiskRequest.FraudRiskHeaders
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskRequest.FraudRiskHeaders
 
 case class FraudRiskRequest(nino: Option[String] = None,
                             taxYear: Option[String] = None,
@@ -36,7 +36,7 @@ object FraudRiskRequest {
   implicit val utrFormat: OFormat[UTR]                  = UTR.format
   implicit val bascFormat: OFormat[BankAccountSortCode] = BankAccountSortCode.format
   implicit val banFormat: OFormat[BankAccountNumber]    = BankAccountNumber.format
-  implicit val format: OFormat[FraudRiskRequest] = Json.format[FraudRiskRequest]
+  implicit val format: OFormat[FraudRiskRequest]        = Json.format[FraudRiskRequest]
 }
 
 case class UTR private (value: String)

@@ -109,8 +109,8 @@ class GenerateReportController @Inject() (
   }
 
   def errorHandler(errorWrapper: ErrorWrapper, correlationId: String): Future[Result] = (errorWrapper.error, errorWrapper.errors) match {
-    case (ServerError | InternalError, _) => Future(InternalServerError(convertErrorAsJson(InternalError)))
-    case (NinoFormatError, _) => Future(BadRequest(convertErrorAsJson(NinoFormatError)))
+    case (ServerError | InternalError, _)        => Future(InternalServerError(convertErrorAsJson(InternalError)))
+    case (NinoFormatError, _)                    => Future(BadRequest(convertErrorAsJson(NinoFormatError)))
     case (NoAssessmentFeedbackFromRDS, _)        => Future(NoContent)
     case (TaxYearRangeInvalid, _)                => Future(BadRequest(convertErrorAsJson(TaxYearRangeInvalid)))
     case (TaxYearFormatError, _)                 => Future(BadRequest(convertErrorAsJson(TaxYearFormatError)))

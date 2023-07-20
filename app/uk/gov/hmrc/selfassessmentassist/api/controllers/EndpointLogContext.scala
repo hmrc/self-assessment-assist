@@ -17,6 +17,6 @@
 package uk.gov.hmrc.selfassessmentassist.api.controllers
 
 case class EndpointLogContext(
-                               controllerName: String,
-                               endpointName: String
-                             )
+    controllerName: String,
+    endpointName: String
+)

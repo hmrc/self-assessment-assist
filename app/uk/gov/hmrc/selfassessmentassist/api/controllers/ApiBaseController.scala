@@ -27,9 +27,9 @@ trait ApiBaseController {
     def withApiHeaders(correlationId: String, responseHeaders: (String, String)*): Result = {
 
       val newHeaders: Seq[(String, String)] = responseHeaders ++ Seq(
-        "X-CorrelationId" -> correlationId,
+        "X-CorrelationId"        -> correlationId,
         "X-Content-Type-Options" -> "nosniff",
-        "Content-Type" -> "application/json"
+        "Content-Type"           -> "application/json"
       )
       result.copy(header = result.header.copy(headers = result.header.headers ++ newHeaders))
     }

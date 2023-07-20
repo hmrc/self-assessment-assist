@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.testData
 
-import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 
@@ -113,20 +113,34 @@ object AuthFixture {
                                       new ~(new ~(new ~(new ~(data.affinityGroup, enrolments), data.internalId), data.externalId), data.agentCode),
                                       data.credentials),
                                     data.confidenceLevel),
-                                  None),
-                                None),
-                              data.name),
-                            None),
-                          data.email),
-                        data.agentInformation),
-                      data.groupIdentifier),
-                    data.credentialRole),
-                  None),
-                data.credentialStrength),
-              data.loginTimes),
-            Some(data.itmpName)),
-          data.itmpDateOfBirth),
-        Some(data.itmpAddress))
+                                  None
+                                ),
+                                None
+                              ),
+                              data.name
+                            ),
+                            None
+                          ),
+                          data.email
+                        ),
+                        data.agentInformation
+                      ),
+                      data.groupIdentifier
+                    ),
+                    data.credentialRole
+                  ),
+                  None
+                ),
+                data.credentialStrength
+              ),
+              data.loginTimes
+            ),
+            Some(data.itmpName)
+          ),
+          data.itmpDateOfBirth
+        ),
+        Some(data.itmpAddress)
+      )
 
   val userDetails: (AffinityGroup, AgentInformation) => UserDetails = (Individual, agentInformation) =>
     UserDetails(

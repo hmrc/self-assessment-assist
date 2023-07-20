@@ -49,4 +49,3 @@ object IfsTestData {
 
   val correctJsonString: String = IFRequest.formats.writes(correctModel).toString()
 }
-

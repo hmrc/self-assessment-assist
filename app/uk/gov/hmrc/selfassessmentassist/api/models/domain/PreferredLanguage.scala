@@ -23,7 +23,7 @@ object PreferredLanguage extends Enumeration {
   type PreferredLanguage = Value
 
   val English: Value = Value("EN")
-  val Welsh: Value = Value("CY")
+  val Welsh: Value   = Value("CY")
 
   implicit val format: Format[PreferredLanguage] = Json.formatEnum(PreferredLanguage)
 
