@@ -18,18 +18,15 @@ package uk.gov.hmrc.selfassessmentassist.api.models.auth
 
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.CustomerType
-import CustomerType.CustomerType
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.CustomerType.CustomerType
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 
-case class UserDetails(userType: AffinityGroup,
-                       agentReferenceNumber: Option[String],
-                       clientID: String,
-                       identityData: Option[IdentityData] = None) {
+case class UserDetails(userType: AffinityGroup, agentReferenceNumber: Option[String], clientID: String, identityData: Option[IdentityData] = None) {
 
   val toCustomerType: CustomerType = userType match {
     case AffinityGroup.Individual => CustomerType.TaxPayer
-    case AffinityGroup.Agent => CustomerType.Agent
-    case _ => throw new IllegalStateException(s"Invalid $userType")
+    case AffinityGroup.Agent      => CustomerType.Agent
+    case _                        => throw new IllegalStateException(s"Invalid $userType")
   }
 
 }

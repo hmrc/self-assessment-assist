@@ -25,4 +25,5 @@ object RdsAuthCredentials {
 
   def rdsAuthHeader(rdsAuthCredentials: RdsAuthCredentials): Seq[(String, String)] =
     Seq("Authorization" -> s"Bearer ${rdsAuthCredentials.access_token}")
+
 }

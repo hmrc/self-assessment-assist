@@ -38,9 +38,11 @@ trait RequestParser[Raw <: RawData, Request] extends Logging {
           s"Validation failed with ${err.code} error for the request")
         Future(Left(ErrorWrapper(correlationId, err, None)))
       case errs =>
-        logger.error(s"$correlationId::[RequestParser][parseRequest]" +
-          s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request")
+        logger.error(
+          s"$correlationId::[RequestParser][parseRequest]" +
+            s"Validation failed with ${errs.map(_.code).mkString(",")} errors for the request")
         Future(Left(errors.ErrorWrapper(correlationId, BadRequestError, Some(errs))))
     }
   }
+
 }

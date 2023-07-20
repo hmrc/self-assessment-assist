@@ -23,7 +23,6 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
 import uk.gov.hmrc.selfassessmentassist.utils.Retrying
 
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
@@ -67,13 +66,12 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
 
   val appName: String = config.getString("appName")
 
-  //API config items
-  def featureSwitch: Option[Configuration] = configuration.getOptional[Configuration](s"feature-switch")
+  // API config items
+  def featureSwitch: Option[Configuration]         = configuration.getOptional[Configuration](s"feature-switch")
   val apiGatewayContext: String                    = config.getString("api.gateway.context")
   val confidenceLevelConfig: ConfidenceLevelConfig = configuration.get[ConfidenceLevelConfig](s"api.confidence-level-check")
   def apiStatus(version: String): String           = config.getString(s"api.$version.status")
   def endpointsEnabled(version: String): Boolean   = config.getBoolean(s"feature-switch.version-$version.enabled")
-
 
   // NRS config items
   private val nrsConfig  = configuration.get[Configuration]("microservice.services.non-repudiation")

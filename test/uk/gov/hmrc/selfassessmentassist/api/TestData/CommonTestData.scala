@@ -17,9 +17,9 @@
 package uk.gov.hmrc.selfassessmentassist.api.TestData
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel, User}
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
-import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, Credentials, ItmpAddress, ItmpName, LoginTimes, MdtpInformation, Name}
+import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel, User}
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.api.models.domain._
@@ -32,7 +32,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.NrsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
-import java.time.{Instant, LocalDate, LocalDateTime, Month, OffsetDateTime, ZoneOffset}
+import java.time._
 import java.util.UUID
 
 object CommonTestData {
@@ -55,7 +55,7 @@ object CommonTestData {
   val simpleTaxYearEndInt     = 2022
   val simpleTaxYear           = TaxYear("2022")
   val simpleTaxYearFullString = "2021-22"
-  val simpleTaxYearEndString = "2022"
+  val simpleTaxYearEndString  = "2022"
 
   val simpleExternalOrigin: Origin = External
   val simpleInternalOrigin: Origin = Internal

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.selfassessmentassist.definitions
 
-
 import play.api.libs.json.{Format, Json, OFormat}
 import uk.gov.hmrc.auth.core.ConfidenceLevel
 import uk.gov.hmrc.selfassessmentassist.utils.enums.Enums

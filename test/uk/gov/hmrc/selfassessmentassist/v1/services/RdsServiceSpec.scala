@@ -31,12 +31,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentReportWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
-import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{
-  assessmentReportWrapper,
-  assessmentRequestForSelfAssessment,
-  fraudRiskReport,
-  rdsRequest
-}
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{assessmentReportWrapper, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
 
 import java.util.UUID
 import scala.concurrent.Future

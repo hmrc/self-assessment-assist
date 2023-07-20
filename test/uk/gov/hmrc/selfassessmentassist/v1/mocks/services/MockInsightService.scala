@@ -19,6 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.services
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, FraudRiskRequest}
@@ -26,7 +27,6 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.{InsightService, ServiceOutc
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 
 trait MockInsightService extends MockFactory {
 

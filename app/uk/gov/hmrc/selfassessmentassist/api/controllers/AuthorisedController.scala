@@ -61,7 +61,8 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
           .authorised(predicate(mtdId), correlationId)
           .flatMap[Result] {
             case Right(userDetails) => block(UserRequest(userDetails.copy(clientID = clientID), request))
-            case Left(ClientOrAgentNotAuthorisedError) => convertErrorAsJson(ClientOrAgentNotAuthorisedError)
+            case Left(ClientOrAgentNotAuthorisedError) =>
+              convertErrorAsJson(ClientOrAgentNotAuthorisedError)
               Future.successful(Forbidden(convertErrorAsJson(ClientOrAgentNotAuthorisedError)))
             case Left(ForbiddenDownstreamError) =>
               logger.warn(s"$correlationId::[invokeBlock]Forbidden downstream error")
@@ -95,7 +96,7 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
               Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
             case Left(UnauthorisedError)       => Future.successful(Forbidden(convertErrorAsJson(UnauthorisedError)))
             case Left(InvalidBearerTokenError) => Future.successful(Unauthorized(convertErrorAsJson(InvalidBearerTokenError)))
-            case Left(_) => Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
+            case Left(_)                       => Future.successful(InternalServerError(convertErrorAsJson(InternalError)))
           }
         } else {
           logger.warn(s"$correlationId::[invokeBlock]Error in nino format")

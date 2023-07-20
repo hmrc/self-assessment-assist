@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.services.testData
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{correlationId, simpleTaxYear, simpleTaxYearFullString}
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{correlationId, simpleTaxYearFullString}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, FraudRiskRequest}
 
 object InsightTestData {

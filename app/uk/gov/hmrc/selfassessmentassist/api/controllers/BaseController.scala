@@ -18,10 +18,10 @@ package uk.gov.hmrc.selfassessmentassist.api.controllers
 
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper,InternalError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
+import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
 import scala.collection.Seq
-import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
 trait BaseController {
   self: Logging =>
@@ -48,4 +48,3 @@ trait BaseController {
   }
 
 }
-

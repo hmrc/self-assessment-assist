@@ -45,7 +45,7 @@ trait HttpParser extends Logging {
   def retrieveCorrelationId(response: HttpResponse): String = response.header("CorrelationId").getOrElse("")
 
   def parseErrors(response: HttpResponse): DownstreamError = {
-    val singleError = response.validateJson[DownstreamErrorCode].map(err => DownstreamErrors(List(err)))
+    val singleError         = response.validateJson[DownstreamErrorCode].map(err => DownstreamErrors(List(err)))
     lazy val multipleErrors = response.validateJson(multipleErrorReads).map(errs => DownstreamErrors(errs))
 
     lazy val unableToParseJsonError = {
@@ -55,6 +55,5 @@ trait HttpParser extends Logging {
 
     singleError orElse multipleErrors getOrElse unableToParseJsonError
   }
-
 
 }
