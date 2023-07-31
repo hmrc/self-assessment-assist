@@ -77,9 +77,13 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
                 Some(
                   List(
                     IFRequestPayloadActionLinks(
-                      "[ITSA Guidance, Income Source Guidance]",
-                      "[www.itsa.gov.uk, www.itsa/incomesources.gov.uk]"
-                    )
+                      "ITSA Guidance",
+                      "www.itsa.gov.uk"
+                    ),
+                    IFRequestPayloadActionLinks(
+                      "Income Source Guidance",
+                      "www.itsa/incomesources.gov.uk"
+                    ),
                   )
                 )
               ),
@@ -91,8 +95,12 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
                 Some(
                   List(
                     IFRequestPayloadActionLinks(
-                      "[Canllawiau ITSA, Arweiniad i Ffynonellau Incwm]",
-                      "[www.itsa/cym.gov.uk, www.itsa/incomesources.gov.uk]"
+                      "Canllawiau ITSA",
+                      "www.itsa/cym.gov.uk"
+                    ),
+                    IFRequestPayloadActionLinks(
+                      "Arweiniad i Ffynonellau Incwm",
+                      "www.itsa/incomesources.gov.uk"
                     )
                   )
                 )
@@ -108,8 +116,8 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
                 Some(
                   List(
                     IFRequestPayloadActionLinks(
-                      "[Accounting for Income]",
-                      "[www.itsa/incomecompliance.gov.uk]"
+                      "Accounting for Income",
+                      "www.itsa/incomecompliance.gov.uk"
                     )
                   )
                 )
@@ -122,8 +130,8 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
                 Some(
                   List(
                     IFRequestPayloadActionLinks(
-                      "[Cyfrifo am Incwm]",
-                      "[www.itsa/incomecompliance.gov.uk]"
+                      "Cyfrifo am Incwm",
+                      "www.itsa/incomecompliance.gov.uk"
                     )
                   )
                 )
