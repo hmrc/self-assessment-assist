@@ -84,16 +84,14 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
               message = risk.body,
               action = risk.action,
               path = risk.path,
-              links = if (risk.links.nonEmpty) Some(risk.links.map(e => IFRequestPayloadActionLinks(e.title, e.url))) else None
+              links = mapToList(risk.links)
             )
             val welsh = IFRequestPayloadAction(
               title = welshActions(index).title,
               message = welshActions(index).body,
               action = welshActions(index).action,
               path = welshActions(index).path,
-              links =
-                if (welshActions(index).links.nonEmpty) Some(welshActions(index).links.map(e => IFRequestPayloadActionLinks(e.title, e.url)))
-                else None
+              links = mapToList(welshActions(index).links)
             )
             logger.info(s"processing risk with index $risk and $index")
             val messageIds = payloadMessageIds(index)
@@ -107,6 +105,25 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
           })
         ))
     )
+  }
+
+  private def isList(s: String): Boolean = s.startsWith("[") && s.endsWith("]")
+
+  private def parseList(s: String): Seq[String] = s.stripPrefix("[").stripSuffix("]").split(",").map(_.trim).toSeq
+
+  private def mapToList(links: Seq[Link]): Option[Seq[IFRequestPayloadActionLinks]] = {
+    if (links.nonEmpty) {
+      val updatedLinks = links.map { e =>
+        val titleList = if (isList(e.title)) parseList(e.title) else Seq(e.title)
+        val urlList   = if (isList(e.url)) parseList(e.url) else Seq(e.url)
+        titleList.zipAll(urlList, "", "").map { case (title, url) =>
+          IFRequestPayloadActionLinks(title, url)
+        }
+      }
+      Some(updatedLinks.flatten)
+    } else {
+      None
+    }
   }
 
   private def buildIfsAcknowledgementSubmission(acknowledgeReportRequest: AcknowledgeReportRequest,
