@@ -93,8 +93,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
         MockIfsService.stubGenerateReportSubmit(
-          simpleAssessmentReport,
-          simpleAssessmentReportWrapper.calculationTimestamp,
+          simpleAssessmentReportWrapper,
           simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] =
@@ -118,8 +117,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
         MockIfsService.stubGenerateReportSubmit(
-          simpleAssessmentReportWrapper.report,
-          simpleAssessmentReportWrapper.calculationTimestamp,
+          simpleAssessmentReportWrapper,
           simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] =
@@ -336,8 +334,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
         MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
         MockIfsService.stubGenerateReportSubmit(
-          assessmentReportWrapper.report,
-          assessmentReportWrapper.calculationTimestamp,
+          assessmentReportWrapper,
           simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] =
@@ -363,8 +360,7 @@ class GenerateReportControllerSpec
           MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, simpleAssessmentReportWrapper)
           MockCurrentDateTime.getDateTime
           MockIfsService.stubFailedSubmit(
-            simpleAssessmentReport,
-            simpleAssessmentReportWrapper.calculationTimestamp,
+            simpleAssessmentReportWrapper,
             simpleAssessmentRequestForSelfAssessment,
             mtdError)
 
