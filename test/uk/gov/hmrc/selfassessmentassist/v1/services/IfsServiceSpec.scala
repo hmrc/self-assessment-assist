@@ -31,7 +31,6 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentRepo
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{KeyValueWrapper, KeyValueWrapperInt, Output}
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.assessmentRequestForSelfAssessment
 
-import java.time.{LocalDateTime, Month, OffsetDateTime, ZoneOffset}
 import java.util.UUID
 import scala.concurrent.Future
 
@@ -78,13 +77,8 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     executionState = "completed",
     outputs = outputs)
 
-  MockCurrentDateTime.getDateTime
-
-  private val rdsAssessmentReportWrapper = AssessmentReportWrapper(
-    calculationTimestamp = mockCurrentDateTime.getDateTime.toLocalDateTime,
-    report = rdsReport,
-    rdsAssessmentReport = rdsAssessmentReport
-  )
+  private def assessmentReportWrapper =
+    AssessmentReportWrapper(mockCurrentDateTime.getDateTime.toLocalDateTime, rdsReport, CommonTestData.rdsNewSubmissionReport)
 
   private def expectedReportGenerationPayload = IFRequest(
     "self-assessment-assist",
@@ -208,7 +202,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
         await(
           service.submitGenerateReportMessage(
-            rdsAssessmentReportWrapper,
+            assessmentReportWrapper,
             assessmentRequestForSelfAssessment)
         ) shouldBe Right(IfsResponse())
       }
@@ -226,7 +220,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
         await(
           service.submitGenerateReportMessage(
-            rdsAssessmentReportWrapper,
+            assessmentReportWrapper,
             assessmentRequestForSelfAssessment)
         ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))
       }
