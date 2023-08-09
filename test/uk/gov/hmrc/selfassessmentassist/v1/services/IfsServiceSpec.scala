@@ -23,19 +23,21 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, Interna
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.MockIfsConnector
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, Link, Risk}
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, Link, Risk}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs._
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{KeyValueWrapper, KeyValueWrapperInt, Output}
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.assessmentRequestForSelfAssessment
 
-import java.time.OffsetDateTime
 import java.util.UUID
 import scala.concurrent.Future
 
 class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
   private val rdsReport: AssessmentReport = AssessmentReport(
-    reportId = UUID.fromString("db741dff-4054-478e-88d2-5993e925c7ab"),
+    reportId = UUID.fromString("b50324cb-e5bd-4be1-88b1-4af1757ae4c7"),
     risks = Seq(
       Risk(
         title = "Turnover and cost of sales",
@@ -51,10 +53,37 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
   )
 
+  val calculationId: UUID          = UUID.randomUUID()
+  val correlationsId: String        = "some-correlationId"
+  val feedbackId: UUID             = UUID.randomUUID()
+  val responseCode: Int            = 211
+  val responseMessage: String      = "some-message"
+  val calculationTimeStamp: String = "2022-01-01T12:00:00.000Z"
+
+  val outputs: Seq[Output] = Seq(
+    KeyValueWrapper("calculationId", Some(calculationId.toString)),
+    KeyValueWrapper("correlationId", Some(correlationsId)),
+    KeyValueWrapper("feedbackId", Some(feedbackId.toString)),
+    KeyValueWrapperInt("responseCode", responseCode),
+    KeyValueWrapper("responseMessage", Some(responseMessage)),
+    KeyValueWrapper("calculationTimestamp", Some(calculationTimeStamp))
+  )
+
+  val rdsAssessmentReport: RdsAssessmentReport = rds.RdsAssessmentReport(
+    links = Seq("https://google.com"),
+    version = 2,
+    moduleId = "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK_ACK",
+    stepId = "execute",
+    executionState = "completed",
+    outputs = outputs)
+
+  private def assessmentReportWrapper =
+    AssessmentReportWrapper(mockCurrentDateTime.getDateTime.toLocalDateTime, rdsReport, CommonTestData.rdsNewSubmissionReport)
+
   private def expectedReportGenerationPayload = IFRequest(
     "self-assessment-assist",
     "GenerateReport",
-    OffsetDateTime.parse("2022-01-01T12:00Z"),
+    mockCurrentDateTime.getDateTime,
     "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
     List(
       Map("nino"                 -> "nino"),
@@ -173,10 +202,8 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
         await(
           service.submitGenerateReportMessage(
-            rdsReport,
-            mockCurrentDateTime.getDateTime.toLocalDateTime,
-            assessmentRequestForSelfAssessment,
-            CommonTestData.rdsNewSubmissionReport)
+            assessmentReportWrapper,
+            assessmentRequestForSelfAssessment)
         ) shouldBe Right(IfsResponse())
       }
 
@@ -193,10 +220,8 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
 
         await(
           service.submitGenerateReportMessage(
-            rdsReport,
-            mockCurrentDateTime.getDateTime.toLocalDateTime,
-            assessmentRequestForSelfAssessment,
-            CommonTestData.rdsNewSubmissionReport)
+            assessmentReportWrapper,
+            assessmentRequestForSelfAssessment)
         ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))
       }
 

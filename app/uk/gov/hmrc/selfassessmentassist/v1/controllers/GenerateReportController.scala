@@ -72,10 +72,8 @@ class GenerateReportController @Inject() (
           rdsAssessmentReportWrapper <- EitherT(rdsService.submit(assessmentRequestForSelfAssessment, fraudRiskReport.responseData))
           _ <- EitherT(
             ifService.submitGenerateReportMessage(
-              rdsAssessmentReportWrapper.responseData.report,
-              rdsAssessmentReportWrapper.responseData.calculationTimestamp,
-              assessmentRequestForSelfAssessment,
-              rdsAssessmentReportWrapper.responseData.rdsAssessmentReport
+              rdsAssessmentReportWrapper.responseData,
+              assessmentRequestForSelfAssessment
             ))
         } yield {
           rdsAssessmentReportWrapper

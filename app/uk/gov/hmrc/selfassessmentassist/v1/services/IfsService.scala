@@ -27,23 +27,19 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentReportWrapper
 
-import java.time.LocalDateTime
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
 class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDateTime) extends Logging {
 
-  def submitGenerateReportMessage(assessmentReport: AssessmentReport,
-                                  calculationTimestamp: LocalDateTime,
-                                  request: AssessmentRequestForSelfAssessment,
-                                  rdsAssessmentReport: RdsAssessmentReport)(implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
+  def submitGenerateReportMessage(rdsAssessmentReportWrapper: AssessmentReportWrapper,
+                                  request: AssessmentRequestForSelfAssessment)(implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
     val req = buildIfsGenerateReportSubmission(
-      assessmentReport,
-      calculationTimestamp,
-      request,
-      rdsAssessmentReport
+      rdsAssessmentReportWrapper,
+      request
     )
     connector.submit(req)
   }
@@ -55,14 +51,21 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
     connector.submit(req)
   }
 
-  private def buildIfsGenerateReportSubmission(assessmentReport: AssessmentReport,
-                                               calculationTimestamp: LocalDateTime,
-                                               request: AssessmentRequestForSelfAssessment,
-                                               rdsAssessmentReport: RdsAssessmentReport): IFRequest = {
+  private def buildIfsGenerateReportSubmission(rdsAssessmentReportWrapper: AssessmentReportWrapper,
+                                               request: AssessmentRequestForSelfAssessment): IFRequest = {
+
+    val rdsAssessmentReport = rdsAssessmentReportWrapper.rdsAssessmentReport
+
     val englishActions    = risks(rdsAssessmentReport, PreferredLanguage.English)
     val welshActions      = risks(rdsAssessmentReport, PreferredLanguage.Welsh)
     val payloadMessageIds = typeIds(rdsAssessmentReport)
-    logger.info(s"in ifs processing ${assessmentReport.reportId} and ${assessmentReport.calculationId}")
+    val assessmentReportId = rdsAssessmentReportWrapper.report.reportId
+    val assessmentCalculationId = rdsAssessmentReportWrapper.report.calculationId
+    val assessmentReportNino = rdsAssessmentReportWrapper.report.nino
+    val assessmentReportTaxYearAsMtd = rdsAssessmentReportWrapper.report.taxYear.asMtd
+    val calculationTimestamp = rdsAssessmentReportWrapper.calculationTimestamp
+
+    logger.info(s"in ifs processing ${assessmentReportId} and ${assessmentCalculationId}")
 
     IFRequest(
       serviceRegime = "self-assessment-assist",
@@ -70,9 +73,9 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
       eventTimestamp = currentDateTime.getDateTime,
       feedbackId = rdsAssessmentReport.feedbackId.fold("")(_.toString),
       metaData = List(
-        Map("nino"                 -> assessmentReport.nino),
-        Map("taxYear"              -> assessmentReport.taxYear.asMtd),
-        Map("calculationId"        -> assessmentReport.calculationId.toString),
+        Map("nino"                 -> assessmentReportNino),
+        Map("taxYear"              -> assessmentReportTaxYearAsMtd),
+        Map("calculationId"        -> assessmentCalculationId.toString),
         Map("customerType"         -> customerTypeString(request.customerType)),
         Map("calculationTimestamp" -> calculationTimestamp.format(DateUtils.dateTimePattern))
       ) ++ request.agentRef.fold(List.empty[Map[String, String]])(e => List(Map("agentReferenceNumber" -> e))),
