@@ -56,9 +56,9 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
   def findResource(path: String): Option[String] = {
     val classLoader  = getClass.getClassLoader
     val resourcePath = classLoader.getResource(path)
-
+    Console.print(resourcePath)
     val file         = new File(resourcePath.getFile)
-    val absolutePath = file.getAbsolutePath
+    val absolutePath = file.getPath
     val stream       = new FileInputStream(absolutePath)
     val json =
       try {
