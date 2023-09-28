@@ -22,6 +22,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results
 
 import java.io.{File, FileInputStream}
+import java.net.URLDecoder
 
 trait StubResourceBase extends Results with ContentTypes with Logging {
 
@@ -57,8 +58,10 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
     val classLoader  = getClass.getClassLoader
     val resourcePath = classLoader.getResource(path)
 
-    val file         = new File(resourcePath.getFile)
-    val absolutePath = file.getAbsolutePath
+    val decodedPath = URLDecoder.decode(resourcePath.getFile, "UTF-8")
+
+    val file         = new File(decodedPath)
+    val absolutePath = file.getPath
     val stream       = new FileInputStream(absolutePath)
     val json =
       try {
@@ -70,5 +73,6 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
   }
 
 }
+
 
 object StubResource extends StubResourceBase
