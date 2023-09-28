@@ -29,7 +29,7 @@ Run integration tests: `sbt it:test`
 The QA test instruction documentation for local, QA and dev journeys (individual and agent) can be seen [here](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=TR&title=QA).
 
 
-## To view the OAS documention
+## To view the OAS documentation
 To view documentation locally, ensure the Self Assessment Assist API is running.
 
 Then go to http://localhost:9680/api-documentation/docs/openapi/preview and enter the full URL path to the YAML file with the appropriate port and version:
