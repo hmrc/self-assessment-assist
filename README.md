@@ -39,7 +39,7 @@ http://localhost:8342/api/conf/1.0/application.yaml
 ```
 ## Runbook
 
-You can access the ITSA/HMRC Assist Runbook [here](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=519668164).
+You can access the ITSA/HMRC Assist Runbook [here](https://confluence.tools.tax.service.gov.uk/display/TR/HMRC+Assist+Runbook).
 
 ## Support and Reporting Issues
 
