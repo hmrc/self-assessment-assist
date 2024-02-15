@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ object Values {
   object MkValues {
 
     implicit def values[E, Impls <: Coproduct](implicit
-        @nowarn("msg=parameter value gen") gen: Generic.Aux[E, Impls],
+        @nowarn("msg=parameter gen") gen: Generic.Aux[E, Impls],
         v: Aux[E, Impls]): MkValues[E] =
       new MkValues[E] {
         def values: List[E] = v.values
