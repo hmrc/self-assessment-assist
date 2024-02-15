@@ -1,4 +1,4 @@
 ->         /                             health.Routes
 ->         /                             definition.Routes
 
-GET        /admin/metrics                com.kenshoo.play.metrics.MetricsController.metrics
+# via VersionRoutingRequestHandler and so there is no need to include them here

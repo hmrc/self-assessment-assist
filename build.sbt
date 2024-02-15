@@ -4,7 +4,7 @@ import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, integrationTestSet
 
 val appName = "self-assessment-assist"
 
-val silencerVersion = "1.7.12"
+// val silencerVersion = "1.7.12"
 
 lazy val ItTest = config("it") extend Test
 
@@ -13,16 +13,16 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
     majorVersion                     := 0,
-    scalaVersion                     := "2.13.8",
-    libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
+    scalaVersion                     := "2.13.12",
+    libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test(),
 
     // Use the silencer plugin to suppress warnings
-    scalacOptions += "-P:silencer:pathFilters=routes",
+    scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s",
 
-    libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
-    )
+   // libraryDependencies ++= Seq(
+   //   compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
+   //   "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
+   // )
 
     //
     // NOTE : This is how you would disable the HTML test reporter
