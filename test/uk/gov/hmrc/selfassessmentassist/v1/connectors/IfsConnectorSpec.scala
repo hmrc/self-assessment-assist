@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import akka.actor.{ActorSystem, Scheduler}
 import com.github.tomakehurst.wiremock.client.WireMock._
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes

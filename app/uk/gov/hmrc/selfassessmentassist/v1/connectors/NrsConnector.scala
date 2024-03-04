@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import akka.actor.Scheduler
+import org.apache.pekko.actor.Scheduler
 import play.api.http.Status
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}

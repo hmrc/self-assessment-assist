@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import akka.actor.{ActorSystem, Scheduler}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes

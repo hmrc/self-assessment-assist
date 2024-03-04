@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import akka.actor
-import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.codahale.metrics.SharedMetricRegistries
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import org.apache.pekko.actor
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.Materializer
 import org.scalatest.{BeforeAndAfterAll, EitherValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -45,11 +45,10 @@ class DefaultRdsAuthConnectorSpec
     with Injecting
     with MockAppConfig
     with EitherValues {
-  var port: Int = _
-
+  val httpClient: HttpClient              = app.injector.instanceOf[HttpClient]
   private val actorSystem: ActorSystem    = actor.ActorSystem("unit-testing")
   implicit val materializer: Materializer = Materializer.matFromSystem(actorSystem)
-  val httpClient: HttpClient              = app.injector.instanceOf[HttpClient]
+  var port: Int                           = _
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
