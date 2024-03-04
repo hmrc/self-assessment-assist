@@ -19,9 +19,6 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 import com.codahale.metrics.SharedMetricRegistries
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.apache.pekko.actor
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.Materializer
 import org.scalatest.{BeforeAndAfterAll, EitherValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -32,7 +29,15 @@ import play.api.test.Injecting
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, ForbiddenDownstreamError, ForbiddenRDSCorrelationIdError, InternalError, MatchingCalculationIDNotFoundError, MtdError, NoAssessmentFeedbackFromRDS}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
+  ErrorWrapper,
+  ForbiddenDownstreamError,
+  ForbiddenRDSCorrelationIdError,
+  InternalError,
+  MatchingCalculationIDNotFoundError,
+  MtdError,
+  NoAssessmentFeedbackFromRDS
+}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
@@ -41,15 +46,10 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{rdsAck
 import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
 import java.util.UUID
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig with EitherValues {
-  var port: Int = _
-
-  private val actorSystem: ActorSystem    = actor.ActorSystem("unit-testing")
-  implicit val materializer: Materializer = Materializer.matFromSystem(actorSystem)
-  val httpClient: HttpClient              = app.injector.instanceOf[HttpClient]
+  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
+  def port: Int              = wireMockServer.port()
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -58,14 +58,11 @@ class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
 
   override def beforeAll(): Unit = {
     wireMockServer.start()
-    port = wireMockServer.port()
     SharedMetricRegistries.clear()
   }
 
   override def afterAll(): Unit = {
     wireMockServer.stop()
-    materializer.shutdown()
-    Await.result(actorSystem.terminate(), 3.minutes)
   }
 
   class Test {

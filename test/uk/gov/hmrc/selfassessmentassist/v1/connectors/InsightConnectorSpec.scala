@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
@@ -34,10 +32,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
 
 class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
-  val actorSystem: ActorSystem      = inject[ActorSystem]
-  implicit val scheduler: Scheduler = actorSystem.scheduler
-
-  var port: Int = _
+  def port: Int = wireMockServer.port()
   val url       = "/fraud"
 
   private val successResponseJson: JsValue =
@@ -82,13 +77,9 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
 
   }
 
-  override def beforeAll(): Unit = {
-    wireMockServer.start()
-    port = wireMockServer.port()
-  }
+  override def beforeAll(): Unit = wireMockServer.start()
 
-  override def afterAll(): Unit =
-    wireMockServer.stop()
+  override def afterAll(): Unit = wireMockServer.stop()
 
   "Give InsightConnector" when {
     "is immediately successful then" must {

@@ -19,9 +19,6 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 import com.codahale.metrics.SharedMetricRegistries
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.apache.pekko.actor
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.Materializer
 import org.scalatest.{BeforeAndAfterAll, EitherValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -35,8 +32,6 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors.RdsAuthDownstreamError
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 
 import java.util.UUID
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class DefaultRdsAuthConnectorSpec
     extends ConnectorSpec
@@ -45,10 +40,8 @@ class DefaultRdsAuthConnectorSpec
     with Injecting
     with MockAppConfig
     with EitherValues {
-  val httpClient: HttpClient              = app.injector.instanceOf[HttpClient]
-  private val actorSystem: ActorSystem    = actor.ActorSystem("unit-testing")
-  implicit val materializer: Materializer = Materializer.matFromSystem(actorSystem)
-  var port: Int                           = _
+  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
+  def port: Int              = wireMockServer.port()
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -57,14 +50,11 @@ class DefaultRdsAuthConnectorSpec
 
   override def beforeAll(): Unit = {
     wireMockServer.start()
-    port = wireMockServer.port()
     SharedMetricRegistries.clear()
   }
 
   override def afterAll(): Unit = {
     wireMockServer.stop()
-    materializer.shutdown()
-    Await.result(actorSystem.terminate(), 3.minutes)
   }
 
   class Test {

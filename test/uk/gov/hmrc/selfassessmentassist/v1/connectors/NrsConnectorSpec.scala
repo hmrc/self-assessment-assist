@@ -47,7 +47,7 @@ class NrsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
 
   val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
 
-  var port: Int = _
+  def port: Int = wireMockServer.port()
 
   val actorSystem: ActorSystem      = inject[ActorSystem]
   implicit val scheduler: Scheduler = actorSystem.scheduler
@@ -60,13 +60,9 @@ class NrsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
                  |   "nrSubmissionId": "submissionId"
                  |}""".stripMargin)
 
-  override def beforeAll(): Unit = {
-    wireMockServer.start()
-    port = wireMockServer.port()
-  }
+  override def beforeAll(): Unit = wireMockServer.start()
 
-  override def afterAll(): Unit =
-    wireMockServer.stop()
+  override def afterAll(): Unit = wireMockServer.stop()
 
   val url         = "/"
   val apiKeyValue = "api-key"
