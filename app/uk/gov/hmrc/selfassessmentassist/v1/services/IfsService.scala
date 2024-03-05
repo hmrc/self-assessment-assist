@@ -27,7 +27,6 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentReportWrapper
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
@@ -35,19 +34,13 @@ import scala.concurrent.Future
 @Singleton
 class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDateTime) extends Logging {
 
-  def submitGenerateReportMessage(rdsAssessmentReportWrapper: AssessmentReportWrapper,
-                                  request: AssessmentRequestForSelfAssessment)(implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
+  def submitGenerateReportMessage(rdsAssessmentReportWrapper: AssessmentReportWrapper, request: AssessmentRequestForSelfAssessment)(implicit
+      hc: HeaderCarrier,
+      correlationId: String): Future[IfsOutcome] = {
     val req = buildIfsGenerateReportSubmission(
       rdsAssessmentReportWrapper,
       request
     )
-    connector.submit(req)
-  }
-
-  def submitAcknowledgementMessage(acknowledgeReportRequest: AcknowledgeReportRequest,
-                                   rdsAssessmentReport: RdsAssessmentReport,
-                                   userDetails: UserDetails)(implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
-    val req = buildIfsAcknowledgementSubmission(acknowledgeReportRequest, rdsAssessmentReport, userDetails)
     connector.submit(req)
   }
 
@@ -56,14 +49,14 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
 
     val rdsAssessmentReport = rdsAssessmentReportWrapper.rdsAssessmentReport
 
-    val englishActions    = risks(rdsAssessmentReport, PreferredLanguage.English)
-    val welshActions      = risks(rdsAssessmentReport, PreferredLanguage.Welsh)
-    val payloadMessageIds = typeIds(rdsAssessmentReport)
-    val assessmentReportId = rdsAssessmentReportWrapper.report.reportId
-    val assessmentCalculationId = rdsAssessmentReportWrapper.report.calculationId
-    val assessmentReportNino = rdsAssessmentReportWrapper.report.nino
+    val englishActions               = risks(rdsAssessmentReport, PreferredLanguage.English)
+    val welshActions                 = risks(rdsAssessmentReport, PreferredLanguage.Welsh)
+    val payloadMessageIds            = typeIds(rdsAssessmentReport)
+    val assessmentReportId           = rdsAssessmentReportWrapper.report.reportId
+    val assessmentCalculationId      = rdsAssessmentReportWrapper.report.calculationId
+    val assessmentReportNino         = rdsAssessmentReportWrapper.report.nino
     val assessmentReportTaxYearAsMtd = rdsAssessmentReportWrapper.report.taxYear.asMtd
-    val calculationTimestamp = rdsAssessmentReportWrapper.calculationTimestamp
+    val calculationTimestamp         = rdsAssessmentReportWrapper.calculationTimestamp
 
     logger.info(s"in ifs processing ${assessmentReportId} and ${assessmentCalculationId}")
 
@@ -110,10 +103,6 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
     )
   }
 
-  private def isList(s: String): Boolean = s.startsWith("[") && s.endsWith("]")
-
-  private def parseList(s: String): Seq[String] = s.stripPrefix("[").stripSuffix("]").split(",").map(_.trim).toSeq
-
   private def mapToList(links: Seq[Link]): Option[Seq[IFRequestPayloadActionLinks]] = {
     if (links.nonEmpty) {
       val updatedLinks = links.map { e =>
@@ -129,21 +118,9 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
     }
   }
 
-  private def buildIfsAcknowledgementSubmission(acknowledgeReportRequest: AcknowledgeReportRequest,
-                                                rdsAssessmentReport: RdsAssessmentReport,
-                                                userDetails: UserDetails): IFRequest = {
-    IFRequest(
-      serviceRegime = "self-assessment-assist",
-      "AcknowledgeReport",
-      eventTimestamp = currentDateTime.getDateTime,
-      feedbackId = rdsAssessmentReport.feedbackId.fold("")(_.toString),
-      metaData = List(
-        Map("nino"         -> acknowledgeReportRequest.nino),
-        Map("customerType" -> customerTypeString(userDetails.toCustomerType))
-      ) ++ userDetails.agentReferenceNumber.fold(List.empty[Map[String, String]])(e => List(Map("agentReferenceNumber" -> e))),
-      payload = None
-    )
-  }
+  private def isList(s: String): Boolean = s.startsWith("[") && s.endsWith("]")
+
+  private def parseList(s: String): Seq[String] = s.stripPrefix("[").stripSuffix("]").split(",").map(_.trim).toSeq
 
   private def typeIds(report: RdsAssessmentReport): Seq[String] = {
     report.outputs
@@ -188,6 +165,29 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
     case TaxPayer => "Individual"
     case Agent    => "Agent"
     case _        => throw new IllegalStateException(s"Invalid $customerType")
+  }
+
+  def submitAcknowledgementMessage(acknowledgeReportRequest: AcknowledgeReportRequest,
+                                   rdsAssessmentReport: RdsAssessmentReport,
+                                   userDetails: UserDetails)(implicit hc: HeaderCarrier, correlationId: String): Future[IfsOutcome] = {
+    val req = buildIfsAcknowledgementSubmission(acknowledgeReportRequest, rdsAssessmentReport, userDetails)
+    connector.submit(req)
+  }
+
+  private def buildIfsAcknowledgementSubmission(acknowledgeReportRequest: AcknowledgeReportRequest,
+                                                rdsAssessmentReport: RdsAssessmentReport,
+                                                userDetails: UserDetails): IFRequest = {
+    IFRequest(
+      serviceRegime = "self-assessment-assist",
+      "AcknowledgeReport",
+      eventTimestamp = currentDateTime.getDateTime,
+      feedbackId = rdsAssessmentReport.feedbackId.fold("")(_.toString),
+      metaData = List(
+        Map("nino"         -> acknowledgeReportRequest.nino),
+        Map("customerType" -> customerTypeString(userDetails.toCustomerType))
+      ) ++ userDetails.agentReferenceNumber.fold(List.empty[Map[String, String]])(e => List(Map("agentReferenceNumber" -> e))),
+      payload = None
+    )
   }
 
 }

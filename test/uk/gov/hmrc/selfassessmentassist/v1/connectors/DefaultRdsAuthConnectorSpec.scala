@@ -16,9 +16,6 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import akka.actor
-import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.codahale.metrics.SharedMetricRegistries
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
@@ -35,8 +32,6 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors.RdsAuthDownstreamError
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 
 import java.util.UUID
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class DefaultRdsAuthConnectorSpec
     extends ConnectorSpec
@@ -45,11 +40,8 @@ class DefaultRdsAuthConnectorSpec
     with Injecting
     with MockAppConfig
     with EitherValues {
-  var port: Int = _
-
-  private val actorSystem: ActorSystem    = actor.ActorSystem("unit-testing")
-  implicit val materializer: Materializer = Materializer.matFromSystem(actorSystem)
-  val httpClient: HttpClient              = app.injector.instanceOf[HttpClient]
+  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
+  def port: Int              = wireMockServer.port()
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -58,14 +50,11 @@ class DefaultRdsAuthConnectorSpec
 
   override def beforeAll(): Unit = {
     wireMockServer.start()
-    port = wireMockServer.port()
     SharedMetricRegistries.clear()
   }
 
   override def afterAll(): Unit = {
     wireMockServer.stop()
-    materializer.shutdown()
-    Await.result(actorSystem.terminate(), 3.minutes)
   }
 
   class Test {

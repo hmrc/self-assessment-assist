@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import akka.actor.{ActorSystem, Scheduler}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -31,11 +30,9 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.testData.IfsTestData
 
 class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
-  val actorSystem: ActorSystem      = inject[ActorSystem]
-  implicit val scheduler: Scheduler = actorSystem.scheduler
-  val reportId                      = "12345"
-  val ifsTokenValue                 = "ABCD1234"
-  val ifsEnv                        = "local"
+  val reportId      = "12345"
+  val ifsTokenValue = "ABCD1234"
+  val ifsEnv        = "local"
 
   val ifsEnvironmentHeaders: Option[Seq[String]] = Some(
     Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id"))
@@ -44,15 +41,11 @@ class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
   val httpClient: HttpClient                  = app.injector.instanceOf[HttpClient]
   private val ifsRequest: IFRequest           = IfsTestData.correctModel
   private val ifsSubmissionJsonString: String = IfsTestData.correctJsonString
-  var port: Int                               = _
+  def port: Int                               = wireMockServer.port()
 
-  override def beforeAll(): Unit = {
-    wireMockServer.start()
-    port = wireMockServer.port()
-  }
+  override def beforeAll(): Unit = wireMockServer.start()
 
-  override def afterAll(): Unit =
-    wireMockServer.stop()
+  override def afterAll(): Unit = wireMockServer.stop()
 
   class Test() {
     MockedAppConfig.ifsBaseUrl returns s"""http://localhost:$port/interaction-data/store-interactions"""

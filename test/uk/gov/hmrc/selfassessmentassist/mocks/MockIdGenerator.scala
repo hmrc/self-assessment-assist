@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.api.mocks
+package uk.gov.hmrc.selfassessmentassist.mocks
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
@@ -25,7 +25,7 @@ trait MockIdGenerator extends MockFactory {
   val mockIdGenerator: IdGenerator = mock[IdGenerator]
 
   object MockIdGenerator {
-    def generateCorrelationId: CallHandler[String] = (mockIdGenerator.generateCorrelationId _).expects()
+    def generateCorrelationId: CallHandler[String] = (() => mockIdGenerator.generateCorrelationId).expects()
   }
 
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.utils
 
-import akka.actor.Scheduler
+import org.apache.pekko.actor.Scheduler
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}

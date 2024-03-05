@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.controllers
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import play.api.http.HttpEntity
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._

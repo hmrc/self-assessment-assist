@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.config
 
-import akka.actor.{ActorSystem, Scheduler}
 import com.google.inject.{AbstractModule, Provides}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import play.api.Configuration
 import play.api.libs.ws.{WSClient, WSProxyServer}
 import uk.gov.hmrc.http.HttpClient
@@ -67,9 +67,7 @@ class Module extends AbstractModule {
     new DefaultHttpClient(config, auditConnector, wsClient, actorSystem) with WSProxy {
       override val hooks: Seq[HttpHook] = NoneRequired
 
-      override def wsProxyServer: Option[WSProxyServer] =
-        WSProxyConfiguration.buildWsProxyServer(config)
-
+      override def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration.buildWsProxyServer(config)
     }
 
 }

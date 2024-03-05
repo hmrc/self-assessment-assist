@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.utils.enums
 
 import cats.Show
 import play.api.libs.json._
-import utils.enums.Values.MkValues
+import uk.gov.hmrc.selfassessmentassist.utils.enums.Values.MkValues
 
 import scala.reflect.ClassTag
 
