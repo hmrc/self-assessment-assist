@@ -49,8 +49,8 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
 
     val rdsAssessmentReport = rdsAssessmentReportWrapper.rdsAssessmentReport
 
-    val englishActions               = risks(rdsAssessmentReport, PreferredLanguage.English)
-    val welshActions                 = risks(rdsAssessmentReport, PreferredLanguage.Welsh)
+    val englishRisks                 = risks(rdsAssessmentReport, PreferredLanguage.English)
+    val welshRisks                   = risks(rdsAssessmentReport, PreferredLanguage.Welsh)
     val payloadMessageIds            = typeIds(rdsAssessmentReport)
     val assessmentReportId           = rdsAssessmentReportWrapper.report.reportId
     val assessmentCalculationId      = rdsAssessmentReportWrapper.report.calculationId
@@ -74,53 +74,34 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
       ) ++ request.agentRef.fold(List.empty[Map[String, String]])(e => List(Map("agentReferenceNumber" -> e))),
       payload = Some(
         Messages(
-          Some(englishActions.zipWithIndex.map { case (risk, index) =>
-            val englishAction = IFRequestPayloadAction(
-              title = risk.title,
-              message = risk.body,
-              action = risk.action,
-              path = risk.path,
-              links = mapToList(risk.links)
-            )
-            val welsh = IFRequestPayloadAction(
-              title = welshActions(index).title,
-              message = welshActions(index).body,
-              action = welshActions(index).action,
-              path = welshActions(index).path,
-              links = mapToList(welshActions(index).links)
-            )
-            logger.info(s"processing risk with index $risk and $index")
+          Some((englishRisks zip welshRisks).zipWithIndex.map { case ((englishRisk, welshRisk), index) =>
+            logger.info(s"processing risk with index $index")
+
             val messageIds = payloadMessageIds(index)
             logger.info(s"in ifs payloadMessageIds $messageIds}")
 
             IFRequestPayload(
               messageId = messageIds,
-              englishAction = englishAction,
-              welshAction = welsh
+              englishAction = ifsAction(englishRisk),
+              welshAction = ifsAction(welshRisk)
             )
           })
         ))
     )
   }
 
-  private def mapToList(links: Seq[Link]): Option[Seq[IFRequestPayloadActionLinks]] = {
-    if (links.nonEmpty) {
-      val updatedLinks = links.map { e =>
-        val titleList = if (isList(e.title)) parseList(e.title) else Seq(e.title)
-        val urlList   = if (isList(e.url)) parseList(e.url) else Seq(e.url)
-        titleList.zipAll(urlList, "", "").map { case (title, url) =>
-          IFRequestPayloadActionLinks(title, url)
-        }
-      }
-      Some(updatedLinks.flatten)
-    } else {
-      None
-    }
+  private def ifsAction(risk: Risk) = {
+    def ifsLinks(links: Seq[Link]): Option[Seq[IFRequestPayloadActionLinks]] =
+      if (links.nonEmpty) Some(links.map(e => IFRequestPayloadActionLinks(e.title, e.url))) else None
+
+    IFRequestPayloadAction(
+      title = risk.title,
+      message = risk.body,
+      action = risk.action,
+      path = risk.path,
+      links = ifsLinks(risk.links)
+    )
   }
-
-  private def isList(s: String): Boolean = s.startsWith("[") && s.endsWith("]")
-
-  private def parseList(s: String): Seq[String] = s.stripPrefix("[").stripSuffix("]").split(",").map(_.trim).toSeq
 
   private def typeIds(report: RdsAssessmentReport): Seq[String] = {
     report.outputs
@@ -135,31 +116,8 @@ class IfsService @Inject() (connector: IfsConnector, currentDateTime: CurrentDat
       .flatten
   }
 
-  private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
-    report.outputs
-      .collect {
-        case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
-      }
-      .flatMap(_.value.getOrElse(Seq.empty))
-      .collect { case value: RdsAssessmentReport.DataWrapper =>
-        value
-      }
-      .flatMap(_.data.getOrElse(Seq.empty))
-      .flatMap(toRisk)
-  }
-
-  private def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage): Boolean = preferredLanguage match {
-    case PreferredLanguage.English if language == "EnglishActions" => true
-    case PreferredLanguage.Welsh if language == "WelshActions"     => true
-    case _                                                         => false
-  }
-
-  private def toRisk(riskParts: Seq[String]): Option[Risk] = {
-    if (riskParts.isEmpty) None
-    else
-      Some(
-        Risk(title = riskParts(2), body = riskParts.head, action = riskParts(1), links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5)))
-  }
+  private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] =
+    Risk.risksFromRdsReportOutputs(report.outputs, preferredLanguage)
 
   def customerTypeString(customerType: CustomerType): String = customerType match {
     case TaxPayer => "Individual"

@@ -90,14 +90,14 @@ object RdsTestData {
       "Non-Business Income Source",
       "You have declared family loan as a source of your income. There have been changes to the rules around non-business sources you may declare, please check the appropriate guidance to see how this impacts you.",
       "Check guidance",
-      List(Link("[ITSA Guidance, Income Source Guidance]", "[www.itsa.gov.uk, www.itsa/incomesources.gov.uk]")),
+      List(Link("ITSA Guidance", "www.itsa.gov.uk"), Link("Income Source Guidance", "www.itsa/incomesources.gov.uk")),
       "general/non_business_income_sources/income_source"
     ),
     Risk(
       "Turnover",
       "Your declared turnover of £80,000 appears to be lower than expected based on your income sources, please confirm all turnover is accounted for before submission.",
       "Check turnover",
-      List(Link("[Accounting for Income]", "[www.itsa/incomecompliance.gov.uk]")),
+      List(Link("Accounting for Income", "www.itsa/incomecompliance.gov.uk")),
       "general/total_declared_turnover"
     )
   )

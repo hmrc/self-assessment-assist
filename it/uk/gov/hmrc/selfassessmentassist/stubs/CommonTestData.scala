@@ -263,8 +263,12 @@ object CommonTestData {
        |      "action": "Check guidance",
        |      "links": [
        |        {
-       |          "title": "[ITSA Guidance, Income Source Guidance]",
-       |          "url": "[www.itsa.gov.uk, www.itsa/incomesources.gov.uk]"
+       |          "title": "ITSA Guidance",
+       |          "url": "www.itsa.gov.uk"
+       |        },
+       |        {
+       |          "title": "Income Source Guidance",
+       |          "url": "www.itsa/incomesources.gov.uk"
        |        }
        |      ],
        |      "path": "general/non_business_income_sources/income_source"
@@ -275,8 +279,8 @@ object CommonTestData {
        |      "action": "Check turnover",
        |      "links": [
        |        {
-       |          "title": "[Accounting for Income]",
-       |          "url": "[www.itsa/incomecompliance.gov.uk]"
+       |          "title": "Accounting for Income",
+       |          "url": "www.itsa/incomecompliance.gov.uk"
        |        }
        |      ],
        |      "path": "general/total_declared_turnover"

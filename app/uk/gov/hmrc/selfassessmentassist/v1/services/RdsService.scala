@@ -19,8 +19,6 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
-import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError, MatchingCalculationIDNotFoundError, NoAssessmentFeedbackFromRDS}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
@@ -80,8 +78,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
       val rdsRequestSO: RdsRequest = generateRdsAssessmentRequest(request, fraudRiskReport, fraudRiskReportHeaders)
       connector.submit(rdsRequestSO, rdsAuthCredentials).map {
         case Right(ResponseWrapper(_, rdsResponse)) =>
-          val assessmentReportSO = toAssessmentReport(rdsResponse, request, correlationId)
-          assessmentReportSO match {
+          toAssessmentReport(rdsResponse, request, correlationId) match {
             case Right(ResponseWrapper(_, assessmentReport)) =>
               logger.debug(s"$correlationId::[submit]submit request for report successful returning it")
               Right(ResponseWrapper(correlationId, assessmentReport))
@@ -120,13 +117,13 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
     }
   }
 
-  private def toAssessmentReport(report: RdsAssessmentReport,
+  private def toAssessmentReport(rdsReport: RdsAssessmentReport,
                                  request: AssessmentRequestForSelfAssessment,
                                  correlationId: String): ServiceOutcome[AssessmentReportWrapper] = {
 
-    (report.calculationId, report.feedbackId, report.calculationTimestamp) match {
-      case (Some(calculationId), Some(reportId), Some(calculationTimestamp)) =>
-        val rdsCorrelationIdOption = report.rdsCorrelationId
+    (rdsReport.calculationId, rdsReport.feedbackId, rdsReport.calculationTimestamp) match {
+      case (Some(rdsCalculationId), Some(feedbackId), Some(calculationTimestamp)) =>
+        val rdsCorrelationIdOption = rdsReport.rdsCorrelationId
         rdsCorrelationIdOption match {
           case Some(rdsCorrelationID) =>
             val parsedCalculationTimestamp = LocalDateTime.parse(calculationTimestamp, DateUtils.dateTimePattern)
@@ -138,14 +135,14 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
                 AssessmentReportWrapper(
                   parsedCalculationTimestamp,
                   AssessmentReport(
-                    reportId = reportId,
-                    risks = risks(report, request.preferredLanguage),
+                    reportId = feedbackId,
+                    risks = Risk.risksFromRdsReportOutputs(rdsReport.outputs, request.preferredLanguage),
                     nino = request.nino,
                     taxYear = request.taxYear,
-                    calculationId = calculationId,
-                    rdsCorrelationID
+                    calculationId = rdsCalculationId,
+                    rdsCorrelationId = rdsCorrelationID
                   ),
-                  report
+                  rdsReport
                 )
               ))
 
@@ -161,31 +158,6 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
     }
   }
 
-  private def risks(report: RdsAssessmentReport, preferredLanguage: PreferredLanguage): Seq[Risk] = {
-    report.outputs
-      .collect {
-        case elm: RdsAssessmentReport.MainOutputWrapper if isPreferredLanguage(elm.name, preferredLanguage) => elm
-      }
-      .flatMap(_.value.getOrElse(Seq.empty))
-      .collect { case value: RdsAssessmentReport.DataWrapper =>
-        value
-      }
-      .flatMap(_.data.getOrElse(Seq.empty))
-      .flatMap(toRisk)
-  }
-
-  private def isPreferredLanguage(language: String, preferredLanguage: PreferredLanguage) = preferredLanguage match {
-    case PreferredLanguage.English if language == "EnglishActions" => true
-    case PreferredLanguage.Welsh if language == "WelshActions"     => true
-    case _                                                         => false
-  }
-
-  private def toRisk(riskParts: Seq[String]): Option[Risk] = {
-    if (riskParts.isEmpty) None
-    else
-      Some(
-        Risk(title = riskParts(2), body = riskParts.head, action = riskParts(1), links = Seq(Link(riskParts(3), riskParts(4))), path = riskParts(5)))
-  }
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport,
