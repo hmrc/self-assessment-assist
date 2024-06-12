@@ -44,19 +44,3 @@ object AssessmentReport {
       .and((JsPath \ "correlationId").write[String])(unlift(AssessmentReport.unapply))
 
 }
-
-case class Risk(title: String, body: String, action: String, links: Seq[Link], path: String)
-
-object Risk {
-
-  implicit val writes: Writes[Risk] = Json.writes[Risk]
-
-}
-
-case class Link(title: String, url: String)
-
-object Link {
-
-  implicit val writes: Writes[Link] = Json.writes[Link]
-
-}
