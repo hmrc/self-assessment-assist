@@ -18,7 +18,7 @@ The Self-Assessment-Assist API allows a developer to:
 ## Development Setup
 Run the microservice from the console using: `sbt run` (starts on port 8342)
 
-Start the service manager profile: `sm --start SELF_ASSESSMENT_ASSIST_STUBS`
+Start the service manager profile: `sm2 --start SELF_ASSESSMENT_ASSIST_ALL`
 
 ## Run Tests
 Run unit tests: `sbt test`

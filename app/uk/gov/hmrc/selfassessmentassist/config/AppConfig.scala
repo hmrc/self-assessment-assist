@@ -30,6 +30,8 @@ trait AppConfig {
 
   // RDS
   def cipFraudServiceBaseUrl: String
+  def cipFraudUsername: String
+  def cipFraudToken: String
   def rdsBaseUrlForSubmit: String
   def rdsBaseUrlForAcknowledge: String
 
@@ -78,9 +80,10 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
   val nrsBaseUrl: String = config.baseUrl("non-repudiation") + nrsConfig.get[String]("submit-url")
   val nrsApiKey: String  = nrsConfig.get[String]("x-api-key")
 
-  private val cipConfig              = configuration.get[Configuration]("microservice.services.cip-fraud-service")
-  val cipFraudServiceBaseUrl: String = config.baseUrl("cip-fraud-service") + cipConfig.get[String]("submit-url")
-
+  private val cipConfig                = configuration.get[Configuration]("microservice.services.cip-fraud-service")
+  val cipFraudServiceBaseUrl: String   = config.baseUrl("cip-fraud-service") + cipConfig.get[String]("submit-url")
+  val cipFraudToken: String            = cipConfig.get[String]("token")
+  val cipFraudUsername: String         = cipConfig.get[String]("username")
   private val rdsConfig                = configuration.get[Configuration]("microservice.services.rds")
   val rdsBaseUrlForSubmit: String      = config.baseUrl("rds") + rdsConfig.get[String]("submit-url")
   val rdsBaseUrlForAcknowledge: String = config.baseUrl("rds") + rdsConfig.get[String]("acknowledge-url")

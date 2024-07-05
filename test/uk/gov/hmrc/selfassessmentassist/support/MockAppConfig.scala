@@ -37,6 +37,8 @@ trait MockAppConfig extends MockFactory {
     def rdsBaseUrlForAcknowledge: CallHandler[String]   = (() => mockAppConfig.rdsBaseUrlForAcknowledge).expects().anyNumberOfTimes()
     def rdsAuthRequiredForThisEnv: CallHandler[Boolean] = (() => mockAppConfig.rdsAuthRequiredForThisEnv).expects().anyNumberOfTimes()
     def cipFraudServiceBaseUrl: CallHandler[String]     = (() => mockAppConfig.cipFraudServiceBaseUrl).expects().anyNumberOfTimes()
+    def cipFraudToken: CallHandler[String] = (()=> mockAppConfig.cipFraudToken).expects().anyNumberOfTimes()
+    def cipFraudUsername: CallHandler[String] =(()=> mockAppConfig.cipFraudUsername).expects().anyNumberOfTimes()
     // RDS Auth
     def rdsSasBaseUrlForAuth: CallHandler[String]      = (() => mockAppConfig.rdsSasBaseUrlForAuth).expects().anyNumberOfTimes()
     def rdsAuthCredential: CallHandler[AuthCredential] = (() => mockAppConfig.rdsAuthCredential).expects().anyNumberOfTimes()

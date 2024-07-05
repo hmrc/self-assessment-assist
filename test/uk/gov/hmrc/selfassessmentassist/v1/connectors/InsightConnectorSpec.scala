@@ -52,6 +52,8 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
   class Test {
 
     MockedAppConfig.cipFraudServiceBaseUrl returns s"http://localhost:$port/fraud"
+    MockedAppConfig.cipFraudUsername returns "some-user-name"
+    MockedAppConfig.cipFraudToken returns "some-token"
     val connector = new InsightConnector(httpClient, mockAppConfig)
 
     def stubCIPResponse(body: Option[String] = None, status: Int): StubMapping = {
