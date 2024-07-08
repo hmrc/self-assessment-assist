@@ -33,10 +33,10 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class InsightConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
-  private[this] def fraudRiskHeaders: Seq[(String, String)] = {
+  private[connectors] def fraudRiskHeaders(): Seq[(String, String)] = {
 
-    val username: String = appConfig.cipFraudUsername
-    val password: String = appConfig.cipFraudToken
+    val username: String   = appConfig.cipFraudUsername
+    val password: String   = appConfig.cipFraudToken
     val credentials        = s"$username:$password"
     val encodedCredentials = Base64.getEncoder.encodeToString(credentials.getBytes)
     Seq(
@@ -51,7 +51,7 @@ class InsightConnector @Inject() (val httpClient: HttpClient, appConfig: AppConf
       .POST[FraudRiskRequest, HttpResponse](
         s"${appConfig.cipFraudServiceBaseUrl}",
         body = fraudRiskRequest,
-        headers = fraudRiskHeaders
+        headers = fraudRiskHeaders()
       )
       .map { response =>
         logger.info(s"$correlationId::[InsightConnector:assess] FraudRiskReport status is ${response.status}")

@@ -29,6 +29,8 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, Interna
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
+import scala.collection.Seq
+import java.util.Base64
 
 class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
@@ -50,10 +52,11 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
   val httpClient: HttpClient                     = app.injector.instanceOf[HttpClient]
 
   class Test {
-
+    val username: String = "some-user-name"
+    val token: String    = "some-token"
     MockedAppConfig.cipFraudServiceBaseUrl returns s"http://localhost:$port/fraud"
-    MockedAppConfig.cipFraudUsername returns "some-user-name"
-    MockedAppConfig.cipFraudToken returns "some-token"
+    MockedAppConfig.cipFraudUsername returns username
+    MockedAppConfig.cipFraudToken returns token
     val connector = new InsightConnector(httpClient, mockAppConfig)
 
     def stubCIPResponse(body: Option[String] = None, status: Int): StubMapping = {
@@ -84,6 +87,14 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
   override def afterAll(): Unit = wireMockServer.stop()
 
   "Give InsightConnector" when {
+
+    "fraudTestHeaders " must {
+      "return correct headers " in new Test {
+        val credentials = Base64.getEncoder.encodeToString(s"$username:$token".getBytes)
+        connector.fraudRiskHeaders() should be  (Seq("Authorization" -> s"Basic $credentials"))
+      }
+    }
+
     "is immediately successful then" must {
       "return the response" in new Test {
         stubCIPResponse(Some(successResponseJson.toString), OK)
