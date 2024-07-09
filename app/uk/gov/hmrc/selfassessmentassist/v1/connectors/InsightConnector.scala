@@ -26,19 +26,35 @@ import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
 
+import java.util.Base64
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class InsightConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
+  private[connectors] def fraudRiskHeaders(): Seq[(String, String)] = {
+
+    val username: String   = appConfig.cipFraudUsername
+    val password: String   = appConfig.cipFraudToken
+    val credentials        = s"$username:$password"
+    val encodedCredentials = Base64.getEncoder.encodeToString(credentials.getBytes)
+    Seq(
+      "Authorization" -> s"Basic $encodedCredentials"
+    )
+  }
+
   def assess(fraudRiskRequest: FraudRiskRequest)(implicit hc: HeaderCarrier, correlationId: String): Future[ServiceOutcome[FraudRiskReport]] = {
     logger.info(s"$correlationId::[InsightConnector:assess] requesting fraud risk report")
 
     httpClient
-      .POST[FraudRiskRequest, HttpResponse](s"${appConfig.cipFraudServiceBaseUrl}", fraudRiskRequest)
+      .POST[FraudRiskRequest, HttpResponse](
+        s"${appConfig.cipFraudServiceBaseUrl}",
+        body = fraudRiskRequest,
+        headers = fraudRiskHeaders()
+      )
       .map { response =>
-        logger.info(s"$correlationId::[InsightConnector:assess] FraudRiskreport status is ${response.status}")
+        logger.info(s"$correlationId::[InsightConnector:assess] FraudRiskReport status is ${response.status}")
         response.status match {
           case OK =>
             response.json
@@ -51,7 +67,7 @@ class InsightConnector @Inject() (val httpClient: HttpClient, appConfig: AppConf
                 report => Right(ResponseWrapper(correlationId, report))
               )
           case _ =>
-            logger.error(s"$correlationId::[InsightConnector:assess] CIP Fraudrisk report failed as unknown code returned ${response.status}")
+            logger.error(s"$correlationId::[InsightConnector:assess] CIP FraudRisk report failed as unknown code returned ${response.status}")
             Left(ErrorWrapper(correlationId, InternalError))
         }
       }
