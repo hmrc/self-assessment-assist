@@ -184,10 +184,11 @@ object CommonTestData {
     itmpAddress = ItmpAddress(None, None, None, None, None, None, None, None),
     affinityGroup = Some(Agent),
     credentialStrength = Some("strong"),
-    loginTimes = LoginTimes(
-      Instant.parse("2016-11-27T09:00:00Z"),
-      Some(Instant.parse("2016-11-01T12:00:00Z"))
-    )
+    loginTimes = Some(
+      LoginTimes(
+        Instant.parse("2016-11-27T09:00:00Z"),
+        Some(Instant.parse("2016-11-01T12:00:00Z"))
+      ))
   )
 
   val metaDataCorrectJson: JsValue = Json.parse(
