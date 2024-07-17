@@ -24,14 +24,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
-  BearerTokenExpiredError,
-  ForbiddenDownstreamError,
-  InternalError,
-  InvalidBearerTokenError,
-  LegacyUnauthorisedError,
-  MtdError
-}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, ForbiddenDownstreamError, InternalError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
@@ -71,7 +64,6 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
             ~ itmpName ~ itmpAddress =>
           val emptyItmpName: ItmpName       = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
-
           val identityData =
             IdentityData(
               inId,
@@ -84,7 +76,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               nme,
               dob,
               eml,
-              agInfo,
+              Some(agInfo),
               groupId,
               credRole,
               mdtpInfo,
