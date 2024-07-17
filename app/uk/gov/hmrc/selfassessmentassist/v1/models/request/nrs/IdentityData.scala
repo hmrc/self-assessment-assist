@@ -42,7 +42,7 @@ case class IdentityData(internalId: Option[String] = None,
                         itmpAddress: ItmpAddress,
                         affinityGroup: Option[AffinityGroup],
                         credentialStrength: Option[String] = None,
-                        loginTimes: LoginTimes)
+                        loginTimes: Option[LoginTimes])
 
 object IdentityData {
   implicit val localDateReads: Reads[LocalDate]           = DateUtils.dateReads

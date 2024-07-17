@@ -24,7 +24,14 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, ForbiddenDownstreamError, InternalError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
+  BearerTokenExpiredError,
+  ForbiddenDownstreamError,
+  InternalError,
+  InvalidBearerTokenError,
+  LegacyUnauthorisedError,
+  MtdError
+}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
@@ -86,7 +93,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               itmpAddress.getOrElse(emptyItmpAddress),
               Some(affGroup),
               credStrength,
-              logins
+              Some(logins)
             )
 
           createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData))
