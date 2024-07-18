@@ -21,7 +21,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, ItmpAddress, ItmpName, ~}
+import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, ItmpAddress, ItmpName, LoginTimes, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, ForbiddenDownstreamError, InternalError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
@@ -29,6 +29,7 @@ import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 
+import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -86,7 +87,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               itmpAddress.getOrElse(emptyItmpAddress),
               Some(affGroup),
               credStrength,
-              Some(logins)
+              Option(logins).getOrElse(LoginTimes(Instant.now(), None))
             )
 
           createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData))

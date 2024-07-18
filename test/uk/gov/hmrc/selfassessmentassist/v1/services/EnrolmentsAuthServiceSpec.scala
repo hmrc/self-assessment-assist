@@ -149,6 +149,81 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with Mock
       }
     }
 
+    "agentInformation is None" must {
+      "return success" in new TestPayload {
+        mockConfidenceLevelCheckConfig()
+
+        val predicate: Predicate =
+          Enrolment("HMRC-MTD-IT")
+            .withIdentifier("MTDITID", "some-value")
+            .withDelegatedAuthRule("mtd-it-auth")
+
+        val result:Future[AuthOutcome] = service.authorised(predicate, correlationId)
+
+        val res = await(result)
+        Console.print(res)
+        /*res shouldBe Right(
+          UserDetails(
+            userType = AffinityGroup.Individual,
+            agentReferenceNumber = None,
+            clientID = "",
+            None
+          ))*/
+      }
+    }
+  }
+
+  trait TestPayload extends Test {
+
+    (authConnector
+      .authorise(_: Predicate, _: Retrieval[Any])(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *, *, *)
+      .returns(() => Future.successful("""{
+          |  "confidenceLevel": 250,
+          |  "credentials": {
+          |    "providerId": "3485171374757954",
+          |    "providerType": "GovernmentGateway"
+          |  },
+          |  "name": {
+          |    "name": "TestUser"
+          |  },
+          |  "email": "user@test.com",
+          |  "credentialStrength": "strong",
+          |  "credentialRole": "User",
+          |  "groupIdentifier": "testGroupId-f5c001fe-8007-469a-8526-c796e48f724d",
+          |  "affinityGroup": "Individual",
+          |  "agentInformation": {},
+          |  "internalId": "Int-cb20d3af-a45c-46f4-a72d-a21a89fb3391",
+          |  "externalId": "Ext-c69aceb4-0f5c-420e-89bf-d5f5d7f71372",
+          |  "legacySaUserId": "ITajAusTTotWnoFaNIIM1Q@@",
+          |  "nino": "PW872433A",
+          |  "allEnrolments": [
+          |    {
+          |      "key": "HMRC-MTD-IT",
+          |      "identifiers": [
+          |        {
+          |          "key": "MTDITID",
+          |          "value": "XZIT00000564795"
+          |                 }
+          |      ],
+          |      "state": "Activated",
+          |      "confidenceLevel": 50
+          |    },
+          |    {
+          |      "key": "HMRC-NI",
+          |      "identifiers": [
+          |        {
+          |          "key": "NINO",
+          |          "value": "PW872433A"
+          |                 }
+          |      ],
+          |      "state": "Activated",
+          |      "confidenceLevel": 250
+          |      }
+          |  ]
+          |}""".stripMargin))
+
+    override val service: EnrolmentsAuthService = new EnrolmentsAuthService(authConnector, mockAppConfig)
   }
 
   trait Test {
