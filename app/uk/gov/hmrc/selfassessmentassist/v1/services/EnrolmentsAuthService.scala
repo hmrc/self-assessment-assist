@@ -21,7 +21,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
+import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, ForbiddenDownstreamError, InternalError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
@@ -64,6 +64,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
             ~ itmpName ~ itmpAddress =>
           val emptyItmpName: ItmpName       = ItmpName(None, None, None)
           val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
+          val emptyAgentInfo: AgentInformation = AgentInformation(None, None, None)
           val identityData =
             IdentityData(
               inId,
@@ -76,7 +77,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               nme,
               dob,
               eml,
-              Some(agInfo),
+              Option(agInfo).getOrElse(emptyAgentInfo),
               groupId,
               credRole,
               mdtpInfo,

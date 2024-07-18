@@ -62,12 +62,12 @@ object AuthFixture {
       ),
       dateOfBirth = None,
       email = Some("user@test.com"),
-      agentInformation = Some(
+      agentInformation =
         AgentInformation(
           agentCode = None,
           agentFriendlyName = None,
           agentId = None
-        )),
+        ),
       groupIdentifier = Some("testGroupId-840cf4e3-c8ad-48f4-80fd-ea267f916be5"),
       credentialRole = Some(User),
       mdtpInformation = None,
@@ -93,7 +93,7 @@ object AuthFixture {
     )
 
   val authResponse: (IdentityData, Enrolments) => Option[AffinityGroup] ~ Enrolments ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[
-    Credentials] ~ ConfidenceLevel ~ None.type ~ None.type ~ Option[Name] ~ None.type ~ Option[String] ~ Option[AgentInformation] ~ Option[
+    Credentials] ~ ConfidenceLevel ~ None.type ~ None.type ~ Option[Name] ~ None.type ~ Option[String] ~ AgentInformation ~ Option[
     String] ~ Option[CredentialRole] ~ None.type ~ Option[String] ~ Option[LoginTimes] ~ Option[ItmpName] ~ Option[LocalDate] ~ Option[ItmpAddress] =
     (data, enrolments) =>
       new ~(
@@ -161,7 +161,7 @@ object AuthFixture {
           name = Some(Name(name = Some("TestUser"), lastName = None)),
           dateOfBirth = None,
           email = Some("user@test.com"),
-          agentInformation = Some(agentInformation),
+          agentInformation = agentInformation,
           groupIdentifier = Some("testGroupId-840cf4e3-c8ad-48f4-80fd-ea267f916be5"),
           credentialRole = Some(User),
           mdtpInformation = None,
