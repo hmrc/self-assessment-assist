@@ -20,11 +20,19 @@ import play.api.libs.json.JsResultException
 import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.OptionalRetrievals.optionalLoginTimes
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, ItmpAddress, ItmpName, LoginTimes, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BearerTokenExpiredError, ForbiddenDownstreamError, InternalError, InvalidBearerTokenError, LegacyUnauthorisedError, MtdError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
+  BearerTokenExpiredError,
+  ForbiddenDownstreamError,
+  InternalError,
+  InvalidBearerTokenError,
+  LegacyUnauthorisedError,
+  MtdError
+}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
@@ -56,15 +64,15 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
           and internalId and externalId and agentCode and credentials
           and confidenceLevel and nino and saUtr and name and dateOfBirth
           and email and agentInformation and groupIdentifier and credentialRole
-          and mdtpInformation and credentialStrength and loginTimes
+          and mdtpInformation and credentialStrength and optionalLoginTimes
           and itmpName and itmpAddress) {
         case Some(affGroup) ~ enrolments ~ inId ~ exId ~ agCode ~ creds
             ~ confLevel ~ ni ~ saRef ~ nme ~ dob
             ~ eml ~ agInfo ~ groupId ~ credRole
             ~ mdtpInfo ~ credStrength ~ logins
             ~ itmpName ~ itmpAddress =>
-          val emptyItmpName: ItmpName       = ItmpName(None, None, None)
-          val emptyItmpAddress: ItmpAddress = ItmpAddress(None, None, None, None, None, None, None, None)
+          val emptyItmpName: ItmpName          = ItmpName(None, None, None)
+          val emptyItmpAddress: ItmpAddress    = ItmpAddress(None, None, None, None, None, None, None, None)
           val emptyAgentInfo: AgentInformation = AgentInformation(None, None, None)
           val identityData =
             IdentityData(
@@ -78,7 +86,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               nme,
               dob,
               eml,
-              Option(agInfo).getOrElse(emptyAgentInfo),
+              agInfo,
               groupId,
               credRole,
               mdtpInfo,
@@ -87,7 +95,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               itmpAddress.getOrElse(emptyItmpAddress),
               Some(affGroup),
               credStrength,
-              Option(logins).getOrElse(LoginTimes(Instant.now(), None))
+              logins.getOrElse(LoginTimes(Instant.now(), None))
             )
 
           createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData))
