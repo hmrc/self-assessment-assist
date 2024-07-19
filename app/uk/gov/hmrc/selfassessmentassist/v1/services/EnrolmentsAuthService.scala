@@ -161,6 +161,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
     case exception @ _ =>
       logger.warn(
         s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
+      logger.warn(exception.getMessage) //TODO: remove
       Future.successful(Left(InternalError))
   }
 
