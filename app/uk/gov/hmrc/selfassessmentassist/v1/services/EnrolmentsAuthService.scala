@@ -22,7 +22,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.OptionalRetrievals.optionalLoginTimes
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, LoginTimes, ~}
+import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
@@ -37,7 +37,6 @@ import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 
-import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -95,7 +94,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               itmpAddress.getOrElse(emptyItmpAddress),
               Some(affGroup),
               credStrength,
-              logins.getOrElse(LoginTimes(Instant.now(), None))
+              logins
             )
 
           createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData))
@@ -160,7 +159,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
       Future.successful(Left(BearerTokenExpiredError))
     case exception @ _ =>
       logger.warn(
-        s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
+        s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getMessage}")
       logger.warn(exception.getMessage) //TODO: remove
       Future.successful(Left(InternalError))
   }

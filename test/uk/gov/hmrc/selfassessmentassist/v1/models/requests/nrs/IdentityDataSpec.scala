@@ -96,7 +96,7 @@ class IdentityDataSpec extends UnitSpec {
     itmpAddress = ItmpAddress(None, None, None, None, None, None, None, None),
     affinityGroup = Some(AffinityGroup.Individual),
     credentialStrength = Some("strong"),
-    loginTimes = LoginTimes(currentLogin = Instant.parse(now), previousLogin = None)
+    loginTimes = Some(LoginTimes(currentLogin = Instant.parse(now), previousLogin = None))
   )
 
   "Payload" should {

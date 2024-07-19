@@ -62,12 +62,11 @@ object AuthFixture {
       ),
       dateOfBirth = None,
       email = Some("user@test.com"),
-      agentInformation =
-        AgentInformation(
-          agentCode = None,
-          agentFriendlyName = None,
-          agentId = None
-        ),
+      agentInformation = AgentInformation(
+        agentCode = None,
+        agentFriendlyName = None,
+        agentId = None
+      ),
       groupIdentifier = Some("testGroupId-840cf4e3-c8ad-48f4-80fd-ea267f916be5"),
       credentialRole = Some(User),
       mdtpInformation = None,
@@ -85,16 +84,16 @@ object AuthFixture {
       ),
       affinityGroup = Some(AffinityGroup.Individual),
       credentialStrength = Some("strong"),
-      loginTimes =
+      loginTimes = Some(
         LoginTimes(
           currentLogin = Instant.parse("2018-04-16T11:00:55Z"),
           previousLogin = None
-        )
+        ))
     )
 
   val authResponse: (IdentityData, Enrolments) => Option[AffinityGroup] ~ Enrolments ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[
-    Credentials] ~ ConfidenceLevel ~ None.type ~ None.type ~ Option[Name] ~ None.type ~ Option[String] ~ AgentInformation ~ Option[
-    String] ~ Option[CredentialRole] ~ None.type ~ Option[String] ~ LoginTimes ~ Option[ItmpName] ~ Option[LocalDate] ~ Option[ItmpAddress] =
+    Credentials] ~ ConfidenceLevel ~ None.type ~ None.type ~ Option[Name] ~ None.type ~ Option[String] ~ AgentInformation ~ Option[String] ~ Option[
+    CredentialRole] ~ None.type ~ Option[String] ~ Option[LoginTimes] ~ Option[ItmpName] ~ Option[LocalDate] ~ Option[ItmpAddress] =
     (data, enrolments) =>
       new ~(
         new ~(
@@ -178,7 +177,7 @@ object AuthFixture {
             countryCode = Some("UK")),
           affinityGroup = Some(Individual),
           credentialStrength = Some("strong"),
-          loginTimes = LoginTimes(currentLogin = Instant.parse("2018-04-16T11:00:55.000Z"), previousLogin = None)
+          loginTimes = Some(LoginTimes(currentLogin = Instant.parse("2018-04-16T11:00:55.000Z"), previousLogin = None))
         ))
     )
 
