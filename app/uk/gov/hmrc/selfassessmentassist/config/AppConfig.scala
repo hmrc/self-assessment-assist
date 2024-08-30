@@ -41,6 +41,7 @@ trait AppConfig {
   def apiStatus(version: String): String
   def endpointsEnabled(version: String): Boolean
   def featureSwitch: Option[Configuration]
+  def safeEndpointsEnabled(version: String): Boolean
 
   // SAS
   def rdsSasBaseUrlForAuth: String
@@ -61,10 +62,12 @@ trait AppConfig {
   def ifsToken: String
   def ifsEnv: String
   def ifsEnvironmentHeaders: Option[Seq[String]]
+
+  def endpointAllowsSupportingAgents(endpointName: String): Boolean
 }
 
 @Singleton
-class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configuration) extends AppConfig {
+class AppConfigImpl @Inject() (config: ServicesConfig, protected[config] val configuration: Configuration) extends AppConfig {
 
   val appName: String = config.getString("appName")
 
@@ -118,6 +121,20 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
     }
   }
 
+  /** Like endpointsEnabled, but will return false if version doesn't exist.
+   */
+  def safeEndpointsEnabled(version: String): Boolean =
+    configuration
+      .getOptional[Boolean](s"api.$version.endpoints.enabled")
+      .getOrElse(false)
+
+  def endpointAllowsSupportingAgents(endpointName: String): Boolean =
+    supportingAgentEndpoints.getOrElse(endpointName, false)
+
+  private val supportingAgentEndpoints: Map[String, Boolean] =
+    configuration
+      .getOptional[Map[String, Boolean]]("api.supporting-agent-endpoints")
+      .getOrElse(Map.empty)
 }
 
 case class ConfidenceLevelConfig(confidenceLevel: ConfidenceLevel, definitionEnabled: Boolean, authValidationEnabled: Boolean)

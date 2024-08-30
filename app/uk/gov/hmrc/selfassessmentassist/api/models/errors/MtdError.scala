@@ -19,6 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.api.models.errors
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsObject, JsPath, Json, OWrites}
 
+/*
 case class MtdError(code: String, message: String, httpStatus: Int, paths: Option[Seq[String]] = None) {
   val asJson: JsObject = Json.toJson(this).as[JsObject]
 }
@@ -30,6 +31,53 @@ object MtdError {
       (JsPath \ "message").write[String] and
       (JsPath \ "paths").writeNullable[Seq[String]]
   )(unlift(MtdError.unapply))
+
+  // excludes httpStatus
+  def unapply(e: MtdError): Option[(String, String, Option[Seq[String]])] = Some((e.code, e.message, e.paths))
+
+  implicit def genericWrites[T <: MtdError]: OWrites[T] =
+    writes.contramap[T](c => c: MtdError)
+
+}
+*/
+case class MtdError(code: String, message: String, httpStatus: Int, paths: Option[Seq[String]] = None) {
+  val asJson: JsObject = Json.toJson(this).as[JsObject]
+
+  /** Returns a copy of this error with the path, replacing any that were already present.
+   */
+  def withPath(path: String): MtdError = copy(paths = Some(List(path)))
+
+  /** Returns a copy of this error with the paths, replacing any that were already present.
+   */
+  def withPaths(paths: Seq[String]): MtdError = copy(paths = Some(paths))
+
+  /** If maybePath is defined, returns a copy of this error with the path, replacing any that were already present; otherwise returns the original
+   * error.
+   */
+  def maybeWithPath(maybePath: Option[String]): MtdError =
+    maybePath.map(withPath).getOrElse(this)
+
+  /** Returns a copy of this error with an additional path.
+   */
+  def withExtraPath(newPath: String): MtdError =
+    paths.fold(
+      copy(paths = Some(List(newPath)))
+    ) { existingPaths =>
+      copy(paths = Some(existingPaths :+ newPath))
+    }
+
+  def maybeWithExtraPath(maybeNewPath: Option[String]): MtdError =
+    maybeNewPath.map(withExtraPath).getOrElse(this)
+
+}
+
+object MtdError {
+
+  implicit val writes: OWrites[MtdError] = (
+    (JsPath \ "code").write[String] and
+      (JsPath \ "message").write[String] and
+      (JsPath \ "paths").writeNullable[Seq[String]]
+    )(unlift(MtdError.unapply))
 
   // excludes httpStatus
   def unapply(e: MtdError): Option[(String, String, Option[Seq[String]])] = Some((e.code, e.message, e.paths))

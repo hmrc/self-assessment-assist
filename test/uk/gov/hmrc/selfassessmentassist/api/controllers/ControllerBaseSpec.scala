@@ -36,6 +36,10 @@ class ControllerBaseSpec extends UnitSpec with Status with MimeTypes with Header
     "X-Client-Id"             -> "client-Id"
   )
 
+  lazy val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = fakeRequest.withHeaders(
+    HeaderNames.AUTHORIZATION -> "Bearer Token"
+  )
+
   def fakePostRequest[T](body: T): FakeRequest[T] = fakeRequest.withBody(body)
 
   def status(of: Result): Int = of.header.status

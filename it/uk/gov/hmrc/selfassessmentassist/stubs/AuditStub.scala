@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.config
+package uk.gov.hmrc.selfassessmentassist.stubs
 
-sealed trait Feature {
-  val name: String
-}
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import play.api.http.Status.NO_CONTENT
+import uk.gov.hmrc.selfassessmentassist.support.WireMockMethods
 
-case object AuthFeature extends Feature {
-  override val name: String = "auth"
-}
+object AuditStub extends WireMockMethods {
 
-case object SupportingAgentsAccessControlEnabled extends Feature {
-  override val name: String = "supporting-agents-access-control"
+  private val auditUri: String = s"/write/audit.*"
+
+  def audit(): StubMapping = {
+    when(method = POST, uri = auditUri)
+      .thenReturn(status = NO_CONTENT)
+  }
+
 }

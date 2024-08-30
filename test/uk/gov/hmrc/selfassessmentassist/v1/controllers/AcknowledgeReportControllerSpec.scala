@@ -17,6 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.controllers
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Configuration
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
@@ -24,9 +25,9 @@ import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.controllers.ControllerBaseSpec
 import uk.gov.hmrc.selfassessmentassist.api.models.errors._
-import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
+import uk.gov.hmrc.selfassessmentassist.support.MockAppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers._
@@ -50,30 +51,33 @@ class AcknowledgeReportControllerSpec
     with MockCurrentDateTime
     with MockIdGenerator
     with MockIfsService
-    with GuiceOneAppPerSuite {
+    with GuiceOneAppPerSuite
+    with MockAppConfig {
 
   trait Test {
     val hc: HeaderCarrier = HeaderCarrier()
 
-    val controller: TestController        = new TestController()
     private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
     private val formattedDate: String     = timestamp.format(DateUtils.isoInstantDateTimePattern)
 
-    private lazy val appConfig = app.injector.instanceOf[AppConfig]
+    val controller = new AcknowledgeReportController(
+      cc = cc,
+      requestParser = mockAcknowledgeRequestParser,
+      authService = mockEnrolmentsAuthService,
+      lookupConnector = mockLookupConnector,
+      nonRepudiationService = mockNrsService,
+      rdsService = mockRdsService,
+      currentDateTime = mockCurrentDateTime,
+      idGenerator = mockIdGenerator,
+      ifsService = mockIfsService
+    )
 
-    class TestController
-        extends AcknowledgeReportController(
-          cc = cc,
-          requestParser = mockAcknowledgeRequestParser,
-          authService = mockEnrolmentsAuthService,
-          lookupConnector = mockLookupConnector,
-          nonRepudiationService = mockNrsService,
-          rdsService = mockRdsService,
-          currentDateTime = mockCurrentDateTime,
-          idGenerator = mockIdGenerator,
-          ifsService = mockIfsService,
-          config = appConfig
-        )
+    MockedAppConfig.featureSwitch.anyNumberOfTimes() returns Some(
+      Configuration(
+        "supporting-agents-access-control.enabled" -> true
+      ))
+
+    MockedAppConfig.endpointAllowsSupportingAgents(controller.endpointName).anyNumberOfTimes() returns false
 
     val dummyReportPayload: NrsSubmission =
       NrsSubmission(

@@ -48,4 +48,14 @@ case class FeatureSwitch(value: Option[Configuration]) {
     enabled.getOrElse(false)
   }
 
+  def isReleasedInProduction(feature: Feature): Boolean = {
+
+    val enabled = for {
+      config  <- value
+      enabled <- config.getOptional[Boolean](s"${feature.name}.released-in-production")
+    } yield enabled
+
+    enabled.getOrElse(false)
+  }
+
 }

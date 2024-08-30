@@ -91,6 +91,7 @@ class AcknowledgeReportControllerISpec extends IntegrationBaseSpec {
     val uri = s"/reports/acknowledge/$nino/$reportId/$rdsCorrelationId"
 
     def request(): WSRequest = {
+      AuthStub.resetAll()
       setupStubs()
       buildRequest(uri)
         .withHttpHeaders(

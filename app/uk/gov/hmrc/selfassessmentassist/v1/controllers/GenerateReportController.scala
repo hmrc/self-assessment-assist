@@ -34,9 +34,10 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AssistReportGenera
 import uk.gov.hmrc.selfassessmentassist.v1.requestParsers.GenerateReportRequestParser
 import uk.gov.hmrc.selfassessmentassist.v1.services._
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class GenerateReportController @Inject() (
     val cc: ControllerComponents,
     requestParser: GenerateReportRequestParser,
@@ -47,13 +48,14 @@ class GenerateReportController @Inject() (
     rdsService: RdsService,
     ifService: IfsService,
     currentDateTime: CurrentDateTime,
-    idGenerator: IdGenerator,
-    config: AppConfig
-)(implicit ec: ExecutionContext)
+    idGenerator: IdGenerator
+)(implicit appConfig: AppConfig, ec: ExecutionContext)
     extends AuthorisedController(cc)
     with ApiBaseController
     with BaseController
     with Logging {
+
+  val endpointName = "generate-report"
 
   def generateReportInternal(nino: String, taxYear: String, calculationId: String): Action[AnyContent] = {
 

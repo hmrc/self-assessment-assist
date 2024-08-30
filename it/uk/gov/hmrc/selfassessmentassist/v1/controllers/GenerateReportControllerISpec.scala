@@ -102,6 +102,7 @@ class GenerateReportControllerISpec extends IntegrationBaseSpec {
     val uri = s"/reports/$nino/$taxYear/$calculationId"
 
     def request(): WSRequest = {
+      AuthStub.resetAll()
       setupStubs()
       buildRequest(uri)
         .withHttpHeaders(
