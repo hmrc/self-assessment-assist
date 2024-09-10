@@ -38,14 +38,18 @@ case class FeatureSwitch(value: Option[Configuration]) {
     enabled.getOrElse(false)
   }
 
-  def isEnabled(feature: Feature): Boolean = {
+  def isEnabled(feature: Feature): Boolean = isEnabled(feature.name)
+
+  def isEnabled(featureName: String): Boolean = {
 
     val enabled = for {
       config  <- value
-      enabled <- config.getOptional[Boolean](s"${feature.name}.enabled")
+      enabled <- config.getOptional[Boolean](s"${featureName}.enabled")
     } yield enabled
 
     enabled.getOrElse(false)
   }
+
+  val supportingAgentsAccessControlEnabled: Boolean = isEnabled("supporting-agents-access-control")
 
 }

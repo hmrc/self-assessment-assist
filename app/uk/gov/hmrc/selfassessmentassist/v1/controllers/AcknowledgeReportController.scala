@@ -42,13 +42,14 @@ class AcknowledgeReportController @Inject() (
     rdsService: RdsService,
     currentDateTime: CurrentDateTime,
     idGenerator: IdGenerator,
-    ifsService: IfsService,
-    config: AppConfig
-)(implicit ec: ExecutionContext)
+    ifsService: IfsService
+)(implicit appConfig: AppConfig, ec: ExecutionContext)
     extends AuthorisedController(cc)
     with ApiBaseController
     with BaseController
     with Logging {
+
+  val endpointName = "acknowledge-report"
 
   def acknowledgeReportForSelfAssessment(nino: String, reportId: String, rdsCorrelationId: String): Action[AnyContent] = {
     implicit val correlationId: String = idGenerator.generateCorrelationId

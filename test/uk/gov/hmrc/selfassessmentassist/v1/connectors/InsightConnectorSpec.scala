@@ -91,7 +91,7 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
     "fraudTestHeaders " must {
       "return correct headers " in new Test {
         val credentials = Base64.getEncoder.encodeToString(s"$username:$token".getBytes)
-        connector.fraudRiskHeaders() should be  (Seq("Authorization" -> s"Basic $credentials"))
+        connector.fraudRiskHeaders() should be(Seq("Authorization" -> s"Basic $credentials"))
       }
     }
 

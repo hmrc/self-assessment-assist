@@ -106,8 +106,8 @@ class VersionRoutingRequestHandlerSpec extends UnitSpec with Inside with MockApp
     "return 406" in new Test {
 
       val request: RequestHeader = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
-      inside(requestHandler.routeRequest(request)) { case Some(a: EssentialAction) =>
-        val result = a.apply(request)
+      inside(requestHandler.routeRequest(request)) { case Some(b: EssentialAction) =>
+        val result = b.apply(request)
 
         status(result) shouldBe NOT_ACCEPTABLE
         contentAsJson(result) shouldBe InvalidAcceptHeaderError.asJson
@@ -131,8 +131,8 @@ class VersionRoutingRequestHandlerSpec extends UnitSpec with Inside with MockApp
     "return 406" in new Test {
       private val request = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
 
-      inside(requestHandler.routeRequest(request)) { case Some(a: EssentialAction) =>
-        val result = a.apply(request)
+      inside(requestHandler.routeRequest(request)) { case Some(b: EssentialAction) =>
+        val result = b.apply(request)
 
         status(result) shouldBe NOT_ACCEPTABLE
         contentAsJson(result) shouldBe InvalidAcceptHeaderError.asJson
@@ -147,8 +147,8 @@ class VersionRoutingRequestHandlerSpec extends UnitSpec with Inside with MockApp
       "return 404 Not Found" in new Test {
 
         private val request = buildRequest("/reports/AA000000B/111190b4-06e3-4fef-a555-6fd0877dc7ca")
-        inside(requestHandler.routeRequest(request)) { case Some(a: EssentialAction) =>
-          val result = a.apply(request)
+        inside(requestHandler.routeRequest(request)) { case Some(b: EssentialAction) =>
+          val result = b.apply(request)
 
           status(result) shouldBe NOT_FOUND
           contentAsJson(result) shouldBe UnsupportedVersionError.asJson

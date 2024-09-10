@@ -60,7 +60,7 @@ object BearerTokenExpiredError extends MtdError("INVALID_CREDENTIALS", "Invalid 
 // Legacy Authorisation Errors
 object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.", FORBIDDEN)
 
-object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client or agent is not authorised", FORBIDDEN)
+object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.", FORBIDDEN)
 
 object ForbiddenDownstreamError extends MtdError(code = "Forbidden", message = "Request not authorised, forbidden", FORBIDDEN)
 

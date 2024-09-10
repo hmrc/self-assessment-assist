@@ -22,7 +22,24 @@ import play.api.mvc._
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.selfassessmentassist.api.controllers.{ApiBaseController, AuthorisedController}
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{BadRequestError, CalculationIdFormatError, ClientOrAgentNotAuthorisedError, ErrorWrapper, ForbiddenDownstreamError, InternalError, InvalidCredentialsError, MatchingCalculationIDNotFoundError, MatchingResourcesNotFoundError, NinoFormatError, NoAssessmentFeedbackFromRDS, RdsAuthError, ServerError, ServiceUnavailableError, TaxYearFormatError, TaxYearRangeInvalid}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
+  BadRequestError,
+  CalculationIdFormatError,
+  ClientOrAgentNotAuthorisedError,
+  ErrorWrapper,
+  ForbiddenDownstreamError,
+  InternalError,
+  InvalidCredentialsError,
+  MatchingCalculationIDNotFoundError,
+  MatchingResourcesNotFoundError,
+  NinoFormatError,
+  NoAssessmentFeedbackFromRDS,
+  RdsAuthError,
+  ServerError,
+  ServiceUnavailableError,
+  TaxYearFormatError,
+  TaxYearRangeInvalid
+}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.ErrorToJsonConverter.convertErrorAsJson
@@ -47,13 +64,14 @@ class GenerateReportController @Inject() (
     rdsService: RdsService,
     ifService: IfsService,
     currentDateTime: CurrentDateTime,
-    idGenerator: IdGenerator,
-    config: AppConfig
-)(implicit ec: ExecutionContext)
+    idGenerator: IdGenerator
+)(implicit config: AppConfig, ec: ExecutionContext)
     extends AuthorisedController(cc)
     with ApiBaseController
     with BaseController
     with Logging {
+
+  val endpointName = "generate-report"
 
   def generateReportInternal(nino: String, taxYear: String, calculationId: String): Action[AnyContent] = {
 

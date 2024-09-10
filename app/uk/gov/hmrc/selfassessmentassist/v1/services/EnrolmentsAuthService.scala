@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
-import play.api.libs.json.JsResultException
 import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
@@ -24,17 +23,11 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
-  BearerTokenExpiredError,
-  ForbiddenDownstreamError,
-  InternalError,
-  InvalidBearerTokenError,
-  LegacyUnauthorisedError,
-  MtdError
-}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, MtdError, ClientOrAgentNotAuthorisedError}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
+import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,21 +35,24 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConfig: AppConfig) extends Logging {
 
+  private lazy val authorisationEnabled = appConfig.confidenceLevelConfig.authValidationEnabled
+
+  private def initialPredicate(mtdId: String): Predicate =
+    if (authorisationEnabled)
+      authorisationEnabledPredicate(mtdId)
+    else
+      authorisationDisabledPredicate(mtdId)
+
   private val authFunction: AuthorisedFunctions = new AuthorisedFunctions {
     override def authConnector: AuthConnector = connector
   }
 
-  def buildPredicate(predicate: Predicate): Predicate =
-    if (appConfig.confidenceLevelConfig.authValidationEnabled) {
-      predicate and ((Individual and ConfidenceLevel.L200) or Organisation or Agent)
-    } else {
-      predicate
-    }
-
-  def authorised(predicate: Predicate, correlationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AuthOutcome] = {
-
+  def authorised(mtdId: String, correlationId: String, endpointAllowsSupportingAgents: Boolean = false)(implicit
+      hc: HeaderCarrier,
+      ec: ExecutionContext): Future[AuthOutcome] = {
+    println("CCCC ")
     authFunction
-      .authorised(buildPredicate(predicate))
+      .authorised(initialPredicate(mtdId))
       .retrieve(
         affinityGroup and allEnrolments
           and internalId and externalId and agentCode and credentials
@@ -96,18 +92,29 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               Some(logins)
             )
 
-          createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData))
+          createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData), mtdId, endpointAllowsSupportingAgents)
         case _ =>
-          logger.warn(s"$correlationId::[EnrolmentsAuthService] Authorisation failed due to unsupported affinity group.")
-          Future.successful(Left(LegacyUnauthorisedError))
-
-      } recoverWith unauthorisedError(correlationId)
+          logger.warn(s"[EnrolmentsAuthService][authorised] Invalid AffinityGroup.")
+          Future.successful(Left(ClientOrAgentNotAuthorisedError))
+      }
+      .recoverWith {
+        case _: MissingBearerToken =>
+          Future.successful(Left(ClientOrAgentNotAuthorisedError))
+        case _: AuthorisationException =>
+          Future.successful(Left(ClientOrAgentNotAuthorisedError))
+        case error =>
+          logger.warn(s"[EnrolmentsAuthService][authorised] An unexpected error occurred: $error")
+          Future.successful(Left(InternalError))
+      }
   }
 
-  def createUserDetailsWithLogging(affinityGroup: AffinityGroup,
-                                   enrolments: Enrolments,
-                                   correlationId: String,
-                                   identityData: Option[IdentityData]): Future[Right[MtdError, UserDetails]] = {
+  def createUserDetailsWithLogging(
+      affinityGroup: AffinityGroup,
+      enrolments: Enrolments,
+      correlationId: String,
+      identityData: Option[IdentityData],
+      mtdId: String,
+      endpointAllowsSupportingAgents: Boolean)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, UserDetails]] = {
     val clientReference = getClientReferenceFromEnrolments(enrolments)
     logger.debug(
       s"$correlationId::[createUserDetailsWithLogging] Authorisation succeeded as " +
@@ -125,8 +132,35 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
       Future.successful(Right(userDetails))
     } else {
       logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup")
-      val agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments)
-      Future.successful(Right(userDetails.copy(agentReferenceNumber = agentReferenceNumber)))
+      authFunction
+        .authorised(mtdEnrolmentPredicate(mtdId)) {
+          val agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments)
+
+          agentReferenceNumber match {
+            case Right(arn)  => Future.successful(Right(userDetails.copy(agentReferenceNumber = Some(arn))))
+            case Left(error) => Future.successful(Left(error))
+          }
+        }
+        .recoverWith { case _: AuthorisationException =>
+          if (endpointAllowsSupportingAgents) {
+            authFunction
+              .authorised(supportingAgentAuthPredicate(mtdId)) {
+                val agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments)
+                agentReferenceNumber match {
+                  case Right(arn)  => Future.successful(Right(userDetails.copy(agentReferenceNumber = Some(arn))))
+                  case Left(error) => Future.successful(Left(error))
+                }
+              }
+              .recoverWith { e =>
+                Future.successful(Left(ClientOrAgentNotAuthorisedError))
+              }
+          } else {
+            Future.successful(Left(ClientOrAgentNotAuthorisedError))
+          }
+            .recoverWith { e =>
+              Future.successful(Left(ClientOrAgentNotAuthorisedError))
+            }
+        }
     }
   }
 
@@ -135,31 +169,40 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
     .flatMap(_.getIdentifier("MTDITID"))
     .map(_.value)
 
-  def getAgentReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
-    .getEnrolment("HMRC-AS-AGENT")
-    .flatMap(_.getIdentifier("AgentReferenceNumber"))
-    .map(_.value)
+  private def getAgentReferenceFromEnrolments(enrolments: Enrolments): Either[MtdError, String] =
+    (
+      for {
+        enrolment  <- enrolments.getEnrolment("HMRC-AS-AGENT")
+        identifier <- enrolment.getIdentifier("AgentReferenceNumber")
+        arn = identifier.value
+      } yield arn
+    ).toRight(left = {
+      logger.warn(s"[EnrolmentsAuthService][authorised] No AgentReferenceNumber defined on agent enrolment.")
+      InternalError
+    })
 
-  private def unauthorisedError(correlationId: String): PartialFunction[Throwable, Future[AuthOutcome]] = {
-    case _: InsufficientEnrolments =>
-      logger.warn(s"$correlationId::[unauthorisedError] Client authorisation failed due to unsupported insufficient enrolments.")
-      Future.successful(Left(LegacyUnauthorisedError))
-    case _: InsufficientConfidenceLevel =>
-      logger.warn(s"$correlationId::[unauthorisedError] Client authorisation failed due to unsupported insufficient confidenceLevels.")
-      Future.successful(Left(LegacyUnauthorisedError))
-    case _: JsResultException =>
-      logger.warn(s"$correlationId::[unauthorisedError] - Did not receive minimum data from Auth required for NRS Submission")
-      Future.successful(Left(ForbiddenDownstreamError))
-    case _: InvalidBearerToken =>
-      logger.warn(s"$correlationId::[unauthorisedError] - Invalid Bearer token")
-      Future.successful(Left(InvalidBearerTokenError))
-    case _: BearerTokenExpired =>
-      logger.warn(s"$correlationId::[unauthorisedError] - BearerTokenExpired")
-      Future.successful(Left(BearerTokenExpiredError))
-    case exception @ _ =>
-      logger.warn(
-        s"$correlationId::[unauthorisedError] Client authorisation failed due to internal server error. auth-client exception was ${exception.getClass.getSimpleName}")
-      Future.successful(Left(InternalError))
+}
+
+object EnrolmentsAuthService {
+
+  def authorisationEnabledPredicate(mtdId: String): Predicate =
+    (Individual and ConfidenceLevel.L200 and mtdEnrolmentPredicate(mtdId)) or
+      (Organisation and mtdEnrolmentPredicate(mtdId)) or
+      (Agent and Enrolment("HMRC-AS-AGENT"))
+
+  def authorisationDisabledPredicate(mtdId: String): Predicate =
+    mtdEnrolmentPredicate(mtdId) or (Agent and Enrolment("HMRC-AS-AGENT"))
+
+  def mtdEnrolmentPredicate(mtdId: String): Enrolment = {
+    Enrolment("HMRC-MTD-IT")
+      .withIdentifier("MTDITID", mtdId)
+      .withDelegatedAuthRule("mtd-it-auth")
+  }
+
+  def supportingAgentAuthPredicate(mtdId: String): Enrolment = {
+    Enrolment("HMRC-MTD-IT-SUPP")
+      .withIdentifier("MTDITID", mtdId)
+      .withDelegatedAuthRule("mtd-it-auth-supp")
   }
 
 }

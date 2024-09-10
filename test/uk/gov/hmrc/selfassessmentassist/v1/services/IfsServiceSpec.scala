@@ -54,7 +54,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
   )
 
   val calculationId: UUID          = UUID.randomUUID()
-  val correlationsId: String        = "some-correlationId"
+  val correlationsId: String       = "some-correlationId"
   val feedbackId: UUID             = UUID.randomUUID()
   val responseCode: Int            = 211
   val responseMessage: String      = "some-message"
@@ -112,7 +112,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
                     IFRequestPayloadActionLinks(
                       "Income Source Guidance",
                       "www.itsa/incomesources.gov.uk"
-                    ),
+                    )
                   )
                 )
               ),
@@ -201,9 +201,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
           .returns(Future.successful(Right(IfsResponse())))
 
         await(
-          service.submitGenerateReportMessage(
-            assessmentReportWrapper,
-            assessmentRequestForSelfAssessment)
+          service.submitGenerateReportMessage(assessmentReportWrapper, assessmentRequestForSelfAssessment)
         ) shouldBe Right(IfsResponse())
       }
 
@@ -219,9 +217,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
           .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))))
 
         await(
-          service.submitGenerateReportMessage(
-            assessmentReportWrapper,
-            assessmentRequestForSelfAssessment)
+          service.submitGenerateReportMessage(assessmentReportWrapper, assessmentRequestForSelfAssessment)
         ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))
       }
 

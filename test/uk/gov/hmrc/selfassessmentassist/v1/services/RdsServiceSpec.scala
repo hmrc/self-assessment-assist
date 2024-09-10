@@ -31,7 +31,12 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentReportWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
-import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{assessmentReportWrapper, assessmentRequestForSelfAssessment, fraudRiskReport, rdsRequest}
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{
+  assessmentReportWrapper,
+  assessmentRequestForSelfAssessment,
+  fraudRiskReport,
+  rdsRequest
+}
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -76,7 +81,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReportWrapper))
       }
 
-      "return the expected result when rds auth required" in new Test(true) {
+      "return the expected result when rds auth required" in new Test(rdsRequired = true) {
         MockRdsAuthConnector.retrieveAuthorisedBearer()
         MockRdsConnector.submit(rdsRequest) returns Future.successful(Right(ResponseWrapper(correlationId, rdsNewSubmissionReport)))
 
@@ -84,7 +89,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReportWrapper))
       }
 
-      "return the expected error result when rdsConnector is failed" in new Test(true) {
+      "return the expected error result when rdsConnector is failed" in new Test(rdsRequired = true) {
         MockRdsAuthConnector.retrieveAuthorisedBearer()
         MockRdsConnector.submit(rdsRequest) returns Future.successful(Left(ErrorWrapper(correlationId, NinoFormatError)))
 
@@ -119,7 +124,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         await(service.acknowledge(acknowledgeReportRequest)) shouldBe expectedResult
       }
 
-      "return the expected result with rdsAuthRequiredForThisEnv as true" in new Test(true) {
+      "return the expected result with rdsAuthRequiredForThisEnv as true" in new Test(rdsRequired = true) {
         MockRdsAuthConnector.retrieveAuthorisedBearer()
         val request: RdsRequest = RdsRequest(
           Vector(

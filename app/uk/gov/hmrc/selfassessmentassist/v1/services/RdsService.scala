@@ -19,7 +19,12 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError, MatchingCalculationIDNotFoundError, NoAssessmentFeedbackFromRDS}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
+  ErrorWrapper,
+  InternalError,
+  MatchingCalculationIDNotFoundError,
+  NoAssessmentFeedbackFromRDS
+}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, Logging}
@@ -157,7 +162,6 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
         Left(ErrorWrapper(correlationId, InternalError))
     }
   }
-
 
   private def generateRdsAssessmentRequest(request: AssessmentRequestForSelfAssessment,
                                            fraudRiskReport: FraudRiskReport,

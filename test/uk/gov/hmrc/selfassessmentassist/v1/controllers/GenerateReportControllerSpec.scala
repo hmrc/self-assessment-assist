@@ -23,7 +23,6 @@ import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.controllers.ControllerBaseSpec
 import uk.gov.hmrc.selfassessmentassist.api.models.errors._
-import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
@@ -34,6 +33,8 @@ import uk.gov.hmrc.selfassessmentassist.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NrsSubmission, SearchKeys}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.{GenerateReportRawData, nrs}
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.assessmentReportWrapper
+
+import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,10 +53,9 @@ class GenerateReportControllerSpec
     with MockIfsService
     with GuiceOneAppPerSuite {
 
+  implicit val appConfig: AppConfig     = realAppConfig
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String     = timestamp.format(DateUtils.isoInstantDateTimePattern)
-
-  private val appConfig = app.injector.instanceOf[AppConfig]
 
   trait Test {
 
@@ -72,9 +72,21 @@ class GenerateReportControllerSpec
           rdsService = mockRdsService,
           currentDateTime = mockCurrentDateTime,
           idGenerator = mockIdGenerator,
-          ifService = mockIfsService,
-          config = appConfig
+          ifService = mockIfsService
         )
+
+    def checkEmaConfig(): Unit = {
+      val endpoints: Map[String, Boolean] = emaEndpoints
+
+      val endpointSupportingAgentsAllowed: Boolean =
+        endpoints
+          .getOrElse(
+            controller.endpointName,
+            fail(s"Controller endpoint name \"${controller.endpointName}\" not found in application.conf.")
+          )
+
+      realAppConfig.endpointAllowsSupportingAgents(controller.endpointName) shouldBe endpointSupportingAgentsAllowed
+    }
 
   }
 
@@ -92,9 +104,7 @@ class GenerateReportControllerSpec
         // MockNrsService.stubAssessmentReport(simpleNRSResponseReportSubmission)
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
-        MockIfsService.stubGenerateReportSubmit(
-          simpleAssessmentReportWrapper,
-          simpleAssessmentRequestForSelfAssessment)
+        MockIfsService.stubGenerateReportSubmit(simpleAssessmentReportWrapper, simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] =
           controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
@@ -102,6 +112,8 @@ class GenerateReportControllerSpec
         contentAsJson(result) shouldBe simpleAssessmentReportMtdJson
         contentType(result) shouldBe Some("application/json")
         header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+        checkEmaConfig()
       }
 
       "return the expected data when controller is called even when NRS is unable to non repudiate the event" in new Test {
@@ -116,9 +128,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubFailureReportDueToException()
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
-        MockIfsService.stubGenerateReportSubmit(
-          simpleAssessmentReportWrapper,
-          simpleAssessmentRequestForSelfAssessment)
+        MockIfsService.stubGenerateReportSubmit(simpleAssessmentReportWrapper, simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] =
           controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
@@ -224,7 +234,7 @@ class GenerateReportControllerSpec
             controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
+          contentAsJson(result) shouldBe Json.toJson(expectedBody)
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -233,9 +243,7 @@ class GenerateReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
-          (ForbiddenDownstreamError, FORBIDDEN, InternalError.asJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, InternalError.asJson)
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))
@@ -333,9 +341,7 @@ class GenerateReportControllerSpec
         MockNrsService.stubUnableToConstrucNrsSubmission()
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
         MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
-        MockIfsService.stubGenerateReportSubmit(
-          assessmentReportWrapper,
-          simpleAssessmentRequestForSelfAssessment)
+        MockIfsService.stubGenerateReportSubmit(assessmentReportWrapper, simpleAssessmentRequestForSelfAssessment)
 
         val result: Future[Result] =
           controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
@@ -359,10 +365,7 @@ class GenerateReportControllerSpec
           MockInsightService.assess(simpleFraudRiskRequest)
           MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, simpleAssessmentReportWrapper)
           MockCurrentDateTime.getDateTime
-          MockIfsService.stubFailedSubmit(
-            simpleAssessmentReportWrapper,
-            simpleAssessmentRequestForSelfAssessment,
-            mtdError)
+          MockIfsService.stubFailedSubmit(simpleAssessmentReportWrapper, simpleAssessmentRequestForSelfAssessment, mtdError)
 
           val result: Future[Result] =
             controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
