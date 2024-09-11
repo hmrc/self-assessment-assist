@@ -50,7 +50,6 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
   def authorised(mtdId: String, correlationId: String, endpointAllowsSupportingAgents: Boolean = false)(implicit
       hc: HeaderCarrier,
       ec: ExecutionContext): Future[AuthOutcome] = {
-    println("CCCC ")
     authFunction
       .authorised(initialPredicate(mtdId))
       .retrieve(
