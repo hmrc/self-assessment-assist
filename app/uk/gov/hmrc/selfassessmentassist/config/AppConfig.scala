@@ -40,7 +40,6 @@ trait AppConfig {
   def confidenceLevelConfig: ConfidenceLevelConfig
   def apiStatus(version: String): String
   def endpointsEnabled(version: String): Boolean
-  def safeEndpointsEnabled(version: String): Boolean
   def featureSwitch: Option[Configuration]
 
   // SAS
@@ -62,14 +61,6 @@ trait AppConfig {
   def ifsToken: String
   def ifsEnv: String
   def ifsEnvironmentHeaders: Option[Seq[String]]
-
-  /** Currently only for OAS documentation.
-    */
-  def apiVersionReleasedInProduction(version: String): Boolean
-
-  /** Currently only for OAS documentation.
-    */
-  def endpointReleasedInProduction(version: String, name: String): Boolean
 
   /** Defaults to false
     */
@@ -130,31 +121,6 @@ class AppConfigImpl @Inject() (config: ServicesConfig, val configuration: Config
       case _                 => throw new RuntimeException(s"Not a finite duration '$string' for $path")
     }
   }
-
-  /** Like endpointsEnabled, but will return false if version doesn't exist.
-    */
-  def safeEndpointsEnabled(version: String): Boolean =
-    configuration
-      .getOptional[Boolean](s"api.$version.endpoints.enabled")
-      .getOrElse(false)
-
-  def apiVersionReleasedInProduction(version: String): Boolean =
-    confBoolean(
-      path = s"api.$version.endpoints.api-released-in-production",
-      defaultValue = false
-    )
-
-  def endpointReleasedInProduction(version: String, name: String): Boolean =
-    apiVersionReleasedInProduction(version) &&
-      confBoolean(
-        path = s"api.$version.endpoints.released-in-production.$name",
-        defaultValue = true
-      )
-
-  /** Can't use config.getConfBool as it's typesafe, and the app-config files use strings.
-    */
-  private def confBoolean(path: String, defaultValue: Boolean): Boolean =
-    if (configuration.underlying.hasPath(path)) config.getBoolean(path) else defaultValue
 
   def endpointAllowsSupportingAgents(endpointName: String): Boolean =
     supportingAgentEndpoints.getOrElse(endpointName, false)

@@ -28,6 +28,7 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
   ClientOrAgentNotAuthorisedError,
   InternalError,
   InvalidBearerTokenError,
+  InvalidCredentialsError,
   NinoFormatError,
   UnauthorisedError
 }
@@ -233,8 +234,8 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockAppConfig {
         val returnedErrorJSon: ByteString = Await.result(body.data, defaultTimeout)
         val returnedError: String         = returnedErrorJSon.utf8String
 
-        val invalidBearerJson: JsValue = Json.toJson(InvalidBearerTokenError)
-        val ninoError: String          = invalidBearerJson.toString()
+        val invalidCredentialsJson: JsValue = Json.toJson(InvalidCredentialsError)
+        val ninoError: String               = invalidCredentialsJson.toString()
 
         returnedError shouldBe ninoError
       }

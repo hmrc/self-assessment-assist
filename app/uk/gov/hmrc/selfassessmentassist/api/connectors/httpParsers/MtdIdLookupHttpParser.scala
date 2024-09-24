@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers
 import play.api.http.Status.{FORBIDDEN, OK, UNAUTHORIZED}
 import play.api.libs.json.{Reads, __}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, InvalidBearerTokenError, MtdError, ForbiddenDownstreamError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, InvalidCredentialsError, MtdError, ForbiddenDownstreamError}
 
 object MtdIdLookupHttpParser extends HttpParser {
 
@@ -33,7 +33,7 @@ object MtdIdLookupHttpParser extends HttpParser {
           case _           => Left(InternalError)
         }
       case FORBIDDEN    => Left(ForbiddenDownstreamError)
-      case UNAUTHORIZED => Left(InvalidBearerTokenError)
+      case UNAUTHORIZED => Left(InvalidCredentialsError)
       case _            => Left(InternalError)
     }
   }

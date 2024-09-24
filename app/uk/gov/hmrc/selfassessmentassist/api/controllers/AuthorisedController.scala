@@ -81,7 +81,7 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit appConfig
             case Left(mtdError) =>
               val lookupMtdError: MtdError = mtdError.httpStatus match {
                 case FORBIDDEN    => ClientOrAgentNotAuthorisedError
-                case UNAUTHORIZED => InvalidBearerTokenError
+                case UNAUTHORIZED => InvalidCredentialsError
                 case _            => InternalError
               }
               errorResponse(lookupMtdError)

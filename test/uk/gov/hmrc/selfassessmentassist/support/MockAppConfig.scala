@@ -55,12 +55,6 @@ trait MockAppConfig extends MockFactory {
     def confidenceLevelConfig: CallHandler0[ConfidenceLevelConfig] =
       (() => mockAppConfig.confidenceLevelConfig).expects()
 
-    def apiVersionReleasedInProduction(version: String): CallHandler[Boolean] =
-      (mockAppConfig.apiVersionReleasedInProduction: String => Boolean).expects(version)
-
-    def endpointReleasedInProduction(version: String, key: String): CallHandler[Boolean] =
-      (mockAppConfig.endpointReleasedInProduction: (String, String) => Boolean).expects(version, key)
-
     def endpointAllowsSupportingAgents(endpointName: String): CallHandler[Boolean] =
       (mockAppConfig.endpointAllowsSupportingAgents(_: String)).expects(endpointName)
 

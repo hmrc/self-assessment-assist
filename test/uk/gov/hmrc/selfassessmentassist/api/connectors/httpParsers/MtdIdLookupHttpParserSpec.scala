@@ -22,7 +22,7 @@ import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupOutcome
 import uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers.MtdIdLookupHttpParser.mtdIdLookupHttpReads
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, InvalidBearerTokenError, ForbiddenDownstreamError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, InvalidCredentialsError, ForbiddenDownstreamError}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
 class MtdIdLookupHttpParserSpec extends UnitSpec {
@@ -81,7 +81,7 @@ class MtdIdLookupHttpParserSpec extends UnitSpec {
         val response                   = HttpResponse(UNAUTHORIZED, None.orNull)
         val result: MtdIdLookupOutcome = mtdIdLookupHttpReads.read(method, url, response)
 
-        result shouldBe Left(InvalidBearerTokenError)
+        result shouldBe Left(InvalidCredentialsError)
       }
     }
 

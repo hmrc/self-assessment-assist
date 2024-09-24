@@ -24,11 +24,6 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 trait RealAppConfig {
   _: UnitSpec =>
 
-  protected lazy val latestEnabledApiVersion: Int =
-    (99 to 1 by -1)
-      .find(num => realAppConfig.safeEndpointsEnabled(s"$num.0"))
-      .getOrElse(fail("Couldn't find an enabled API version in the config"))
-
   protected lazy val emaEndpoints: Map[String, Boolean] =
     realAppConfig match {
       case impl: AppConfigImpl =>
