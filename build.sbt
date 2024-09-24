@@ -1,5 +1,6 @@
 import scoverage.ScoverageKeys
 import uk.gov.hmrc.DefaultBuildSettings.addTestReportOption
+import org.scalafmt.sbt.ScalafmtPlugin
 
 val appName = "self-assessment-assist"
 
@@ -11,6 +12,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     majorVersion := 0,
     scalaVersion := "2.13.12",
+    scalafmtOnCompile               := true,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     scalacOptions ++= Seq("-language:higherKinds", "-Xlint:-byname-implicit", "-Xfatal-warnings", "-Wconf:src=routes/.*:silent", "-feature")
   )
@@ -27,7 +29,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "resources")
   .configs(ItTest)
   .settings(
-    inConfig(ItTest)(Defaults.itSettings ++ headerSettings(ItTest) ++ automateHeaderSettings(ItTest)),
+    inConfig(ItTest)(Defaults.itSettings ++ headerSettings(ItTest) ++ automateHeaderSettings(ItTest) ++ ScalafmtPlugin.scalafmtConfigSettings),
     ItTest / fork                       := true,
     ItTest / unmanagedSourceDirectories := Seq((ItTest / baseDirectory).value / "it"),
     ItTest / unmanagedClasspath += baseDirectory.value / "resources",

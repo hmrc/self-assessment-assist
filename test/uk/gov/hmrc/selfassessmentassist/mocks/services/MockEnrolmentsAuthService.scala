@@ -19,7 +19,6 @@ package uk.gov.hmrc.selfassessmentassist.mocks.services
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
@@ -35,25 +34,31 @@ trait MockEnrolmentsAuthService extends MockFactory {
 
     def authoriseUser(): Unit = {
       (mockEnrolmentsAuthService
-        .authorised(_: Predicate, _: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *, *)
+        .authorised(_: String, _: String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *, *, *)
         .anyNumberOfTimes()
         .returns(Future.successful(Right(UserDetails(AffinityGroup.Individual, None, "client-Id"))))
     }
 
     def authoriseUserFail(mtdError: MtdError): Unit = {
       (mockEnrolmentsAuthService
-        .authorised(_: Predicate, _: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *, *)
+        .authorised(_: String, _: String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *, *, *)
         .anyNumberOfTimes()
         .returns(Future.successful(Left(mtdError)))
     }
 
-    def authorised(predicate: Predicate): CallHandler[Future[AuthOutcome]] = {
+    def authorised(mtdId: String): CallHandler[Future[AuthOutcome]] = {
       (mockEnrolmentsAuthService
-        .authorised(_: Predicate, _: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(predicate, *, *, *)
+        .authorised(_: String, _: String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(mtdId, *, *, *, *)
         .anyNumberOfTimes()
+    }
+
+    def authoriseAgent(mtdId: String, supportingAgentAccessAllowed: Boolean = false): CallHandler[Future[AuthOutcome]] = {
+      (mockEnrolmentsAuthService
+        .authorised(_: String, _: String, _: Boolean)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(mtdId, *, supportingAgentAccessAllowed, *, *)
     }
 
   }

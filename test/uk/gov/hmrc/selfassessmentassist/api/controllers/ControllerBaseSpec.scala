@@ -21,11 +21,12 @@ import play.api.mvc.{AnyContentAsEmpty, ControllerComponents, Result}
 import play.api.test.Helpers.stubControllerComponents
 import play.api.test.{FakeRequest, ResultExtractors}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
+import uk.gov.hmrc.selfassessmentassist.config.RealAppConfig
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-class ControllerBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames with ResultExtractors {
+class ControllerBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames with ResultExtractors with RealAppConfig {
 
   implicit lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 

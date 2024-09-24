@@ -61,10 +61,14 @@ trait AppConfig {
   def ifsToken: String
   def ifsEnv: String
   def ifsEnvironmentHeaders: Option[Seq[String]]
+
+  /** Defaults to false
+    */
+  def endpointAllowsSupportingAgents(endpointName: String): Boolean
 }
 
 @Singleton
-class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configuration) extends AppConfig {
+class AppConfigImpl @Inject() (config: ServicesConfig, val configuration: Configuration) extends AppConfig {
 
   val appName: String = config.getString("appName")
 
@@ -117,6 +121,14 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
       case _                 => throw new RuntimeException(s"Not a finite duration '$string' for $path")
     }
   }
+
+  def endpointAllowsSupportingAgents(endpointName: String): Boolean =
+    supportingAgentEndpoints.getOrElse(endpointName, false)
+
+  private val supportingAgentEndpoints: Map[String, Boolean] =
+    configuration
+      .getOptional[Map[String, Boolean]]("api.supporting-agent-endpoints")
+      .getOrElse(Map.empty)
 
 }
 

@@ -16,155 +16,344 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
-import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
-import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ClientOrAgentNotAuthorisedError, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
-import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
+import uk.gov.hmrc.auth.core._
+
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
+
+import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName}
+import uk.gov.hmrc.auth.core.syntax.retrieved._
+import play.api.libs.json.Json
+
+import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService.{
+  authorisationDisabledPredicate,
+  authorisationEnabledPredicate,
+  mtdEnrolmentPredicate,
+  supportingAgentAuthPredicate
+}
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockAuthConnector
+import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
+import org.scalamock.handlers.CallHandler
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual}
+import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, EmptyRetrieval, Retrieval, LoginTimes}
+import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel, Enrolment, EnrolmentIdentifier, Enrolments, InsufficientEnrolments, MissingBearerToken}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig with MockAuthConnector {
+class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
 
-  "EnrolmentsAuthService" when {
-    "authorising" must {
-      "500" in new Test {
+  val mtdId = "123567890"
 
-        mockConfidenceLevelCheckConfig()
+  "calling .authorised" when {
 
-        (authConnector
-          .authorise(_: Predicate, _: Retrieval[Any])(_: HeaderCarrier, _: ExecutionContext))
-          .expects(*, *, *, *)
-          .returns(() => {})
-        val result: Future[AuthOutcome] = service.authorised(EmptyPredicate, "correlationId")
-        await(result) shouldBe Left(MtdError("INTERNAL_SERVER_ERROR", "An internal server error occurred", 500))
-      }
+    "confidence level checks are on" should {
+      behave like authService(
+        authValidationEnabled = true,
+        authorisationEnabledPredicate(mtdId),
+        mtdEnrolmentPredicate(mtdId),
+        supportingAgentAuthPredicate(mtdId)
+      )
     }
 
-    "createUserDetailsWithLogging individual" must {
-      "pass" in new Test {
-        val result: Future[Right[MtdError, UserDetails]] = service.createUserDetailsWithLogging(
-          AffinityGroup.Individual,
-          Enrolments(
-            Set(
-              Enrolment(
-                key = "MDTP-IT",
-                identifiers = Seq(
-                  EnrolmentIdentifier(
-                    "UTR",
-                    "123"
-                  )
-                ),
-                state = "Activated"
-              )
-            )),
-          "correlationId",
-          None
-        )
+    "confidence level checks are off" should {
+      behave like authService(
+        authValidationEnabled = false,
+        authorisationDisabledPredicate(mtdId),
+        mtdEnrolmentPredicate(mtdId),
+        supportingAgentAuthPredicate(mtdId)
+      )
+    }
 
-        await(result) shouldBe Right(
+    def authService(
+        authValidationEnabled: Boolean,
+        initialPredicate: Predicate,
+        primaryAgentPredicate: Predicate,
+        supportingAgentPredicate: Predicate
+    ): Unit = {
+      behave like authorisedIndividual(authValidationEnabled, initialPredicate)
+      // behave like authorisedOrganisation(authValidationEnabled, initialPredicate)
+
+      behave like authorisedAgentsMissingArn(authValidationEnabled, initialPredicate, primaryAgentPredicate)
+      behave like authorisedPrimaryAgent(authValidationEnabled, initialPredicate, primaryAgentPredicate)
+      behave like authorisedSupportingAgent(authValidationEnabled, initialPredicate, primaryAgentPredicate, supportingAgentPredicate)
+
+      behave like disallowSupportingAgentForPrimaryOnlyEndpoint(authValidationEnabled, initialPredicate, primaryAgentPredicate)
+
+      behave like disallowUsersWithoutEnrolments(authValidationEnabled, initialPredicate)
+      behave like disallowWhenNotLoggedIn(authValidationEnabled, initialPredicate)
+    }
+
+    def authorisedIndividual(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =
+      "allow authorised individuals" in new Test {
+        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+
+        val retrievalsResult = getRetrievalsResult(Some(Individual), Enrolments(Set.empty))
+
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.successful(retrievalsResult))
+
+        val result: AuthOutcome = await(enrolmentsAuthService.authorised(mtdId, "correlationId", endpointAllowsSupportingAgents = true))
+        result shouldBe Right(
           UserDetails(
             userType = AffinityGroup.Individual,
             agentReferenceNumber = None,
             clientID = "",
-            None
-          ))
-      }
-    }
-
-    "createUserDetailsWithLogging agent" must {
-      "pass" in new Test {
-
-        val result: Future[Right[MtdError, UserDetails]] = service.createUserDetailsWithLogging(
-          AffinityGroup.Agent,
-          Enrolments(
-            Set(
-              Enrolment(
-                key = "MDTP-IT",
-                identifiers = Seq(
-                  EnrolmentIdentifier(
-                    "UTR",
-                    "123"
-                  )
-                ),
-                state = "Activated"
-              )
-            )),
-          "correlationId",
-          None
+            Some(getIdentityData(agentInformation = AgentInformation(None, None, None), affinityGroup = Some(Individual)))
+          )
         )
-        await(result) shouldBe Right(UserDetails(AffinityGroup.Agent, None, "", None))
-      }
-    }
-
-    "getClientReferenceFromEnrolments" when {
-      "a valid enrolment with a MTDITID exists" should {
-        "return the expected result" in new Test {
-
-          val enrolments: Enrolments =
-            Enrolments(
-              enrolments = Set(
-                Enrolment(
-                  key = "HMRC-MTD-IT",
-                  identifiers = Seq(
-                    EnrolmentIdentifier(
-                      "MTDITID",
-                      "123"
-                    )
-                  ),
-                  state = "Activated"
-                )
-              )
-            )
-
-          service.getClientReferenceFromEnrolments(enrolments) shouldBe Some("123")
-        }
       }
 
-      "a valid enrolment with a UTR does not exist" should {
-        "return None" in new Test {
+    def authorisedAgentsMissingArn(
+        authValidationEnabled: Boolean,
+        initialPredicate: Predicate,
+        primaryAgentPredicate: Predicate
+    ): Unit =
+      "disallow agents that are missing an ARN" in new Test {
+        val arn = "123567890"
+        val enrolments: Enrolments = Enrolments(
+          Set(
+            Enrolment(
+              "HMRC-AS-AGENT",
+              List(EnrolmentIdentifier("NOAgentReferenceNumber", arn)),
+              "Active"
+            ))
+        )
+        val initialRetrievalsResult = getRetrievalsResult(Some(Agent), enrolments)
 
-          val enrolments: Enrolments =
-            Enrolments(
-              enrolments = Set(
-                Enrolment(
-                  key = "MDTP-IT",
-                  identifiers = Seq(
-                    EnrolmentIdentifier(
-                      "UTR",
-                      "123"
-                    )
-                  ),
-                  state = "Activated"
-                )
-              )
-            )
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.successful(initialRetrievalsResult))
 
-          service.getClientReferenceFromEnrolments(enrolments) shouldBe None
-        }
+        MockedAuthConnector
+          .authorised(primaryAgentPredicate, EmptyRetrieval)
+          .once()
+          .returns(Future.successful(EmptyRetrieval))
+
+        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+
+        val result: AuthOutcome = await(enrolmentsAuthService.authorised(mtdId, "correlationId", endpointAllowsSupportingAgents = true))
+        result shouldBe Left(InternalError)
       }
-    }
 
+    def authorisedPrimaryAgent(
+        authValidationEnabled: Boolean,
+        initialPredicate: Predicate,
+        primaryAgentPredicate: Predicate
+    ): Unit =
+      "allow authorised Primary agents with ARN" in new Test {
+        val arn = "123567890"
+        val enrolments: Enrolments = Enrolments(
+          Set(
+            Enrolment(
+              "HMRC-AS-AGENT",
+              List(EnrolmentIdentifier("AgentReferenceNumber", arn)),
+              "Active"
+            ))
+        )
+
+        val initialRetrievalsResult = getRetrievalsResult(Some(Agent), enrolments)
+
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.successful(initialRetrievalsResult))
+
+        MockedAuthConnector
+          .authorised(primaryAgentPredicate, EmptyRetrieval)
+          .once()
+          .returns(Future.successful(EmptyRetrieval))
+
+        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+
+        val result: AuthOutcome = await(enrolmentsAuthService.authorised("123567890", "correlationId", endpointAllowsSupportingAgents = true))
+        result shouldBe Right(
+          UserDetails(
+            userType = AffinityGroup.Agent,
+            agentReferenceNumber = Some(arn),
+            clientID = "",
+            Some(getIdentityData(agentInformation = AgentInformation(None, None, None), affinityGroup = Some(Agent)))
+          )
+        )
+      }
+
+    def authorisedSupportingAgent(
+        authValidationEnabled: Boolean,
+        initialPredicate: Predicate,
+        primaryAgentPredicate: Predicate,
+        supportingAgentPredicate: Predicate
+    ): Unit =
+      "allow authorised Supporting agents with ARN" in new Test {
+        val arn = "123567890"
+        val enrolments: Enrolments = Enrolments(
+          Set(
+            Enrolment(
+              "HMRC-AS-AGENT",
+              List(EnrolmentIdentifier("AgentReferenceNumber", arn)),
+              "Active"
+            ))
+        )
+
+        val initialRetrievalsResult = getRetrievalsResult(Some(Agent), enrolments)
+
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.successful(initialRetrievalsResult))
+
+        MockedAuthConnector
+          .authorised(primaryAgentPredicate, EmptyRetrieval)
+          .once()
+          .returns(Future.failed(InsufficientEnrolments()))
+
+        MockedAuthConnector
+          .authorised(supportingAgentPredicate, EmptyRetrieval)
+          .once()
+          .returns(Future.successful(EmptyRetrieval))
+
+        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+
+        val result: AuthOutcome = await(enrolmentsAuthService.authorised(mtdId, "correlationId", endpointAllowsSupportingAgents = true))
+        result shouldBe Right(
+          UserDetails(
+            userType = AffinityGroup.Agent,
+            agentReferenceNumber = Some(arn),
+            clientID = "",
+            Some(getIdentityData(agentInformation = AgentInformation(None, None, None), affinityGroup = Some(Agent)))
+          )
+        )
+      }
+
+    def disallowSupportingAgentForPrimaryOnlyEndpoint(
+        authValidationEnabled: Boolean,
+        initialPredicate: Predicate,
+        primaryAgentPredicate: Predicate
+    ): Unit =
+      "disallow Supporting agents for a primary-only endpoint" in new Test {
+        val arn = "123567890"
+        val enrolments: Enrolments = Enrolments(
+          Set(
+            Enrolment(
+              "HMRC-AS-AGENT",
+              List(EnrolmentIdentifier("AgentReferenceNumber", arn)),
+              "Active"
+            ))
+        )
+
+        val initialRetrievalsResult = getRetrievalsResult(Some(Agent), enrolments)
+
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.successful(initialRetrievalsResult))
+
+        MockedAuthConnector
+          .authorised(primaryAgentPredicate, EmptyRetrieval)
+          .once()
+          .returns(Future.failed(InsufficientEnrolments()))
+
+        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+
+        val result: AuthOutcome = await(enrolmentsAuthService.authorised(mtdId, "correlationId", endpointAllowsSupportingAgents = false))
+        result shouldBe Left(ClientOrAgentNotAuthorisedError)
+      }
+
+    def disallowWhenNotLoggedIn(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =
+      "disallow users that are not logged in" in new Test {
+        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.failed(MissingBearerToken()))
+
+        val result: AuthOutcome = await(enrolmentsAuthService.authorised(mtdId, "correlationId", endpointAllowsSupportingAgents = true))
+        result shouldBe Left(ClientOrAgentNotAuthorisedError)
+      }
+
+    def disallowUsersWithoutEnrolments(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =
+      "disallow users without enrolments" in new Test {
+        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.failed(InsufficientEnrolments()))
+
+        val result: AuthOutcome = await(enrolmentsAuthService.authorised(mtdId, "correlationId", endpointAllowsSupportingAgents = true))
+        result shouldBe Left(ClientOrAgentNotAuthorisedError)
+      }
   }
 
   trait Test {
+    val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
-    val authConnector: AuthConnector = mock[AuthConnector]
-    val service                      = new EnrolmentsAuthService(authConnector, mockAppConfig)
+    lazy val enrolmentsAuthService = new EnrolmentsAuthService(mockAuthConnector, mockAppConfig)
 
-    def mockConfidenceLevelCheckConfig(authValidationEnabled: Boolean = true, confidenceLevel: ConfidenceLevel = ConfidenceLevel.L200): Unit = {
-      MockedAppConfig.confidenceLevelCheckEnabled.returns(
-        ConfidenceLevelConfig(
-          confidenceLevel = confidenceLevel,
-          definitionEnabled = true,
-          authValidationEnabled = authValidationEnabled
-        )
-      )
+    val json = Json.parse("""{ "loginTimes": { "currentLogin": "2015-01-01T12:00:00.000Z", "previousLogin": "2012-01-01T12:00:00.000Z" }}""")
+
+    val loginTimesValue: LoginTimes = Retrievals.loginTimes.reads.reads(json).get
+
+    def getRetrievalsResult(affinity: Option[AffinityGroup], enrolments: Enrolments) =
+      affinity and enrolments and None and None and None and None and ConfidenceLevel.L200 and None and None and None and None and None and AgentInformation(
+        None,
+        None,
+        None) and None and None and None and None and loginTimesValue and None and None
+
+    val retrievals =
+      affinityGroup and allEnrolments and internalId and externalId and agentCode and credentials and confidenceLevel and nino and saUtr and name and dateOfBirth and email and agentInformation and groupIdentifier and credentialRole and mdtpInformation and credentialStrength and loginTimes and itmpName and itmpAddress
+
+    object MockedAuthConnector {
+
+      def authorised[A](predicate: Predicate, retrievals: Retrieval[A]): CallHandler[Future[A]] = {
+        (mockAuthConnector
+          .authorise[A](_: Predicate, _: Retrieval[A])(_: HeaderCarrier, _: ExecutionContext))
+          .expects(predicate, retrievals, *, *)
+      }
+
     }
+
+    def mockConfidenceLevelCheckConfig(authValidationEnabled: Boolean): Unit = {
+      MockedAppConfig.confidenceLevelConfig
+        .anyNumberOfTimes()
+        .returns(
+          ConfidenceLevelConfig(
+            confidenceLevel = ConfidenceLevel.L200,
+            definitionEnabled = true,
+            authValidationEnabled = authValidationEnabled
+          )
+        )
+    }
+
+    def getIdentityData(agentInformation: AgentInformation, affinityGroup: Option[AffinityGroup]) = IdentityData(
+      None,
+      None,
+      None,
+      None,
+      ConfidenceLevel.L200,
+      None,
+      None,
+      None,
+      None,
+      None,
+      AgentInformation(None, None, None),
+      None,
+      None,
+      None,
+      ItmpName(None, None, None),
+      None,
+      ItmpAddress(None, None, None, None, None, None, None, None),
+      affinityGroup,
+      None,
+      Some(loginTimesValue)
+    )
 
   }
 

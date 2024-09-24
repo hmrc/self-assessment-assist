@@ -18,7 +18,14 @@ package uk.gov.hmrc.selfassessmentassist.v1.models.response
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{DataWrapper, Identifier, IdentifiersWrapper, KeyValueWrapper, MainOutputWrapper, MetadataWrapper}
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{
+  DataWrapper,
+  Identifier,
+  IdentifiersWrapper,
+  KeyValueWrapper,
+  MainOutputWrapper,
+  MetadataWrapper
+}
 
 class WrappersSpec extends UnitSpec {
 

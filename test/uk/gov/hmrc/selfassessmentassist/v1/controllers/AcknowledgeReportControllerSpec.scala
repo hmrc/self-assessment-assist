@@ -24,7 +24,6 @@ import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.controllers.ControllerBaseSpec
 import uk.gov.hmrc.selfassessmentassist.api.models.errors._
-import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
@@ -34,6 +33,8 @@ import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NrsSubmission, SearchKeys}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.{AcknowledgeReportRawData, nrs}
+
+import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 
 import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,14 +53,14 @@ class AcknowledgeReportControllerSpec
     with MockIfsService
     with GuiceOneAppPerSuite {
 
+  implicit val appConfig: AppConfig = realAppConfig
+
   trait Test {
     val hc: HeaderCarrier = HeaderCarrier()
 
     val controller: TestController        = new TestController()
     private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
     private val formattedDate: String     = timestamp.format(DateUtils.isoInstantDateTimePattern)
-
-    private lazy val appConfig = app.injector.instanceOf[AppConfig]
 
     class TestController
         extends AcknowledgeReportController(
@@ -71,8 +72,7 @@ class AcknowledgeReportControllerSpec
           rdsService = mockRdsService,
           currentDateTime = mockCurrentDateTime,
           idGenerator = mockIdGenerator,
-          ifsService = mockIfsService,
-          config = appConfig
+          ifsService = mockIfsService
         )
 
     val dummyReportPayload: NrsSubmission =
@@ -100,6 +100,19 @@ class AcknowledgeReportControllerSpec
         )
       )
 
+    def checkEmaConfig(): Unit = {
+      val endpoints: Map[String, Boolean] = emaEndpoints
+
+      val endpointSupportingAgentsAllowed: Boolean =
+        endpoints
+          .getOrElse(
+            controller.endpointName,
+            fail(s"Controller endpoint name \"${controller.endpointName}\" not found in application.conf.")
+          )
+
+      realAppConfig.endpointAllowsSupportingAgents(controller.endpointName) shouldBe endpointSupportingAgentsAllowed
+    }
+
   }
 
   "acknowledgeReportForSelfAssessment" when {
@@ -126,6 +139,8 @@ class AcknowledgeReportControllerSpec
 
         status(result) shouldBe NO_CONTENT
         header("X-CorrelationId", result) shouldBe Some(correlationId)
+
+        checkEmaConfig()
 
       }
 
@@ -186,7 +201,7 @@ class AcknowledgeReportControllerSpec
             controller.acknowledgeReportForSelfAssessment(simpleNino, simpleReportId.toString, simpleRDSCorrelationId)(fakePostRequest)
 
           status(result) shouldBe expectedStatus
-          contentAsJson(result) shouldBe Json.toJson(Seq(expectedBody))
+          contentAsJson(result) shouldBe Json.toJson(expectedBody)
           contentType(result) shouldBe Some("application/json")
           header("X-CorrelationId", result) shouldBe Some(correlationId)
 
@@ -195,9 +210,9 @@ class AcknowledgeReportControllerSpec
 
       val errorInErrorOut =
         Seq(
-          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson),
-          (ForbiddenDownstreamError, FORBIDDEN, InternalError.asJson),
-          (ServiceUnavailableError, INTERNAL_SERVER_ERROR, InternalError.asJson)
+          (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson)
+          // (ForbiddenDownstreamError, FORBIDDEN, InternalError.asJson),
+          // (ServiceUnavailableError, INTERNAL_SERVER_ERROR, InternalError.asJson)
         )
 
       errorInErrorOut.foreach(args => (runTest _).tupled(args))

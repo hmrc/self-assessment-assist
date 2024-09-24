@@ -18,17 +18,12 @@ package uk.gov.hmrc.selfassessmentassist.api.models.errors
 
 import play.api.http.Status._
 
-//NRS error
-object NrsError extends MtdError("NRS_SUBMISSION_FAILURE", "The submission to NRS from MDTP failed", BAD_REQUEST)
-
 object FormatReportIdError extends MtdError("FORMAT_REPORT_ID", "The provided Report ID is invalid", BAD_REQUEST)
 
 // Format Errors
 object NinoFormatError extends MtdError("FORMAT_NINO", "The provided NINO is invalid", BAD_REQUEST)
 
 object NinoFormatDesError extends MtdError("NINO_INVALID", "The provided NINO is invalid", UNAUTHORIZED)
-
-object NinoNotFound extends MtdError("NINO_NOT_FOUND", "The provided NINO was not found", BAD_REQUEST)
 
 object CalculationIdFormatError extends MtdError(code = "FORMAT_CALC_ID", message = "The provided Calculation ID is invalid", BAD_REQUEST)
 
@@ -55,12 +50,7 @@ object InvalidBearerTokenError extends MtdError("UNAUTHORIZED", "Bearer token is
 
 object InvalidCredentialsError extends MtdError("INVALID_CREDENTIALS", "Invalid Authentication information provided", UNAUTHORIZED)
 
-object BearerTokenExpiredError extends MtdError("INVALID_CREDENTIALS", "Invalid Authentication information provided", FORBIDDEN)
-
-// Legacy Authorisation Errors
-object LegacyUnauthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.", FORBIDDEN)
-
-object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client or agent is not authorised", FORBIDDEN)
+object ClientOrAgentNotAuthorisedError extends MtdError("CLIENT_OR_AGENT_NOT_AUTHORISED", "The client and/or agent is not authorised.", FORBIDDEN)
 
 object ForbiddenDownstreamError extends MtdError(code = "Forbidden", message = "Request not authorised, forbidden", FORBIDDEN)
 

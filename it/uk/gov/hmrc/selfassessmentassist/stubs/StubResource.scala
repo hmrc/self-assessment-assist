@@ -74,5 +74,4 @@ trait StubResourceBase extends Results with ContentTypes with Logging {
 
 }
 
-
 object StubResource extends StubResourceBase

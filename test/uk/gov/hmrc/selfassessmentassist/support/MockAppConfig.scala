@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.support
 
-import org.scalamock.handlers.CallHandler
+import org.scalamock.handlers.{CallHandler, CallHandler0}
 import org.scalamock.scalatest.MockFactory
 import play.api.Configuration
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
@@ -26,7 +26,7 @@ import scala.concurrent.duration.FiniteDuration
 
 trait MockAppConfig extends MockFactory {
 
-  val mockAppConfig: AppConfig = mock[AppConfig]
+  implicit val mockAppConfig: AppConfig = mock[AppConfig]
 
   object MockedAppConfig {
 
@@ -37,8 +37,8 @@ trait MockAppConfig extends MockFactory {
     def rdsBaseUrlForAcknowledge: CallHandler[String]   = (() => mockAppConfig.rdsBaseUrlForAcknowledge).expects().anyNumberOfTimes()
     def rdsAuthRequiredForThisEnv: CallHandler[Boolean] = (() => mockAppConfig.rdsAuthRequiredForThisEnv).expects().anyNumberOfTimes()
     def cipFraudServiceBaseUrl: CallHandler[String]     = (() => mockAppConfig.cipFraudServiceBaseUrl).expects().anyNumberOfTimes()
-    def cipFraudToken: CallHandler[String] = (()=> mockAppConfig.cipFraudToken).expects().anyNumberOfTimes()
-    def cipFraudUsername: CallHandler[String] =(()=> mockAppConfig.cipFraudUsername).expects().anyNumberOfTimes()
+    def cipFraudToken: CallHandler[String]              = (() => mockAppConfig.cipFraudToken).expects().anyNumberOfTimes()
+    def cipFraudUsername: CallHandler[String]           = (() => mockAppConfig.cipFraudUsername).expects().anyNumberOfTimes()
     // RDS Auth
     def rdsSasBaseUrlForAuth: CallHandler[String]      = (() => mockAppConfig.rdsSasBaseUrlForAuth).expects().anyNumberOfTimes()
     def rdsAuthCredential: CallHandler[AuthCredential] = (() => mockAppConfig.rdsAuthCredential).expects().anyNumberOfTimes()
@@ -51,6 +51,12 @@ trait MockAppConfig extends MockFactory {
 
     def confidenceLevelCheckEnabled: CallHandler[ConfidenceLevelConfig] =
       (() => mockAppConfig.confidenceLevelConfig: ConfidenceLevelConfig).expects()
+
+    def confidenceLevelConfig: CallHandler0[ConfidenceLevelConfig] =
+      (() => mockAppConfig.confidenceLevelConfig).expects()
+
+    def endpointAllowsSupportingAgents(endpointName: String): CallHandler[Boolean] =
+      (mockAppConfig.endpointAllowsSupportingAgents(_: String)).expects(endpointName)
 
     // NRS config items
     def nrsApiKey: CallHandler[String]                = (() => mockAppConfig.nrsApiKey).expects().anyNumberOfTimes()
