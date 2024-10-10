@@ -352,7 +352,7 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
       ItmpAddress(None, None, None, None, None, None, None, None),
       affinityGroup,
       None,
-      Some(loginTimesValue)
+      loginTimesValue
     )
 
   }
