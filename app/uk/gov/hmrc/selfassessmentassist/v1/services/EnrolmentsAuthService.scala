@@ -88,7 +88,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               itmpAddress.getOrElse(emptyItmpAddress),
               Some(affGroup),
               credStrength,
-              Some(logins)
+              logins
             )
 
           createUserDetailsWithLogging(affinityGroup = affGroup, enrolments, correlationId, Some(identityData), mtdId, endpointAllowsSupportingAgents)
