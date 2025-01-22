@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.selfassessmentassist.definitions
 
-import uk.gov.hmrc.auth.core.ConfidenceLevel
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions._
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
@@ -26,30 +25,8 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class ApiDefinitionFactory @Inject() (appConfig: AppConfig) extends Logging {
 
-  private val readScope  = "read:self-assessment-assist"
-  private val writeScope = "write:self-assessment-assist"
-
-  lazy val confidenceLevel: ConfidenceLevel = {
-    val clConfig = appConfig.confidenceLevelConfig
-    if (clConfig.definitionEnabled) clConfig.confidenceLevel else ConfidenceLevel.L250
-  }
-
   lazy val definition: Definition =
     Definition(
-      scopes = Seq(
-        Scope(
-          key = readScope,
-          name = "Read self assessment assist data",
-          description = "Allows the ability to generate and return a self assessment assist report",
-          confidenceLevel = confidenceLevel
-        ),
-        Scope(
-          key = writeScope,
-          name = "Write self assessment assist data",
-          description = "Acknowledges the self assessment assist report has been read",
-          confidenceLevel = confidenceLevel
-        )
-      ),
       api = APIDefinition(
         name = "Self Assessment Assist (MTD)",
         description = "Allows you to read your self assessment report and acknowledge it.",

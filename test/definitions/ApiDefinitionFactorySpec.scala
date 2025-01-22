@@ -16,8 +16,6 @@
 
 package definitions
 
-import uk.gov.hmrc.auth.core.ConfidenceLevel
-import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
 import uk.gov.hmrc.selfassessmentassist.definitions.APIStatus.{ALPHA, BETA}
 import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions.VERSION_1
@@ -27,23 +25,6 @@ class ApiDefinitionFactorySpec extends UnitSpec with MockAppConfig {
 
   class Test {
     val factory = new ApiDefinitionFactory(mockAppConfig)
-  }
-
-  "confidenceLevel" when {
-    Seq(
-      (true, ConfidenceLevel.L250, ConfidenceLevel.L250),
-      (true, ConfidenceLevel.L200, ConfidenceLevel.L200)
-    ).foreach { case (definitionEnabled, configCL, expectedDefinitionCL) =>
-      s"confidence-level-check.definition.enabled is $definitionEnabled and confidence-level = $configCL" should {
-        s"return confidence level $expectedDefinitionCL" in new Test {
-          MockedAppConfig.confidenceLevelCheckEnabled returns ConfidenceLevelConfig(
-            confidenceLevel = configCL,
-            definitionEnabled = definitionEnabled,
-            authValidationEnabled = true)
-          factory.confidenceLevel shouldBe expectedDefinitionCL
-        }
-      }
-    }
   }
 
   "buildAPIStatus" when {
