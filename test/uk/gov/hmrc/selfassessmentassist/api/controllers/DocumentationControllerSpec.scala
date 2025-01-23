@@ -20,11 +20,10 @@ import controllers.Assets
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.Result
 import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
-import uk.gov.hmrc.selfassessmentassist.support.MockAppConfig
 
 import scala.concurrent.Future
 
-class DocumentationControllerSpec extends ControllerBaseSpec with MockAppConfig with GuiceOneAppPerSuite {
+class DocumentationControllerSpec extends ControllerBaseSpec with GuiceOneAppPerSuite {
 
   "DocumentationController" when {
     "definition is OK" should {
@@ -37,7 +36,6 @@ class DocumentationControllerSpec extends ControllerBaseSpec with MockAppConfig 
 
     "/file endpoint" should {
       "return a file" in new Test {
-        MockedAppConfig.endpointsEnabled("3.0").anyNumberOfTimes() returns true
         val response: Future[Result] = requestAsset("application.yaml")
         status(response) shouldBe OK
         await(response).body.contentLength.getOrElse(-99L) should be > 0L
