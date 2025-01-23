@@ -20,44 +20,11 @@ import controllers.Assets
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.Result
 import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
-import uk.gov.hmrc.selfassessmentassist.mocks.MockIdGenerator
-import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
-import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers.MockGenerateReportRequestParser
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._
+import uk.gov.hmrc.selfassessmentassist.support.MockAppConfig
 
 import scala.concurrent.Future
 
-class DocumentationControllerSpec
-    extends ControllerBaseSpec
-    with MockEnrolmentsAuthService
-    with MockLookupConnector
-    with MockNrsService
-    with MockInsightService
-    with MockRdsService
-    with MockCurrentDateTime
-    with MockIdGenerator
-    with MockGenerateReportRequestParser
-    with MockIfsService
-    with GuiceOneAppPerSuite {
-
-  private val assets = app.injector.instanceOf[Assets]
-
-  private val apiDefinition = app.injector.instanceOf[ApiDefinitionFactory]
-
-  trait Test {
-
-    val controller: TestController = new TestController()
-
-    class TestController
-        extends DocumentationController(
-          apiDefinition = apiDefinition,
-          cc = cc,
-          assets = assets
-        )
-
-  }
+class DocumentationControllerSpec extends ControllerBaseSpec with MockAppConfig with GuiceOneAppPerSuite {
 
   "DocumentationController" when {
     "definition is OK" should {
@@ -68,14 +35,26 @@ class DocumentationControllerSpec
 
     }
 
-    "specification is OK" should {
-      "Return 200" in new Test {
-        val result: Future[Result] = controller.specification("1.0", "docs/overview.md")(fakePostRequest)
-        status(result) shouldBe OK
+    "/file endpoint" should {
+      "return a file" in new Test {
+        MockedAppConfig.endpointsEnabled("3.0").anyNumberOfTimes() returns true
+        val response: Future[Result] = requestAsset("application.yaml")
+        status(response) shouldBe OK
+        await(response).body.contentLength.getOrElse(-99L) should be > 0L
       }
-
     }
 
+  }
+
+  trait Test {
+
+    protected def requestAsset(filename: String, accept: String = "text/yaml"): Future[Result] =
+      controller.specification("1.0", filename)(fakePostRequest)
+
+    private val apiFactory = app.injector.instanceOf[ApiDefinitionFactory]
+
+    private val assets       = app.injector.instanceOf[Assets]
+    protected val controller = new DocumentationController(apiFactory, assets, cc)
   }
 
 }
