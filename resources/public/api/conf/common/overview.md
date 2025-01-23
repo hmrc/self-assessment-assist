@@ -1,7 +1,10 @@
-The HMRC Assist report is generated using the customers’ National Insurance number (NINO), Calculation ID and Tax year. The report contains targeted messages contained within the JSON response for the customer.
+Use the Self Assessment Assist API to integrate your software with HMRC Assist, a digital service that provides tailored feedback to customers to help them with their tax returns.
 
-This API allows developers to:
+This API is related to the following customer journeys:
 
-- retrieve a HMRC Assist report for a given customer with a list of messages for the customer
-- securely generate a report that is sent to or displayed after it has been generated
-- allow the client to acknowledge the report
+* Submit quarterly upates
+* Submit annual updates
+* Submit a final declaration
+
+For information on how to connect to this API 
+[see the Income Tax MTD end-to-end service guide](https://developer.service.hmrc.gov.uk/guides/income-tax-mtd-end-to-end-service-guide).
