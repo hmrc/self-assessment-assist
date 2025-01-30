@@ -1,1 +1,0 @@
-You can find the changelog in the [self-assessement-assist-changelog](https://github.com/hmrc/income-tax-mtd-changelog) GitHub wiki.
