@@ -48,7 +48,7 @@ class DocumentationIntegrationSpec extends AnyWordSpec with Matchers with ScalaF
           response.status shouldBe 200
           response.contentType shouldBe "application/octet-stream"
           response.body should include("3.0.3")
-          response.body should include(s"version: $knownVersion")
+          response.body should include(s"version: '$knownVersion'")
         }
       }
     }
