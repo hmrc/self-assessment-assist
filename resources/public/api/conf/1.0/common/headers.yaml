@@ -1,0 +1,12 @@
+components:
+  parameters:
+    correlationId:
+      in: header
+      type: string
+      description: |
+        Unique ID for operation tracking
+        String, 36 characters.
+      schema:
+        type: string
+        example: c75f40a6-a3df-4429-a697-471eeec46435
+      required: true
