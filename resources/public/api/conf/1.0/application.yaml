@@ -264,12 +264,7 @@ paths:
           description: Success
           headers:
             X-CorrelationId:
-              description: |
-                Unique ID for operation tracking
-                String, 36 characters.
-              schema:
-                type: string
-                example: c75f40a6-a3df-4429-a697-471eeec46435
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
@@ -379,10 +374,11 @@ paths:
                     taxYear: 2017-18
                     calculationId: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
                     correlationId: 7X57CKG72JVNSSS9SALT
-        "204":
-          description: HTTP status 204 (No Content)
         "400":
           description: Bad request
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
@@ -399,6 +395,9 @@ paths:
 
         "403":
           description: Forbidden
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
@@ -409,6 +408,9 @@ paths:
 
         "404":
           description: Not Found
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
@@ -423,6 +425,9 @@ paths:
 
         "401":
           description: Unauthorized
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
@@ -450,9 +455,14 @@ paths:
       responses:
         "204":
           description: HTTP status 204 (No Content)
-
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
         "400":
           description: Bad request
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
@@ -465,6 +475,9 @@ paths:
 
         "403":
           description: Forbidden
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
@@ -477,6 +490,9 @@ paths:
 
         "404":
           description: Not Found
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
@@ -487,6 +503,9 @@ paths:
 
         "401":
           description: Unauthorized
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
           content:
             application/json:
               schema:
