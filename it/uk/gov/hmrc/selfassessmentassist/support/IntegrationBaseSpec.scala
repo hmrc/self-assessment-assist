@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,23 @@ package uk.gov.hmrc.selfassessmentassist.support
 
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.{Application, Environment, Mode}
+import uk.gov.hmrc.mongo.test.CleanMongoCollectionSupport
 
-trait IntegrationBaseSpec extends IntegrationSpec with WireMockHelper with GuiceOneServerPerSuite with BeforeAndAfterEach with BeforeAndAfterAll {
+trait IntegrationBaseSpec
+    extends AnyWordSpecLike
+    with Matchers
+    with WireMockHelper
+    with GuiceOneServerPerSuite
+    with BeforeAndAfterAll
+    with CleanMongoCollectionSupport {
   lazy val client: WSClient = app.injector.instanceOf[WSClient]
   val mockHost: String      = WireMockHelper.host
   val mockPort: String      = WireMockHelper.wireMockPort.toString

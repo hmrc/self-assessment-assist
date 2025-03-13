@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
 import uk.gov.hmrc.selfassessmentassist.utils.Retrying
 
+import java.time.{Duration => JavaDuration}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
@@ -51,6 +52,10 @@ trait AppConfig {
   def nrsRetries: List[FiniteDuration]
   def appName: String
   def nrsBaseUrl: String
+  def nrsFailedBeforeSeconds: Long
+  def nrsInProgressRetryAfter: JavaDuration
+  def nrsSchedulerInitialDelay: FiniteDuration
+  def nrsSchedulerDelay: FiniteDuration
   def rdsAuthCredential: AuthCredential
 
   // MTD ID lookup
@@ -80,9 +85,13 @@ class AppConfigImpl @Inject() (config: ServicesConfig, val configuration: Config
   def endpointsEnabled(version: String): Boolean   = config.getBoolean(s"feature-switch.version-$version.enabled")
 
   // NRS config items
-  private val nrsConfig  = configuration.get[Configuration]("microservice.services.non-repudiation")
-  val nrsBaseUrl: String = config.baseUrl("non-repudiation") + nrsConfig.get[String]("submit-url")
-  val nrsApiKey: String  = nrsConfig.get[String]("x-api-key")
+  private val nrsConfig                        = configuration.get[Configuration]("microservice.services.non-repudiation")
+  val nrsBaseUrl: String                       = config.baseUrl("non-repudiation") + nrsConfig.get[String]("submit-url")
+  val nrsApiKey: String                        = nrsConfig.get[String]("x-api-key")
+  val nrsFailedBeforeSeconds: Long             = nrsConfig.get[Long]("failed-before-seconds")
+  val nrsInProgressRetryAfter: JavaDuration    = nrsConfig.get[JavaDuration]("in-progress-retry-after")
+  val nrsSchedulerInitialDelay: FiniteDuration = nrsConfig.get[FiniteDuration]("scheduler.initial-delay")
+  val nrsSchedulerDelay: FiniteDuration        = nrsConfig.get[FiniteDuration]("scheduler.delay")
 
   private val cipConfig                = configuration.get[Configuration]("microservice.services.cip-fraud-service")
   val cipFraudServiceBaseUrl: String   = config.baseUrl("cip-fraud-service") + cipConfig.get[String]("submit-url")

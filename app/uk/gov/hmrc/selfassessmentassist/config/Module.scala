@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.play.http.ws.{WSProxy, WSProxyConfiguration}
+import uk.gov.hmrc.selfassessmentassist.v1.schedulers.NrsSubmissionScheduler
 
 import javax.inject.Named
 
@@ -33,6 +34,7 @@ class Module extends AbstractModule {
   override def configure(): Unit = {
 
     bind(classOf[AppConfig]).to(classOf[AppConfigImpl]).asEagerSingleton()
+    bind(classOf[NrsSubmissionScheduler]).asEagerSingleton()
   }
 
   @Provides

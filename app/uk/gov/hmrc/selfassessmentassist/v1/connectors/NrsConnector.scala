@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,16 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
+import com.mongodb.MongoWriteException
 import org.apache.pekko.actor.Scheduler
 import play.api.http.Status
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{Delayer, Logging, Retrying}
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.NrsSubmission
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NrsSubmission, NrsSubmissionWorkItem}
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.{NrsFailure, NrsResponse}
+import uk.gov.hmrc.selfassessmentassist.v1.repositories.NrsSubmissionWorkItemRepository
 import uk.gov.hmrc.selfassessmentassist.v1.services.NrsOutcome
 
 import javax.inject.{Inject, Singleton}
@@ -32,7 +34,10 @@ import scala.util.control.NonFatal
 import scala.util.{Success, Try}
 
 @Singleton
-class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(implicit val scheduler: Scheduler, val ec: ExecutionContext)
+class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig, nrsSubmissionWorkItemRepository: NrsSubmissionWorkItemRepository)(
+    implicit
+    val scheduler: Scheduler,
+    val ec: ExecutionContext)
     extends Retrying
     with Delayer
     with Logging {
@@ -67,6 +72,21 @@ class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(
           logger.error(s"$correlationId::[NrsConnector:submit] NRS submission failed with exception", e)
           Left(NrsFailure.ExceptionThrown)
         }
+    }.flatMap {
+      case Left(failure) =>
+        nrsSubmissionWorkItemRepository
+          .pushNew(NrsSubmissionWorkItem(nrsSubmission))
+          .map { _ =>
+            logger.warn(s"$correlationId::[NrsConnector:submit] Storing new failed NRS submission in MongoDB")
+            Left(failure)
+          }
+          .recover {
+            case e: MongoWriteException if e.getCode == 11000 =>
+              logger.warn(s"$correlationId::[NrsConnector:submit] NRS submission already exists in MongoDB, skipping insert")
+              Left(failure)
+          }
+
+      case Right(nrsResponse) => Future.successful(Right(nrsResponse))
     }
   }
 

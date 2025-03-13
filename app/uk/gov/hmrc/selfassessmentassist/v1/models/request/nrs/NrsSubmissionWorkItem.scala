@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.stubs
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
-object NrsStub {
+case class NrsSubmissionWorkItem(nrsSubmission: NrsSubmission)
 
-  def submit(url: String): StubMapping = {
-    DownstreamStub.onSuccess(DownstreamStub.POST, url, OK, Json.toJson(CommonTestData.simpleNRSResponseAcknowledgeSubmission))
-  }
-
-  def submitFailure(url: String): StubMapping = {
-    DownstreamStub.onError(DownstreamStub.POST, url, INTERNAL_SERVER_ERROR, "Internal Server Error")
-  }
-
+object NrsSubmissionWorkItem {
+  implicit val format: OFormat[NrsSubmissionWorkItem] = Json.format[NrsSubmissionWorkItem]
 }

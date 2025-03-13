@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import play.api.Configuration
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
 import uk.gov.hmrc.selfassessmentassist.config.{AppConfig, ConfidenceLevelConfig}
 
+import java.time.Duration
 import scala.concurrent.duration.FiniteDuration
 
 trait MockAppConfig extends MockFactory {
@@ -59,10 +60,14 @@ trait MockAppConfig extends MockFactory {
       (mockAppConfig.endpointAllowsSupportingAgents(_: String)).expects(endpointName)
 
     // NRS config items
-    def nrsApiKey: CallHandler[String]                = (() => mockAppConfig.nrsApiKey).expects().anyNumberOfTimes()
-    def appName: CallHandler[String]                  = (() => mockAppConfig.appName).expects().anyNumberOfTimes()
-    def nrsBaseUrl: CallHandler[String]               = (() => mockAppConfig.nrsBaseUrl).expects().anyNumberOfTimes()
-    def nrsRetries: CallHandler[List[FiniteDuration]] = (() => mockAppConfig.nrsRetries).expects().anyNumberOfTimes()
+    def nrsApiKey: CallHandler[String]                        = (() => mockAppConfig.nrsApiKey).expects().anyNumberOfTimes()
+    def appName: CallHandler[String]                          = (() => mockAppConfig.appName).expects().anyNumberOfTimes()
+    def nrsBaseUrl: CallHandler[String]                       = (() => mockAppConfig.nrsBaseUrl).expects().anyNumberOfTimes()
+    def nrsRetries: CallHandler[List[FiniteDuration]]         = (() => mockAppConfig.nrsRetries).expects().anyNumberOfTimes()
+    def nrsFailedBeforeSeconds: CallHandler[Long]             = (() => mockAppConfig.nrsFailedBeforeSeconds).expects().anyNumberOfTimes()
+    def nrsInProgressRetryAfter: CallHandler[Duration]        = (() => mockAppConfig.nrsInProgressRetryAfter).expects().anyNumberOfTimes()
+    def nrsSchedulerInitialDelay: CallHandler[FiniteDuration] = (() => mockAppConfig.nrsSchedulerInitialDelay).expects().anyNumberOfTimes()
+    def nrsSchedulerDelay: CallHandler[FiniteDuration]        = (() => mockAppConfig.nrsSchedulerDelay).expects().anyNumberOfTimes()
 
     // IFS config items
     def ifsBaseUrl: CallHandler[String]                         = (() => mockAppConfig.ifsBaseUrl).expects().anyNumberOfTimes()

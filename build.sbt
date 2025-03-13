@@ -21,7 +21,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(PlayKeys.playDefaultPort := 8342)
   .settings(CodeCoverageSettings.settings: _*)
   .settings(
-    ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*filters.*;.*handlers.*;.*components.*;.*repositories.*;" +
+    ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*filters.*;.*handlers.*;.*components.*;" +
       ".*BuildInfo.*;.*javascript.*;.*Routes.*;.*config.*;.*TimeProvider;.*GuiceInjector;" +
       ".*ControllerConfiguration;.*testonly.*;",
     ScoverageKeys.coverageMinimumStmtTotal := 80
