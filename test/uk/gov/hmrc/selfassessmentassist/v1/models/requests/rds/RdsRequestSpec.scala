@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests
+package uk.gov.hmrc.selfassessmentassist.v1.models.requests.rds
 
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
