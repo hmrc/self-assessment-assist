@@ -56,6 +56,8 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
               .fold(
                 e => {
                   logger.error(s"$correlationId::[RdsConnector][submit] validation failed while transforming the response $e")
+                  logger.error(s"$correlationId::[RdsConnector][submit] ${Json.prettyPrint(response.json)}")
+
                   Left(
                     ErrorWrapper(
                       correlationId,
@@ -150,6 +152,7 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
               .fold(
                 e => {
                   logger.error(s"$correlationId::[RdsConnector][acknowledgeRds] validation failed while transforming the response $e")
+                  logger.error(s"$correlationId::[RdsConnector][submit] ${Json.prettyPrint(response.json)}")
                   Left(
                     ErrorWrapper(
                       correlationId,
