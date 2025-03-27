@@ -219,7 +219,7 @@ class NrsConnectorSpec
 
         val result: Option[WorkItem[NrsSubmissionWorkItem]] = await(findByPayload(nrsSubmission))
 
-        result.map(_.item.nrsSubmission) shouldBe Some(nrsSubmission)
+        result.map(_.item.nrsSubmission) shouldBe None
       }
     }
 
@@ -236,11 +236,11 @@ class NrsConnectorSpec
 
         val result: Option[WorkItem[NrsSubmissionWorkItem]] = await(findByPayload(nrsSubmission))
 
-        result.map(_.item.nrsSubmission) shouldBe Some(nrsSubmission)
+        result.map(_.item.nrsSubmission) shouldBe None
       }
     }
 
-    "fails because unparsable JSON returned" must {
+    "fails because unparseable JSON returned" must {
       "give up" in new Test(longDelays) {
         wireMockServer.stubFor(
           post(urlPathEqualTo(url))
@@ -257,11 +257,11 @@ class NrsConnectorSpec
 
         val result: Option[WorkItem[NrsSubmissionWorkItem]] = await(findByPayload(nrsSubmission))
 
-        result.map(_.item.nrsSubmission) shouldBe Some(nrsSubmission)
+        result.map(_.item.nrsSubmission) shouldBe None
       }
     }
 
-    "submission fails" must {
+    "submission fails and is retryable" must {
       "insert the failed submission into MongoDB on first failure" in new Test {
         val expectedLogMessage: String =
           s"$correlationId::[NrsConnector:submit] Storing new failed NRS submission in MongoDB"
