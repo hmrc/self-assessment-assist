@@ -52,6 +52,8 @@ class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig, 
       case _                      => false
     }
 
+    val mongoDuplicateKeyErrorCode = 11000
+
     retry(appConfig.nrsRetries, retryCondition) { attemptNumber =>
       logger.info(s"$correlationId::[NrsConnector:submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
       httpClient
@@ -64,7 +66,7 @@ class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig, 
             logger.info(s"$correlationId::[NrsConnector:submit] NRS submission successful status received from NRS $status")
             Right(nrsResponse)
           } else {
-            logger.warn(s"$correlationId::[NrsConnector:submit] NRS submission failed with error: ${response.status}")
+            logger.warn(s"$correlationId::[NrsConnector:submit] NRS submission failed with error: $status")
             Left(NrsFailure.ErrorResponse(status))
           }
         }
@@ -73,7 +75,7 @@ class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig, 
           Left(NrsFailure.ExceptionThrown)
         }
     }.flatMap {
-      case Left(failure) =>
+      case Left(failure) if failure.retryable =>
         nrsSubmissionWorkItemRepository
           .pushNew(NrsSubmissionWorkItem(nrsSubmission))
           .map { _ =>
@@ -81,11 +83,14 @@ class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig, 
             Left(failure)
           }
           .recover {
-            case e: MongoWriteException if e.getCode == 11000 =>
+            case e: MongoWriteException if e.getCode == mongoDuplicateKeyErrorCode =>
               logger.warn(s"$correlationId::[NrsConnector:submit] NRS submission already exists in MongoDB, skipping insert")
               Left(failure)
           }
-
+      // not retryable
+      case Left(failure) =>
+        logger.warn(s"$correlationId::[NrsConnector:submit] NRS Submission not stored to database")
+        Future.successful(Left(failure))
       case Right(nrsResponse) => Future.successful(Right(nrsResponse))
     }
   }
