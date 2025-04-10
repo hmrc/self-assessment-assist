@@ -89,7 +89,7 @@ class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig, 
           }
       // not retryable
       case Left(failure) =>
-        logger.warn(s"$correlationId::[NrsConnector:submit] NRS Submission not stored to database")
+        logger.error(s"$correlationId::[NrsConnector:submit] NRS Submission not stored to database")
         Future.successful(Left(failure))
       case Right(nrsResponse) => Future.successful(Right(nrsResponse))
     }
