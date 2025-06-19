@@ -21,7 +21,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
 import play.api.test.Injecting
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
@@ -38,7 +38,7 @@ class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
     Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id"))
 
   val url                                     = "/interaction-data/store-interactions"
-  val httpClient: HttpClient                  = app.injector.instanceOf[HttpClient]
+  val httpClient: HttpClientV2                = app.injector.instanceOf[HttpClientV2]
   private val ifsRequest: IFRequest           = IfsTestData.correctModel
   private val ifsSubmissionJsonString: String = IfsTestData.correctJsonString
   def port: Int                               = wireMockServer.port()

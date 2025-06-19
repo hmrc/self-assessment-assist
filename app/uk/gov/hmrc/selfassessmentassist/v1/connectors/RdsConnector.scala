@@ -19,7 +19,8 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpException, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials.rdsAuthHeader
 import uk.gov.hmrc.selfassessmentassist.api.models.errors._
@@ -34,7 +35,7 @@ import javax.inject.{Inject, Named, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject() (@Named("external-http-client") val httpClient: HttpClient, appConfig: AppConfig)(implicit val ec: ExecutionContext)
+class RdsConnector @Inject() (@Named("external-http-client") val httpClient: HttpClientV2, appConfig: AppConfig)(implicit val ec: ExecutionContext)
     extends Logging {
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit
@@ -46,7 +47,10 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
     def rdsAuthHeaders: Seq[(String, String)] = rdsAuthCredentials.map(rdsAuthHeader).getOrElse(Seq.empty)
 
     httpClient
-      .POST(appConfig.rdsBaseUrlForSubmit, Json.toJson(request), headers = rdsAuthHeaders)
+      .post(url"$appConfig.rdsBaseUrlForSubmit")
+      .withBody(Json.toJson(request))
+      .setHeader(rdsAuthHeaders: _*)
+      .execute[HttpResponse]
       .map { response =>
         logger.info(s"$correlationId::[RdsConnector:submit]RDS http response status is ${response.status}")
         response.status match {
@@ -142,7 +146,10 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
     def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader).getOrElse(Seq.empty)
 
     httpClient
-      .POST(s"${appConfig.rdsBaseUrlForAcknowledge}", Json.toJson(request), headers = rdsAuthHeaders)
+      .post(url"${appConfig.rdsBaseUrlForAcknowledge}")
+      .withBody(Json.toJson(request))
+      .setHeader(rdsAuthHeaders: _*)
+      .execute[HttpResponse]
       .map { response =>
         logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] RDS http response status is ${response.status}")
         response.status match {

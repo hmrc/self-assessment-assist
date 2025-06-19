@@ -19,8 +19,10 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 import com.mongodb.MongoWriteException
 import org.apache.pekko.actor.Scheduler
 import play.api.http.Status
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{Delayer, Logging, Retrying}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NrsSubmission, NrsSubmissionWorkItem}
@@ -34,7 +36,7 @@ import scala.util.control.NonFatal
 import scala.util.{Success, Try}
 
 @Singleton
-class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig, nrsSubmissionWorkItemRepository: NrsSubmissionWorkItemRepository)(
+class NrsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig, nrsSubmissionWorkItemRepository: NrsSubmissionWorkItemRepository)(
     implicit
     val scheduler: Scheduler,
     val ec: ExecutionContext)
@@ -57,7 +59,10 @@ class NrsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig, 
     retry(appConfig.nrsRetries, retryCondition) { attemptNumber =>
       logger.info(s"$correlationId::[NrsConnector:submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
       httpClient
-        .POST[NrsSubmission, HttpResponse](s"$url", nrsSubmission, Seq("X-API-Key" -> apiKey))
+        .post(url"$url")
+        .setHeader(Seq("X-API-Key" -> apiKey): _*)
+        .withBody(Json.toJson(nrsSubmission))
+        .execute[HttpResponse]
         .map { response =>
           val status = response.status
 

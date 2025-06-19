@@ -23,12 +23,13 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleFraudRiskRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
+
 import scala.collection.Seq
 import java.util.Base64
 
@@ -49,7 +50,7 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
 
   private val fraudRiskRequestJsonString: String = Json.toJson(simpleFraudRiskRequest).toString()
   private val fraudRiskResponse                  = successResponseJson.validate[FraudRiskReport].get
-  val httpClient: HttpClient                     = app.injector.instanceOf[HttpClient]
+  val httpClient: HttpClientV2                   = app.injector.instanceOf[HttpClientV2]
 
   class Test {
     val username: String = "some-user-name"
