@@ -27,7 +27,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import play.api.{Application, Environment, Mode}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.test.HttpClientV2Support
 import uk.gov.hmrc.mongo.test.CleanMongoCollectionSupport
 import uk.gov.hmrc.mongo.workitem.WorkItem
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
@@ -43,15 +43,16 @@ import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class NrsConnectorSpec
-    extends ConnectorSpec
+  extends ConnectorSpec
     with BeforeAndAfterAll
     with Injecting
     with MockAppConfig
     with CleanMongoCollectionSupport
-    with LogCapturing {
+    with LogCapturing
+    with HttpClientV2Support {
 
-  private val nrsSubmission: NrsSubmission             = NrsTestData.correctModel
-  private val nrsSubmissionJsonString: String          = NrsTestData.correctJsonString
+  private val nrsSubmission: NrsSubmission = NrsTestData.correctModel
+  private val nrsSubmissionJsonString: String = NrsTestData.correctJsonString
   override implicit val defaultTimeout: FiniteDuration = 20.seconds
 
   override lazy val app: Application = new GuiceApplicationBuilder()
@@ -59,20 +60,19 @@ class NrsConnectorSpec
     .configure("metrics.enabled" -> "false")
     .build()
 
-  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
-
   def port: Int = wireMockServer.port()
 
-  val actorSystem: ActorSystem      = inject[ActorSystem]
+  val actorSystem: ActorSystem = inject[ActorSystem]
   implicit val scheduler: Scheduler = actorSystem.scheduler
 
   // Long delays to force a test to timeout if it does retry when we're not expecting it...
   val longDelays: List[FiniteDuration] = List(10.minutes)
 
   val successResponseJson: JsValue =
-    Json.parse("""{
-                 |   "nrSubmissionId": "submissionId"
-                 |}""".stripMargin)
+    Json.parse(
+      """{
+        |   "nrSubmissionId": "submissionId"
+        |}""".stripMargin)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -83,7 +83,7 @@ class NrsConnectorSpec
 
   override def afterAll(): Unit = wireMockServer.stop()
 
-  val url         = "/"
+  val url = "/"
   val apiKeyValue = "api-key"
 
   class Test(retryDelays: List[FiniteDuration] = List(100.millis)) {
@@ -107,7 +107,7 @@ class NrsConnectorSpec
         )
         .headOption()
 
-    val connector: NrsConnector = new NrsConnector(httpClient, mockAppConfig, repository)
+    val connector: NrsConnector = new NrsConnector(httpClientV2, mockAppConfig, repository)
   }
 
   "NrsConnector" when {
@@ -248,9 +248,10 @@ class NrsConnectorSpec
             .withHeader("X-API-Key", equalTo(apiKeyValue))
             .withRequestBody(equalToJson(nrsSubmissionJsonString, true, false))
             .willReturn(aResponse()
-              .withBody("""{
-                          |   "badKey": "badValue"
-                          |}""".stripMargin)
+              .withBody(
+                """{
+                  |   "badKey": "badValue"
+                  |}""".stripMargin)
               .withStatus(BAD_REQUEST)))
 
         await(connector.submit(nrsSubmission)) shouldBe Left(NrsFailure.ErrorResponse(BAD_REQUEST))

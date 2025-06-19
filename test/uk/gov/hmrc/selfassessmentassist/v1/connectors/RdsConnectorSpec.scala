@@ -26,7 +26,7 @@ import play.api.http.MimeTypes
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsValue
 import play.api.test.Injecting
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.test.HttpClientV2Support
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
@@ -47,9 +47,15 @@ import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTe
 
 import java.util.UUID
 
-class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig with EitherValues {
-  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
-  def port: Int              = wireMockServer.port()
+class RdsConnectorSpec
+    extends ConnectorSpec
+    with BeforeAndAfterAll
+    with GuiceOneAppPerSuite
+    with Injecting
+    with MockAppConfig
+    with EitherValues
+    with HttpClientV2Support {
+  def port: Int = wireMockServer.port()
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -72,7 +78,7 @@ class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
 
     MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
     MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
-    val connector = new RdsConnector(httpClient, mockAppConfig)
+    val connector = new RdsConnector(httpClientV2, mockAppConfig)
 
     def stubRDSGenerateReportResponse(body: Option[String] = None, status: Int): StubMapping = {
       body match {

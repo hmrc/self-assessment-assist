@@ -17,8 +17,10 @@
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import play.api.http.Status.OK
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
@@ -31,7 +33,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InsightConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
+class InsightConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   private[connectors] def fraudRiskHeaders(): Seq[(String, String)] = {
 
@@ -48,11 +50,10 @@ class InsightConnector @Inject() (val httpClient: HttpClient, appConfig: AppConf
     logger.info(s"$correlationId::[InsightConnector:assess] requesting fraud risk report")
 
     httpClient
-      .POST[FraudRiskRequest, HttpResponse](
-        s"${appConfig.cipFraudServiceBaseUrl}",
-        body = fraudRiskRequest,
-        headers = fraudRiskHeaders()
-      )
+      .post(url"${appConfig.cipFraudServiceBaseUrl}")
+      .withBody(Json.toJson(fraudRiskRequest))
+      .setHeader(fraudRiskHeaders(): _*)
+      .execute[HttpResponse]
       .map { response =>
         logger.info(s"$correlationId::[InsightConnector:assess] FraudRiskReport status is ${response.status}")
         response.status match {

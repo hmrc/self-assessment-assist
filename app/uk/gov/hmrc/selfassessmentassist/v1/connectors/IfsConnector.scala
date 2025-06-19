@@ -18,9 +18,10 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import play.api.http.Status.NO_CONTENT
 import play.api.http.{HeaderNames, MimeTypes}
-import play.api.libs.json.Writes
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
@@ -32,7 +33,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IfsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
+class IfsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   private lazy val url: String = appConfig.ifsBaseUrl
 
@@ -41,17 +42,16 @@ class IfsConnector @Inject() (val httpClient: HttpClient, appConfig: AppConfig)(
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
 
     httpClient
-      .POST[IFRequest, HttpResponse](
-        s"$url",
-        ifRequest,
-        Seq(
-          "Environment"            -> appConfig.ifsEnv,
-          "CorrelationId"          -> correlationId,
-          HeaderNames.CONTENT_TYPE -> s"${MimeTypes.JSON};charset=UTF-8",
-          "accept"                 -> "*/*",
-          "Authorization"          -> s"Bearer ${appConfig.ifsToken}"
-        )
-      )(implicitly[Writes[IFRequest]], implicitly[HttpReads[HttpResponse]], hc.copy(authorization = None), ec)
+      .post(url"$url")(hc.copy(authorization = None))
+      .withBody(Json.toJson(ifRequest))
+      .setHeader(Seq(
+        "Environment"            -> appConfig.ifsEnv,
+        "CorrelationId"          -> correlationId,
+        HeaderNames.CONTENT_TYPE -> s"${MimeTypes.JSON};charset=UTF-8",
+        "accept"                 -> "*/*",
+        "Authorization"          -> s"Bearer ${appConfig.ifsToken}"
+      ): _*)
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
           case NO_CONTENT =>

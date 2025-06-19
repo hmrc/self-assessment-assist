@@ -23,41 +23,44 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.test.HttpClientV2Support
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleFraudRiskRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
-import scala.collection.Seq
-import java.util.Base64
 
-class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
+import java.util.Base64
+import scala.collection.Seq
+
+class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig with HttpClientV2Support {
 
   def port: Int = wireMockServer.port()
-  val url       = "/fraud"
+
+  val url = "/fraud"
 
   private val successResponseJson: JsValue =
-    Json.parse("""{"riskCorrelationId":"8d844f4a-0630-4568-99ef-d4606ae45d17",
+    Json.parse(
+      """{"riskCorrelationId":"8d844f4a-0630-4568-99ef-d4606ae45d17",
         |"riskScore":50,
         |"reasons":["No NINO has path to something risky."]}""".stripMargin)
 
   private val malformedSuccessResponseJson: JsValue =
-    Json.parse("""{"invalid":"8d844f4a-0630-4568-99ef-d4606ae45d17",
+    Json.parse(
+      """{"invalid":"8d844f4a-0630-4568-99ef-d4606ae45d17",
         |"invalid2":50,
         |"invalid3":["No NINO has path to something risky."]}""".stripMargin)
 
   private val fraudRiskRequestJsonString: String = Json.toJson(simpleFraudRiskRequest).toString()
-  private val fraudRiskResponse                  = successResponseJson.validate[FraudRiskReport].get
-  val httpClient: HttpClient                     = app.injector.instanceOf[HttpClient]
+  private val fraudRiskResponse = successResponseJson.validate[FraudRiskReport].get
 
   class Test {
     val username: String = "some-user-name"
-    val token: String    = "some-token"
+    val token: String = "some-token"
     MockedAppConfig.cipFraudServiceBaseUrl returns s"http://localhost:$port/fraud"
     MockedAppConfig.cipFraudUsername returns username
     MockedAppConfig.cipFraudToken returns token
-    val connector = new InsightConnector(httpClient, mockAppConfig)
+    val connector = new InsightConnector(httpClientV2, mockAppConfig)
 
     def stubCIPResponse(body: Option[String] = None, status: Int): StubMapping = {
       body match {
