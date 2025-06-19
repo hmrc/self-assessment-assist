@@ -26,7 +26,7 @@ import play.api.http.MimeTypes
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Injecting
-import uk.gov.hmrc.http.test.HttpClientV2Support
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthCredential, RdsAuthCredentials}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.RdsAuthDownstreamError
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
@@ -39,8 +39,8 @@ class DefaultRdsAuthConnectorSpec
     with GuiceOneAppPerSuite
     with Injecting
     with MockAppConfig
-    with EitherValues
-    with HttpClientV2Support {
+    with EitherValues {
+  val httpClient: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
 
   def port: Int = wireMockServer.port()
 
