@@ -54,12 +54,6 @@ object AuthFixture {
       confidenceLevel = ConfidenceLevel.L200,
       nino = None,
       saUtr = None,
-      name = Some(
-        Name(
-          name = Some("TestUser"),
-          lastName = None
-        )
-      ),
       dateOfBirth = None,
       email = Some("user@test.com"),
       agentInformation = AgentInformation(
@@ -91,7 +85,7 @@ object AuthFixture {
     )
 
   val authResponse: (IdentityData, Enrolments) => Option[AffinityGroup] ~ Enrolments ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[
-    Credentials] ~ ConfidenceLevel ~ None.type ~ None.type ~ Option[Name] ~ None.type ~ Option[String] ~ AgentInformation ~ Option[String] ~ Option[
+    Credentials] ~ ConfidenceLevel ~ None.type ~ None.type ~ None.type ~ Option[String] ~ AgentInformation ~ Option[String] ~ Option[
     CredentialRole] ~ None.type ~ Option[String] ~ LoginTimes ~ Option[ItmpName] ~ Option[LocalDate] ~ Option[ItmpAddress] =
     (data, enrolments) =>
       new ~(
@@ -109,15 +103,12 @@ object AuthFixture {
                               new ~(
                                 new ~(
                                   new ~(
-                                    new ~(
-                                      new ~(new ~(new ~(new ~(data.affinityGroup, enrolments), data.internalId), data.externalId), data.agentCode),
-                                      data.credentials),
-                                    data.confidenceLevel),
-                                  None
-                                ),
+                                    new ~(new ~(new ~(new ~(data.affinityGroup, enrolments), data.internalId), data.externalId), data.agentCode),
+                                    data.credentials),
+                                  data.confidenceLevel),
                                 None
                               ),
-                              data.name
+                              None
                             ),
                             None
                           ),
@@ -156,7 +147,6 @@ object AuthFixture {
           confidenceLevel = ConfidenceLevel.L200,
           nino = None,
           saUtr = None,
-          name = Some(Name(name = Some("TestUser"), lastName = None)),
           dateOfBirth = None,
           email = Some("user@test.com"),
           agentInformation = agentInformation,

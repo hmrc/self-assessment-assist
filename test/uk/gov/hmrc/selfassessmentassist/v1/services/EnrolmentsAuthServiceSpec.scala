@@ -302,13 +302,13 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
     val loginTimesValue: LoginTimes = Retrievals.loginTimes.reads.reads(json).get
 
     def getRetrievalsResult(affinity: Option[AffinityGroup], enrolments: Enrolments) =
-      affinity and enrolments and None and None and None and None and ConfidenceLevel.L200 and None and None and None and None and None and AgentInformation(
+      affinity and enrolments and None and None and None and None and ConfidenceLevel.L200 and None and None and None and None and AgentInformation(
         None,
         None,
         None) and None and None and None and None and loginTimesValue and None and None
 
     val retrievals =
-      affinityGroup and allEnrolments and internalId and externalId and agentCode and credentials and confidenceLevel and nino and saUtr and name and dateOfBirth and email and agentInformation and groupIdentifier and credentialRole and mdtpInformation and credentialStrength and loginTimes and itmpName and itmpAddress
+      affinityGroup and allEnrolments and internalId and externalId and agentCode and credentials and confidenceLevel and nino and saUtr and dateOfBirth and email and agentInformation and groupIdentifier and credentialRole and mdtpInformation and credentialStrength and loginTimes and itmpName and itmpAddress
 
     object MockedAuthConnector {
 
@@ -338,7 +338,6 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
       None,
       None,
       ConfidenceLevel.L200,
-      None,
       None,
       None,
       None,

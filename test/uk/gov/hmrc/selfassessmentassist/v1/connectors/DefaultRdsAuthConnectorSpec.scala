@@ -69,7 +69,7 @@ class DefaultRdsAuthConnectorSpec
 
     MockedAppConfig.rdsSasBaseUrlForAuth returns submitBaseUrl
     MockedAppConfig.rdsAuthCredential returns rdsAuthCredentials
-    val connector = new DefaultRdsAuthConnector(httpClientV2)(mockAppConfig, ec)
+    val connector = new DefaultRdsAuthConnector(httpClient)(mockAppConfig, ec)
 
     def stubRdsAuthResponse(status: Int): StubMapping = {
       wireMockServer.stubFor(

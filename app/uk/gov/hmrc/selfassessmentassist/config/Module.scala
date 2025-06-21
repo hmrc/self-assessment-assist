@@ -18,14 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.config
 
 import com.google.inject.{AbstractModule, Provides}
 import org.apache.pekko.actor.{ActorSystem, Scheduler}
-import play.api.Configuration
-import play.api.libs.ws.WSClient
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.play.audit.http.HttpAuditing
-import uk.gov.hmrc.play.bootstrap.http.HttpClientV2Provider
 import uk.gov.hmrc.selfassessmentassist.v1.schedulers.NrsSubmissionScheduler
-
-import javax.inject.Named
 
 class Module extends AbstractModule {
 
@@ -38,28 +31,5 @@ class Module extends AbstractModule {
   @Provides
   def akkaScheduler(actorSystem: ActorSystem): Scheduler =
     actorSystem.scheduler
-
-  import com.google.inject.Provides
-
-  @Provides
-  @Named("external-http-client")
-  def provideExternalHttpClient(
-                                 auditConnector: HttpAuditing,
-                                 wsClient: WSClient,
-                                 actorSystem: ActorSystem,
-                                 config: Configuration
-                               ): HttpClientV2 =
-    new HttpClientV2Provider(config, auditConnector, wsClient, actorSystem).get()
-
-  @Provides
-  @Named("nohook-auth-http-client")
-  def authExternalHttpClient(
-                              auditConnector: HttpAuditing,
-                              wsClient: WSClient,
-                              actorSystem: ActorSystem,
-                              config: Configuration
-                            ): HttpClientV2 =
-    new HttpClientV2Provider(config, auditConnector, wsClient, actorSystem).get()
-
 
 }

@@ -31,12 +31,11 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RdsConnector @Inject() (@Named("external-http-client") val httpClient: HttpClientV2, appConfig: AppConfig)(implicit val ec: ExecutionContext)
-    extends Logging {
+class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit
       hc: HeaderCarrier,
@@ -47,9 +46,10 @@ class RdsConnector @Inject() (@Named("external-http-client") val httpClient: Htt
     def rdsAuthHeaders: Seq[(String, String)] = rdsAuthCredentials.map(rdsAuthHeader).getOrElse(Seq.empty)
 
     httpClient
-      .post(url"$appConfig.rdsBaseUrlForSubmit")
+      .post(url"${appConfig.rdsBaseUrlForSubmit}")
       .withBody(Json.toJson(request))
       .setHeader(rdsAuthHeaders: _*)
+      .withProxy
       .execute[HttpResponse]
       .map { response =>
         logger.info(s"$correlationId::[RdsConnector:submit]RDS http response status is ${response.status}")

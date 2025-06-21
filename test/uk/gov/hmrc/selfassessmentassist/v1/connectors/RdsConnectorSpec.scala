@@ -26,7 +26,8 @@ import play.api.http.MimeTypes
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsValue
 import play.api.test.Injecting
-import uk.gov.hmrc.http.test.HttpClientV2Support
+import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
@@ -45,17 +46,13 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{rdsAcknowledgementRequest, rdsRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
+import java.net.URL
 import java.util.UUID
 
-class RdsConnectorSpec
-    extends ConnectorSpec
-    with BeforeAndAfterAll
-    with GuiceOneAppPerSuite
-    with Injecting
-    with MockAppConfig
-    with EitherValues
-    with HttpClientV2Support {
+class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig with EitherValues {
   def port: Int = wireMockServer.port()
+
+  val httpClient: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -72,13 +69,13 @@ class RdsConnectorSpec
   }
 
   class Test {
-    val submitBaseUrl: String                  = s"http://localhost:$port/submit"
-    val acknowledgeUrl: String                 = s"http://localhost:$port/rds/assessments/self-assessment-assist/acknowledge"
+    val submitBaseUrl: URL                     = url"http://localhost:$port/submit"
+    val acknowledgeUrl: URL                    = url"http://localhost:$port/rds/assessments/self-assessment-assist/acknowledge"
     val rdsAuthCredentials: RdsAuthCredentials = RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600)
 
-    MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl
-    MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
-    val connector = new RdsConnector(httpClientV2, mockAppConfig)
+    MockedAppConfig.rdsBaseUrlForSubmit returns submitBaseUrl.toString
+    MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl.toString
+    val connector = new RdsConnector(httpClient, mockAppConfig)
 
     def stubRDSGenerateReportResponse(body: Option[String] = None, status: Int): StubMapping = {
       body match {

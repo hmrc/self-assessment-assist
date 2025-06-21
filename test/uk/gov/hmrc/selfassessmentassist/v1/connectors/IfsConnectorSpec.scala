@@ -21,24 +21,26 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
 import play.api.test.Injecting
-import uk.gov.hmrc.http.test.HttpClientV2Support
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.IfsTestData
 
-class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig with HttpClientV2Support {
+class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
-  val reportId = "12345"
+  val httpClient: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
+
+  val reportId      = "12345"
   val ifsTokenValue = "ABCD1234"
-  val ifsEnv = "local"
+  val ifsEnv        = "local"
 
   val ifsEnvironmentHeaders: Option[Seq[String]] = Some(
     Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id"))
 
-  val url = "/interaction-data/store-interactions"
-  private val ifsRequest: IFRequest = IfsTestData.correctModel
+  val url                                     = "/interaction-data/store-interactions"
+  private val ifsRequest: IFRequest           = IfsTestData.correctModel
   private val ifsSubmissionJsonString: String = IfsTestData.correctJsonString
 
   def port: Int = wireMockServer.port()
@@ -53,7 +55,7 @@ class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
     MockedAppConfig.ifsEnv returns ifsEnv
     MockedAppConfig.ifsEnvironmentHeaders returns ifsEnvironmentHeaders
 
-    val connector = new IfsConnector(httpClientV2, mockAppConfig)
+    val connector = new IfsConnector(httpClient, mockAppConfig)
 
   }
 
@@ -62,9 +64,9 @@ class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
       "return the response" in new Test() {
         wireMockServer.stubFor(
           post(urlPathEqualTo(url))
+            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
             .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
             .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
-            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
             .willReturn(aResponse()
               .withStatus(NO_CONTENT)))
 
@@ -76,9 +78,9 @@ class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
       "return downstream error" in new Test() {
         wireMockServer.stubFor(
           post(urlPathEqualTo(url))
+            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
             .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
             .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
-            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
             .willReturn(aResponse()
               .withStatus(SERVICE_UNAVAILABLE)))
 
@@ -90,9 +92,9 @@ class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
       "return downstream error" in new Test() {
         wireMockServer.stubFor(
           post(urlPathEqualTo(url))
+            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
             .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
             .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
-            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
             .willReturn(aResponse()
               .withStatus(BAD_REQUEST)))
 

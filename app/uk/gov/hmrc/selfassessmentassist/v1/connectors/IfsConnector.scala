@@ -42,8 +42,7 @@ class IfsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
     logger.info(s"$correlationId::[IfsConnector:submit] submitting store interaction for action ${ifRequest.eventName}")
 
     httpClient
-      .post(url"$url")(hc.copy(authorization = None))
-      .withBody(Json.toJson(ifRequest))
+      .post(url"$url")
       .setHeader(Seq(
         "Environment"            -> appConfig.ifsEnv,
         "CorrelationId"          -> correlationId,
@@ -51,6 +50,7 @@ class IfsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
         "accept"                 -> "*/*",
         "Authorization"          -> s"Bearer ${appConfig.ifsToken}"
       ): _*)
+      .withBody(Json.toJson(ifRequest))
       .execute[HttpResponse]
       .map { response =>
         response.status match {

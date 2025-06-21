@@ -17,7 +17,6 @@
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import cats.data.EitherT
-import play.api.libs.json.Json
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
@@ -33,7 +32,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, UpstreamErr
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 
 import java.net.URLEncoder
-import javax.inject.{Inject, Named}
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DefaultRdsAuthConnector])
@@ -41,7 +40,7 @@ trait RdsAuthConnector[F[_]] {
   def retrieveAuthorisedBearer()(implicit hc: HeaderCarrier, correlationId: String): EitherT[F, MtdError, RdsAuthCredentials]
 }
 
-class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http: HttpClientV2)(implicit
+class DefaultRdsAuthConnector @Inject() (http: HttpClientV2)(implicit
     appConfig: AppConfig,
     ec: ExecutionContext
 ) extends RdsAuthConnector[Future]
@@ -73,7 +72,8 @@ class DefaultRdsAuthConnector @Inject() (@Named("nohook-auth-http-client") http:
       http
         .post(url"$url")
         .setHeader(reqHeaders: _*)
-        .withBody(Json.toJson(body))
+        .withBody(body)
+        .withProxy
         .execute[HttpResponse]
         .map { response =>
           logger.debug(s"$correlationId::[retrieveAuthorisedBearer] response is $response}")
