@@ -221,7 +221,6 @@ object AuthStub extends WireMockMethods {
       |     "confidenceLevel",
       |     "nino",
       |     "saUtr",
-      |     "optionalName",
       |     "dateOfBirth",
       |     "email",
       |     "agentInformation",

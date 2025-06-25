@@ -148,7 +148,6 @@ object CommonTestData {
       |  "confidenceLevel": 200,
       |  "nino": "DH00475D",
       |  "saUtr": "Utr",
-      |  "name": { "name": "test", "lastName": "test" },
       |  "dateOfBirth": "1985-01-01",
       |  "email":"test@test.com",
       |  "agentInformation": {
@@ -180,7 +179,6 @@ object CommonTestData {
     confidenceLevel = ConfidenceLevel.L200,
     nino = Some("DH00475D"),
     saUtr = Some("Utr"),
-    name = Some(Name(Some("test"), Some("test"))),
     dateOfBirth = Some(LocalDate.parse("1985-01-01")),
     email = Some("test@test.com"),
     agentInformation = AgentInformation(agentCode = Some("TZRXXV"), agentFriendlyName = Some("Bodgitt & Legget LLP"), agentId = Some("BDGL")),

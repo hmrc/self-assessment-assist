@@ -23,19 +23,23 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleFraudRiskRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
-import scala.collection.Seq
+
 import java.util.Base64
+import scala.collection.Seq
 
 class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
 
   def port: Int = wireMockServer.port()
-  val url       = "/fraud"
+
+  val httpClient: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
+
+  val url = "/fraud"
 
   private val successResponseJson: JsValue =
     Json.parse("""{"riskCorrelationId":"8d844f4a-0630-4568-99ef-d4606ae45d17",
@@ -49,7 +53,6 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
 
   private val fraudRiskRequestJsonString: String = Json.toJson(simpleFraudRiskRequest).toString()
   private val fraudRiskResponse                  = successResponseJson.validate[FraudRiskReport].get
-  val httpClient: HttpClient                     = app.injector.instanceOf[HttpClient]
 
   class Test {
     val username: String = "some-user-name"

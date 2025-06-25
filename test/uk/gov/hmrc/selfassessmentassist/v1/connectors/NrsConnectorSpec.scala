@@ -27,7 +27,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import play.api.{Application, Environment, Mode}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.mongo.test.CleanMongoCollectionSupport
 import uk.gov.hmrc.mongo.workitem.WorkItem
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
@@ -50,6 +50,7 @@ class NrsConnectorSpec
     with CleanMongoCollectionSupport
     with LogCapturing {
 
+  val httpClient: HttpClientV2                         = app.injector.instanceOf[HttpClientV2]
   private val nrsSubmission: NrsSubmission             = NrsTestData.correctModel
   private val nrsSubmissionJsonString: String          = NrsTestData.correctJsonString
   override implicit val defaultTimeout: FiniteDuration = 20.seconds
@@ -58,8 +59,6 @@ class NrsConnectorSpec
     .in(Environment.simple(mode = Mode.Dev))
     .configure("metrics.enabled" -> "false")
     .build()
-
-  val httpClient: HttpClient = app.injector.instanceOf[HttpClient]
 
   def port: Int = wireMockServer.port()
 
@@ -71,8 +70,8 @@ class NrsConnectorSpec
 
   val successResponseJson: JsValue =
     Json.parse("""{
-                 |   "nrSubmissionId": "submissionId"
-                 |}""".stripMargin)
+        |   "nrSubmissionId": "submissionId"
+        |}""".stripMargin)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -249,8 +248,8 @@ class NrsConnectorSpec
             .withRequestBody(equalToJson(nrsSubmissionJsonString, true, false))
             .willReturn(aResponse()
               .withBody("""{
-                          |   "badKey": "badValue"
-                          |}""".stripMargin)
+                  |   "badKey": "badValue"
+                  |}""".stripMargin)
               .withStatus(BAD_REQUEST)))
 
         await(connector.submit(nrsSubmission)) shouldBe Left(NrsFailure.ErrorResponse(BAD_REQUEST))

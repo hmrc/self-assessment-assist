@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.connectors
 
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
-import uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers.MtdIdLookupHttpParser.mtdIdLookupHttpReads
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 
@@ -25,10 +25,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MtdIdLookupConnector @Inject() (http: HttpClient, appConfig: AppConfig) {
+class MtdIdLookupConnector @Inject() (http: HttpClientV2, appConfig: AppConfig) {
 
   def getMtdId(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, String]] = {
-    http.GET[Either[MtdError, String]](s"${appConfig.mtdIdBaseUrl}/mtd-identifier-lookup/nino/$nino")
+    import uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers.MtdIdLookupHttpParser.mtdIdLookupHttpReads
+    http.get(url"${appConfig.mtdIdBaseUrl}/mtd-identifier-lookup/nino/$nino").execute
   }
 
 }

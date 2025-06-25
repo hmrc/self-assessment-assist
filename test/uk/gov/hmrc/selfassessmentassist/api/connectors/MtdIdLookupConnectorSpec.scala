@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.connectors
 
+import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.InternalError
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.MockHttpClient
@@ -42,7 +43,7 @@ class MtdIdLookupConnectorSpec extends ConnectorSpec {
       "the http client returns a mtd id" in new Test {
         MockedHttpClient
           .get[MtdIdLookupOutcome](
-            url = s"$baseUrl/mtd-identifier-lookup/nino/$nino",
+            url = url"$baseUrl/mtd-identifier-lookup/nino/$nino",
             config = dummyHeaderCarrierConfig
           )
           .returns(Future.successful(Right(mtdId)))
@@ -56,7 +57,7 @@ class MtdIdLookupConnectorSpec extends ConnectorSpec {
       "the http client returns a DownstreamError" in new Test {
         MockedHttpClient
           .get[MtdIdLookupOutcome](
-            url = s"$baseUrl/mtd-identifier-lookup/nino/$nino",
+            url = url"$baseUrl/mtd-identifier-lookup/nino/$nino",
             config = dummyHeaderCarrierConfig
           )
           .returns(Future.successful(Left(InternalError)))

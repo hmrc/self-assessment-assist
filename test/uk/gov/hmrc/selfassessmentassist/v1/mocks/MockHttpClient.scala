@@ -19,38 +19,36 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
 
+import java.net.URL
 import scala.concurrent.{ExecutionContext, Future}
 
 trait MockHttpClient extends MockFactory {
 
-  val mockHttpClient: HttpClient = mock[HttpClient]
+  val mockHttpClient: HttpClientV2       = mock[HttpClientV2]
+  val mockRequestBuilder: RequestBuilder = mock[RequestBuilder]
 
   object MockedHttpClient extends Matchers {
 
-    def get[T](url: String,
+    def get[T](url: URL,
                config: HeaderCarrier.Config,
-               parameters: Seq[(String, String)] = Seq.empty,
                requiredHeaders: Seq[(String, String)] = Seq.empty,
                excludedHeaders: Seq[(String, String)] = Seq.empty): CallHandler[Future[T]] = {
       (mockHttpClient
-        .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[T], _: HeaderCarrier, _: ExecutionContext))
-        .expects(assertArgs {
-          (actualUrl: String,
-           actualParams: Seq[(String, String)],
-           _: Seq[(String, String)],
-           _: HttpReads[T],
-           hc: HeaderCarrier,
-           _: ExecutionContext) =>
-            {
-              actualUrl shouldBe url
-              actualParams shouldBe parameters
+        .get(_: URL)(_: HeaderCarrier))
+        .expects(assertArgs { (actualUrl: URL, hc: HeaderCarrier) =>
+          {
+            actualUrl shouldBe url
+            val expectedURL = url.toString
 
-              val headersForUrl = hc.headersForUrl(config)(actualUrl)
-              assertHeaders(headersForUrl, requiredHeaders, excludedHeaders)
-            }
+            val headersForUrl = hc.headersForUrl(config)(expectedURL)
+            assertHeaders(headersForUrl, requiredHeaders, excludedHeaders)
+          }
         })
+        .returns(mockRequestBuilder)
+      (mockRequestBuilder.execute(_: HttpReads[T], _: ExecutionContext)).expects(*, *)
     }
 
     private def assertHeaders[T, I](actualHeaders: Seq[(String, String)],
