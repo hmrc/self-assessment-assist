@@ -19,6 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.services
 import cats.data.EitherT
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
@@ -28,7 +29,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait MockRdsAuthConnector extends MockFactory {
+trait MockRdsAuthConnector extends TestSuite with MockFactory {
 
   val mockRdsAuthConnector: RdsAuthConnector[Future] = mock[RdsAuthConnector[Future]]
 

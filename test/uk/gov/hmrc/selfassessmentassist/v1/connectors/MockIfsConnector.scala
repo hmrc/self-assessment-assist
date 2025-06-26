@@ -18,13 +18,14 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
 import uk.gov.hmrc.selfassessmentassist.v1.services.IfsOutcome
 
 import scala.concurrent.Future
 
-trait MockIfsConnector extends MockFactory {
+trait MockIfsConnector extends TestSuite with MockFactory {
 
   val mockIfsConnector: IfsConnector = mock[IfsConnector]
 
