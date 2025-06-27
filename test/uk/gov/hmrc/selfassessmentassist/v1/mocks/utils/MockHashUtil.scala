@@ -18,9 +18,10 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.utils
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.selfassessmentassist.utils.HashUtil
 
-trait MockHashUtil extends MockFactory {
+trait MockHashUtil extends TestSuite with MockFactory {
 
   val mockHashUtil: HashUtil = mock[HashUtil]
 

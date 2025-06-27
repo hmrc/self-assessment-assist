@@ -17,13 +17,14 @@
 package uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors
 
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.MtdError
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockLookupConnector extends MockFactory {
+trait MockLookupConnector extends TestSuite with MockFactory {
 
   val mockLookupConnector: MtdIdLookupConnector = mock[MtdIdLookupConnector]
 

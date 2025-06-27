@@ -21,13 +21,13 @@ import org.bson.types.ObjectId
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.inject.ApplicationLifecycle
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.selfassessmentassist.utils.IdGenerator
-import uk.gov.hmrc.selfassessmentassist.v1.connectors.NrsConnector
 import uk.gov.hmrc.mongo.workitem.{ProcessingStatus, WorkItem}
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.stubs.NrsStub
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
+import uk.gov.hmrc.selfassessmentassist.utils.IdGenerator
+import uk.gov.hmrc.selfassessmentassist.v1.connectors.NrsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NrsSubmission, NrsSubmissionWorkItem}
 import uk.gov.hmrc.selfassessmentassist.v1.repositories.NrsSubmissionWorkItemRepository
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.NrsTestData.correctModel

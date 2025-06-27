@@ -107,7 +107,7 @@ class NrsServiceSpec extends ServiceSpec {
   }
 
   "When nrs service call is unsuccessful " must {
-    "must map errors correctly after N attempts" in new Test {
+    "map errors correctly after N attempts" in new Test {
 
       MockNrsConnector
         .submitNrs(expectedPayload = expectedReportPayload)
@@ -116,12 +116,14 @@ class NrsServiceSpec extends ServiceSpec {
       val nrsSubmission: Either[NrsFailure, NrsSubmission] =
         service.buildNrsSubmission(rdsReport.stringify, rdsReport.reportId.toString, timestamp, userRequest, AssistReportGenerated)
 
-      await(
+      val result = await(
         nrsSubmission.fold(
-          error => error,
-          success => service.submit(success)
+          error => Future.successful(Left(error)), // unlikely branch
+          success => service.submit(success)       // should hit this
         )
-      ).map(value => value shouldBe Left(NrsFailure.Exception("reason")))
+      )
+
+      result shouldBe Left(NrsFailure.Exception("reason"))
     }
 
     "when bearer token not provided" in new Test {
@@ -225,16 +227,24 @@ class NrsServiceSpec extends ServiceSpec {
       MockNrsConnector
         .submitNrs(expectedPayload = expectedAcknowledgePayload)
         .returns(Future.successful(Left(NrsFailure.Exception("reason"))))
-      val nrsSubmission: Either[NrsFailure, NrsSubmission] =
-        service.buildNrsSubmission(acknowledgeRdsReport.stringify, acknowledgeRdsReport.reportId, timestamp, userRequest, AssistReportAcknowledged)
 
-      await(
+      val nrsSubmission: Either[NrsFailure, NrsSubmission] =
+        service.buildNrsSubmission(
+          acknowledgeRdsReport.stringify,
+          acknowledgeRdsReport.reportId,
+          timestamp,
+          userRequest,
+          AssistReportAcknowledged
+        )
+
+      val result = await(
         nrsSubmission.fold(
-          error => error,
+          error => Future.successful(Left(error)), // unlikely branch
           success => service.submit(success)
         )
-      ).map(value => value shouldBe Left(NrsFailure.Exception("reason")))
+      )
 
+      result shouldBe Left(NrsFailure.Exception("reason"))
     }
   }
 

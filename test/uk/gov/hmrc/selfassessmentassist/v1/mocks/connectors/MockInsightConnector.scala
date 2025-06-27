@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.support.MockAppConfig
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.InsightConnector
@@ -26,7 +27,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
 
 import scala.concurrent.Future
 
-trait MockInsightConnector extends MockFactory with MockAppConfig {
+trait MockInsightConnector extends TestSuite with MockFactory with MockAppConfig {
 
   val mockInsightConnector: InsightConnector = mock[InsightConnector]
   var port: Int                              = _
