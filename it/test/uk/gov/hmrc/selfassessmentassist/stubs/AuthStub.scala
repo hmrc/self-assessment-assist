@@ -19,8 +19,8 @@ package uk.gov.hmrc.selfassessmentassist.stubs
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsObject, JsValue, Json}
-import uk.gov.hmrc.selfassessmentassist.support.WireMockMethods
 import uk.gov.hmrc.auth.core.Enrolment
+import uk.gov.hmrc.selfassessmentassist.support.WireMockMethods
 import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService
 
 object AuthStub extends WireMockMethods {

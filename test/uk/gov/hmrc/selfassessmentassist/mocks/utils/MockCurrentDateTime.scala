@@ -18,11 +18,12 @@ package uk.gov.hmrc.selfassessmentassist.mocks.utils
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.selfassessmentassist.utils.CurrentDateTime
 
 import java.time.{Month, OffsetDateTime, ZoneOffset}
 
-trait MockCurrentDateTime extends MockFactory {
+trait MockCurrentDateTime extends TestSuite with MockFactory {
 
   val mockCurrentDateTime: CurrentDateTime = mock[CurrentDateTime]
 

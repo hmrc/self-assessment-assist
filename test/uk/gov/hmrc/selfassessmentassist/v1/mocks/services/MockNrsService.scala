@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NotableEventType, NrsSubmission}
@@ -27,7 +28,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.{NrsOutcome, NrsService}
 import java.time.OffsetDateTime
 import scala.concurrent.Future
 
-trait MockNrsService extends MockFactory {
+trait MockNrsService extends TestSuite with MockFactory {
 
   val mockNrsService: NrsService = mock[NrsService]
 

@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.stubs
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status._
-import play.api.libs.json.{Json, JsObject}
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.selfassessmentassist.support.WireMockMethods
 
 object MtdIdLookupStub extends WireMockMethods {

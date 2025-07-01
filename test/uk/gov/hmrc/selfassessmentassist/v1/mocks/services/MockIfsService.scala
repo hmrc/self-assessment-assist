@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
@@ -29,7 +30,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.{IfsOutcome, IfsService}
 
 import scala.concurrent.Future
 
-trait MockIfsService extends MockFactory {
+trait MockIfsService extends TestSuite with MockFactory {
 
   val mockIfsService: IfsService = mock[IfsService]
 

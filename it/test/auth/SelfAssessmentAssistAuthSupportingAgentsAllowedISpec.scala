@@ -19,7 +19,7 @@ package auth
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.selfassessmentassist.stubs.CommonTestData
+import uk.gov.hmrc.selfassessmentassist.stubs._
 
 class SelfAssessmentAssistAuthSupportingAgentsAllowedISpec extends AuthSupportingAgentsAllowedISpec {
 

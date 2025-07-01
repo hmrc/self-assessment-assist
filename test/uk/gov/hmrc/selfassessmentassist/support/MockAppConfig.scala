@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.support
 
 import org.scalamock.handlers.{CallHandler, CallHandler0}
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import play.api.Configuration
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.AuthCredential
 import uk.gov.hmrc.selfassessmentassist.config.{AppConfig, ConfidenceLevelConfig}
@@ -25,7 +26,7 @@ import uk.gov.hmrc.selfassessmentassist.config.{AppConfig, ConfidenceLevelConfig
 import java.time.Duration
 import scala.concurrent.duration.FiniteDuration
 
-trait MockAppConfig extends MockFactory {
+trait MockAppConfig extends TestSuite with MockFactory {
 
   implicit val mockAppConfig: AppConfig = mock[AppConfig]
 
