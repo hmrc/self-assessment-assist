@@ -23,7 +23,7 @@ Start the service manager profile: `sm2 --start SELF_ASSESSMENT_ASSIST_ALL`
 ## Run Tests
 Run unit tests: `sbt test`
 
-Run integration tests: `sbt it:test`
+Run integration tests: `sbt it/test`
 
 ## Local Dev and QA Test Instructions
 The QA test instruction documentation for local, QA and dev journeys (individual and agent) can be seen [here](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=TR&title=QA).
