@@ -173,7 +173,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
       RdsRequest.InputWithString("customerType", request.customerType.toString),
       RdsRequest.InputWithString("agentRef", request.agentRef.getOrElse("")),
       RdsRequest.InputWithString("preferredLanguage", request.preferredLanguage.toString),
-      RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
+      RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score.toInt),
       RdsRequest.InputWithObject(
         "fraudRiskReportHeaders",
         Seq(

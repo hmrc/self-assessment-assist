@@ -79,7 +79,7 @@ class RdsRequestSpec extends UnitSpec {
       "value" -> 10
     )
 
-    val inputWithIntObject: InputWithInt = InputWithInt("fraudRiskReportScore", fraudRiskReport.score)
+    val inputWithIntObject: InputWithInt = InputWithInt("fraudRiskReportScore", fraudRiskReport.score.toInt)
 
     "write to json" in {
       InputWithInt.writes.writes(inputWithIntObject) shouldBe inputWithIntJson
@@ -244,7 +244,7 @@ class RdsRequestSpec extends UnitSpec {
       )
     )
 
-    val rdsRequestObject: RdsRequest = RdsRequest(inputs = Seq(InputWithInt("fraudRiskReportScore", fraudRiskReport.score)))
+    val rdsRequestObject: RdsRequest = RdsRequest(inputs = Seq(InputWithInt("fraudRiskReportScore", fraudRiskReport.score.toInt)))
 
     "write to json" in {
       RdsRequest.writes.writes(rdsRequestObject) shouldBe rdsRequestJson
@@ -270,7 +270,7 @@ class RdsRequestSpec extends UnitSpec {
 
       val rdsRequestObjectWithMultipleInputs: RdsRequest =
         RdsRequest(inputs = Seq(
-          InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
+          InputWithInt("fraudRiskReportScore", fraudRiskReport.score.toInt),
           InputWithBoolean("input", value = true)
         ))
 

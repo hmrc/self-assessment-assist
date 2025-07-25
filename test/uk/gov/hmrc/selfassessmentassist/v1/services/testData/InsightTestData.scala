@@ -23,7 +23,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, 
 object InsightTestData {
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(
-    score = 10,
+    score = 10.00,
     riskCorrelationId = correlationId,
     reasons = Seq("flag")
   )

@@ -43,12 +43,12 @@ class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with Gui
 
   private val successResponseJson: JsValue =
     Json.parse("""{"riskCorrelationId":"8d844f4a-0630-4568-99ef-d4606ae45d17",
-        |"riskScore":50,
+        |"riskScore":50.00,
         |"reasons":["No NINO has path to something risky."]}""".stripMargin)
 
   private val malformedSuccessResponseJson: JsValue =
     Json.parse("""{"invalid":"8d844f4a-0630-4568-99ef-d4606ae45d17",
-        |"invalid2":50,
+        |"invalid2":50.00,
         |"invalid3":["No NINO has path to something risky."]}""".stripMargin)
 
   private val fraudRiskRequestJsonString: String = Json.toJson(simpleFraudRiskRequest).toString()
