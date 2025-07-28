@@ -34,12 +34,13 @@ object RdsRequest {
     implicit val reads: Reads[Input] = {
       case json @ JsObject(values) =>
         values.get("value") match {
-          case Some(JsString(_))  => InputWithString.reads.reads(json)
-          case Some(JsNull)       => InputWithString.reads.reads(json)
-          case Some(JsNumber(_))  => InputWithInt.reads.reads(json)
-          case Some(JsArray(_))   => InputWithObject.reads.reads(json)
-          case Some(JsBoolean(_)) => InputWithBoolean.reads.reads(json)
-          case _                  => throw new IllegalStateException("Input malformed")
+          case Some(JsString(_))                 => InputWithString.reads.reads(json)
+          case Some(JsNull)                      => InputWithString.reads.reads(json)
+          case Some(JsNumber(n)) if n.scale == 0 => InputWithInt.reads.reads(json)
+          case Some(JsNumber(_))                 => InputWithDouble.reads.reads(json)
+          case Some(JsArray(_))                  => InputWithObject.reads.reads(json)
+          case Some(JsBoolean(_))                => InputWithBoolean.reads.reads(json)
+          case _                                 => throw new IllegalStateException("Input malformed")
         }
       case _ => throw new IllegalStateException("Input malformed")
     }
@@ -49,6 +50,7 @@ object RdsRequest {
       case i @ InputWithInt(_, _)     => InputWithInt.writes.writes(i)
       case i @ InputWithObject(_, _)  => InputWithObject.writes.writes(i)
       case i @ InputWithBoolean(_, _) => InputWithBoolean.writes.writes(i)
+      case i @ InputWithDouble(_, _)  => InputWithDouble.writes.writes(i)
     }
 
   }
@@ -82,6 +84,22 @@ object RdsRequest {
       (JsPath \ "name")
         .write[String]
         .and((JsPath \ "value").write[Int])(unlift(InputWithInt.unapply))
+
+  }
+
+  case class InputWithDouble(name: String, value: Double) extends Input
+
+  object InputWithDouble {
+
+    val reads: Reads[InputWithDouble] =
+      (JsPath \ "name")
+        .read[String]
+        .and((JsPath \ "value").read[Double])(InputWithDouble.apply _)
+
+    val writes: Writes[InputWithDouble] =
+      (JsPath \ "name")
+        .write[String]
+        .and((JsPath \ "value").write[Double])(unlift(InputWithDouble.unapply))
 
   }
 

@@ -50,7 +50,7 @@ object RdsTestData {
         RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
         RdsRequest.InputWithString("agentRef", assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
         RdsRequest.InputWithString("preferredLanguage", assessmentRequestForSelfAssessment.preferredLanguage.toString),
-        RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score.toInt),
+        RdsRequest.InputWithDouble("fraudRiskReportScore", fraudRiskReport.score),
         RdsRequest.InputWithObject(
           "fraudRiskReportHeaders",
           Seq(
