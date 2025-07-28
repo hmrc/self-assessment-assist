@@ -36,7 +36,7 @@ object RdsTestData {
   )
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(
-    score = 10,
+    score = 10.00,
     riskCorrelationId = correlationId,
     reasons = Seq("flag")
   )
@@ -50,7 +50,7 @@ object RdsTestData {
         RdsRequest.InputWithString("customerType", assessmentRequestForSelfAssessment.customerType.toString),
         RdsRequest.InputWithString("agentRef", assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
         RdsRequest.InputWithString("preferredLanguage", assessmentRequestForSelfAssessment.preferredLanguage.toString),
-        RdsRequest.InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
+        RdsRequest.InputWithDouble("fraudRiskReportScore", fraudRiskReport.score),
         RdsRequest.InputWithObject(
           "fraudRiskReportHeaders",
           Seq(

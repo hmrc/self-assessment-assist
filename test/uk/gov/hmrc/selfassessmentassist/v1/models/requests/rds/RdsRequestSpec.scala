@@ -19,16 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.models.requests.rds
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest.{
-  DataWrapper,
-  Input,
-  InputWithBoolean,
-  InputWithInt,
-  InputWithObject,
-  InputWithString,
-  MetadataWrapper,
-  ObjectPart
-}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest._
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.fraudRiskReport
 
 class RdsRequestSpec extends UnitSpec {
@@ -75,11 +66,11 @@ class RdsRequestSpec extends UnitSpec {
 
   "InputWithInt" should {
     val inputWithIntJson: JsObject = Json.obj(
-      "name"  -> "fraudRiskReportScore",
-      "value" -> 10
+      "name"  -> "taxYear",
+      "value" -> 2022
     )
 
-    val inputWithIntObject: InputWithInt = InputWithInt("fraudRiskReportScore", fraudRiskReport.score)
+    val inputWithIntObject: InputWithInt = InputWithInt("taxYear", 2022)
 
     "write to json" in {
       InputWithInt.writes.writes(inputWithIntObject) shouldBe inputWithIntJson
@@ -87,6 +78,23 @@ class RdsRequestSpec extends UnitSpec {
 
     "read to object" in {
       InputWithString.reads.reads(inputWithIntJson).map(_ shouldBe inputWithIntObject)
+    }
+  }
+
+  "InputWithDouble" should {
+    val inputWithDoubleJson: JsObject = Json.obj(
+      "name"  -> "fraudRiskReportScore",
+      "value" -> 10.00
+    )
+
+    val inputWithDoubleObject: InputWithDouble = InputWithDouble("fraudRiskReportScore", fraudRiskReport.score)
+
+    "write to json" in {
+      InputWithDouble.writes.writes(inputWithDoubleObject) shouldBe inputWithDoubleJson
+    }
+
+    "read to object" in {
+      InputWithString.reads.reads(inputWithDoubleJson).map(_ shouldBe inputWithDoubleObject)
     }
   }
 
@@ -239,12 +247,12 @@ class RdsRequestSpec extends UnitSpec {
       "inputs" -> Json.arr(
         Json.obj(
           "name"  -> "fraudRiskReportScore",
-          "value" -> 10
+          "value" -> 10.00
         )
       )
     )
 
-    val rdsRequestObject: RdsRequest = RdsRequest(inputs = Seq(InputWithInt("fraudRiskReportScore", fraudRiskReport.score)))
+    val rdsRequestObject: RdsRequest = RdsRequest(inputs = Seq(InputWithDouble("fraudRiskReportScore", fraudRiskReport.score)))
 
     "write to json" in {
       RdsRequest.writes.writes(rdsRequestObject) shouldBe rdsRequestJson
@@ -259,7 +267,7 @@ class RdsRequestSpec extends UnitSpec {
         "inputs" -> Json.arr(
           Json.obj(
             "name"  -> "fraudRiskReportScore",
-            "value" -> 10
+            "value" -> 10.00
           ),
           Json.obj(
             "name"  -> "input",
@@ -270,7 +278,7 @@ class RdsRequestSpec extends UnitSpec {
 
       val rdsRequestObjectWithMultipleInputs: RdsRequest =
         RdsRequest(inputs = Seq(
-          InputWithInt("fraudRiskReportScore", fraudRiskReport.score),
+          InputWithDouble("fraudRiskReportScore", fraudRiskReport.score),
           InputWithBoolean("input", value = true)
         ))
 

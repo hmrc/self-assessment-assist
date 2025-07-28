@@ -19,19 +19,19 @@ package uk.gov.hmrc.selfassessmentassist.v1.models.request.cip
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{JsPath, Reads, Writes}
 
-case class FraudRiskReport(score: Int, riskCorrelationId: String, reasons: Seq[String])
+case class FraudRiskReport(score: Double, riskCorrelationId: String, reasons: Seq[String])
 
 object FraudRiskReport {
 
   implicit val reads: Reads[FraudRiskReport] =
     (JsPath \ "riskScore")
-      .read[Int]
+      .read[Double]
       .and((JsPath \ "riskCorrelationId").read[String])
       .and((JsPath \ "reasons").readWithDefault[Seq[String]](Seq.empty))(FraudRiskReport.apply _)
 
   implicit val writes: Writes[FraudRiskReport] =
     (JsPath \ "riskScore")
-      .write[Int]
+      .write[Double]
       .and((JsPath \ "riskCorrelationId").write[String])
       .and((JsPath \ "reasons").write[Seq[String]])(unlift(FraudRiskReport.unapply))
 

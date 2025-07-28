@@ -105,7 +105,7 @@ object CommonTestData {
   val simpleFraudRiskRequest: FraudRiskRequest =
     new FraudRiskRequest(nino = Some(simpleNino), taxYear = Some(simpleTaxYearFullString), fraudRiskHeaders = Map.empty[String, String])
 
-  val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(0, simpleCIPCorrelationId, Seq.empty)
+  val simpleFraudRiskReport: FraudRiskReport = new FraudRiskReport(0.00, simpleCIPCorrelationId, Seq.empty)
 
   val simpleGenerateReportControllerNrsID: String = "537490b4-06e3-4fef-a555-6fd0877dc7ca"
   val simpleSubmissionTimestamp: OffsetDateTime   = OffsetDateTime.of(2022, Month.JANUARY.getValue, 1, 12, 0, 0, 0, ZoneOffset.UTC)
