@@ -63,8 +63,6 @@ class DefaultRdsAuthConnectorSpec
     val acknowledgeUrl: String = s"http://localhost:$port/rds/assessments/self-assessment-assist/acknowledge"
     val authToken              = "YWM4Y2Q4ZDAtZjIxMi00NzA2LTg1ZDEtODJiNzc4NWFkMGIxOmJlYXJlcg=="
 
-    println(UUID.randomUUID().toString)
-
     val rdsAuthCredentials: AuthCredential = AuthCredential("ac8cd8d0-f212-4706-85d1-82b7785ad0b1", "bearer", "grant_type")
 
     MockedAppConfig.rdsSasBaseUrlForAuth returns submitBaseUrl
@@ -76,6 +74,7 @@ class DefaultRdsAuthConnectorSpec
         post(urlPathEqualTo("/submit"))
           .withHeader("Content-Type", equalTo(MimeTypes.FORM))
           .withHeader("Authorization", equalTo(s"Basic $authToken"))
+          .withRequestBody(equalTo(s"grant_type=${rdsAuthCredentials.grant_type}"))
           .willReturn(
             aResponse()
               .withStatus(status)

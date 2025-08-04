@@ -143,12 +143,13 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
       correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] acknowledge the report ${appConfig.rdsBaseUrlForAcknowledge}")
 
-    def rdsAuthHeaders = rdsAuthCredentials.map(rdsAuthHeader).getOrElse(Seq.empty)
+    def rdsAuthHeaders: Seq[(String, String)] = rdsAuthCredentials.map(rdsAuthHeader).getOrElse(Seq.empty)
 
     httpClient
       .post(url"${appConfig.rdsBaseUrlForAcknowledge}")
       .withBody(Json.toJson(request))
       .setHeader(rdsAuthHeaders: _*)
+      .withProxy
       .execute[HttpResponse]
       .map { response =>
         logger.info(s"$correlationId::[RdsConnector:acknowledgeRds] RDS http response status is ${response.status}")
