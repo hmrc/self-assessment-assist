@@ -53,39 +53,37 @@ class DefaultRdsAuthConnector @Inject() (http: HttpClientV2)(implicit
 
     val url = s"${appConfig.rdsSasBaseUrlForAuth}"
 
-    val utfEncodedClientId  = URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")
-    val utfEncodedSecret    = URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")
-    val utfEncodedGrantType = URLEncoder.encode(appConfig.rdsAuthCredential.grant_type, "UTF-8")
-
-    val body = s"grant_type=$utfEncodedGrantType"
+    val utfEncodedClientId: String = URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")
+    val utfEncodedSecret: String   = URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")
 
     val credentials              = s"$utfEncodedClientId:$utfEncodedSecret"
     val base64EncodedCredentials = Base64.getEncoder.encodeToString(credentials.getBytes)
 
     val reqHeaders = Seq(
-      "Content-type"  -> "application/x-www-form-urlencoded",
+      "Content-Type"  -> "application/x-www-form-urlencoded",
       "Accept"        -> "application/json",
-      "Authorization" -> s"Basic $base64EncodedCredentials")
+      "Authorization" -> s"Basic $base64EncodedCredentials"
+    )
 
     logger.debug(s"$correlationId::[retrieveAuthorisedBearer] request info url=$url")
     EitherT {
       http
         .post(url"$url")
         .setHeader(reqHeaders: _*)
-        .withBody(body)
+        .withBody(Map("grant_type" -> Seq(appConfig.rdsAuthCredential.grant_type)))
         .withProxy
         .execute[HttpResponse]
         .map { response =>
           logger.debug(s"$correlationId::[retrieveAuthorisedBearer] response is $response}")
           response.status match {
             case ACCEPTED =>
-              logger.info(s"$correlationId::[retrieveAuthorisedBearer] ACCEPTED reponse")
+              logger.info(s"$correlationId::[retrieveAuthorisedBearer] ACCEPTED response")
               handleResponse(response)
             case OK =>
-              logger.info(s"$correlationId::[retrieveAuthorisedBearer] Ok reponse")
+              logger.info(s"$correlationId::[retrieveAuthorisedBearer] Ok response")
               handleResponse(response)
             case errorStatusCode =>
-              logger.error(s"$correlationId::[retrieveAuthorisedBearer] failed $errorStatusCode")
+              logger.error(s"$correlationId::[retrieveAuthorisedBearer] failed status $errorStatusCode and body: ${response.body}")
               Left(RdsAuthDownstreamError)
           }
         }
