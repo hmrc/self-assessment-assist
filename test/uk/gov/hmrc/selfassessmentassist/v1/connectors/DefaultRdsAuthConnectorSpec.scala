@@ -31,8 +31,6 @@ import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthCredential, RdsAuth
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.RdsAuthDownstreamError
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
 
-import java.util.UUID
-
 class DefaultRdsAuthConnectorSpec
     extends ConnectorSpec
     with BeforeAndAfterAll
