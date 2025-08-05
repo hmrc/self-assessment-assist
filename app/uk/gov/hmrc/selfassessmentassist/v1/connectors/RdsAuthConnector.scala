@@ -17,6 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import cats.data.EitherT
+import com.google.common.base.Charsets
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
@@ -24,14 +25,12 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors.{MtdError, RdsAuthDown
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
 import java.util.Base64
-//import cats.implicits.catsSyntaxEitherId
 import com.google.inject.ImplementedBy
 import play.api.http.Status.{ACCEPTED, OK}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 
-import java.net.URLEncoder
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,15 +50,13 @@ class DefaultRdsAuthConnector @Inject() (http: HttpClientV2)(implicit
       correlationId: String
   ): EitherT[Future, MtdError, RdsAuthCredentials] = {
 
-    val url = s"${appConfig.rdsSasBaseUrlForAuth}"
+    val url: String = appConfig.rdsSasBaseUrlForAuth
 
-    val utfEncodedClientId: String = URLEncoder.encode(appConfig.rdsAuthCredential.client_id, "UTF-8")
-    val utfEncodedSecret: String   = URLEncoder.encode(appConfig.rdsAuthCredential.client_secret, "UTF-8")
+    val base64EncodedCredentials: String = Base64.getEncoder.encodeToString(
+      s"${appConfig.rdsAuthCredential.client_id}:${appConfig.rdsAuthCredential.client_secret}".getBytes(Charsets.UTF_8)
+    )
 
-    val credentials              = s"$utfEncodedClientId:$utfEncodedSecret"
-    val base64EncodedCredentials = Base64.getEncoder.encodeToString(credentials.getBytes)
-
-    val reqHeaders = Seq(
+    val reqHeaders: Seq[(String, String)] = Seq(
       "Content-Type"  -> "application/x-www-form-urlencoded",
       "Accept"        -> "application/json",
       "Authorization" -> s"Basic $base64EncodedCredentials"
