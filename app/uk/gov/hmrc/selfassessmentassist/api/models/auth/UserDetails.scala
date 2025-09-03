@@ -26,7 +26,7 @@ case class UserDetails(userType: AffinityGroup, agentReferenceNumber: Option[Str
   val toCustomerType: CustomerType = userType match {
     case AffinityGroup.Individual => CustomerType.TaxPayer
     case AffinityGroup.Agent      => CustomerType.Agent
-    case _                        => throw new IllegalStateException(s"Invalid $userType")
+    case _                        => throw new IllegalStateException(s"[UserDetails][toCustomerType] Invalid $userType")
   }
 
 }

@@ -76,7 +76,7 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
         supportingAgentPredicate: Predicate
     ): Unit = {
       behave like authorisedIndividual(authValidationEnabled, initialPredicate)
-      // behave like authorisedOrganisation(authValidationEnabled, initialPredicate)
+      //behave like authorisedOrganisation(authValidationEnabled, initialPredicate)
 
       behave like authorisedAgentsMissingArn(authValidationEnabled, initialPredicate, primaryAgentPredicate)
       behave like authorisedPrimaryAgent(authValidationEnabled, initialPredicate, primaryAgentPredicate)
@@ -109,6 +109,28 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
           )
         )
       }
+
+//    def authorisedOrganisation(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =
+//      "allow authorised organisations" in new Test {
+//        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+//
+//        val retrievalsResult = getRetrievalsResult(Some(Individual), Enrolments(Set.empty))
+//
+//        MockedAuthConnector
+//          .authorised(initialPredicate, retrievals)
+//          .once()
+//          .returns(Future.successful(retrievalsResult))
+//
+//        val result: AuthOutcome = await(enrolmentsAuthService.authorised(mtdId, "correlationId", endpointAllowsSupportingAgents = true))
+//        result shouldBe Right(
+//          UserDetails(
+//            userType = AffinityGroup.Organisation,
+//            agentReferenceNumber = None,
+//            clientID = "",
+//            Some(getIdentityData(agentInformation = AgentInformation(None, None, None), affinityGroup = Some(Individual)))
+//          )
+//        )
+//      }
 
     def authorisedAgentsMissingArn(
         authValidationEnabled: Boolean,

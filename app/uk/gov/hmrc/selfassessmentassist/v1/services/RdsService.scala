@@ -80,6 +80,16 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
 
     def processRdsRequest(
         rdsAuthCredentials: Option[RdsAuthCredentials] = None): Future[Either[ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]]] = {
+
+      val nonEmptyHeaderKeys = fraudRiskReportHeaders.collect {
+        case (k, v) if v.nonEmpty => k
+      }
+      val emptyHeaderKeys = fraudRiskReportHeaders.collect {
+        case (k, v) if v.isEmpty => k
+      }
+      logger.debug(s"[RdsService][processRdsRequest] non empty headers sent: ${nonEmptyHeaderKeys}")
+      logger.debug(s"[RdsService][processRdsRequest] empty headers sent: ${emptyHeaderKeys}")
+
       val rdsRequestSO: RdsRequest = generateRdsAssessmentRequest(request, fraudRiskReport, fraudRiskReportHeaders)
       connector.submit(rdsRequestSO, rdsAuthCredentials).map {
         case Right(ResponseWrapper(_, rdsResponse)) =>
@@ -132,7 +142,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
         rdsCorrelationIdOption match {
           case Some(rdsCorrelationID) =>
             val parsedCalculationTimestamp = LocalDateTime.parse(calculationTimestamp, DateUtils.dateTimePattern)
-            logger.info(s"$correlationId::[toAssessmentReport]Successfully recieved assessment report")
+            logger.info(s"$correlationId::[toAssessmentReport]Successfully received assessment report")
 
             Right(
               ResponseWrapper(
