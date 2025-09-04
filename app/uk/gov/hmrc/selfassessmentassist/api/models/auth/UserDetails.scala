@@ -24,7 +24,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 case class UserDetails(userType: AffinityGroup, agentReferenceNumber: Option[String], clientID: String, identityData: Option[IdentityData] = None) {
 
   val toCustomerType: CustomerType = userType match {
-    case AffinityGroup.Individual => CustomerType.TaxPayer
+    case AffinityGroup.Individual | AffinityGroup.Organisation => CustomerType.TaxPayer
     case AffinityGroup.Agent      => CustomerType.Agent
     case _                        => throw new IllegalStateException(s"[UserDetails][toCustomerType] Invalid $userType")
   }
