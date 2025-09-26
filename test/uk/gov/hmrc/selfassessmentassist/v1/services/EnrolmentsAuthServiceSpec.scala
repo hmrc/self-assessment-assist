@@ -23,7 +23,12 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName}
 import uk.gov.hmrc.auth.core.syntax.retrieved._
 import play.api.libs.json.Json
-import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService.{authorisationDisabledPredicate, authorisationEnabledPredicate, mtdEnrolmentPredicate, supportingAgentAuthPredicate}
+import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService.{
+  authorisationDisabledPredicate,
+  authorisationEnabledPredicate,
+  mtdEnrolmentPredicate,
+  supportingAgentAuthPredicate
+}
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
 import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
 import org.scalamock.handlers.CallHandler
