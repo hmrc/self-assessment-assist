@@ -43,7 +43,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connector: RdsConnector, appConfig: AppConfig) extends Logging {
 
-  val requiredHeaderForRDS_with_Empty: Seq[(String, String)] = List(
+  private val requiredHeaderForRDS_with_Empty: Seq[(String, String)] = List(
     "Gov-Client-Connection-Method",
     "Gov-Client-Device-ID",
     "Gov-Client-Local-IPs",
@@ -71,12 +71,12 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
   def submit(request: AssessmentRequestForSelfAssessment, fraudRiskReport: FraudRiskReport)(implicit
       hc: HeaderCarrier,
       ec: ExecutionContext,
-      // logContext: EndpointLogContext,
       userRequest: UserRequest[_],
       correlationId: String): Future[ServiceOutcome[AssessmentReportWrapper]] = {
-    val requestHeaders: Map[String, String] = userRequest.headers.toMap.map(h => h._1 -> h._2.head)
-    val fraudRiskReportHeaders: Seq[(String, String)] =
-      requiredHeaderForRDS_with_Empty.map(entry => entry._1 -> requestHeaders.getOrElse(entry._1, ""))
+
+    val fraudRiskReportHeaders: Seq[(String, String)] = requiredHeaderForRDS_with_Empty.map { case (k, _) =>
+      k -> userRequest.headers.get(k).getOrElse("")
+    }
 
     def processRdsRequest(
         rdsAuthCredentials: Option[RdsAuthCredentials] = None): Future[Either[ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]]] = {
@@ -87,8 +87,8 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
       val emptyHeaderKeys = fraudRiskReportHeaders.collect {
         case (k, v) if v.isEmpty => k
       }
-      logger.debug(s"[RdsService][processRdsRequest] non empty headers sent: ${nonEmptyHeaderKeys}")
-      logger.debug(s"[RdsService][processRdsRequest] empty headers sent: ${emptyHeaderKeys}")
+      logger.debug(s"[RdsService][processRdsRequest] non empty headers sent: $nonEmptyHeaderKeys")
+      logger.debug(s"[RdsService][processRdsRequest] empty headers sent: $emptyHeaderKeys")
 
       val rdsRequestSO: RdsRequest = generateRdsAssessmentRequest(request, fraudRiskReport, fraudRiskReportHeaders)
       connector.submit(rdsRequestSO, rdsAuthCredentials).map {
@@ -210,7 +210,6 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
   def acknowledge(request: AcknowledgeReportRequest)(implicit
       hc: HeaderCarrier,
       ec: ExecutionContext,
-      // logContext: EndpointLogContext,
       correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
     logger.info(s"$correlationId::[acknowledge]acknowledge")
     if (appConfig.rdsAuthRequiredForThisEnv) {

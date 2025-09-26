@@ -79,7 +79,6 @@ class GenerateReportController @Inject() (
     logger.info(s"$correlationId::[generateReportInternal] Received request to generate an assessment report")
 
     authorisedAction(nino).async { implicit request =>
-
       val customerType        = request.userDetails.toCustomerType
       val submissionTimestamp = currentDateTime.getDateTime
       val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] =
