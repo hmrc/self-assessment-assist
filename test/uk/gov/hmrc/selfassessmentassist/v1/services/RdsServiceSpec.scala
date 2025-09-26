@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
@@ -30,6 +31,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.mocks.services.MockRdsAuthConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.AssessmentReportWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest.DataWrapper
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{
   assessmentReportWrapper,
@@ -39,7 +41,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{
 }
 
 import java.util.UUID
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
 class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppConfig {
 
@@ -81,12 +83,44 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
         assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReportWrapper))
       }
 
-      "return the expected result when rds auth required" in new Test(rdsRequired = true) {
+      "return the expected result and send correct headers when RDS auth required" in new Test(rdsRequired = true) {
+        override implicit val userRequest: UserRequest[_] =
+          UserRequest(
+            userDetails = UserDetails(
+              userType = AffinityGroup.Individual,
+              agentReferenceNumber = None,
+              clientID = "aClientID",
+              identityData = Some(CommonTestData.identityCorrectModel)
+            ),
+            request = FakeRequest().withHeaders(
+              "Authorization"        -> "Bearer aaaa",
+              "dummyHeader1"         -> "dummyValue1",
+              "dummyHeader2"         -> "dummyValue2",
+              "gov-client-device-id" -> "device-123"
+            )
+          )
+
+        val capturedHeadersP: Promise[Seq[(String, String)]] = Promise[Seq[(String, String)]]()
         MockRdsAuthConnector.retrieveAuthorisedBearer()
-        MockRdsConnector.submit(rdsRequest) returns Future.successful(Right(ResponseWrapper(correlationId, rdsNewSubmissionReport)))
+
+        (mockRdsConnector
+          .submit(_: RdsRequest, _: Option[RdsAuthCredentials])(_: HeaderCarrier, _: ExecutionContext, _: String))
+          .expects(*, *, *, *, *)
+          .onCall { (rdsRequest: RdsRequest, _: Option[RdsAuthCredentials], _: HeaderCarrier, _: ExecutionContext, _: String) =>
+            val headers = rdsRequest.inputs.collect { case RdsRequest.InputWithObject("fraudRiskReportHeaders", seq) =>
+              seq.collect { case DataWrapper(data: Seq[Seq[String]]) => data.collect { case Seq(k, v) => k -> v } }.flatten
+            }.flatten
+            capturedHeadersP.success(headers)
+            Future.successful(Right(ResponseWrapper(correlationId, rdsNewSubmissionReport)))
+          }
 
         val assessmentReportSO: ServiceOutcome[AssessmentReportWrapper] = await(service.submit(assessmentRequestForSelfAssessment, fraudRiskReport))
+
         assessmentReportSO shouldBe Right(ResponseWrapper(correlationId, assessmentReportWrapper))
+
+        val capturedHeaders: Seq[(String, String)] = await(capturedHeadersP.future)
+
+        capturedHeaders should contain("Gov-Client-Device-ID" -> "device-123")
       }
 
       "return the expected error result when rdsConnector is failed" in new Test(rdsRequired = true) {
