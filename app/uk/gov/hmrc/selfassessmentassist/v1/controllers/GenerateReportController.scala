@@ -80,11 +80,12 @@ class GenerateReportController @Inject() (
 
     authorisedAction(nino).async { implicit request =>
       val customerType        = request.userDetails.toCustomerType
+      val agentType           = request.userDetails.agentReferenceNumber
       val submissionTimestamp = currentDateTime.getDateTime
       val responseData: EitherT[Future, ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]] =
         for {
           assessmentRequestForSelfAssessment <- EitherT(
-            requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, None, taxYear)))
+            requestParser.parseRequest(GenerateReportRawData(calculationId, nino, PreferredLanguage.English, customerType, agentType, taxYear)))
           fraudRiskReport <- EitherT {
             logger.debug("[GenerateReportController][generateReportInternal] Calling insight service")
             insightService.assess(generateFraudRiskRequest(assessmentRequestForSelfAssessment, request.headers.toMap.map { h => h._1 -> h._2.head }))
