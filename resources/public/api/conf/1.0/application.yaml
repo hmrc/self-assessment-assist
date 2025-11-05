@@ -24,19 +24,6 @@ info:
     
     [Check the data you need to send](/guides/fraud-prevention/). You can also use the [Test API](/api-documentation/docs/api/service/txm-fph-validator-api/1.0) during initial development and as part of your quality assurance checks.
 
-    # Versioning
-    When an API changes in a way that is backwards-incompatible, we increase the version number of the API.
-    See our [reference guide](/api-documentation/docs/reference-guide#versioning) for more on
-    versioning.
-    # Errors
-    We use standard HTTP status codes to show whether an API request succeeded or not. They are usually in the range:
-    - 200 to 299 if it succeeded, including code 202 if it was accepted by an API that needs to wait for further action
-    - 400 to 499 if it failed because of a client error by your application
-    - 500 to 599 if it failed because of an error on our server
-
-    Errors specific to each API are shown in the Endpoints section, under Response. See our
-    [reference guide](/api-documentation/docs/reference-guide#errors) for more on errors.
-
     # Changelog
     You can find the changelog in the [self-assessment-assist-changelog](https://github.com/hmrc/income-tax-mtd-changelog) GitHub wiki.
 
@@ -44,12 +31,7 @@ info:
     * Direct reports of bugs or errors in Production or Sandbox code, or queries about HMRC business functionality (such as how a specific field is used by HMRC or why it is needed) to the [Software Development Support Team (SDST)](https://developer.service.hmrc.gov.uk/developer/support).
     * Send queries or feedback related to the design of the APIs (including recommended changes) using the [income-tax-mtd-changelog](https://github.com/hmrc/income-tax-mtd-changelog/issues) GitHub page.
     * <a href="/contact/report-technical-problem?newTab=true&service=api-documentation-frontend" target="_blank">Is this page not working properly? (opens in new tab)</a>
-    
-    # Testing
-    You can use the sandbox environment to <a href="/api-documentation/docs/testing">test this API</a>. You can use the <a href="/api-documentation/docs/api/service/api-platform-test-user/1.0">Create Test User API</a> or it's frontend service to create test users.
-    It may not be possible to test all scenarios in the sandbox. You can test some scenarios by passing the `Gov-Test-Scenario` header. Documentation for each endpoint includes a **Test data** section, which explains the scenarios that you can simulate using the `Gov-Test-Scenario` header.
-    If you have a specific testing need that is not supported in the sandbox, contact <a href="/developer/support">our support team</a>.
-    Some APIs may be marked \[test only\]. This means that they are not available for use in production and may change.
+
 servers:
   - url: https://test-api.service.hmrc.gov.uk
     description: Sandbox
@@ -86,7 +68,8 @@ components:
       name: taxYear
       in: path
       description: |
-        The tax year to which the data applies in the format `YYYY-YY`
+        The tax year the data applies to, for example, 2023-24.
+        The start year and end year must not span two tax years. No gaps are allowed, for example, 2023-25 is not valid.
       schema:
         type: string
         example: 2023-24
@@ -98,6 +81,7 @@ components:
         The unique identifier for the report. Must conform to the regular expression: `^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`
       schema:
         type: string
+        pattern: ^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$
         example: 579800fe-e047-cd40-b3e4-0e14b1f183a8
       required: true
     calculationId:
@@ -107,7 +91,16 @@ components:
         The unique identifier for the calculation. Must conform to the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
       schema:
         type: string
+        pattern: ^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
         example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
+      required: true
+    reportCorrelationId:
+      name: correlationId
+      in: path
+      description: The correlation ID of the report.
+      schema:
+        type: string
+        example: 7X57CKG72JVNSSS9SALT
       required: true
     correlationId:
       name: correlationId
@@ -171,25 +164,25 @@ components:
       description: |
         The format of the supplied NINO field is not valid.
       value:
-        [{code: FORMAT_NINO, message: The provided NINO is invalid.}]
+        [{code: FORMAT_NINO, message: The provided NINO is invalid}]
     formatCalcId:
       description: |
         The format of the supplied CalculationID is not valid
       value:
         [{code: FORMAT_CALC_ID,
-          message: The provided Calculation ID is invalid.}]
+          message: The provided Calculation ID is invalid}]
     formatTaxYear:
       description: |
         The format of the supplied taxYear value is not valid.
       value:
         [{code: FORMAT_TAX_YEAR,
-          message: The provided Tax Year is invalid.}]
+          message: The provided tax year is invalid}]
     ruleTaxYearRangeInvalid:
       description: |
         Tax year range invalid. A tax year range of one year is required.
       value:
         [{code: RULE_TAX_YEAR_RANGE_INVALID,
-          message: The provided Tax Year range is invalid.}]
+          message: Tax year range invalid. A tax year range of one year is required.}]
     formatReportId:
       description: |
         The format of the supplied reportId is not valid.
@@ -204,12 +197,11 @@ components:
         The client and/or agent is not authorised. This is normally because: the client is not subscribed to MTD, the agent is not subscribed to Agent Services, or the client has not authorised the agent to act on their behalf.
       value:
         [{code: CLIENT_OR_AGENT_NOT_AUTHORISED,
-            message: The client or agent is not authorised.}]
+            message: The client and/or agent is not authorised.}]
     unexpectedCorrelationId:
       description: |
         The correlation ID is not the expected value for this report.
-      value: [ { code: CORRELATION_ID_NOT_AUTHORISED, message: The Correlation ID is not the expected value for this report. } ]
-
+      value: [ { code: CORRELATION_ID_NOT_AUTHORISED, message: The Correlation ID is not the expected value for this report } ]
 
     # 404
 
@@ -220,9 +212,7 @@ components:
     matchingResourceNotFoundIncorrectURL:
       description: |
         URL missing element.
-      value: [ { code: MATCHING_RESOURCE_NOT_FOUND, message: A resource with the name in the request can not be found.} ]
-
-
+      value: [ { code: MATCHING_RESOURCE_NOT_FOUND, message: A resource with the name in the request can not be found in the API} ]
 
     # 401
 
@@ -231,21 +221,32 @@ components:
         Invalid Authentication information provided.
       value:
         [{code: INVALID_CREDENTIALS,
-          message: Invalid Authentication information provided."}]
-
+          message: Invalid Authentication information provided}]
 
 tags:
   - name: Generate Report
-    description: request a HMRC Assist report to be generated for a customer or their agent
+    description: Request a HMRC Assist report to be generated for a customer or their agent
   - name: Acknowledge Report
-    description: allow the customer or agent to acknowledge the report
+    description: Allow the customer or agent to acknowledge the report
 
 paths:
   /individuals/self-assessment/assist/reports/{nino}/{taxYear}/{calculationId}:
     post:
       summary: Produce a HMRC Self Assessment Assist Report
       description: |
-        This endpoint allows a developer to request a HMRC Assist report to be generated for a customer or their agent
+        This endpoint allows a developer to request a HMRC Assist report to be generated for a customer or their agent.
+        
+        <strong> A 200 OK response is returned when applicable messages are available, and a 204 No Content response is returned when there are no messages to report.</strong></p>
+        
+        ### Test data
+        In the sandbox environment, responses are simulated based on specific Calculation IDs included in the request. Each Calculation ID corresponds to a predefined test scenario that defines the response outcome.
+
+        | Calculation ID	                                                                                                                                                                                                                                                                                                                   | Scenario                                                                                                      |
+        |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+        | <ul><li>000090b4-06e3-4fef-a555-6fd0877dc7de</li><li>111190b4-06e3-4fef-a555-6fd0877dc7ca</li><li>222290b4-06e3-4fef-a555-6fd0877dc7ca</li><li>333390b4-06e3-4fef-a555-6fd0877dc7ca</li><li>444490b4-06e3-4fef-a555-6fd0877dc7ca</li><li>555590b4-06e3-4fef-a555-6fd0877dc7ca</li><li>777790b4-06e3-4fef-a555-6fd0877dc7ca</li></ul> | Simulates a scenario where a 200 OK success response is returned with a report containing assist messages.    |
+        | 620490b4-06e3-4fef-a555-6fd0877dc7ca                                                                                                                                                                                                                                                                                                 | Simulates a scenario where there are no messages to report and a 204 No Content success response is returned. |
+        | 640490b4-06e3-4fef-a555-6fd0877dc7ca	                                                                                                                                                                                                                                                                                               | Simulates a scenario where the specified Calculation ID is not found.	                                       |
+
       tags:
         - Generate Report
 
@@ -262,7 +263,7 @@ paths:
 
       responses:
         "200":
-          description: Success
+          description: Success - messages returned
           headers:
             X-CorrelationId:
               $ref: "./common/headers.yaml#/components/parameters/correlationId"
@@ -275,9 +276,10 @@ paths:
                 type: object
                 properties:
                   reportId:
-                    description: The unique ID (UUID) of the report.
+                    description: |
+                      The unique identifier for the report. Must conform to the regular expression: `^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`
                     type: string
-                    pattern: ^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                    pattern: ^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$
                     example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
                   messages:
                     description: A list of HMRC Assist 'messages' for the customer.
@@ -331,24 +333,23 @@ paths:
                         - path
                   nino:
                     type: string
-                    description: National Insurance number, in the format AA999999A.
+                    description: National Insurance number, in the format `AA999999A`.
                     example: TC663795B
                   taxYear:
                     type: string
-                    description: The tax year the data applies to, for example, 2021-22. The start
-                      year and end year must not span two tax years. No gaps are
-                      allowed, for example, 2020-22 is not valid.
-                    example: 2017-18
+                    description: |
+                      The tax year the data applies to, for example, 2023-24.
+                      The start year and end year must not span two tax years. No gaps are allowed, for example, 2023-25 is not valid.
+                    example: 2023-24
                   calculationId:
                     type: string
-                    description: "The unique identifier for the calculation. Must conform the
-                      regular expression:
-                      `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab\
-                      ][0-9a-f]{3}-[0-9a-f]{12}$`"
+                    description: |
+                      The unique identifier for the calculation. Must conform to the regular expression: `^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
+                    pattern: ^[0-9]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
                     example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
                   correlationId:
                     type: string
-                    description: The correlationId of the report.
+                    description: The correlation ID of the report.
                     example: 7X57CKG72JVNSSS9SALT
                 required:
                   - reportId
@@ -375,6 +376,11 @@ paths:
                     taxYear: 2017-18
                     calculationId: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
                     correlationId: 7X57CKG72JVNSSS9SALT
+        "204":
+          description: Success(No Content) - no messages returned
+          headers:
+            X-CorrelationId:
+              $ref: "./common/headers.yaml#/components/parameters/correlationId"
         "400":
           description: Bad request
           headers:
@@ -422,8 +428,6 @@ paths:
                 MATCHING_RESOURCE_NOT_FOUND:
                   $ref: '#/components/examples/matchingResourceNotFoundIncorrectURL'
 
-
-
         "401":
           description: Unauthorized
           headers:
@@ -447,7 +451,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/nino'
         - $ref: '#/components/parameters/reportId'
-        - $ref: '#/components/parameters/correlationId'
+        - $ref: '#/components/parameters/reportCorrelationId'
+        - $ref: '#/components/parameters/acceptHeader'
         - $ref: '#/components/parameters/authorizationWriteScopeHeader'
 
       security:
@@ -455,7 +460,7 @@ paths:
             - write:self-assessment-assist
       responses:
         "204":
-          description: HTTP status 204 (No Content)
+          description: Success(No Content)
           headers:
             X-CorrelationId:
               $ref: "./common/headers.yaml#/components/parameters/correlationId"
