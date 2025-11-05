@@ -377,7 +377,7 @@ paths:
                     calculationId: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
                     correlationId: 7X57CKG72JVNSSS9SALT
         "204":
-          description: Success(No Content) - no messages returned
+          description: Success (No Content) - no messages returned
           headers:
             X-CorrelationId:
               $ref: "./common/headers.yaml#/components/parameters/correlationId"
@@ -460,7 +460,7 @@ paths:
             - write:self-assessment-assist
       responses:
         "204":
-          description: Success(No Content)
+          description: Success (No Content)
           headers:
             X-CorrelationId:
               $ref: "./common/headers.yaml#/components/parameters/correlationId"
