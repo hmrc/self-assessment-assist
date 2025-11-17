@@ -68,11 +68,11 @@ components:
       name: taxYear
       in: path
       description: |
-        The tax year the data applies to, for example, 2023-24.
-        The start year and end year must not span two tax years. No gaps are allowed, for example, 2023-25 is not valid.
+        The tax year the data applies to, for example, 2025-26.
+        The start year and end year must not span two tax years. No gaps are allowed, for example, 2025-27 is not valid.
       schema:
         type: string
-        example: 2023-24
+        example: 2025-26
       required: true
     reportId:
       name: reportId
@@ -100,7 +100,7 @@ components:
       description: The correlation ID of the report.
       schema:
         type: string
-        example: 7X57CKG72JVNSSS9SALT
+        example: BD5A1B594995A197D528ECCF4BC6EA793C869B2F75333902F043E35561B927C4
       required: true
     correlationId:
       name: correlationId
@@ -242,10 +242,10 @@ paths:
         In the sandbox environment, responses are simulated based on specific Calculation IDs included in the request. Each Calculation ID corresponds to a predefined test scenario that defines the response outcome.
 
         | Calculation ID	                                                                                                                                                                                                                                                                                                                   | Scenario                                                                                                      |
-        |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-        | <ul><li>000090b4-06e3-4fef-a555-6fd0877dc7de</li><li>111190b4-06e3-4fef-a555-6fd0877dc7ca</li><li>222290b4-06e3-4fef-a555-6fd0877dc7ca</li><li>333390b4-06e3-4fef-a555-6fd0877dc7ca</li><li>444490b4-06e3-4fef-a555-6fd0877dc7ca</li><li>555590b4-06e3-4fef-a555-6fd0877dc7ca</li><li>777790b4-06e3-4fef-a555-6fd0877dc7ca</li></ul> | Simulates a scenario where a 200 OK success response is returned with a report containing assist messages.    |
-        | 620490b4-06e3-4fef-a555-6fd0877dc7ca                                                                                                                                                                                                                                                                                                 | Simulates a scenario where there are no messages to report and a 204 No Content success response is returned. |
-        | 640490b4-06e3-4fef-a555-6fd0877dc7ca	                                                                                                                                                                                                                                                                                               | Simulates a scenario where the specified Calculation ID is not found.	                                       |
+        |------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+        | Any valid Calculation ID except the two listed below | Simulates a scenario where a 200 OK success response is returned with a report containing assist messages.    |
+        | 620490b4-06e3-4fef-a555-6fd0877dc7ca                 | Simulates a scenario where there are no messages to report and a 204 No Content success response is returned. |
+        | 640490b4-06e3-4fef-a555-6fd0877dc7ca	               | Simulates a scenario where the specified Calculation ID is not found.	                                       |
 
       tags:
         - Generate Report
@@ -270,9 +270,8 @@ paths:
           content:
             application/json:
               schema:
-                title: List of Self Assessment Calculations
-                description: This endpoint allows a developer to generate and return a HMRC
-                  Assist report for a tax calculation for a given customer.
+                title: Produce a HMRC Self Assessment Assist Report
+                description: Produce a HMRC Self Assessment Assist Report
                 type: object
                 properties:
                   reportId:
@@ -280,45 +279,43 @@ paths:
                       The unique identifier for the report. Must conform to the regular expression: `^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`
                     type: string
                     pattern: ^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$
-                    example: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
+                    example: 579800fe-e047-cd40-b3e4-0e14b1f183a8
                   messages:
                     description: A list of HMRC Assist 'messages' for the customer.
                     type: array
                     items:
                       type: object
                       description: The body contains the message for the customer.
-                      example: '[ { ",Turnover and Cost of Sales", "Your cost of sales (12000) is
-                        greater than your actual income (4000). This may be an
-                        error." }, .. etc]]'
                       properties:
                         title:
                           type: string
                           description: Title of message
-                          example: Turnover and Cost of Sales
+                          example: |
+                            HMRC feedback: the title tells the user to review or check something in the return (placeholder title)
                         body:
                           type: string
                           description: The body contains the message for the customer.
-                          example: Your cost of sales (12000) is greater than your actual income (4000).
-                            This may be an error.
+                          example: |
+                            The body section is usually one to three sentences. This section lets the user know why they are getting the message or which tax rule is relevant.
+                            For example, if you use something for both business and personal reasons you can only claim allowable expenses for the business costs. (placeholder body)
                         action:
                           type: string
                           description: The recommend action the customer should take.
-                          example: Please read our guidance and consider amending Box 10 of your
-                            submission.
+                          example: |
+                            The action section is usually three to four sentences. It explains what the user can do to resolve the potential error.
+                            In some messages this section may also warn users about consequences if they submit incorrect information.
+                            For example, the user may be advised to make changes if needed to avoid interest and potential penalties. (placeholder action)
                         links:
                           description: A list of help or support 'links' associated with the message body.
                           type: array
                           items:
                             type: object
                             description: A list of help or support 'links' associated with the message body.
-                            example: '[ { ",Turnover and Cost of Sales", "Your cost of sales (12000) is
-                              greater than your actual income (4000). This may
-                              be an error." }, .. etc]]'
                             properties:
                               title:
                                 type: string
                                 description: The title text that appears before the links.
-                                example: Our guidance on Turnover and Expenses can be read here.
+                                example: You can also go to GOVUK to find out about expenses when you’re self-employed. (placeholder link)
                               url:
                                 type: string
                                 description: The URL of support or help link.
@@ -326,7 +323,7 @@ paths:
                         path:
                           type: string
                           description: The HTTP path to guidance provided by HMRC.
-                          example: general/total_declared_turnover
+                          example: /individuals/business/self-employment/[nino]/[businessId]/cumulative/[taxYear] (placeholder path)
                       required:
                         - title
                         - body
@@ -338,9 +335,9 @@ paths:
                   taxYear:
                     type: string
                     description: |
-                      The tax year the data applies to, for example, 2023-24.
-                      The start year and end year must not span two tax years. No gaps are allowed, for example, 2023-25 is not valid.
-                    example: 2023-24
+                      The tax year the data applies to, for example, 2025-26.
+                      The start year and end year must not span two tax years. No gaps are allowed, for example, 2025-27 is not valid.
+                    example: 2025-26
                   calculationId:
                     type: string
                     description: |
@@ -350,32 +347,38 @@ paths:
                   correlationId:
                     type: string
                     description: The correlation ID of the report.
-                    example: 7X57CKG72JVNSSS9SALT
+                    example: BD5A1B594995A197D528ECCF4BC6EA793C869B2F75333902F043E35561B927C4
                 required:
                   - reportId
                   - nino
                   - taxYear
                   - calculationId
                   - correlationId
-              examples:
-                example-response:
-                  description: Example Response
-                  value:
-                    reportId: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
-                    messages:
-                      - title: Turnover and Cost of Sales
-                        body: Your cost of sales (12000) is greater than your actual income (4000). This
-                          may be an error.
-                        action: Please read our guidance and consider amending Box 10 of your
-                          submission.
-                        links:
-                          - title: Our guidance on Turnover and Expenses can be read here.
-                            url: https://www.gov.uk/expenses-if-youre-self-employed
-                        path: general/total_declared_turnover
-                    nino: TC663795B
-                    taxYear: 2017-18
-                    calculationId: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
-                    correlationId: 7X57CKG72JVNSSS9SALT
+              example:
+                reportId: 579800fe-e047-cd40-b3e4-0e14b1f183a8
+                messages:
+                  - title: >-
+                      HMRC feedback: the title tells the user to review or check something in the return (placeholder title)
+                    body: >-
+                      The body section is usually one to three sentences. This section lets the user know why they are getting the message or which tax rule is relevant.
+                      For example, if you use something for both business and personal reasons you can only claim allowable expenses for the business costs. (placeholder body)
+                    action: >-
+                      The action section is usually three to four sentences. It explains what the user can do to resolve the potential error.
+                      In some messages this section may also warn users about consequences if they submit incorrect information.
+                      For example, the user may be advised to make changes if needed to avoid interest and potential penalties. (placeholder action)
+                    links:
+                      - title: Go to GOV.UK to learn more about income tax. (placeholder link example 1)
+                        url: https://www.gov.uk/income-tax
+                      - title: You can also go to GOVUK to find out about expenses when you’re self-employed. (placeholder link example 2)
+                        url: https://www.gov.uk/expenses-if-youre-self-employed
+                      - title: Usually no more than three links per message and the whole sentence should be used as the link text. (placeholder link guidance)
+                        url: https://www.gov.uk/tax-help
+                    path: /individuals/business/self-employment/[nino]/[businessId]/cumulative/[taxYear] (placeholder path)
+                nino: TC663795B
+                taxYear: 2025-26
+                calculationId: f2fb30e5-4ab6-4a29-b3c1-c7264259ff1c
+                correlationId: BD5A1B594995A197D528ECCF4BC6EA793C869B2F75333902F043E35561B927C4
+
         "204":
           description: Success (No Content) - no messages returned
           headers:
