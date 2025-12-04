@@ -45,6 +45,7 @@ trait AppConfig {
 
   // SAS
   def rdsSasBaseUrlForAuth: String
+  def rdsSasV2HostTemp: String
   def rdsAuthRequiredForThisEnv: Boolean
 
   // NRS config items
@@ -103,6 +104,7 @@ class AppConfigImpl @Inject() (config: ServicesConfig, val configuration: Config
 
   val rdsSasBaseUrlForAuth: String       = config.baseUrl("rds.sas") + rdsConfig.get[String]("sas.auth-url")
   val rdsAuthRequiredForThisEnv: Boolean = rdsConfig.get[Boolean]("rdsAuthRequiredForThisEnv")
+  val rdsSasV2HostTemp: String           = configuration.getOptional[String]("microservice.services.rds.sas.hostV2").getOrElse("")
 
   private val ifsConfig                          = configuration.get[Configuration]("microservice.services.ifs")
   val ifsBaseUrl: String                         = config.baseUrl("ifs") + ifsConfig.get[String]("submit-url")

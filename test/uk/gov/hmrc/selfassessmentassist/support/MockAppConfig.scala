@@ -44,6 +44,7 @@ trait MockAppConfig extends TestSuite with MockFactory {
     // RDS Auth
     def rdsSasBaseUrlForAuth: CallHandler[String]      = (() => mockAppConfig.rdsSasBaseUrlForAuth).expects().anyNumberOfTimes()
     def rdsAuthCredential: CallHandler[AuthCredential] = (() => mockAppConfig.rdsAuthCredential).expects().anyNumberOfTimes()
+    def rdsSasV2HostTemp: CallHandler[String]          = (() => mockAppConfig.rdsSasV2HostTemp).expects().anyNumberOfTimes()
 
     // API Config
     def featureSwitch: CallHandler[Option[Configuration]]       = (() => mockAppConfig.featureSwitch).expects()

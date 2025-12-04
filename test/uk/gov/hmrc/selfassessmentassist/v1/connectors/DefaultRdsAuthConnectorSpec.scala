@@ -63,8 +63,12 @@ class DefaultRdsAuthConnectorSpec
 
     val rdsAuthCredentials: AuthCredential = AuthCredential("ac8cd8d0-f212-4706-85d1-82b7785ad0b1", "bearer", "grant_type")
 
+    val tempSasHost = "test-sas-host"
+
     MockedAppConfig.rdsSasBaseUrlForAuth returns submitBaseUrl
     MockedAppConfig.rdsAuthCredential returns rdsAuthCredentials
+    MockedAppConfig.rdsSasV2HostTemp returns tempSasHost
+
     val connector = new DefaultRdsAuthConnector(httpClient)(mockAppConfig, ec)
 
     def stubRdsAuthResponse(status: Int): StubMapping = {
