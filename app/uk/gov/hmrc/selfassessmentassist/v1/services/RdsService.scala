@@ -67,7 +67,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
     "Gov-Client-Browser-JS-User-Agent"
   ).map(_ -> "")
 
-//TODO Refactor this code
+  // TODO Refactor this code
   def submit(request: AssessmentRequestForSelfAssessment, fraudRiskReport: FraudRiskReport)(implicit
       hc: HeaderCarrier,
       ec: ExecutionContext,
@@ -211,7 +211,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
       hc: HeaderCarrier,
       ec: ExecutionContext,
       correlationId: String): Future[ServiceOutcome[RdsAssessmentReport]] = {
-    logger.info(s"$correlationId::[acknowledge]acknowledge")
+    logger.info(s"$correlationId::[acknowledge] acknowledge")
     if (appConfig.rdsAuthRequiredForThisEnv) {
       rdsAuthConnector
         .retrieveAuthorisedBearer()
