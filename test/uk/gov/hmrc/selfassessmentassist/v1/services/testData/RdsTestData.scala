@@ -32,7 +32,7 @@ object RdsTestData {
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
     agentRef = None,
-    taxYear = TaxYear("2022")
+    taxYear = TaxYear.fromMtd("2021-22")
   )
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(

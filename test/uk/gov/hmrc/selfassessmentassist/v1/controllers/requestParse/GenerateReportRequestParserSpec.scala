@@ -57,7 +57,7 @@ class GenerateReportRequestParserSpec extends UnitSpec {
             PreferredLanguage.English,
             CustomerType.Agent,
             None,
-            TaxYear("2022")
+            TaxYear.fromMtd("2021-22")
           ))
       }
     }

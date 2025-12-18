@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import play.api.http.Status.OK
 import play.api.libs.json.Json
+import play.api.libs.ws.*
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}

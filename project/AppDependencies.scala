@@ -9,7 +9,6 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "bootstrap-backend-play-30"         % bootStrapPlayVersion,
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-work-item-repo-play-30" % hmrcMongoVersion,
     "org.typelevel"     %% "cats-core"                         % "2.13.0",
-    "com.chuusai"       %% "shapeless"                         % "2.4.0-M1",
     "commons-codec"      % "commons-codec"                     % "1.19.0"
   )
 

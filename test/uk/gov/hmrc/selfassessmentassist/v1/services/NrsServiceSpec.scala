@@ -83,7 +83,7 @@ class NrsServiceSpec extends ServiceSpec {
       )
     )
 
-  private val acknowledgeRdsReport = AcknowledgeReportId("12345")
+  private val acknowledgeRdsReport: AcknowledgeReportId = AcknowledgeReportId("12345")
 
   "SAA api generated report should be stored in NRS" when {
 

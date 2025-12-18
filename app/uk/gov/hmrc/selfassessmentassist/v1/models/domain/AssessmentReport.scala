@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.domain
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{JsPath, JsString, Json, Writes}
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.TaxYear
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
@@ -41,6 +41,6 @@ object AssessmentReport {
       .and((JsPath \ "nino").write[String])
       .and((JsPath \ "taxYear").write[TaxYear])
       .and((JsPath \ "calculationId").write[UUID])
-      .and((JsPath \ "correlationId").write[String])(unlift(AssessmentReport.unapply))
+      .and((JsPath \ "correlationId").write[String])(w => Tuple.fromProductTyped(w))
 
 }

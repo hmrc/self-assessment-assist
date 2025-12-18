@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.cip
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{JsPath, Reads, Writes}
 
 case class FraudRiskReport(score: Double, riskCorrelationId: String, reasons: Seq[String])
@@ -33,6 +33,6 @@ object FraudRiskReport {
     (JsPath \ "riskScore")
       .write[Double]
       .and((JsPath \ "riskCorrelationId").write[String])
-      .and((JsPath \ "reasons").write[Seq[String]])(unlift(FraudRiskReport.unapply))
+      .and((JsPath \ "reasons").write[Seq[String]])(w => Tuple.fromProductTyped(w))
 
 }

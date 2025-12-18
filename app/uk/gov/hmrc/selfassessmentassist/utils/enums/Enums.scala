@@ -17,37 +17,35 @@
 package uk.gov.hmrc.selfassessmentassist.utils.enums
 
 import cats.Show
-import play.api.libs.json._
-import uk.gov.hmrc.selfassessmentassist.utils.enums.Values.MkValues
+import play.api.libs.json.*
 
 import scala.reflect.ClassTag
 
 object Shows {
-  implicit def toStringShow[E]: Show[E] = Show.show(_.toString)
+  given toStringShow[E]: Show[E] = Show.show(_.toString)
 }
 
 object Enums {
 
   implicit def typeName[E: ClassTag]: String = implicitly[ClassTag[E]].runtimeClass.getSimpleName
 
-  def parser[E: MkValues](implicit ev: Show[E] = Shows.toStringShow[E]): PartialFunction[String, E] =
-    implicitly[MkValues[E]].values.map(e => ev.show(e) -> e).toMap
+  def parser[E](values: Array[E])(using ev: Show[E] = Shows.toStringShow[E]): PartialFunction[String, E] =
+    values.map(e => ev.show(e) -> e).toMap
 
-  def reads[E: MkValues: ClassTag](implicit ev: Show[E] = Shows.toStringShow[E]): Reads[E] =
-    readsUsing(parser)
+  def reads[E: ClassTag](values: Array[E])(using ev: Show[E] = Shows.toStringShow[E]): Reads[E] =
+    readsUsing(parser(values))
 
   def readsUsing[E: ClassTag](customParser: PartialFunction[String, E]): Reads[E] =
-    implicitly[Reads[String]].collect(readsError)(customParser)
+    summon[Reads[String]].collect(readsError)(customParser)
 
   def readsRestricted[E: Reads: ClassTag](es: E*): Reads[E] =
-    implicitly[Reads[E]].filter(readsError)(es.contains(_))
+    summon[Reads[E]].filter(readsError)(es.contains)
 
-  def writes[E: MkValues](implicit ev: Show[E] = Shows.toStringShow[E]): Writes[E] = { (e =>
+  def writes[E](using ev: Show[E] = Shows.toStringShow[E]): Writes[E] = { (e =>
     Json.toJson(ev.show(e)))
   }
 
-  def format[E: MkValues: ClassTag](implicit ev: Show[E] = Shows.toStringShow[E]): Format[E] =
-    Format(reads, writes)
+  def format[E: ClassTag](values: Array[E])(using ev: Show[E] = Shows.toStringShow[E]): Format[E] = Format(reads(values), writes)
 
   private def readsError[E: ClassTag] = JsonValidationError(s"error.expected.$typeName")
 

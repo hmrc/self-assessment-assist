@@ -53,8 +53,8 @@ object CommonTestData {
   val simpleLinkUrl           = "url"
   val simplePath              = "path"
   val simpleTaxYearEndInt     = 2022
-  val simpleTaxYear           = TaxYear("2022")
   val simpleTaxYearFullString = "2021-22"
+  val simpleTaxYear           = TaxYear.fromMtd(simpleTaxYearFullString)
   val simpleTaxYearEndString  = "2022"
 
   val simpleExternalOrigin: Origin = External

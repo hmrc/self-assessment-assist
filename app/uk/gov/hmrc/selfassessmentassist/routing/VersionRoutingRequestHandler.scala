@@ -25,7 +25,7 @@ import uk.gov.hmrc.selfassessmentassist.config.{AppConfig, FeatureSwitch}
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.{Inject, Singleton, Provider}
 
 @Singleton
 class VersionRoutingRequestHandler @Inject() (versionRoutingMap: VersionRoutingMap,
@@ -37,7 +37,7 @@ class VersionRoutingRequestHandler @Inject() (versionRoutingMap: VersionRoutingM
     extends DefaultHttpRequestHandler(
       webCommands = new DefaultWebCommands,
       optDevContext = None,
-      router = () => versionRoutingMap.defaultRouter,
+      router = (() => versionRoutingMap.defaultRouter): Provider[Router],
       errorHandler = errorHandler,
       configuration = httpConfiguration,
       filters = filters.filters

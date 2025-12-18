@@ -22,7 +22,7 @@ import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 trait RealAppConfig {
-  _: UnitSpec =>
+  self: UnitSpec =>
 
   protected lazy val emaEndpoints: Map[String, Boolean] =
     realAppConfig match {

@@ -27,7 +27,12 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, MtdErr
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
-import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService._
+import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService.{
+  authorisationDisabledPredicate,
+  authorisationEnabledPredicate,
+  mtdEnrolmentPredicate,
+  supportingAgentAuthPredicate
+}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

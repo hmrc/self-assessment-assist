@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.rds
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest.Input
 
@@ -67,7 +67,7 @@ object RdsRequest {
     val writes: Writes[InputWithString] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[String])(unlift(InputWithString.unapply))
+        .and((JsPath \ "value").write[String])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -83,7 +83,7 @@ object RdsRequest {
     val writes: Writes[InputWithInt] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Int])(unlift(InputWithInt.unapply))
+        .and((JsPath \ "value").write[Int])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -99,7 +99,7 @@ object RdsRequest {
     val writes: Writes[InputWithDouble] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Double])(unlift(InputWithDouble.unapply))
+        .and((JsPath \ "value").write[Double])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -115,7 +115,7 @@ object RdsRequest {
     val writes: Writes[InputWithObject] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Seq[ObjectPart]])(unlift(InputWithObject.unapply))
+        .and((JsPath \ "value").write[Seq[ObjectPart]])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -131,7 +131,7 @@ object RdsRequest {
     val writes: Writes[InputWithBoolean] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Boolean])(unlift(InputWithBoolean.unapply))
+        .and((JsPath \ "value").write[Boolean])(w => Tuple.fromProductTyped(w))
 
   }
 

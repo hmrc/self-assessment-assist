@@ -16,23 +16,18 @@
 
 package uk.gov.hmrc.selfassessmentassist.definitions
 
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.utils.enums.Enums
 
-sealed trait APIStatus
+enum APIStatus {
+  case ALPHA, BETA, STABLE, DEPRECATED, RETIRED
+}
 
 object APIStatus {
 
-  case object ALPHA extends APIStatus
-  case object BETA  extends APIStatus
+  given Format[APIStatus] = Enums.format(values)
 
-  case object STABLE     extends APIStatus
-  case object DEPRECATED extends APIStatus
-  case object RETIRED    extends APIStatus
-
-  implicit val formatAPIStatus: Format[APIStatus] = Enums.format[APIStatus]
-
-  val parser: PartialFunction[String, APIStatus] = Enums.parser[APIStatus]
+  val parser: PartialFunction[String, APIStatus] = Enums.parser(values)
 }
 
 case class APIVersion(version: String, status: APIStatus, endpointsEnabled: Boolean) {
