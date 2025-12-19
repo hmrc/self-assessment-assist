@@ -36,7 +36,7 @@ class RequestParserSpec extends UnitSpec {
 
     val validator: Validator[Raw]
 
-    val parser: RequestParser[Raw, Request] = new RequestParser[Raw, Request] {
+    lazy val parser: RequestParser[Raw, Request] = new RequestParser[Raw, Request] {
       val validator: Validator[Raw] = test.validator
 
       protected def requestFor(data: Raw): Either[MtdError, Request] = Right(Request(data.nino))
