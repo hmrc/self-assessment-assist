@@ -21,15 +21,15 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.controllers.ControllerBaseSpec
-import uk.gov.hmrc.selfassessmentassist.api.models.errors._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.*
 import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers._
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers.*
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.services.*
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NrsSubmission, SearchKeys}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.{AcknowledgeReportRawData, nrs}
@@ -215,7 +215,7 @@ class AcknowledgeReportControllerSpec
           // (ServiceUnavailableError, INTERNAL_SERVER_ERROR, InternalError.asJson)
         )
 
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
+      errorInErrorOut.foreach(args => (runTest).tupled(args))
     }
 
     "a request fails due to failed parseRequest failure" should {
@@ -249,7 +249,7 @@ class AcknowledgeReportControllerSpec
           (FormatReportIdError, BAD_REQUEST, FormatReportIdError.asJson)
         )
 
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
+      errorInErrorOut.foreach(args => (runTest).tupled(args))
     }
 
     "a request fails due to RdsService.acknowledge failure" should {
@@ -290,7 +290,7 @@ class AcknowledgeReportControllerSpec
           (InvalidBodyTypeError, SERVICE_UNAVAILABLE, InternalError.asJson)
         )
 
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
+      errorInErrorOut.foreach(args => (runTest).tupled(args))
     }
 
     "a request that is unable to construct NRS event" should {

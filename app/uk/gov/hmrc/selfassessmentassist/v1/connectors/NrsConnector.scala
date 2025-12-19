@@ -61,7 +61,7 @@ class NrsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
       logger.info(s"$correlationId::[NrsConnector:submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
       httpClient
         .post(url"$url")
-        .setHeader(Seq("X-API-Key" -> apiKey): _*)
+        .setHeader(Seq("X-API-Key" -> apiKey)*)
         .withBody(Json.toJson(nrsSubmission))
         .execute[HttpResponse]
         .map { response =>

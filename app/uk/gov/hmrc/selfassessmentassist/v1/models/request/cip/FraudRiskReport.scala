@@ -27,7 +27,7 @@ object FraudRiskReport {
     (JsPath \ "riskScore")
       .read[Double]
       .and((JsPath \ "riskCorrelationId").read[String])
-      .and((JsPath \ "reasons").readWithDefault[Seq[String]](Seq.empty))(FraudRiskReport.apply _)
+      .and((JsPath \ "reasons").readWithDefault[Seq[String]](Seq.empty))(FraudRiskReport.apply)
 
   implicit val writes: Writes[FraudRiskReport] =
     (JsPath \ "riskScore")

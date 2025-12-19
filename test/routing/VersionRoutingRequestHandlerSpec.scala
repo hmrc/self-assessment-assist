@@ -21,12 +21,11 @@ import org.apache.pekko.actor.ActorSystem
 import org.scalatest.Inside
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.api.http.HeaderNames.ACCEPT
 import play.api.http.{HttpConfiguration, HttpErrorHandler, HttpFilters}
-import play.api.mvc._
+import play.api.mvc.*
 import play.api.routing.Router
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InvalidAcceptHeaderError, UnsupportedVersionError}
 import uk.gov.hmrc.selfassessmentassist.routing.{VersionRoutingMap, VersionRoutingRequestHandler}
 import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, UnitSpec}

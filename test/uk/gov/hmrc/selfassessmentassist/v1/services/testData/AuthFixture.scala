@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.testData
 
-import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.*
+import uk.gov.hmrc.auth.core.retrieve.*
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 

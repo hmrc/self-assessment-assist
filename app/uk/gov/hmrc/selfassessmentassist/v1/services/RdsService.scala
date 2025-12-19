@@ -29,7 +29,7 @@ import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, Logging}
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.{RdsAuthConnector, RdsConnector}
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
@@ -71,7 +71,7 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
   def submit(request: AssessmentRequestForSelfAssessment, fraudRiskReport: FraudRiskReport)(implicit
       hc: HeaderCarrier,
       ec: ExecutionContext,
-      userRequest: UserRequest[_],
+      userRequest: UserRequest[?],
       correlationId: String): Future[ServiceOutcome[AssessmentReportWrapper]] = {
 
     val fraudRiskReportHeaders: Seq[(String, String)] = requiredHeaderForRDS_with_Empty.map { case (k, _) =>

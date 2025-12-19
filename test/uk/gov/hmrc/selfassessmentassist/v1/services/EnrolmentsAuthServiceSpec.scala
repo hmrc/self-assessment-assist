@@ -18,10 +18,10 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ClientOrAgentNotAuthorisedError, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName}
-import uk.gov.hmrc.auth.core.syntax.retrieved._
+import uk.gov.hmrc.auth.core.syntax.retrieved.*
 import play.api.libs.json.Json
 import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService.{
   authorisationDisabledPredicate,
@@ -34,7 +34,7 @@ import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
 import org.scalamock.handlers.CallHandler
 import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, EmptyRetrieval, LoginTimes, Retrieval}
 import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel, Enrolment, EnrolmentIdentifier, Enrolments, InsufficientEnrolments, MissingBearerToken}

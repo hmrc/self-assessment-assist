@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 case class NrsSubmission(payload: String, metadata: Metadata)
 

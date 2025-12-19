@@ -23,8 +23,8 @@ import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
 import uk.gov.hmrc.selfassessmentassist.utils.{CurrentDateTime, DateUtils, Logging}
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.IfsConnector
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs._
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.*
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 

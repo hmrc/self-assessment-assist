@@ -24,6 +24,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
+import play.api.libs.ws.DefaultBodyReadables.readableAsString
 
 class DocumentationIntegrationSpec extends AnyWordSpec with Matchers with ScalaFutures with IntegrationPatience with GuiceOneServerPerSuite {
 
@@ -38,7 +39,7 @@ class DocumentationIntegrationSpec extends AnyWordSpec with Matchers with ScalaF
   "a request for an OpenAPI Spec" should {
     "respond with a 200 status" when {
       val knownVersions = Seq("1.0")
-      forAll(knownVersions) { knownVersion: String =>
+      forAll(knownVersions) { (knownVersion: String) =>
         "the version is known" in {
           val response =
             wsClient

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.rds
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest.Input
 
 case class RdsRequest(inputs: Seq[Input])
@@ -62,7 +62,7 @@ object RdsRequest {
     val reads: Reads[InputWithString] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").readWithDefault[String](null))(InputWithString.apply _)
+        .and((JsPath \ "value").readWithDefault[String](null))(InputWithString.apply)
 
     val writes: Writes[InputWithString] =
       (JsPath \ "name")
@@ -78,7 +78,7 @@ object RdsRequest {
     val reads: Reads[InputWithInt] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").read[Int])(InputWithInt.apply _)
+        .and((JsPath \ "value").read[Int])(InputWithInt.apply)
 
     val writes: Writes[InputWithInt] =
       (JsPath \ "name")
@@ -94,7 +94,7 @@ object RdsRequest {
     val reads: Reads[InputWithDouble] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").read[Double])(InputWithDouble.apply _)
+        .and((JsPath \ "value").read[Double])(InputWithDouble.apply)
 
     val writes: Writes[InputWithDouble] =
       (JsPath \ "name")
@@ -110,7 +110,7 @@ object RdsRequest {
     val reads: Reads[InputWithObject] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").read[Seq[ObjectPart]])(InputWithObject.apply _)
+        .and((JsPath \ "value").read[Seq[ObjectPart]])(InputWithObject.apply)
 
     val writes: Writes[InputWithObject] =
       (JsPath \ "name")
@@ -126,7 +126,7 @@ object RdsRequest {
     val reads: Reads[InputWithBoolean] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").readWithDefault[Boolean](false))(InputWithBoolean.apply _)
+        .and((JsPath \ "value").readWithDefault[Boolean](false))(InputWithBoolean.apply)
 
     val writes: Writes[InputWithBoolean] =
       (JsPath \ "name")

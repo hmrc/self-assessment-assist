@@ -28,7 +28,7 @@ import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, HashUtil}
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockNrsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, Link, Risk}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs._
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.{NrsFailure, NrsResponse}
 
 import java.time.OffsetDateTime
@@ -180,7 +180,7 @@ class NrsServiceSpec extends ServiceSpec {
     private val hasUtil = app.injector.instanceOf[HashUtil]
     val service         = new NrsService(mockNrsConnector, hasUtil)
 
-    implicit val userRequest: UserRequest[_] =
+    implicit val userRequest: UserRequest[?] =
       UserRequest(
         userDetails = UserDetails(
           userType = AffinityGroup.Individual,

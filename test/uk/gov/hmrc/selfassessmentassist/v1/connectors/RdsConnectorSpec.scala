@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import com.codahale.metrics.SharedMetricRegistries
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.{BeforeAndAfterAll, EitherValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -28,7 +28,7 @@ import play.api.libs.json.JsValue
 import play.api.test.Injecting
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
   ErrorWrapper,

@@ -53,7 +53,7 @@ class InsightConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppCo
     httpClient
       .post(url"${appConfig.cipFraudServiceBaseUrl}")
       .withBody(Json.toJson(fraudRiskRequest))
-      .setHeader(fraudRiskHeaders(): _*)
+      .setHeader(fraudRiskHeaders()*)
       .execute[HttpResponse]
       .map { response =>
         logger.info(s"$correlationId::[InsightConnector:assess] FraudRiskReport status is ${response.status}")

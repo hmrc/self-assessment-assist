@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.models.errors
 
-import play.api.http.Status._
+import play.api.http.Status.*
 
 object FormatReportIdError extends MtdError("FORMAT_REPORT_ID", "The provided Report ID is invalid", BAD_REQUEST)
 

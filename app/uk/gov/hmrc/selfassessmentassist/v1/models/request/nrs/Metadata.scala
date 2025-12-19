@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 
 import java.time.OffsetDateTime

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers
 
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Reads
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import uk.gov.hmrc.selfassessmentassist.api.connectors.DownstreamOutcome

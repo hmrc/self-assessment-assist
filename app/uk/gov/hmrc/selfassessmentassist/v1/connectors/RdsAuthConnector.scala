@@ -62,7 +62,7 @@ class DefaultRdsAuthConnector @Inject() (http: HttpClientV2)(implicit appConfig:
     EitherT {
       http
         .post(url"$url")
-        .setHeader(reqHeaders: _*)
+        .setHeader(reqHeaders*)
         .withBody(Map("grant_type" -> Seq(appConfig.rdsAuthCredential.grant_type)))
         .withProxy
         .execute[HttpResponse]
@@ -109,7 +109,7 @@ class DefaultRdsAuthConnector @Inject() (http: HttpClientV2)(implicit appConfig:
     EitherT {
       http
         .post(url"$url")
-        .setHeader(reqHeaders: _*)
+        .setHeader(reqHeaders*)
         .withBody(Map("grant_type" -> Seq(appConfig.rdsAuthCredential.grant_type)))
         .withProxy
         .execute[HttpResponse]

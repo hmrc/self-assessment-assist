@@ -20,9 +20,10 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.test.Helpers.{ACCEPT, AUTHORIZATION, await, defaultAwaitTimeout}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors._
-import uk.gov.hmrc.selfassessmentassist.stubs._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.*
+import uk.gov.hmrc.selfassessmentassist.stubs.*
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
 
 class GenerateReportControllerISpec extends IntegrationBaseSpec {
@@ -77,7 +78,7 @@ class GenerateReportControllerISpec extends IntegrationBaseSpec {
           ("AA123456A", "2015-16", "f2fb30e5-4ab6-4a29-b3c1-c0004rf", BAD_REQUEST, CalculationIdFormatError)
         )
 
-        input.foreach(args => (validationErrorTest _).tupled(args))
+        input.foreach(args => (validationErrorTest).tupled(args))
       }
 
     }

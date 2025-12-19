@@ -35,7 +35,7 @@ class NrsService @Inject() (connector: NrsConnector, hashUtil: HashUtil) extends
   def buildNrsSubmission(payload: String,
                          reportId: String,
                          submissionTimestamp: OffsetDateTime,
-                         request: UserRequest[_],
+                         request: UserRequest[?],
                          notableEventType: NotableEventType)(implicit correlationId: String): Either[NrsFailure, NrsSubmission] = {
 
     logger.debug(s"$correlationId::[buildNrsSubmission] Building the NRS submission")

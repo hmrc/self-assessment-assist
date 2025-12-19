@@ -25,12 +25,13 @@ import uk.gov.hmrc.selfassessmentassist.v1.connectors.InsightConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.services.ServiceOutcome
 
+import scala.compiletime.uninitialized
 import scala.concurrent.Future
 
 trait MockInsightConnector extends TestSuite with MockFactory with MockAppConfig {
 
   val mockInsightConnector: InsightConnector = mock[InsightConnector]
-  var port: Int                              = _
+  var port: Int                              = uninitialized
   val cipFraudServiceBaseUrl: String         = s"http://localhost:$port/fraud"
 
   object MockInsightConnector {

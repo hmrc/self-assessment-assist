@@ -50,7 +50,7 @@ class IfsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
         HeaderNames.CONTENT_TYPE -> s"${MimeTypes.JSON};charset=UTF-8",
         "accept"                 -> "*/*",
         "Authorization"          -> s"Bearer ${appConfig.ifsToken}"
-      ): _*)
+      )*)
       .withBody(Json.toJson(ifRequest))
       .execute[HttpResponse]
       .map { response =>

@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.controllers
 
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.NinoChecker
-import uk.gov.hmrc.selfassessmentassist.api.models.errors._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.*
 import uk.gov.hmrc.selfassessmentassist.config.{AppConfig, FeatureSwitch}
 import uk.gov.hmrc.selfassessmentassist.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
