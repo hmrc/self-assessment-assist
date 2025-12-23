@@ -20,9 +20,10 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.HeaderNames.ACCEPT
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR}
 import play.api.libs.ws.{WSRequest, WSResponse}
+import play.api.libs.ws.DefaultBodyReadables.readableAsString
 import play.api.test.Helpers.AUTHORIZATION
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ClientOrAgentNotAuthorisedError, InternalError}
-import uk.gov.hmrc.selfassessmentassist.stubs._
+import uk.gov.hmrc.selfassessmentassist.stubs.*
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
 
 abstract class AuthMainAgentsOnlyISpec extends IntegrationBaseSpec {

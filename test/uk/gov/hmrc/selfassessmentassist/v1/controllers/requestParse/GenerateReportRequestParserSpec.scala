@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParse
 
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.{CustomerType, PreferredLanguage, TaxYear}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
@@ -57,7 +57,7 @@ class GenerateReportRequestParserSpec extends UnitSpec {
             PreferredLanguage.English,
             CustomerType.Agent,
             None,
-            TaxYear("2022")
+            TaxYear.fromMtd("2021-22")
           ))
       }
     }

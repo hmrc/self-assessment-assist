@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Json
+import play.api.libs.ws.*
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpException, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials.rdsAuthHeader
-import uk.gov.hmrc.selfassessmentassist.api.models.errors._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.*
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
@@ -48,7 +49,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
     httpClient
       .post(url"${appConfig.rdsBaseUrlForSubmit}")
       .withBody(Json.toJson(request))
-      .setHeader(rdsAuthHeaders: _*)
+      .setHeader(rdsAuthHeaders*)
       .withProxy
       .execute[HttpResponse]
       .map { response =>
@@ -148,7 +149,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
     httpClient
       .post(url"${appConfig.rdsBaseUrlForAcknowledge}")
       .withBody(Json.toJson(request))
-      .setHeader(rdsAuthHeaders: _*)
+      .setHeader(rdsAuthHeaders*)
       .withProxy
       .execute[HttpResponse]
       .map { response =>

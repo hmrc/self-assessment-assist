@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.schedulers
 
 import org.apache.pekko.actor.ActorSystem
 import org.bson.types.ObjectId
+import org.mongodb.scala.ObservableFuture
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.inject.ApplicationLifecycle
 import play.api.test.Helpers.{await, defaultAwaitTimeout}

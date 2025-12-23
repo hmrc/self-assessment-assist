@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
 import org.apache.pekko.actor.{ActorSystem, Scheduler}

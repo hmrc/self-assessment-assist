@@ -36,7 +36,7 @@ trait MockNrsService extends TestSuite with MockFactory {
 
     def stubBuildNrsSubmission(nrsSubmission: NrsSubmission): CallHandler[Either[NrsFailure, NrsSubmission]] = {
       (mockNrsService
-        .buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[_], _: NotableEventType)(_: String))
+        .buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[?], _: NotableEventType)(_: String))
         .expects(*, *, *, *, *, *)
         .anyNumberOfTimes()
         .returns((Right(nrsSubmission)))
@@ -44,7 +44,7 @@ trait MockNrsService extends TestSuite with MockFactory {
 
     def stubUnableToConstrucNrsSubmission(): CallHandler[Either[NrsFailure, NrsSubmission]] = {
       (mockNrsService
-        .buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[_], _: NotableEventType)(_: String))
+        .buildNrsSubmission(_: String, _: String, _: OffsetDateTime, _: UserRequest[?], _: NotableEventType)(_: String))
         .expects(*, *, *, *, *, *)
         .anyNumberOfTimes()
         .returns(Left(NrsFailure.Exception("no beaker token for user")))

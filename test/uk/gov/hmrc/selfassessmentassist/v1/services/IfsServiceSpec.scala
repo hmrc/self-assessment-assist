@@ -24,7 +24,7 @@ import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
 import uk.gov.hmrc.selfassessmentassist.v1.connectors.MockIfsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, AssessmentReportWrapper, Link, Risk}
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs._
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport

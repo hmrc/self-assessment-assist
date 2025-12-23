@@ -33,12 +33,12 @@ class RiskSpec extends UnitSpec {
       }
 
       def rdsDataWrapper(risks: Seq[String]*): RdsAssessmentReport.DataWrapper =
-        RdsAssessmentReport.DataWrapper(Some(Seq(risks: _*)))
+        RdsAssessmentReport.DataWrapper(Some(Seq(risks*)))
 
       def risksFromRdsReportOutputs(preferredLanguage: PreferredLanguage, reportOutputs: RdsAssessmentReport.Output*) =
         Risk.risksFromRdsReportOutputs(reportOutputs, preferredLanguage)
 
-      def risk(values: String*) = Seq(values: _*)
+      def risk(values: String*) = Seq(values*)
 
       val riskEnglish = risk("message_en", "action_en", "title_en", "[link title_en]", "[linkUrl_en]", "path_en")
       val riskWelsh   = risk("message_cy", "action_cy", "title_cy", "[link title_cy]", "[linkUrl_cy]", "path_cy")

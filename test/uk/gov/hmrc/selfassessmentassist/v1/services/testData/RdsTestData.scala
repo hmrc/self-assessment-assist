@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.testData
 
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.{CustomerType, PreferredLanguage, TaxYear}
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
@@ -32,7 +32,7 @@ object RdsTestData {
     preferredLanguage = PreferredLanguage.English,
     customerType = CustomerType.TaxPayer,
     agentRef = None,
-    taxYear = TaxYear("2022")
+    taxYear = TaxYear.fromMtd("2021-22")
   )
 
   val fraudRiskReport: FraudRiskReport = FraudRiskReport(

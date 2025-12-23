@@ -20,7 +20,8 @@ import com.mongodb.MongoWriteException
 import org.apache.pekko.actor.Scheduler
 import play.api.http.Status
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import play.api.libs.ws.*
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
@@ -60,7 +61,7 @@ class NrsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
       logger.info(s"$correlationId::[NrsConnector:submit] Attempt $attemptNumber NRS submission: sending POST request to $url")
       httpClient
         .post(url"$url")
-        .setHeader(Seq("X-API-Key" -> apiKey): _*)
+        .setHeader(Seq("X-API-Key" -> apiKey)*)
         .withBody(Json.toJson(nrsSubmission))
         .execute[HttpResponse]
         .map { response =>
@@ -80,6 +81,7 @@ class NrsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
           Left(NrsFailure.ExceptionThrown)
         }
     }.flatMap {
+      case Right(nrsResponse) => Future.successful(Right(nrsResponse))
       case Left(failure) if failure.retryable =>
         nrsSubmissionWorkItemRepository
           .pushNew(NrsSubmissionWorkItem(nrsSubmission))
@@ -96,7 +98,6 @@ class NrsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
       case Left(failure) =>
         logger.error(s"$correlationId::[NrsConnector:submit] NRS Submission not stored to database")
         Future.successful(Left(failure))
-      case Right(nrsResponse) => Future.successful(Right(nrsResponse))
     }
   }
 

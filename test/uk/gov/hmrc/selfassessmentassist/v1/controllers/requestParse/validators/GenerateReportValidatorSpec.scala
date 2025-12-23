@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.controllers.requestParse.validators
 
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{CalculationIdFormatError, NinoFormatError, TaxYearFormatError, TaxYearRangeInvalid}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData

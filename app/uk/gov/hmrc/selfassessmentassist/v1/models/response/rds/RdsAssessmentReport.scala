@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.response.rds
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json._
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{KeyValueWrapper, KeyValueWrapperInt, Output}
 
 import java.util.UUID
@@ -113,10 +113,10 @@ object RdsAssessmentReport {
 
     val reads: Reads[KeyValueWrapperInt] =
       ((JsPath \ "name").read[String] and
-        (JsPath \ "value").read[Int])(KeyValueWrapperInt.apply _)
+        (JsPath \ "value").read[Int])(KeyValueWrapperInt.apply)
 
     val writes: Writes[KeyValueWrapperInt] =
-      (JsPath \ "name").write[String].and((JsPath \ "value").write[Int])(unlift(KeyValueWrapperInt.unapply))
+      (JsPath \ "name").write[String].and((JsPath \ "value").write[Int])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -124,11 +124,11 @@ object RdsAssessmentReport {
 
     implicit val reads: Reads[KeyValueWrapper] =
       ((JsPath \ "name").read[String] and
-        (JsPath \ "value").readNullable[String])(KeyValueWrapper.apply _)
+        (JsPath \ "value").readNullable[String])(KeyValueWrapper.apply)
 
     implicit val writes: Writes[KeyValueWrapper] =
       ((JsPath \ "name").write[String] and
-        (JsPath \ "value").writeNullable[String])(unlift(KeyValueWrapper.unapply))
+        (JsPath \ "value").writeNullable[String])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -137,12 +137,12 @@ object RdsAssessmentReport {
     implicit val reads: Reads[MainOutputWrapper] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").readNullable[Seq[ObjectPart]])(MainOutputWrapper.apply _)
+        .and((JsPath \ "value").readNullable[Seq[ObjectPart]])(MainOutputWrapper.apply)
 
     implicit val writes: Writes[MainOutputWrapper] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Option[Seq[ObjectPart]]])(unlift(MainOutputWrapper.unapply))
+        .and((JsPath \ "value").write[Option[Seq[ObjectPart]]])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -200,12 +200,12 @@ object RdsAssessmentReport {
     implicit val reads: Reads[Identifier] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").read[String])(Identifier.apply _)
+        .and((JsPath \ "value").read[String])(Identifier.apply)
 
     implicit val writes: Writes[Identifier] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[String])(unlift(Identifier.unapply))
+        .and((JsPath \ "value").write[String])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -216,7 +216,7 @@ object RdsAssessmentReport {
       .and((JsPath \ "moduleId").read[String])
       .and((JsPath \ "stepId").read[String])
       .and((JsPath \ "executionState").read[String])
-      .and((JsPath \ "outputs").read[Seq[Output]])(RdsAssessmentReport.apply _)
+      .and((JsPath \ "outputs").read[Seq[Output]])(RdsAssessmentReport.apply)
 
   implicit val writes: Writes[RdsAssessmentReport] =
     (JsPath \ "links")
@@ -225,6 +225,6 @@ object RdsAssessmentReport {
       .and((JsPath \ "moduleId").write[String])
       .and((JsPath \ "stepId").write[String])
       .and((JsPath \ "executionState").write[String])
-      .and((JsPath \ "outputs").write[Seq[Output]])(unlift(RdsAssessmentReport.unapply))
+      .and((JsPath \ "outputs").write[Seq[Output]])(w => Tuple.fromProductTyped(w))
 
 }

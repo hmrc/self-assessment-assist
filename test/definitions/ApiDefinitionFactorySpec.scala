@@ -19,7 +19,7 @@ package definitions
 import uk.gov.hmrc.selfassessmentassist.definitions.APIStatus.{ALPHA, BETA}
 import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions.VERSION_1
-import uk.gov.hmrc.selfassessmentassist.support._
+import uk.gov.hmrc.selfassessmentassist.support.*
 
 class ApiDefinitionFactorySpec extends UnitSpec with MockAppConfig {
 

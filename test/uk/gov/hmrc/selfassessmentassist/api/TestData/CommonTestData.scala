@@ -18,13 +18,13 @@ package uk.gov.hmrc.selfassessmentassist.api.TestData
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
-import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.retrieve.*
 import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel, User}
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.PreferredLanguage.PreferredLanguage
-import uk.gov.hmrc.selfassessmentassist.api.models.domain._
+import uk.gov.hmrc.selfassessmentassist.api.models.domain.*
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
-import uk.gov.hmrc.selfassessmentassist.v1.models.domain._
+import uk.gov.hmrc.selfassessmentassist.v1.models.domain.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.GenerateReportRawData
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, FraudRiskRequest}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{AcknowledgeReportRequest, IdentityData, Metadata, SearchKeys}
@@ -32,7 +32,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.NrsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.utils.StubResource.{loadAckResponseTemplate, loadSubmitResponseTemplate}
 
-import java.time._
+import java.time.*
 import java.util.UUID
 
 object CommonTestData {
@@ -53,8 +53,8 @@ object CommonTestData {
   val simpleLinkUrl           = "url"
   val simplePath              = "path"
   val simpleTaxYearEndInt     = 2022
-  val simpleTaxYear           = TaxYear("2022")
   val simpleTaxYearFullString = "2021-22"
+  val simpleTaxYear           = TaxYear.fromMtd(simpleTaxYearFullString)
   val simpleTaxYearEndString  = "2022"
 
   val simpleExternalOrigin: Origin = External

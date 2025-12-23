@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.utils
 
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
 import java.time.{LocalDate, OffsetDateTime}

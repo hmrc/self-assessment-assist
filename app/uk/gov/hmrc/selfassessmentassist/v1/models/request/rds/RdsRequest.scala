@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.rds
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json._
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest.Input
 
 case class RdsRequest(inputs: Seq[Input])
@@ -62,12 +62,12 @@ object RdsRequest {
     val reads: Reads[InputWithString] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").readWithDefault[String](null))(InputWithString.apply _)
+        .and((JsPath \ "value").readWithDefault[String](null))(InputWithString.apply)
 
     val writes: Writes[InputWithString] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[String])(unlift(InputWithString.unapply))
+        .and((JsPath \ "value").write[String])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -78,12 +78,12 @@ object RdsRequest {
     val reads: Reads[InputWithInt] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").read[Int])(InputWithInt.apply _)
+        .and((JsPath \ "value").read[Int])(InputWithInt.apply)
 
     val writes: Writes[InputWithInt] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Int])(unlift(InputWithInt.unapply))
+        .and((JsPath \ "value").write[Int])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -94,12 +94,12 @@ object RdsRequest {
     val reads: Reads[InputWithDouble] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").read[Double])(InputWithDouble.apply _)
+        .and((JsPath \ "value").read[Double])(InputWithDouble.apply)
 
     val writes: Writes[InputWithDouble] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Double])(unlift(InputWithDouble.unapply))
+        .and((JsPath \ "value").write[Double])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -110,12 +110,12 @@ object RdsRequest {
     val reads: Reads[InputWithObject] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").read[Seq[ObjectPart]])(InputWithObject.apply _)
+        .and((JsPath \ "value").read[Seq[ObjectPart]])(InputWithObject.apply)
 
     val writes: Writes[InputWithObject] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Seq[ObjectPart]])(unlift(InputWithObject.unapply))
+        .and((JsPath \ "value").write[Seq[ObjectPart]])(w => Tuple.fromProductTyped(w))
 
   }
 
@@ -126,12 +126,12 @@ object RdsRequest {
     val reads: Reads[InputWithBoolean] =
       (JsPath \ "name")
         .read[String]
-        .and((JsPath \ "value").readWithDefault[Boolean](false))(InputWithBoolean.apply _)
+        .and((JsPath \ "value").readWithDefault[Boolean](false))(InputWithBoolean.apply)
 
     val writes: Writes[InputWithBoolean] =
       (JsPath \ "name")
         .write[String]
-        .and((JsPath \ "value").write[Boolean])(unlift(InputWithBoolean.unapply))
+        .and((JsPath \ "value").write[Boolean])(w => Tuple.fromProductTyped(w))
 
   }
 

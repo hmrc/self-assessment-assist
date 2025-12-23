@@ -20,9 +20,10 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status.{BAD_REQUEST, NO_CONTENT}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.test.Helpers.{ACCEPT, AUTHORIZATION, await, defaultAwaitTimeout}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{FormatReportIdError, MtdError, NinoFormatError}
-import uk.gov.hmrc.selfassessmentassist.stubs._
+import uk.gov.hmrc.selfassessmentassist.stubs.*
 import uk.gov.hmrc.selfassessmentassist.support.IntegrationBaseSpec
 
 import scala.collection.Seq
@@ -70,7 +71,7 @@ class AcknowledgeReportControllerISpec extends IntegrationBaseSpec {
           ("AA123456A", "fb30e5-4ab6-4a29-b3c1-c00000000", BAD_REQUEST, FormatReportIdError)
         )
 
-        input.foreach(args => (validationErrorTest _).tupled(args))
+        input.foreach(args => (validationErrorTest).tupled(args))
       }
 
     }

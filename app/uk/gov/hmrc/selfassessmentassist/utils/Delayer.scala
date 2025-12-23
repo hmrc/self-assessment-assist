@@ -18,7 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.utils
 
 import org.apache.pekko.actor.Scheduler
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 trait Delayer {

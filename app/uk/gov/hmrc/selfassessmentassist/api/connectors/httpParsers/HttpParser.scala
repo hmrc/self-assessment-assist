@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers
 
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamError, DownstreamErrorCode, DownstreamErrors, InternalError, OutboundError}
 import uk.gov.hmrc.selfassessmentassist.utils.Logging

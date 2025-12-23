@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import com.codahale.metrics.SharedMetricRegistries
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.{BeforeAndAfterAll, EitherValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite

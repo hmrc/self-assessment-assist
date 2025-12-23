@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.MimeTypes

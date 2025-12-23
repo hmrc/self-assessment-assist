@@ -20,7 +20,7 @@ import org.apache.pekko.util.ByteString
 import play.api.http.HttpEntity
 import play.api.libs.json.{JsValue, Json}
 import play.api.Configuration
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.BadRequestError
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails

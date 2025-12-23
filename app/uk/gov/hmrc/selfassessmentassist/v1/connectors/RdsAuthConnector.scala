@@ -20,6 +20,7 @@ import cats.data.EitherT
 import com.google.common.base.Charsets
 import com.google.inject.ImplementedBy
 import play.api.http.Status.{ACCEPTED, OK}
+import play.api.libs.ws.*
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps, UpstreamErrorResponse}
@@ -61,7 +62,7 @@ class DefaultRdsAuthConnector @Inject() (http: HttpClientV2)(implicit appConfig:
     EitherT {
       http
         .post(url"$url")
-        .setHeader(reqHeaders: _*)
+        .setHeader(reqHeaders*)
         .withBody(Map("grant_type" -> Seq(appConfig.rdsAuthCredential.grant_type)))
         .withProxy
         .execute[HttpResponse]
@@ -108,7 +109,7 @@ class DefaultRdsAuthConnector @Inject() (http: HttpClientV2)(implicit appConfig:
     EitherT {
       http
         .post(url"$url")
-        .setHeader(reqHeaders: _*)
+        .setHeader(reqHeaders*)
         .withBody(Map("grant_type" -> Seq(appConfig.rdsAuthCredential.grant_type)))
         .withProxy
         .execute[HttpResponse]

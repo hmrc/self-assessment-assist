@@ -21,9 +21,9 @@ sealed trait NotableEventType {
 }
 
 object AssistReportGenerated extends NotableEventType {
-  val value = "saa-report-generated"
+  val value: String = "saa-report-generated"
 }
 
 object AssistReportAcknowledged extends NotableEventType {
-  val value = "saa-report-acknowledged"
+  val value: String = "saa-report-acknowledged"
 }

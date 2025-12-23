@@ -28,7 +28,7 @@ object CalculationIdValidation {
     Try(UUID.fromString(rawId)).toOption
 
   def validate(calculationId: String): List[MtdError] = toId(calculationId) match {
-    case Some(_) => if (calculationId matches calculationIdRegex) NoValidationErrors else List(CalculationIdFormatError)
+    case Some(_) => if (calculationId.matches(calculationIdRegex)) NoValidationErrors else List(CalculationIdFormatError)
     case None    => List(CalculationIdFormatError)
   }
 

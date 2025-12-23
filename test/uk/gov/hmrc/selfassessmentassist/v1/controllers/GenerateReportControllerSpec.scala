@@ -20,15 +20,15 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.controllers.ControllerBaseSpec
-import uk.gov.hmrc.selfassessmentassist.api.models.errors._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.*
 import uk.gov.hmrc.selfassessmentassist.mocks.services.MockEnrolmentsAuthService
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockLookupConnector
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers.MockGenerateReportRequestParser
-import uk.gov.hmrc.selfassessmentassist.v1.mocks.services._
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.services.*
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.utils.MockIdGenerator
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.{NrsSubmission, SearchKeys}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.{GenerateReportRawData, nrs}
@@ -246,7 +246,7 @@ class GenerateReportControllerSpec
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson)
         )
 
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
+      errorInErrorOut.foreach(args => (runTest).tupled(args))
     }
 
     "a request fails due to a failed InsightService.assess " should {
@@ -277,7 +277,7 @@ class GenerateReportControllerSpec
           (ServiceUnavailableError, INTERNAL_SERVER_ERROR, ServiceUnavailableError.asJson)
         )
 
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
+      errorInErrorOut.foreach(args => (runTest).tupled(args))
     }
 
     "a request fails due to a failed RDSService.submit" should {
@@ -325,7 +325,7 @@ class GenerateReportControllerSpec
           (InvalidJson, INTERNAL_SERVER_ERROR, Some(MatchingResourcesNotFoundError.asJson))
         )
 
-      errorInErrorOut.foreach(args => (runTest _).tupled(args))
+      errorInErrorOut.foreach(args => (runTest).tupled(args))
     }
 
     "a request fails due to being unable to construct NRS event" should {

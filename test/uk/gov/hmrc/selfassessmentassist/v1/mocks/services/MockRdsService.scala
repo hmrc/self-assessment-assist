@@ -20,7 +20,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.TestSuite
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.Origin
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
@@ -45,7 +45,7 @@ trait MockRdsService extends TestSuite with MockFactory {
                origin: Origin,
                simpleAssessmentReportWrapper: AssessmentReportWrapper): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
       (mockRdsService
-        .submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
+        .submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[?], _: String))
         .expects(*, *, *, *, *, *) returns Future(Right(ResponseWrapper(correlationId, simpleAssessmentReportWrapper)))
     }
 
@@ -54,7 +54,7 @@ trait MockRdsService extends TestSuite with MockFactory {
                    origin: Origin,
                    error: MtdError): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
       (mockRdsService
-        .submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[_], _: String))
+        .submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[?], _: String))
         .expects(*, *, *, *, *, *) returns Future(Left(ErrorWrapper(correlationId, error)))
     }
 

@@ -17,10 +17,10 @@
 package uk.gov.hmrc.selfassessmentassist.v1.controllers
 
 import cats.data.EitherT
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.selfassessmentassist.api.connectors.MtdIdLookupConnector
 import uk.gov.hmrc.selfassessmentassist.api.controllers.{ApiBaseController, AuthorisedController}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors._
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.*
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.ErrorToJsonConverter.convertErrorAsJson
 import uk.gov.hmrc.selfassessmentassist.utils.{CurrentDateTime, IdGenerator, Logging}

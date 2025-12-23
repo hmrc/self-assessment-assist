@@ -19,8 +19,9 @@ package auth
 import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.selfassessmentassist.stubs._
+import uk.gov.hmrc.selfassessmentassist.stubs.*
 
 class SelfAssessmentAssistAuthMainAgentsOnlyISpec extends AuthMainAgentsOnlyISpec {
 

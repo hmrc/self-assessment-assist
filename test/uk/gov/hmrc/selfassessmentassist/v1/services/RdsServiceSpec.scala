@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{RdsAuthCredentials, UserDetails}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, NinoFormatError}
@@ -40,10 +40,11 @@ import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.{
 
 import java.util.UUID
 import scala.concurrent.Future
+import scala.compiletime.uninitialized
 
 class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppConfig {
 
-  var port: Int = _
+  var port: Int = uninitialized
 
   class Test(rdsRequired: Boolean = false) extends MockRdsConnector {
     val submitBaseUrl: String                  = s"http://localhost:$port/submit"
@@ -54,7 +55,7 @@ class RdsServiceSpec extends ServiceSpec with MockRdsAuthConnector with MockAppC
     MockedAppConfig.rdsBaseUrlForAcknowledge returns acknowledgeUrl
     MockedAppConfig.rdsAuthRequiredForThisEnv returns rdsRequired
 
-    implicit val userRequest: UserRequest[_] =
+    implicit val userRequest: UserRequest[?] =
       UserRequest(
         userDetails = UserDetails(
           userType = AffinityGroup.Individual,

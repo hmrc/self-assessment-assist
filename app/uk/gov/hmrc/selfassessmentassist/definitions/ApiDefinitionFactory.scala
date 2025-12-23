@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.definitions
 
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
-import uk.gov.hmrc.selfassessmentassist.definitions.Versions._
+import uk.gov.hmrc.selfassessmentassist.definitions.Versions.*
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
 import javax.inject.{Inject, Singleton}

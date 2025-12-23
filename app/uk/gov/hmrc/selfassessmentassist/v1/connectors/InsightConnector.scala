@@ -18,6 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
 import play.api.http.Status.OK
 import play.api.libs.json.Json
+import play.api.libs.ws.*
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
@@ -52,7 +53,7 @@ class InsightConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppCo
     httpClient
       .post(url"${appConfig.cipFraudServiceBaseUrl}")
       .withBody(Json.toJson(fraudRiskRequest))
-      .setHeader(fraudRiskHeaders(): _*)
+      .setHeader(fraudRiskHeaders()*)
       .execute[HttpResponse]
       .map { response =>
         logger.info(s"$correlationId::[InsightConnector:assess] FraudRiskReport status is ${response.status}")

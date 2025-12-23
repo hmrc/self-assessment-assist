@@ -19,7 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.mocks.requestParsers
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.TestSuite
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData._
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, MtdError}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.AcknowledgeReportRawData
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportRequest

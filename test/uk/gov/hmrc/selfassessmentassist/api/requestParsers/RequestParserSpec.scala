@@ -36,7 +36,7 @@ class RequestParserSpec extends UnitSpec {
 
     val validator: Validator[Raw]
 
-    val parser: RequestParser[Raw, Request] = new RequestParser[Raw, Request] {
+    lazy val parser: RequestParser[Raw, Request] = new RequestParser[Raw, Request] {
       val validator: Validator[Raw] = test.validator
 
       protected def requestFor(data: Raw): Either[MtdError, Request] = Right(Request(data.nino))
@@ -47,7 +47,7 @@ class RequestParserSpec extends UnitSpec {
   "parse" should {
     "return a Request" when {
       "the validator returns no errors" in new Test {
-        lazy val validator: Validator[Raw] = (_: Raw) => Nil
+        val validator: Validator[Raw] = (_: Raw) => Nil
 
         await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Right(Request(nino))
       }
@@ -55,7 +55,7 @@ class RequestParserSpec extends UnitSpec {
 
     "return a single error" when {
       "the validator returns a single error" in new Test {
-        lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError)
+        val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError)
 
         await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(
           ErrorWrapper(correlationId, NinoFormatError, None))
@@ -64,7 +64,7 @@ class RequestParserSpec extends UnitSpec {
 
     "return multiple errors" when {
       "the validator returns multiple errors" in new Test {
-        lazy val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError, InternalError)
+        val validator: Validator[Raw] = (_: Raw) => List(NinoFormatError, InternalError)
 
         await(parser.parseRequest(Raw(nino))(implicitly[ExecutionContext], correlationId)) shouldBe Left(
           ErrorWrapper(correlationId, BadRequestError, Some(Seq(NinoFormatError, InternalError))))

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
-import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.retrieve.*
 import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel, CredentialRole}
 import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 
