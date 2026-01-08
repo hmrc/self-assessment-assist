@@ -59,11 +59,10 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit appConfig
 
       def invokeBlockWithAuthCheck[A](mtdId: String, request: Request[A], block: UserRequest[A] => Future[Result])(implicit
           headerCarrier: HeaderCarrier): Future[Result] = {
-        val clientID = request.headers.get("X-Client-Id").getOrElse("N/A")
         authService
           .authorised(mtdId, correlationId, endpointAllowsSupportingAgents)
           .flatMap[Result] {
-            case Right(userDetails) => block(UserRequest(userDetails.copy(clientID = clientID), request))
+            case Right(userDetails) => block(UserRequest(userDetails, request))
 
             case Left(mtdError) =>
               errorResponse(mtdError)

@@ -16,29 +16,36 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ClientOrAgentNotAuthorisedError, InternalError}
-import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.auth.core.*
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
-import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName}
-import uk.gov.hmrc.auth.core.syntax.retrieved.*
+import org.scalamock.handlers.CallHandler
 import play.api.libs.json.Json
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
+import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.auth.core.retrieve.*
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.*
+import uk.gov.hmrc.auth.core.syntax.retrieved.*
+import uk.gov.hmrc.auth.core.{
+  AuthConnector,
+  ConfidenceLevel,
+  Enrolment,
+  EnrolmentIdentifier,
+  Enrolments,
+  InsufficientEnrolments,
+  MissingBearerToken,
+  *
+}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ClientOrAgentNotAuthorisedError, InternalError}
+import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
+import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService.{
   authorisationDisabledPredicate,
   authorisationEnabledPredicate,
   mtdEnrolmentPredicate,
   supportingAgentAuthPredicate
 }
-import uk.gov.hmrc.selfassessmentassist.support.{MockAppConfig, ServiceSpec}
-import uk.gov.hmrc.selfassessmentassist.config.ConfidenceLevelConfig
-import org.scalamock.handlers.CallHandler
-import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
-import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.*
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, EmptyRetrieval, LoginTimes, Retrieval}
-import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel, Enrolment, EnrolmentIdentifier, Enrolments, InsufficientEnrolments, MissingBearerToken}
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -75,14 +82,14 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
       behave like authorisedIndividual(authValidationEnabled, initialPredicate)
       behave like authorisedOrganisation(authValidationEnabled, initialPredicate)
 
-      behave like authorisedAgentsMissingArn(authValidationEnabled, initialPredicate, primaryAgentPredicate)
+      behave like authorisedAgentsMissingArn(authValidationEnabled, initialPredicate)
       behave like authorisedPrimaryAgent(authValidationEnabled, initialPredicate, primaryAgentPredicate)
       behave like authorisedSupportingAgent(authValidationEnabled, initialPredicate, primaryAgentPredicate, supportingAgentPredicate)
 
       behave like disallowSupportingAgentForPrimaryOnlyEndpoint(authValidationEnabled, initialPredicate, primaryAgentPredicate)
 
       behave like disallowUsersWithoutEnrolments(authValidationEnabled, initialPredicate)
-      behave like disallowWhenNotLoggedIn(authValidationEnabled, initialPredicate)
+      behave like disallowWhenNoBearerToken(authValidationEnabled, initialPredicate)
     }
 
     def authorisedIndividual(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =
@@ -131,18 +138,12 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
 
     def authorisedAgentsMissingArn(
         authValidationEnabled: Boolean,
-        initialPredicate: Predicate,
-        primaryAgentPredicate: Predicate
+        initialPredicate: Predicate
     ): Unit =
       "disallow agents that are missing an ARN" in new Test {
-        val arn = "123567890"
+
         val enrolments: Enrolments = Enrolments(
-          Set(
-            Enrolment(
-              "HMRC-AS-AGENT",
-              List(EnrolmentIdentifier("NOAgentReferenceNumber", arn)),
-              "Active"
-            ))
+          Set(Enrolment("HMRC-AS-AGENT", List(EnrolmentIdentifier("SomeOtherIdentifier", "123567890")), "Active"))
         )
         val initialRetrievalsResult = getRetrievalsResult(Some(Agent), enrolments)
 
@@ -150,11 +151,6 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
           .authorised(initialPredicate, retrievals)
           .once()
           .returns(Future.successful(initialRetrievalsResult))
-
-        MockedAuthConnector
-          .authorised(primaryAgentPredicate, EmptyRetrieval)
-          .once()
-          .returns(Future.successful(EmptyRetrieval))
 
         mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
 
@@ -284,7 +280,7 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
         result shouldBe Left(ClientOrAgentNotAuthorisedError)
       }
 
-    def disallowWhenNotLoggedIn(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =
+    def disallowWhenNoBearerToken(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =
       "disallow users that are not logged in" in new Test {
         mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
 
