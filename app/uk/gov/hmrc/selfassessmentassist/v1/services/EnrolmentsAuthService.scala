@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,17 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
-import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core.*
+import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Individual, Organisation}
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.*
 import uk.gov.hmrc.auth.core.retrieve.{ItmpAddress, ItmpName, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthOutcome, UserDetails}
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, MtdError, ClientOrAgentNotAuthorisedError}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ClientOrAgentNotAuthorisedError, InternalError, MtdError}
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
-import uk.gov.hmrc.selfassessmentassist.v1.services.EnrolmentsAuthService.{
-  authorisationDisabledPredicate,
-  authorisationEnabledPredicate,
-  mtdEnrolmentPredicate,
-  supportingAgentAuthPredicate
-}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,9 +38,9 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
 
   private def initialPredicate(mtdId: String): Predicate =
     if (authorisationEnabled)
-      authorisationEnabledPredicate(mtdId)
+      EnrolmentsAuthService.authorisationEnabledPredicate(mtdId)
     else
-      authorisationDisabledPredicate(mtdId)
+      EnrolmentsAuthService.authorisationDisabledPredicate(mtdId)
 
   private val authFunction: AuthorisedFunctions = new AuthorisedFunctions {
     override def authConnector: AuthConnector = connector
@@ -101,8 +95,6 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
           Future.successful(Left(ClientOrAgentNotAuthorisedError))
       }
       .recoverWith {
-        case _: MissingBearerToken =>
-          Future.successful(Left(ClientOrAgentNotAuthorisedError))
         case _: AuthorisationException =>
           Future.successful(Left(ClientOrAgentNotAuthorisedError))
         case error =>
@@ -111,7 +103,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
       }
   }
 
-  def createUserDetailsWithLogging(
+  private def createUserDetailsWithLogging(
       affinityGroup: AffinityGroup,
       enrolments: Enrolments,
       correlationId: String,
@@ -136,7 +128,7 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
     } else {
       logger.info(s"$correlationId::[createUserDetailsWithLogging] Agent is part of affinityGroup")
       authFunction
-        .authorised(mtdEnrolmentPredicate(mtdId)) {
+        .authorised(EnrolmentsAuthService.mtdEnrolmentPredicate(mtdId)) {
           val agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments)
 
           agentReferenceNumber match {
@@ -144,10 +136,11 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
             case Left(error) => Future.successful(Left(error))
           }
         }
-        .recoverWith { case _: AuthorisationException =>
-          if (endpointAllowsSupportingAgents) {
+        .recoverWith {
+          case _: AuthorisationException if endpointAllowsSupportingAgents =>
+            logger.info(s"$correlationId::[createUserDetailsWithLogging] Supporting Agent is part of affinityGroup")
             authFunction
-              .authorised(supportingAgentAuthPredicate(mtdId)) {
+              .authorised(EnrolmentsAuthService.supportingAgentAuthPredicate(mtdId)) {
                 val agentReferenceNumber = getAgentReferenceFromEnrolments(enrolments)
                 agentReferenceNumber match {
                   case Right(arn)  => Future.successful(Right(userDetails.copy(agentReferenceNumber = Some(arn))))
@@ -157,17 +150,11 @@ class EnrolmentsAuthService @Inject() (val connector: AuthConnector, val appConf
               .recoverWith { e =>
                 Future.successful(Left(ClientOrAgentNotAuthorisedError))
               }
-          } else {
-            Future.successful(Left(ClientOrAgentNotAuthorisedError))
-          }
-            .recoverWith { e =>
-              Future.successful(Left(ClientOrAgentNotAuthorisedError))
-            }
         }
     }
   }
 
-  def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
+  private def getClientReferenceFromEnrolments(enrolments: Enrolments): Option[String] = enrolments
     .getEnrolment("HMRC-MTD-IT")
     .flatMap(_.getIdentifier("MTDITID"))
     .map(_.value)
