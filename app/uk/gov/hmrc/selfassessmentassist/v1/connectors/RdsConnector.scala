@@ -94,23 +94,23 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
               )
 
           case BAD_REQUEST =>
-            logger.error(s"$correlationId::[RdsConnector:submit] RDS response : BAD request")
+            logger.error(s"$correlationId::[RdsConnector:submit] RDS response : BAD request with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
           case NOT_FOUND =>
-            logger.error(s"$correlationId::[RdsConnector:submit] RDS not reachable")
+            logger.error(s"$correlationId::[RdsConnector:submit] RDS not reachable with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
           case REQUEST_TIMEOUT =>
-            logger.error(s"$correlationId::[RdsConnector:submit] Rds request timeout")
+            logger.error(s"$correlationId::[RdsConnector:submit] Rds request timeout with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
           case UNAUTHORIZED =>
-            logger.error(s"$correlationId::[RdsConnector:submit] Rds request failed as unauthorized")
+            logger.error(s"$correlationId::[RdsConnector:submit] Rds request failed as unauthorized with body: ${response.body}")
             Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
           case SERVICE_UNAVAILABLE =>
-            logger.error(s"$correlationId::[RdsConnector:submit] Rds returned service unavailable")
+            logger.error(s"$correlationId::[RdsConnector:submit] Rds returned service unavailable with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
           case unexpectedStatus @ _ =>
             logger.error(
-              s"$correlationId::[RdsConnector:submit] Rds unable to submit the report due to unexpected status code returned $unexpectedStatus")
+              s"$correlationId::[RdsConnector:submit] Rds unable to submit the report due to unexpected status code returned $unexpectedStatus with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
         }
       }
@@ -189,16 +189,16 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
                   }
               )
           case BAD_REQUEST =>
-            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS response : BAD request")
+            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS response : BAD request with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
           case NOT_FOUND =>
-            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS not reachable")
+            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS not reachable with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
           case UNAUTHORIZED =>
-            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Rds request failed as unauthorized")
+            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Rds request failed as unauthorized with body: ${response.body}")
             Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
           case REQUEST_TIMEOUT =>
-            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Rds request timeout")
+            logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] Rds request timeout with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
           case _ => Left(ErrorWrapper(correlationId, InternalError))
         }
