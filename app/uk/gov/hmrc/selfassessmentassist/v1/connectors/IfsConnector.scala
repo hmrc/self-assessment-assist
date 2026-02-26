@@ -59,7 +59,7 @@ class IfsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
             logger.info(s"$correlationId::[IfsConnector:submit]  ${ifRequest.eventName} interaction stored successfully")
             Right(IfsResponse())
           case unexpectedStatus @ _ =>
-            logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus")
+            logger.error(s"$correlationId::[IfsConnector:submit]Unable to submit the report due to unexpected status code returned $unexpectedStatus with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
         }
       }
