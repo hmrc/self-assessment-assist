@@ -289,17 +289,20 @@ paths:
                       properties:
                         title:
                           type: string
+                          pattern: ^[a-zA-Z0-9 ` ¬!£$€%^&*()_\-+\[\]=:@'~#|\\<>,\.?\/™‘’“”âÂáÁàÀçÇêÊéÉèÈëËïÏîÎìÌôÔóÓòÒöÖûÛŵŴýÝ]{0,32767}$
                           description: Title of message
                           example: |
                             HMRC feedback: the title tells the user to review or check something in the return (placeholder title)
                         body:
                           type: string
+                          pattern: ^[a-zA-Z0-9 ` ¬!£$€%^&*()_\-+\[\]=:@'~#|\\<>,\.?\/™‘’“”âÂáÁàÀçÇêÊéÉèÈëËïÏîÎìÌôÔóÓòÒöÖûÛŵŴýÝ]{0,32767}$
                           description: The body contains the message for the customer.
                           example: |
                             The body section is usually one to three sentences. This section lets the user know why they are getting the message or which tax rule is relevant.
                             For example, if you use something for both business and personal reasons you can only claim allowable expenses for the business costs. (placeholder body)
                         action:
                           type: string
+                          pattern: ^[a-zA-Z0-9 ` ¬!£$€%^&*()_\-+\[\]=:@'~#|\\<>,\.?\/™‘’“”âÂáÁàÀçÇêÊéÉèÈëËïÏîÎìÌôÔóÓòÒöÖûÛŵŴýÝ]{0,32767}$
                           description: The recommend action the customer should take.
                           example: |
                             The action section is usually three to four sentences. It explains what the user can do to resolve the potential error.
@@ -314,14 +317,17 @@ paths:
                             properties:
                               title:
                                 type: string
+                                pattern: ^[a-zA-Z0-9 ` ¬!£$€%^&*()_\-+\[\]=:@'~#|\\<>,\.?\/™‘’“”âÂáÁàÀçÇêÊéÉèÈëËïÏîÎìÌôÔóÓòÒöÖûÛŵŴýÝ]{0,32767}$
                                 description: The title text that appears before the links.
                                 example: You can also go to GOVUK to find out about expenses when you’re self-employed. (placeholder link)
                               url:
                                 type: string
+                                pattern: ^[a-zA-Z0-9 ` ¬!£$€%^&*()_\-+\[\]=:@'~#|\\<>,\.?\/™‘’“”âÂáÁàÀçÇêÊéÉèÈëËïÏîÎìÌôÔóÓòÒöÖûÛŵŴýÝ]{0,32767}$
                                 description: The URL of support or help link.
                                 example: https://www.gov.uk/expenses-if-youre-self-employed
                         path:
                           type: string
+                          pattern: ^[a-zA-Z0-9 ` ¬!£$€%^&*()_\-+\[\]=:@'~#|\\<>,\.?\/™‘’“”âÂáÁàÀçÇêÊéÉèÈëËïÏîÎìÌôÔóÓòÒöÖûÛŵŴýÝ]{0,32767}$
                           description: The HTTP path to guidance provided by HMRC.
                           example: /individuals/business/self-employment/[nino]/[businessId]/cumulative/[taxYear] (placeholder path)
                       required:

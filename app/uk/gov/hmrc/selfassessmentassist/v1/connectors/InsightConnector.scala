@@ -69,7 +69,8 @@ class InsightConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppCo
                 report => Right(ResponseWrapper(correlationId, report))
               )
           case _ =>
-            logger.error(s"$correlationId::[InsightConnector:assess] CIP FraudRisk report failed as unknown code returned ${response.status} with body: ${response.body}")
+            logger.error(
+              s"$correlationId::[InsightConnector:assess] CIP FraudRisk report failed as unknown code returned ${response.status} with body: ${response.body}")
             Left(ErrorWrapper(correlationId, InternalError))
         }
       }
