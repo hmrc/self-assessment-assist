@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.selfassessmentassist.utils
 
-import org.apache.commons.codec.binary.Base64
-import org.apache.commons.codec.digest.DigestUtils
-
+import java.util.Base64
+import java.security.MessageDigest
 import java.nio.charset.StandardCharsets
-import javax.inject.{Inject, Singleton}
 
-@Singleton
-class HashUtil @Inject() () {
+object HashUtil {
 
-  def encode(value: String): String =
-    Base64.encodeBase64String(value.getBytes(StandardCharsets.UTF_8))
+  def encode(value: String): String = {
+    Base64.getEncoder.encodeToString(value.getBytes(StandardCharsets.UTF_8))
+  }
 
-  def getHash(value: String): String = DigestUtils.sha256Hex(value)
+  def getHash(value: String): String = {
+    val hashBytes = MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8))
+    hashBytes.map("%02x".format(_)).mkString
+  }
 
 }
