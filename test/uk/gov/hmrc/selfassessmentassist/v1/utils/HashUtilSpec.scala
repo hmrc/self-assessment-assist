@@ -21,15 +21,13 @@ import uk.gov.hmrc.selfassessmentassist.utils.HashUtil
 
 class HashUtilSpec extends UnitSpec {
 
-  val hashUtil: HashUtil = app.injector.instanceOf[HashUtil]
-
   "HashUtil" when {
     "the encode method is called" must {
       "correctly encode a string using Base64 algorithm" in {
         val expectedValue  = "dGVzdA=="
         val stringToEncode = "test"
 
-        val result = hashUtil.encode(stringToEncode)
+        val result = HashUtil.encode(stringToEncode)
 
         result shouldBe expectedValue
       }
@@ -40,7 +38,7 @@ class HashUtilSpec extends UnitSpec {
         val expectedValue  = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
         val stringToEncode = "test"
 
-        val result = hashUtil.getHash(stringToEncode)
+        val result = HashUtil.getHash(stringToEncode)
 
         result shouldBe expectedValue
       }

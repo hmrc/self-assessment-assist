@@ -24,7 +24,7 @@ import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleTaxYea
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.support.ServiceSpec
-import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, HashUtil}
+import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
 import uk.gov.hmrc.selfassessmentassist.v1.mocks.connectors.MockNrsConnector
 import uk.gov.hmrc.selfassessmentassist.v1.models.domain.{AssessmentReport, Link, Risk}
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
@@ -177,8 +177,7 @@ class NrsServiceSpec extends ServiceSpec {
     )
 
   class Test extends MockNrsConnector {
-    private val hasUtil = app.injector.instanceOf[HashUtil]
-    val service         = new NrsService(mockNrsConnector, hasUtil)
+    val service = new NrsService(mockNrsConnector)
 
     implicit val userRequest: UserRequest[?] =
       UserRequest(

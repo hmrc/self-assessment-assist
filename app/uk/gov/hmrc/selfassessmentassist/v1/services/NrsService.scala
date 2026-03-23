@@ -30,7 +30,7 @@ import scala.concurrent.Future
 import scala.util.Try
 
 @Singleton
-class NrsService @Inject() (connector: NrsConnector, hashUtil: HashUtil) extends Logging {
+class NrsService @Inject() (connector: NrsConnector) extends Logging {
 
   def buildNrsSubmission(payload: String,
                          reportId: String,
@@ -45,8 +45,8 @@ class NrsService @Inject() (connector: NrsConnector, hashUtil: HashUtil) extends
     userAuthToken match {
       case Some(token) =>
         Try {
-          val encodedPayload = hashUtil.encode(payload)
-          val sha256Checksum = hashUtil.getHash(payload)
+          val encodedPayload = HashUtil.encode(payload)
+          val sha256Checksum = HashUtil.getHash(payload)
           val formattedDate  = submissionTimestamp.format(DateUtils.isoInstantDateTimePattern)
 
           NrsSubmission(
