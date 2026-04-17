@@ -25,7 +25,7 @@ import uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers.MtdIdLookupHt
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{InternalError, InvalidCredentialsError, ForbiddenDownstreamError}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class MtdIdLookupHttpParserSpec extends UnitSpec {
+class MtdIdLookupStandardDownstreamHttpParserSpec extends UnitSpec {
 
   val method = "GET"
   val url    = "test-url"

@@ -14,16 +14,28 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.api.connectors.httpParsers
+package uk.gov.hmrc.selfassessmentassist.v1.models.errors
 
-import play.api.libs.json.{Json, Reads}
+import play.api.http.Status.BAD_REQUEST
+import play.api.libs.json.Json
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-trait HttpParserSpec {
-  // WLOG if Reads tested elsewhere
-  case class SomeModel(data: String)
+class MtdErrorSpec extends UnitSpec {
 
-  object SomeModel {
-    implicit val reads: Reads[SomeModel] = Json.reads
+  private val error = MtdError("CODE", "some message", BAD_REQUEST)
+
+  "writes" should {
+    "generate the correct JSON" in {
+      Json.toJson(error) shouldBe Json.parse(
+        """
+          |{
+          |   "code": "CODE",
+          |   "message": "some message"
+          |}
+        """.stripMargin
+      )
+    }
   }
 
 }
