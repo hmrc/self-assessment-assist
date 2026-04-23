@@ -56,13 +56,6 @@ class DateUtilsSpec extends UnitSpec {
 
       }
 
-      "defaultDateTimeReads" must {
-
-        "read fail" in {
-          DateUtils.defaultDateTimeReads.reads(JsNumber(2)) shouldBe JsError()
-        }
-      }
-
       "dateReads" must {
 
         "read fail" in {

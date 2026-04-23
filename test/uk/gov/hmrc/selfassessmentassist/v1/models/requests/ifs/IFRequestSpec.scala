@@ -1,0 +1,59 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.selfassessmentassist.v1.models.requests.ifs
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.Json
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.{IFRequestPayloadAction, IFRequestPayload, IFRequest, Messages}
+
+import java.time.OffsetDateTime
+
+class IFRequestSpec extends AnyWordSpec with Matchers {
+
+  "IFRequest JSON format" should {
+
+    "round-trip successfully with payload" in {
+      val action = IFRequestPayloadAction(
+        title = "Title",
+        message = "Message",
+        action = "VIEW",
+        path = "/path",
+        links = None
+      )
+
+      val payload = IFRequestPayload(
+        messageId = "msg-123",
+        englishAction = action,
+        welshAction = action
+      )
+
+      val request = IFRequest(
+        serviceRegime = "ITSA",
+        eventName = "feedback",
+        eventTimestamp = OffsetDateTime.parse("2024-01-01T10:00:00Z"),
+        feedbackId = "feedback-123",
+        metaData = List(Map("key" -> "value")),
+        payload = Some(Messages(Some(Seq(payload))))
+      )
+
+      val json = Json.toJson(request: IFRequest)
+      json.as[IFRequest] shouldBe request
+    }
+  }
+
+}

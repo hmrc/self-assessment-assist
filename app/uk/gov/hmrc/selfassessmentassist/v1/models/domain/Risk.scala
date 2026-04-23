@@ -48,7 +48,6 @@ object Risk {
     preferredLanguage match {
       case PreferredLanguage.English => language == "EnglishActions"
       case PreferredLanguage.Welsh   => language == "WelshActions"
-      case _                         => false
     }
 
   private def fromRdsFields(riskParts: Seq[String]): Option[Risk] = {

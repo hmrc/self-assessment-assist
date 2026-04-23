@@ -82,14 +82,6 @@ object DateUtils {
     val errorMessage: String      = e
   }
 
-  implicit def defaultDateTimeReads: Reads[OffsetDateTime] = (json: JsValue) =>
-    Try(JsSuccess(OffsetDateTime.parse(json.as[String], isoInstantDateTimePattern), JsPath)).getOrElse(JsError())
-
-  val defaultDateTimeFormat: Format[OffsetDateTime] = Format[OffsetDateTime](
-    defaultDateTimeReads,
-    dateTimeWrites
-  )
-
   implicit def dateWrites: Writes[LocalDate] = (localDate: LocalDate) => JsString(localDate.format(datePattern))
 
   implicit def dateReads: Reads[LocalDate] = (json: JsValue) =>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,18 @@ class RiskSpec extends UnitSpec {
           risksFromRdsReportOutputs(
             PreferredLanguage.English,
             rdsOutputWrapper("EnglishActions", RdsAssessmentReport.DataWrapper(None))
+          ) shouldBe Seq.empty
+        }
+      }
+
+      "an empty risk entry is returned by RDS" must {
+        "ignore the empty risk and return no risks" in {
+          risksFromRdsReportOutputs(
+            PreferredLanguage.English,
+            rdsOutputWrapper(
+              "EnglishActions",
+              rdsDataWrapper(Seq.empty)
+            )
           ) shouldBe Seq.empty
         }
       }
