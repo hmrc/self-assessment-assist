@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,6 +171,13 @@ class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
         feedbackReport shouldBe Left(ErrorWrapper(correlationId, InternalError))
       }
 
+      "return Internal Server Error, if RDS returns http status code 500" in new Test {
+        stubRDSGenerateReportResponse(status = INTERNAL_SERVER_ERROR)
+
+        val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest, Some(rdsAuthCredentials)))
+        feedbackReport shouldBe Left(ErrorWrapper(correlationId, InternalError))
+      }
+
       "return Internal Server Error, if RDS fails with 503" in new Test {
         stubRDSGenerateReportResponse(status = SERVICE_UNAVAILABLE)
 
@@ -241,6 +248,29 @@ class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
 
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.acknowledgeRds(rdsAcknowledgementRequest, Some(rdsAuthCredentials)))
         feedbackReport shouldBe Left(ErrorWrapper(correlationId, InternalError))
+      }
+
+      "return InternalError when acknowledge returns invalid JSON" in new Test {
+        stubRDSAcknowledgeReportResponse(
+          body = Some("""{ "invalid": "json" }"""),
+          status = CREATED
+        )
+
+        val result = await(connector.acknowledgeRds(rdsAcknowledgementRequest, Some(rdsAuthCredentials)))
+
+        result shouldBe Left(
+          ErrorWrapper(
+            correlationId,
+            InternalError,
+            Some(
+              Seq(
+                MtdError(
+                  InternalError.code,
+                  "unexpected response from downstream",
+                  INTERNAL_SERVER_ERROR
+                )))
+          )
+        )
       }
     }
   }

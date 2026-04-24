@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ object FormatReportIdError extends MtdError("FORMAT_REPORT_ID", "The provided Re
 
 // Format Errors
 object NinoFormatError extends MtdError("FORMAT_NINO", "The provided NINO is invalid", BAD_REQUEST)
-
-object NinoFormatDesError extends MtdError("NINO_INVALID", "The provided NINO is invalid", UNAUTHORIZED)
 
 object CalculationIdFormatError extends MtdError(code = "FORMAT_CALC_ID", message = "The provided Calculation ID is invalid", BAD_REQUEST)
 

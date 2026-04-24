@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ object Risk {
     preferredLanguage match {
       case PreferredLanguage.English => language == "EnglishActions"
       case PreferredLanguage.Welsh   => language == "WelshActions"
-      case _                         => false
     }
 
   private def fromRdsFields(riskParts: Seq[String]): Option[Risk] = {

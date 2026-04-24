@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,14 +81,6 @@ object DateUtils {
     val dateFailedToParse: String = dateFailed
     val errorMessage: String      = e
   }
-
-  implicit def defaultDateTimeReads: Reads[OffsetDateTime] = (json: JsValue) =>
-    Try(JsSuccess(OffsetDateTime.parse(json.as[String], isoInstantDateTimePattern), JsPath)).getOrElse(JsError())
-
-  val defaultDateTimeFormat: Format[OffsetDateTime] = Format[OffsetDateTime](
-    defaultDateTimeReads,
-    dateTimeWrites
-  )
 
   implicit def dateWrites: Writes[LocalDate] = (localDate: LocalDate) => JsString(localDate.format(datePattern))
 

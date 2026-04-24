@@ -119,6 +119,24 @@ class EnumsSpec extends UnitSpec with Inspectors {
 
       badJson.validate[Foo[Enum]] shouldBe JsError(__ \ "someField", JsonValidationError("error.expected.jsstring"))
     }
+
+    "Shows.toStringShow uses toString" in {
+      import uk.gov.hmrc.selfassessmentassist.utils.enums.Shows.given
+
+      val show = summon[Show[Enum]]
+      show.show(Enum.`enum-one`) shouldBe "enum-one"
+    }
+
+    "readsRestricted only allows specified values" in {
+      val restrictedReads: Reads[Int] =
+        Enums.readsRestricted(1, 2)
+
+      restrictedReads.reads(JsNumber(1)) shouldBe JsSuccess(1)
+
+      restrictedReads.reads(JsNumber(3)) shouldBe
+        JsError(JsonValidationError("error.expected.int"))
+    }
+
   }
 
 }

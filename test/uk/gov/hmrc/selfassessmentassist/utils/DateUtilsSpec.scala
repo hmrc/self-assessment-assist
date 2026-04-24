@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,13 +54,6 @@ class DateUtilsSpec extends UnitSpec {
           DateUtils.isoInstantDateTimeReads.reads(JsString("2022-01-01T12:00:00.000Z")) shouldBe JsError()
         }
 
-      }
-
-      "defaultDateTimeReads" must {
-
-        "read fail" in {
-          DateUtils.defaultDateTimeReads.reads(JsNumber(2)) shouldBe JsError()
-        }
       }
 
       "dateReads" must {

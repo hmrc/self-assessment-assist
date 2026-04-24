@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,14 +35,15 @@ trait MockRdsAuthConnector extends TestSuite with MockFactory {
 
   object MockRdsAuthConnector {
 
-    def retrieveAuthorisedBearer(): CallHandler[EitherT[Future, MtdError, RdsAuthCredentials]] = {
+    def retrieveAuthorisedBearer(
+        result: Either[MtdError, RdsAuthCredentials] = Right(RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600))
+    ): CallHandler[EitherT[Future, MtdError, RdsAuthCredentials]] = {
 
       (mockRdsAuthConnector
         .retrieveAuthorisedBearer()(_: HeaderCarrier, _: String))
         .expects(*, *)
         .anyNumberOfTimes()
-        .returns(EitherT.fromEither(Right(RdsAuthCredentials(UUID.randomUUID().toString, "bearer", 3600))))
-
+        .returns(EitherT.fromEither[Future](result))
     }
 
   }
