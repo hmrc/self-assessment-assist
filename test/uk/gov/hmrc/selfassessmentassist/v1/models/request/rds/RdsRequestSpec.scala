@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.rds
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.rds
 
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest.*
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.fraudRiskReport
 
@@ -32,6 +31,17 @@ class RdsRequestSpec extends UnitSpec {
     )
 
     val inputWithStringObject: InputWithString = InputWithString("calculationId", calculationId)
+
+    "Input.reads" should {
+      "dispatch to InputWithString when value is a string" in {
+        val json = Json.obj(
+          "name"  -> "calculationId",
+          "value" -> "abc"
+        )
+
+        json.as[Input] shouldBe InputWithString("calculationId", "abc")
+      }
+    }
 
     "write to json" in {
       InputWithString.writes.writes(inputWithStringObject) shouldBe inputWithStringJson
@@ -71,6 +81,15 @@ class RdsRequestSpec extends UnitSpec {
     )
 
     val inputWithIntObject: InputWithInt = InputWithInt("taxYear", 2022)
+
+    "dispatch to InputWithInt when value is a whole number" in {
+      val json = Json.obj(
+        "name"  -> "taxYear",
+        "value" -> 2022
+      )
+
+      json.as[Input] shouldBe InputWithInt("taxYear", 2022)
+    }
 
     "write to json" in {
       InputWithInt.writes.writes(inputWithIntObject) shouldBe inputWithIntJson
@@ -113,6 +132,15 @@ class RdsRequestSpec extends UnitSpec {
 
     val inputWithObjectJson =
       "{\"name\":\"fraudRiskReportHeaders\",\"value\":[{\"metadata\":[{\"KEY\":\"string\"},{\"VALUE\":\"string\"}]},{\"data\":[[]]}]}"
+
+    "dispatch to InputWithObject when value is an array" in {
+      val json = Json.obj(
+        "name"  -> "data",
+        "value" -> Json.arr(Json.obj("metadata" -> Json.arr()))
+      )
+
+      json.as[Input] shouldBe a[InputWithObject]
+    }
 
     "write to json" in {
       InputWithObject.writes.writes(inputWithObject).toString() shouldBe inputWithObjectJson

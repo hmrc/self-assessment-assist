@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.ifs
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.{IFRequestPayloadAction, IFRequestPayload, IFRequest, Messages}
 
 import java.time.OffsetDateTime
 

@@ -94,7 +94,7 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
 
     def authorisedIndividual(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =
       "allow authorised individuals" in new Test {
-        mockConfidenceLevelCheckConfig(authValidationEnabled = authValidationEnabled)
+        mockConfidenceLevelCheckConfig(authValidationEnabled)
 
         val retrievalsResult = getRetrievalsResult(Some(Individual), Enrolments(Set.empty))
 
@@ -112,6 +112,46 @@ class EnrolmentsAuthServiceSpec extends ServiceSpec with MockAppConfig {
             Some(getIdentityData(agentInformation = AgentInformation(None, None, None), affinityGroup = Some(Individual)))
           )
         )
+      }
+
+      "allow authorised individual when MTDITID enrolment exists but identifier is missing" in new Test {
+        mockConfidenceLevelCheckConfig(authValidationEnabled)
+
+        val enrolments = Enrolments(
+          Set(
+            Enrolment(
+              "HMRC-MTD-IT",
+              identifiers = Nil,
+              state = "Active"
+            )
+          )
+        )
+
+        val retrievalsResult = getRetrievalsResult(Some(Individual), enrolments)
+
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.successful(retrievalsResult))
+
+        val result = await(enrolmentsAuthService.authorised(mtdId, "corrId", endpointAllowsSupportingAgents = true))
+
+        result.isRight shouldBe true
+      }
+
+      "reject when affinityGroup is missing" in new Test {
+        mockConfidenceLevelCheckConfig(authValidationEnabled)
+
+        val retrievalsResult = getRetrievalsResult(None, Enrolments(Set.empty))
+
+        MockedAuthConnector
+          .authorised(initialPredicate, retrievals)
+          .once()
+          .returns(Future.successful(retrievalsResult))
+
+        val result = await(enrolmentsAuthService.authorised(mtdId, "corrId", endpointAllowsSupportingAgents = true))
+
+        result shouldBe Left(ClientOrAgentNotAuthorisedError)
       }
 
     def authorisedOrganisation(authValidationEnabled: Boolean, initialPredicate: Predicate): Unit =

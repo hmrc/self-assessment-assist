@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.cip
+package uk.gov.hmrc.selfassessmentassist.config
 
-import play.api.libs.json.Json
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.UserId
 
-class UserIdSpec extends UnitSpec {
+class AppConfigImplSpec extends UnitSpec with RealAppConfig {
 
-  "UserId JSON format" should {
+  "endpointAllowsSupportingAgents" should {
 
-    "read from JSON" in {
-      val json = Json.parse("""{ "value": "user-123" }""")
-
-      json.as[UserId] shouldBe UserId("user-123")
-    }
-
-    "write to JSON" in {
-      val userId = UserId("user-123")
-
-      Json.toJson(userId) shouldBe Json.parse("""{ "value": "user-123" }""")
+    "return false when the endpoint is not configured" in {
+      realAppConfig
+        .endpointAllowsSupportingAgents("unknown-endpoint")
+        .shouldBe(false)
     }
   }
 

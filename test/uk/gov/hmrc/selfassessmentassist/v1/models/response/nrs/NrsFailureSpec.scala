@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.response
+package uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs
 
 import play.api.http.Status
 import uk.gov.hmrc.selfassessmentassist.support.ConnectorSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs.NrsFailure
 
 class NrsFailureSpec extends ConnectorSpec {
-  import NrsFailure._
+  import NrsFailure.*
 
   "NRSFailure" should {
     "ErrorResponse should be retryable for server errors" in {

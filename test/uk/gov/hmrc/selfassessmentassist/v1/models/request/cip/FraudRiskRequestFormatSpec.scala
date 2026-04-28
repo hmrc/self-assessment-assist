@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.cip
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.cip
 
 import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{BankAccountNumber, BankAccountSortCode, FraudRiskRequest, UTR}
 
 class FraudRiskRequestFormatSpec extends UnitSpec {
 

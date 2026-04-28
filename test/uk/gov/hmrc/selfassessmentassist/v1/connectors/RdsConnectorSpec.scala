@@ -24,7 +24,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.MimeTypes
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsArray, JsNumber, JsObject, JsValue}
 import play.api.test.Injecting
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -191,6 +191,64 @@ class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
         val feedbackReport: ServiceOutcome[RdsAssessmentReport] = await(connector.submit(rdsRequest, Some(rdsAuthCredentials)))
         feedbackReport shouldBe Left(ErrorWrapper(correlationId, InternalError))
       }
+
+      "return InternalError when submit returns http 201 but unexpected responseCode" in new Test {
+        val base: JsObject =
+          loadSubmitResponseTemplate(
+            simpleCalculationId.toString,
+            simpleReportId.toString,
+            simpleRDSCorrelationId
+          ).as[JsObject]
+
+        val patchedOutputs = (base \ "outputs").as[JsArray].value.map { js =>
+          val o = js.as[JsObject]
+          (o \ "name").asOpt[String] match {
+            case Some("responseCode") => o + ("value" -> JsNumber(500))
+            case _                    => o
+          }
+        }
+
+        val patched = base + ("outputs" -> JsArray(patchedOutputs))
+
+        stubRDSGenerateReportResponse(Some(patched.toString), status = CREATED)
+
+        val result = await(connector.submit(rdsRequest, Some(rdsAuthCredentials)))
+        result.isLeft.shouldBe(true)
+        result.left.value.error.shouldBe(InternalError)
+      }
+
+      "return InternalError when submit returns invalid JSON" in new Test {
+        stubRDSGenerateReportResponse(
+          body = Some("""{ "invalid": "json" }"""),
+          status = CREATED
+        )
+
+        val result = await(connector.submit(rdsRequest, Some(rdsAuthCredentials)))
+
+        result.shouldBe(
+          Left(
+            ErrorWrapper(
+              correlationId,
+              InternalError,
+              Some(
+                Seq(
+                  MtdError(
+                    InternalError.code,
+                    "unexpected response from downstream",
+                    INTERNAL_SERVER_ERROR
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+      "return InternalError when submit returns unexpected status" in new Test {
+        stubRDSGenerateReportResponse(status = 418)
+        await(connector.submit(rdsRequest, Some(rdsAuthCredentials)))
+          .shouldBe(Left(ErrorWrapper(correlationId, InternalError)))
+      }
     }
 
     "acknowledge method is called" must {
@@ -272,6 +330,46 @@ class RdsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOn
           )
         )
       }
+
+      "return InternalError when acknowledge returns http 201 but unexpected responseCode" in new Test {
+        val base: JsObject =
+          loadAckResponseTemplate(simpleReportId.toString, nino = simpleNino, responseCode = 202).as[JsObject]
+
+        val patchedOutputs = (base \ "outputs").as[JsArray].value.map { js =>
+          val o = js.as[JsObject]
+          (o \ "name").asOpt[String] match {
+            case Some("responseCode") => o + ("value" -> JsNumber(500))
+            case _                    => o
+          }
+        }
+
+        val patched = base + ("outputs" -> JsArray(patchedOutputs))
+
+        stubRDSAcknowledgeReportResponse(Some(patched.toString), status = CREATED)
+
+        val result = await(connector.acknowledgeRds(rdsAcknowledgementRequest, Some(rdsAuthCredentials)))
+        result.isLeft shouldBe true
+        result.left.value.error shouldBe InternalError
+      }
+
+    }
+  }
+
+  "RdsConnector.mapUpstreamError" should {
+
+    "return ForbiddenDownstreamError for UNAUTHORIZED" in new Test {
+      val result = connector.mapUpstreamError(correlationId, UNAUTHORIZED)
+      result.shouldBe(Left(ErrorWrapper(correlationId, ForbiddenDownstreamError)))
+    }
+
+    "return ForbiddenDownstreamError for FORBIDDEN" in new Test {
+      val result = connector.mapUpstreamError(correlationId, FORBIDDEN)
+      result.shouldBe(Left(ErrorWrapper(correlationId, ForbiddenDownstreamError)))
+    }
+
+    "return InternalError for NOT_FOUND" in new Test {
+      val result = connector.mapUpstreamError(correlationId, NOT_FOUND)
+      result.shouldBe(Left(ErrorWrapper(correlationId, InternalError)))
     }
   }
 

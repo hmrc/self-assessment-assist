@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.ifs
+package uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs
 
-import play.api.libs.json.Json
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequestPayloadActionLinks
+import play.api.libs.json.Json
 
-class IFRequestPayloadActionLinksSpec extends AnyWordSpec with Matchers {
+class NrsResponseSpec extends AnyWordSpec with Matchers {
 
-  "IFRequestPayloadActionLinks JSON format" should {
+  "NrsResponse JSON format" should {
 
     "round-trip successfully" in {
-      val model = IFRequestPayloadActionLinks(
-        linkTitle = "View details",
-        linkUrl = "/details"
-      )
+      val model = NrsResponse("submission-id-123")
 
-      val json = Json.toJson(model: IFRequestPayloadActionLinks)
-      json.as[IFRequestPayloadActionLinks] shouldBe model
+      val json = Json.toJson(model)
+      json.as[NrsResponse] shouldBe model
+    }
+
+    "read from valid JSON" in {
+      val json = Json.parse("""{ "nrSubmissionId": "abc-123" }""")
+
+      json.as[NrsResponse] shouldBe NrsResponse("abc-123")
     }
   }
 

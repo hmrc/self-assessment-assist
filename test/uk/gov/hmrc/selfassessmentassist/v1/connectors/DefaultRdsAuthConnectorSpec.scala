@@ -22,7 +22,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.{BeforeAndAfterAll, EitherValues}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.MimeTypes
+import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Injecting
@@ -71,40 +71,54 @@ class DefaultRdsAuthConnectorSpec
 
     val connector = new DefaultRdsAuthConnector(httpClient)(mockAppConfig, ec)
 
-    def stubRdsAuthResponse(status: Int): StubMapping = {
+    def stubRdsAuthResponse(status: Int, body: String): StubMapping =
       wireMockServer.stubFor(
         post(urlPathEqualTo("/submit"))
-          .withHeader("Content-Type", equalTo(MimeTypes.FORM))
+          .withHeader("Content-Type", containing("application/x-www-form-urlencoded"))
           .withHeader("Authorization", equalTo(s"Basic $authToken"))
           .withRequestBody(equalTo(s"grant_type=${rdsAuthCredentials.grant_type}"))
           .willReturn(
             aResponse()
               .withStatus(status)
-              .withBody(
-                Json.toJson(RdsAuthCredentials("access_token", "bearer", 20)).toString()
-              ))
+              .withBody(body)
+          )
       )
-    }
 
   }
 
-  "DefaultRdsAuthConnector" when {
-    "retrieveAuthorisedBearer method is called" must {
-      "OK" in new Test {
-        stubRdsAuthResponse(200)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Right(RdsAuthCredentials("access_token", "bearer", 20))
-      }
+  "DefaultRdsAuthConnector.retrieveAuthorisedBearer" should {
 
-      "ACCEPTED" in new Test {
-        stubRdsAuthResponse(202)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Right(RdsAuthCredentials("access_token", "bearer", 20))
-      }
+    "return credentials on 200 OK" in new Test {
+      stubRdsAuthResponse(
+        OK,
+        Json.toJson(RdsAuthCredentials("access_token", "bearer", 3600)).toString()
+      )
 
-      "return rds error when no auth" in new Test {
-        stubRdsAuthResponse(403)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Left(RdsAuthDownstreamError)
-      }
+      await(connector.retrieveAuthorisedBearer().value) shouldBe
+        Right(RdsAuthCredentials("access_token", "bearer", 3600))
+    }
 
+    "return credentials on 202 ACCEPTED" in new Test {
+      stubRdsAuthResponse(
+        ACCEPTED,
+        Json.toJson(RdsAuthCredentials("access_token", "bearer", 3600)).toString()
+      )
+
+      await(connector.retrieveAuthorisedBearer().value).isRight shouldBe true
+    }
+
+    "return RdsAuthDownstreamError on unexpected status" in new Test {
+      stubRdsAuthResponse(INTERNAL_SERVER_ERROR, "")
+
+      await(connector.retrieveAuthorisedBearer().value) shouldBe
+        Left(RdsAuthDownstreamError)
+    }
+
+    "return RdsAuthDownstreamError when auth JSON is invalid" in new Test {
+      stubRdsAuthResponse(OK, """{ "not": "a-token" }""")
+
+      await(connector.retrieveAuthorisedBearer().value) shouldBe
+        Left(RdsAuthDownstreamError)
     }
   }
 
