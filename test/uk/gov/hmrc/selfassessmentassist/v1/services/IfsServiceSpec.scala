@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{KeyValueWrapper, KeyValueWrapperInt, Output}
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.assessmentRequestForSelfAssessment
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -172,7 +173,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     )
   )
 
-  private def expectedAcknowledgementPayload =
+  private def expectedAcknowledgementPayload = {
     IFRequest(
       serviceRegime = "self-assessment-assist",
       eventName = "AcknowledgeReport",
@@ -184,6 +185,7 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
       ),
       payload = None
     )
+  }
 
   class Test extends MockIfsConnector {
     val service = new IfsService(mockIfsConnector, mockCurrentDateTime)
@@ -203,6 +205,59 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
         await(
           service.submitGenerateReportMessage(assessmentReportWrapper, assessmentRequestForSelfAssessment)
         ) shouldBe Right(IfsResponse())
+      }
+
+      "handle missing typeIds output value" in new Test {
+
+        MockCurrentDateTime.getDateTime
+
+        val reportNoTypeIdValue = CommonTestData.rdsNewSubmissionReport.copy(
+          outputs = Seq(RdsAssessmentReport.MainOutputWrapper("typeId", None))
+        )
+
+        val wrapper = assessmentReportWrapper.copy(rdsAssessmentReport = reportNoTypeIdValue)
+
+        val expectedPayload =
+          expectedReportGenerationPayload.copy(
+            feedbackId = "",                    // because feedbackId now missing from outputs
+            payload = Some(Messages(Some(Nil))) // no risks => no messages
+          )
+
+        MockIfsConnector
+          .submit(expectedPayload = expectedPayload)
+          .returns(Future.successful(Right(IfsResponse())))
+
+        await(service.submitGenerateReportMessage(wrapper, assessmentRequestForSelfAssessment)) shouldBe
+          Right(IfsResponse())
+      }
+
+      "handle missing typeIds data value" in new Test {
+
+        MockCurrentDateTime.getDateTime
+
+        val reportTypeIdButNoData = CommonTestData.rdsNewSubmissionReport.copy(
+          outputs = Seq(
+            RdsAssessmentReport.MainOutputWrapper(
+              "typeId",
+              Some(Seq(RdsAssessmentReport.DataWrapper(None)))
+            )
+          )
+        )
+
+        val wrapper = assessmentReportWrapper.copy(rdsAssessmentReport = reportTypeIdButNoData)
+
+        val expectedPayload =
+          expectedReportGenerationPayload.copy(
+            feedbackId = "",
+            payload = Some(Messages(Some(Nil)))
+          )
+
+        MockIfsConnector
+          .submit(expectedPayload = expectedPayload)
+          .returns(Future.successful(Right(IfsResponse())))
+
+        await(service.submitGenerateReportMessage(wrapper, assessmentRequestForSelfAssessment)) shouldBe
+          Right(IfsResponse())
       }
 
     }

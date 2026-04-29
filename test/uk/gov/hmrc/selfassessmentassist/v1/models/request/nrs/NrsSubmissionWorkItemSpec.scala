@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.nrs
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.NrsSubmissionWorkItem
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.NrsTestData.{correctJson, correctModel}
 
 class NrsSubmissionWorkItemSpec extends UnitSpec {

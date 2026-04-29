@@ -24,14 +24,13 @@ import uk.gov.hmrc.selfassessmentassist.api.models.errors.{DownstreamErrorCode, 
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
+private case class SomeDataObject(data: String)
+
+private object SomeDataObject {
+  implicit val reads: Reads[SomeDataObject] = Json.reads
+}
+
 class StandardDownstreamHttpParserSpec extends UnitSpec {
-
-  // WLOG if Reads tested elsewhere
-  case class SomeDataObject(data: String)
-
-  object SomeDataObject {
-    implicit val reads: Reads[SomeDataObject] = Json.reads
-  }
 
   val method = "POST"
   val url    = "test-url"

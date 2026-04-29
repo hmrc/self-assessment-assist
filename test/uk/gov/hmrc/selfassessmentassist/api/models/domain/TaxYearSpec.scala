@@ -52,6 +52,10 @@ class TaxYearSpec extends UnitSpec {
         taxYear should not be TaxYear.fromMtd("2020-21")
       }
     }
+
+    "return the expected string representation" in {
+      taxYear.toString shouldBe "TaxYear(2024)"
+    }
   }
 
 }

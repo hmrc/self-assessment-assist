@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.nrs
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
+import play.api.libs.json.JsObject
 import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.*
 import java.time.{Instant, LocalDate}
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.IdentityData
 
 class IdentityDataSpec extends UnitSpec {
 
@@ -82,6 +82,62 @@ class IdentityDataSpec extends UnitSpec {
       )
 
       Json.toJson(identityData).as[IdentityData] shouldBe identityData
+    }
+
+    "round-trip successfully when most optional fields are missing" in {
+      val minimalish = IdentityData(
+        internalId = None,
+        externalId = None,
+        agentCode = None,
+        credentials = None,
+        confidenceLevel = ConfidenceLevel.L200,
+        nino = None,
+        saUtr = None,
+        dateOfBirth = None,
+        email = None,
+        agentInformation = AgentInformation(None, None, None),
+        groupIdentifier = None,
+        credentialRole = None,
+        mdtpInformation = None,
+        itmpName = ItmpName(None, None, None),
+        itmpDateOfBirth = None,
+        itmpAddress = ItmpAddress(None, None, None, None, None, None, None, None),
+        affinityGroup = None,
+        credentialStrength = None,
+        loginTimes = LoginTimes(
+          currentLogin = Instant.parse("2024-01-01T10:00:00Z"),
+          previousLogin = None
+        )
+      )
+
+      Json.toJson(minimalish).as[IdentityData] shouldBe minimalish
+    }
+
+    "fail to read when a required field is missing (exercise JsError path)" in {
+      val identityData = IdentityData(
+        internalId = Some("internal-id"),
+        externalId = None,
+        agentCode = None,
+        credentials = None,
+        confidenceLevel = ConfidenceLevel.L200,
+        nino = None,
+        saUtr = None,
+        dateOfBirth = None,
+        email = None,
+        agentInformation = AgentInformation(None, None, None),
+        groupIdentifier = None,
+        credentialRole = None,
+        mdtpInformation = None,
+        itmpName = ItmpName(None, None, None),
+        itmpDateOfBirth = None,
+        itmpAddress = ItmpAddress(None, None, None, None, None, None, None, None),
+        affinityGroup = None,
+        credentialStrength = None,
+        loginTimes = LoginTimes(Instant.parse("2024-01-01T10:00:00Z"), None)
+      )
+
+      val json = Json.toJson(identityData).as[JsObject] - "confidenceLevel" // required field
+      json.validate[IdentityData].isError shouldBe true
     }
   }
 

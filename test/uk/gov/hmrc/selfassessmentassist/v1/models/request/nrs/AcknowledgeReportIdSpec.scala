@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.nrs
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import play.api.libs.json.Json
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs.AcknowledgeReportId
 
 class AcknowledgeReportIdSpec extends AnyWordSpec with Matchers {
 

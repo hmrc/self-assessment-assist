@@ -319,4 +319,29 @@ class AcknowledgeReportControllerSpec
     }
   }
 
+  "AcknowledgeReportController.errorHandler" should {
+
+    "return ServiceUnavailable when multiple errors are present" in new Test {
+
+      val correlationId = "corr-id-123"
+
+      val errorWrapper = ErrorWrapper(
+        correlationId = correlationId,
+        error = InvalidBodyTypeError,
+        errors = Some(
+          Seq(
+            MtdError("CODE_1", "First error", INTERNAL_SERVER_ERROR, None),
+            MtdError("CODE_2", "Second error", BAD_REQUEST, None)
+          )
+        )
+      )
+
+      val result: Future[Result] =
+        controller.errorHandler(errorWrapper, correlationId)
+
+      status(result) shouldBe SERVICE_UNAVAILABLE
+      contentAsJson(result) shouldBe Json.toJson(Seq(InternalError.asJson))
+    }
+  }
+
 }
