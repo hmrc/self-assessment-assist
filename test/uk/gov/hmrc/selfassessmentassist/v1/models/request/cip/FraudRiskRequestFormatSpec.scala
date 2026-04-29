@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.cip
 
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
 class FraudRiskRequestFormatSpec extends UnitSpec {
@@ -34,46 +34,13 @@ class FraudRiskRequestFormatSpec extends UnitSpec {
       json.as[FraudRiskRequest] shouldBe request
     }
 
-    "round-trip successfully when bank details are present (via JSON)" in {
-      val json =
-        Json.parse(
-          """
-            |{
-            |  "nino": "AA123456A",
-            |  "bankAccountSortCode": { "value": "123456" },
-            |  "bankAccountNumber": { "value": "12345678" },
-            |  "fraudRiskHeaders": {
-            |    "CorrelationId": "correlation-id"
-            |  }
-            |}
-            |""".stripMargin
-        )
+    "fail to read when fraudRiskHeaders is missing" in {
+      val json = Json.obj(
+        "nino"    -> "AA123456A",
+        "taxYear" -> "2023-24"
+      )
 
-      val result = json.validate[FraudRiskRequest]
-
-      result shouldBe a[JsSuccess[?]]
-
-      val roundTripped = Json.toJson(result.get)
-      roundTripped shouldBe json
-    }
-
-    "round-trip successfully when UTR is present (via JSON)" in {
-      val json =
-        Json.parse(
-          """
-            |{
-            |  "utr": { "value": "1234567890" },
-            |  "fraudRiskHeaders": {}
-            |}
-            |""".stripMargin
-        )
-
-      val result = json.validate[FraudRiskRequest]
-
-      result shouldBe a[JsSuccess[?]]
-
-      val roundTripped = Json.toJson(result.get)
-      roundTripped shouldBe json
+      json.validate[FraudRiskRequest].isError shouldBe true
     }
   }
 

@@ -120,6 +120,14 @@ class DefaultRdsAuthConnectorSpec
       await(connector.retrieveAuthorisedBearer().value) shouldBe
         Left(RdsAuthDownstreamError)
     }
+
+    "return RdsAuthDownstreamError when upstream error response is returned" in new Test {
+      stubRdsAuthResponse(SERVICE_UNAVAILABLE, "service unavailable")
+
+      await(connector.retrieveAuthorisedBearer().value) shouldBe
+        Left(RdsAuthDownstreamError)
+    }
+
   }
 
 }
