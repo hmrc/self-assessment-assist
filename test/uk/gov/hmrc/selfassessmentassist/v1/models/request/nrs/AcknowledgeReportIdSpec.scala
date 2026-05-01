@@ -16,36 +16,38 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
-import play.api.libs.json.Json
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class AcknowledgeReportIdSpec extends AnyWordSpec with Matchers {
+class AcknowledgeReportIdSpec extends UnitSpec {
 
-  "AcknowledgeReportId JSON format" should {
+  private val model: AcknowledgeReportId = AcknowledgeReportId("abc-123")
 
-    "read from JSON" in {
-      val json = Json.parse("""{ "reportId": "abc-123" }""")
+  private val json: JsObject = Json.obj("reportId" -> "abc-123")
 
-      json.as[AcknowledgeReportId] shouldBe
-        AcknowledgeReportId("abc-123")
+  "AcknowledgeReportId" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[AcknowledgeReportId] shouldBe model
+      }
     }
 
-    "write to JSON" in {
-      val id = AcknowledgeReportId("abc-123")
-
-      Json.toJson(id: AcknowledgeReportId) shouldBe
-        Json.parse("""{ "reportId": "abc-123" }""")
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[AcknowledgeReportId] shouldBe a[JsError]
+      }
     }
-  }
 
-  "AcknowledgeReportId.stringify" should {
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(model) shouldBe json
+      }
+    }
 
-    "return the JSON string representation" in {
-      val id = AcknowledgeReportId("abc-123")
-
-      id.stringify shouldBe
-        """{"reportId":"abc-123"}"""
+    ".stringify" should {
+      "return the JSON string representation" in {
+        model.stringify shouldBe json.toString
+      }
     }
   }
 

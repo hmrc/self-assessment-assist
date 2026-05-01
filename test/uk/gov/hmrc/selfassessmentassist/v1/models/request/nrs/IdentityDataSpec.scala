@@ -17,127 +17,28 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import play.api.libs.json.JsObject
-import play.api.libs.json.Json
-import uk.gov.hmrc.auth.core.*
-import uk.gov.hmrc.auth.core.retrieve.*
-import java.time.{Instant, LocalDate}
+import play.api.libs.json.{JsError, JsObject, Json}
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{identityCorrectJson, identityCorrectModel}
 
 class IdentityDataSpec extends UnitSpec {
 
-  "IdentityData JSON format" should {
-
-    "round-trip successfully with populated fields" in {
-
-      val identityData = IdentityData(
-        internalId = Some("internal-id"),
-        externalId = Some("external-id"),
-        agentCode = Some("agent-code"),
-        credentials = Some(
-          Credentials(
-            providerId = "provider",
-            providerType = "id"
-          )
-        ),
-        confidenceLevel = ConfidenceLevel.L200,
-        nino = Some("AA123456A"),
-        saUtr = Some("1234567890"),
-        dateOfBirth = Some(LocalDate.parse("1990-01-01")),
-        email = Some("test@example.com"),
-        agentInformation = AgentInformation(
-          agentCode = Some("AGENT123"),
-          agentFriendlyName = Some("Test Agent"),
-          agentId = Some("agent-id-123")
-        ),
-        groupIdentifier = Some("group-id"),
-        credentialRole = Some(User),
-        mdtpInformation = Some(
-          MdtpInformation(
-            deviceId = "device-id",
-            sessionId = "session-id"
-          )
-        ),
-        itmpName = ItmpName(
-          givenName = Some("Jane"),
-          familyName = Some("Doe"),
-          middleName = None
-        ),
-        itmpDateOfBirth = Some(LocalDate.parse("1990-01-01")),
-        itmpAddress = ItmpAddress(
-          line1 = Some("1 Test Street"),
-          line2 = None,
-          line3 = None,
-          line4 = None,
-          line5 = None,
-          postCode = Some("AA1 1AA"),
-          countryName = Some("GB"),
-          countryCode = None
-        ),
-        affinityGroup = Some(AffinityGroup.Individual),
-        credentialStrength = Some("strong"),
-        loginTimes = LoginTimes(
-          currentLogin = Instant.parse("2024-01-01T10:00:00Z"),
-          previousLogin = Some(Instant.parse("2023-12-31T10:00:00Z"))
-        )
-      )
-
-      Json.toJson(identityData).as[IdentityData] shouldBe identityData
+  "IdentityData" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        identityCorrectJson.as[IdentityData] shouldBe identityCorrectModel
+      }
     }
 
-    "round-trip successfully when most optional fields are missing" in {
-      val minimalish = IdentityData(
-        internalId = None,
-        externalId = None,
-        agentCode = None,
-        credentials = None,
-        confidenceLevel = ConfidenceLevel.L200,
-        nino = None,
-        saUtr = None,
-        dateOfBirth = None,
-        email = None,
-        agentInformation = AgentInformation(None, None, None),
-        groupIdentifier = None,
-        credentialRole = None,
-        mdtpInformation = None,
-        itmpName = ItmpName(None, None, None),
-        itmpDateOfBirth = None,
-        itmpAddress = ItmpAddress(None, None, None, None, None, None, None, None),
-        affinityGroup = None,
-        credentialStrength = None,
-        loginTimes = LoginTimes(
-          currentLogin = Instant.parse("2024-01-01T10:00:00Z"),
-          previousLogin = None
-        )
-      )
-
-      Json.toJson(minimalish).as[IdentityData] shouldBe minimalish
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[IdentityData] shouldBe a[JsError]
+      }
     }
 
-    "fail to read when a required field is missing (exercise JsError path)" in {
-      val identityData = IdentityData(
-        internalId = Some("internal-id"),
-        externalId = None,
-        agentCode = None,
-        credentials = None,
-        confidenceLevel = ConfidenceLevel.L200,
-        nino = None,
-        saUtr = None,
-        dateOfBirth = None,
-        email = None,
-        agentInformation = AgentInformation(None, None, None),
-        groupIdentifier = None,
-        credentialRole = None,
-        mdtpInformation = None,
-        itmpName = ItmpName(None, None, None),
-        itmpDateOfBirth = None,
-        itmpAddress = ItmpAddress(None, None, None, None, None, None, None, None),
-        affinityGroup = None,
-        credentialStrength = None,
-        loginTimes = LoginTimes(Instant.parse("2024-01-01T10:00:00Z"), None)
-      )
-
-      val json = Json.toJson(identityData).as[JsObject] - "confidenceLevel" // required field
-      json.validate[IdentityData].isError shouldBe true
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(identityCorrectModel) shouldBe identityCorrectJson
+      }
     }
   }
 

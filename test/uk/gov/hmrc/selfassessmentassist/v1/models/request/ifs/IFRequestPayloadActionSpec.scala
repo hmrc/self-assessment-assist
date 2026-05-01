@@ -16,43 +16,52 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.Json
+import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class IFRequestPayloadActionSpec extends AnyWordSpec with Matchers {
+class IFRequestPayloadActionSpec extends UnitSpec {
 
-  "IFRequestPayloadAction JSON format" should {
-
-    "round-trip successfully with links" in {
-      val action = IFRequestPayloadAction(
-        title = "Action title",
-        message = "Action message",
-        action = "VIEW",
-        path = "/path",
-        links = Some(
-          Seq(
-            IFRequestPayloadActionLinks("Link 1", "/link-1"),
-            IFRequestPayloadActionLinks("Link 2", "/link-2")
-          )
-        )
+  private val model: IFRequestPayloadAction = IFRequestPayloadAction(
+    title = "Action title",
+    message = "Action message",
+    action = "VIEW",
+    path = "/path",
+    links = Some(
+      Seq(
+        IFRequestPayloadActionLinks("Link 1", "/link-1"),
+        IFRequestPayloadActionLinks("Link 2", "/link-2")
       )
+    )
+  )
 
-      val json = Json.toJson(action: IFRequestPayloadAction)
-      json.as[IFRequestPayloadAction] shouldBe action
+  private val json: JsObject = Json.obj(
+    "title"   -> "Action title",
+    "message" -> "Action message",
+    "action"  -> "VIEW",
+    "path"    -> "/path",
+    "links" -> Json.arr(
+      Json.obj("linkTitle" -> "Link 1", "linkUrl" -> "/link-1"),
+      Json.obj("linkTitle" -> "Link 2", "linkUrl" -> "/link-2")
+    )
+  )
+
+  "IFRequestPayloadAction" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[IFRequestPayloadAction] shouldBe model
+      }
     }
 
-    "round-trip successfully without links" in {
-      val action = IFRequestPayloadAction(
-        title = "Action title",
-        message = "Action message",
-        action = "VIEW",
-        path = "/path",
-        links = None
-      )
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[IFRequestPayloadAction] shouldBe a[JsError]
+      }
+    }
 
-      val json = Json.toJson(action: IFRequestPayloadAction)
-      json.as[IFRequestPayloadAction] shouldBe action
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(model) shouldBe json
+      }
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.rds
 
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsNull, JsObject, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.rds.RdsRequest.*
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.fraudRiskReport
@@ -32,15 +32,22 @@ class RdsRequestSpec extends UnitSpec {
 
     val inputWithStringObject: InputWithString = InputWithString("calculationId", calculationId)
 
-    "Input.reads" should {
-      "dispatch to InputWithString when value is a string" in {
-        val json = Json.obj(
-          "name"  -> "calculationId",
-          "value" -> "abc"
-        )
+    "dispatch to InputWithString when value is a string" in {
+      val json = Json.obj(
+        "name"  -> "calculationId",
+        "value" -> "abc"
+      )
 
-        json.as[Input] shouldBe InputWithString("calculationId", "abc")
-      }
+      json.as[Input] shouldBe InputWithString("calculationId", "abc")
+    }
+
+    "dispatch to InputWithString when value is null" in {
+      val json = Json.obj(
+        "name"  -> "calculationId",
+        "value" -> JsNull
+      )
+
+      json.as[Input] shouldBe InputWithString("calculationId", None.orNull)
     }
 
     "write to json" in {

@@ -16,22 +16,32 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs
 
-import play.api.libs.json.Json
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class IFRequestPayloadActionLinksSpec extends AnyWordSpec with Matchers {
+class IFRequestPayloadActionLinksSpec extends UnitSpec {
 
-  "IFRequestPayloadActionLinks JSON format" should {
+  private val model: IFRequestPayloadActionLinks = IFRequestPayloadActionLinks("View details", "/details")
 
-    "round-trip successfully" in {
-      val model = IFRequestPayloadActionLinks(
-        linkTitle = "View details",
-        linkUrl = "/details"
-      )
+  private val json: JsObject = Json.obj("linkTitle" -> "View details", "linkUrl" -> "/details")
 
-      val json = Json.toJson(model: IFRequestPayloadActionLinks)
-      json.as[IFRequestPayloadActionLinks] shouldBe model
+  "IFRequestPayloadActionLinks" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[IFRequestPayloadActionLinks] shouldBe model
+      }
+    }
+
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[IFRequestPayloadActionLinks] shouldBe a[JsError]
+      }
+    }
+
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(model) shouldBe json
+      }
     }
   }
 

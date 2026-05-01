@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ trait MockAppConfig extends TestSuite with MockFactory {
     // RDS Auth
     def rdsSasBaseUrlForAuth: CallHandler[String]      = (() => mockAppConfig.rdsSasBaseUrlForAuth).expects().anyNumberOfTimes()
     def rdsAuthCredential: CallHandler[AuthCredential] = (() => mockAppConfig.rdsAuthCredential).expects().anyNumberOfTimes()
-    def rdsSasV2HostTemp: CallHandler[String]          = (() => mockAppConfig.rdsSasV2HostTemp).expects().anyNumberOfTimes()
 
     // API Config
     def featureSwitch: CallHandler[Option[Configuration]]       = (() => mockAppConfig.featureSwitch).expects()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,32 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.response.nrs
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.Json
+import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class NrsResponseSpec extends AnyWordSpec with Matchers {
+class NrsResponseSpec extends UnitSpec {
 
-  "NrsResponse JSON format" should {
+  private val model: NrsResponse = NrsResponse("abc-123")
 
-    "round-trip successfully" in {
-      val model = NrsResponse("submission-id-123")
+  private val json: JsObject = Json.obj("nrSubmissionId" -> "abc-123")
 
-      val json = Json.toJson(model)
-      json.as[NrsResponse] shouldBe model
+  "NrsResponse" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[NrsResponse] shouldBe model
+      }
     }
 
-    "read from valid JSON" in {
-      val json = Json.parse("""{ "nrSubmissionId": "abc-123" }""")
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[NrsResponse] shouldBe a[JsError]
+      }
+    }
 
-      json.as[NrsResponse] shouldBe NrsResponse("abc-123")
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(model) shouldBe json
+      }
     }
   }
 

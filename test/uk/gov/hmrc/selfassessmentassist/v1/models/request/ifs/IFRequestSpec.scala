@@ -16,42 +16,29 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.Json
+import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.IfsTestData.{correctJson, correctModel}
 
-import java.time.OffsetDateTime
+class IFRequestSpec extends UnitSpec {
 
-class IFRequestSpec extends AnyWordSpec with Matchers {
+  "IFRequest" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        correctJson.as[IFRequest] shouldBe correctModel
+      }
+    }
 
-  "IFRequest JSON format" should {
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[IFRequest] shouldBe a[JsError]
+      }
+    }
 
-    "round-trip successfully with payload" in {
-      val action = IFRequestPayloadAction(
-        title = "Title",
-        message = "Message",
-        action = "VIEW",
-        path = "/path",
-        links = None
-      )
-
-      val payload = IFRequestPayload(
-        messageId = "msg-123",
-        englishAction = action,
-        welshAction = action
-      )
-
-      val request = IFRequest(
-        serviceRegime = "ITSA",
-        eventName = "feedback",
-        eventTimestamp = OffsetDateTime.parse("2024-01-01T10:00:00Z"),
-        feedbackId = "feedback-123",
-        metaData = List(Map("key" -> "value")),
-        payload = Some(Messages(Some(Seq(payload))))
-      )
-
-      val json = Json.toJson(request: IFRequest)
-      json.as[IFRequest] shouldBe request
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(correctModel) shouldBe correctJson
+      }
     }
   }
 

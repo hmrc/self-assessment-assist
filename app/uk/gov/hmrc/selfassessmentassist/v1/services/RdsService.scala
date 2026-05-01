@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,7 @@ package uk.gov.hmrc.selfassessmentassist.v1.services
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.selfassessmentassist.api.controllers.UserRequest
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.RdsAuthCredentials
-import uk.gov.hmrc.selfassessmentassist.api.models.errors.{
-  ErrorWrapper,
-  InternalError,
-  MatchingCalculationIDNotFoundError,
-  NoAssessmentFeedbackFromRDS
-}
+import uk.gov.hmrc.selfassessmentassist.api.models.errors.*
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
 import uk.gov.hmrc.selfassessmentassist.utils.{DateUtils, Logging}
@@ -80,15 +75,6 @@ class RdsService @Inject() (rdsAuthConnector: RdsAuthConnector[Future], connecto
 
     def processRdsRequest(
         rdsAuthCredentials: Option[RdsAuthCredentials] = None): Future[Either[ErrorWrapper, ResponseWrapper[AssessmentReportWrapper]]] = {
-
-      val nonEmptyHeaderKeys = fraudRiskReportHeaders.collect {
-        case (k, v) if v.nonEmpty => k
-      }
-      val emptyHeaderKeys = fraudRiskReportHeaders.collect {
-        case (k, v) if v.isEmpty => k
-      }
-      logger.debug(s"[RdsService][processRdsRequest] non empty headers sent: $nonEmptyHeaderKeys")
-      logger.debug(s"[RdsService][processRdsRequest] empty headers sent: $emptyHeaderKeys")
 
       val rdsRequestSO: RdsRequest = generateRdsAssessmentRequest(request, fraudRiskReport, fraudRiskReportHeaders)
       connector.submit(rdsRequestSO, rdsAuthCredentials).map {

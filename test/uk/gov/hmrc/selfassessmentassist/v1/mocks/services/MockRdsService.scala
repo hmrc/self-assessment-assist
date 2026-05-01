@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,22 +40,29 @@ trait MockRdsService extends TestSuite with MockFactory {
 
   object MockRdsService {
 
-    def submit(request: AssessmentRequestForSelfAssessment,
-               fraudRiskReport: FraudRiskReport,
-               origin: Origin,
-               simpleAssessmentReportWrapper: AssessmentReportWrapper): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
+    def submit(
+        request: AssessmentRequestForSelfAssessment,
+        fraudRiskReport: FraudRiskReport,
+        origin: Origin,
+        simpleAssessmentReportWrapper: AssessmentReportWrapper
+    ): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
       (mockRdsService
         .submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[?], _: String))
-        .expects(*, *, *, *, *, *) returns Future(Right(ResponseWrapper(correlationId, simpleAssessmentReportWrapper)))
+        .expects(*, *, *, *, *, *)
+        .returns(Future(Right(ResponseWrapper(correlationId, simpleAssessmentReportWrapper))))
     }
 
-    def submitFail(request: AssessmentRequestForSelfAssessment,
-                   fraudRiskReport: FraudRiskReport,
-                   origin: Origin,
-                   error: MtdError): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
+    def submitFail(
+        request: AssessmentRequestForSelfAssessment,
+        fraudRiskReport: FraudRiskReport,
+        origin: Origin,
+        error: MtdError,
+        errors: Option[Seq[MtdError]] = None
+    ): CallHandler[Future[ServiceOutcome[AssessmentReportWrapper]]] = {
       (mockRdsService
         .submit(_: AssessmentRequestForSelfAssessment, _: FraudRiskReport)(_: HeaderCarrier, _: ExecutionContext, _: UserRequest[?], _: String))
-        .expects(*, *, *, *, *, *) returns Future(Left(ErrorWrapper(correlationId, error)))
+        .expects(*, *, *, *, *, *)
+        .returns(Future(Left(ErrorWrapper(correlationId, error, errors))))
     }
 
     def acknowlegeRds(request: AcknowledgeReportRequest): CallHandler[Future[ServiceOutcome[RdsAssessmentReport]]] = {

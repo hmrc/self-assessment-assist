@@ -16,39 +16,78 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.Json
+import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class IFRequestPayloadSpec extends AnyWordSpec with Matchers {
+class IFRequestPayloadSpec extends UnitSpec {
 
-  "IFRequestPayload JSON format" should {
+  private val englishAction: IFRequestPayloadAction = IFRequestPayloadAction(
+    title = "English title",
+    message = "English message",
+    action = "VIEW",
+    path = "/english",
+    links = Some(Seq(IFRequestPayloadActionLinks("View english details", "/englishDetails")))
+  )
 
-    "round-trip successfully" in {
-      val englishAction = IFRequestPayloadAction(
-        title = "English title",
-        message = "English message",
-        action = "VIEW",
-        path = "/english",
-        links = None
+  private val welshAction: IFRequestPayloadAction = IFRequestPayloadAction(
+    title = "Welsh title",
+    message = "Welsh message",
+    action = "VIEW",
+    path = "/welsh",
+    links = Some(Seq(IFRequestPayloadActionLinks("View welsh details", "/welshDetails")))
+  )
+
+  private val model = IFRequestPayload(
+    messageId = "message-id-123",
+    englishAction = englishAction,
+    welshAction = welshAction
+  )
+
+  private val json: JsObject = Json.obj(
+    "messageId" -> "message-id-123",
+    "englishAction" -> Json.obj(
+      "title"   -> "English title",
+      "message" -> "English message",
+      "action"  -> "VIEW",
+      "path"    -> "/english",
+      "links" -> Json.arr(
+        Json.obj(
+          "linkTitle" -> "View english details",
+          "linkUrl"   -> "/englishDetails"
+        )
       )
-
-      val welshAction = IFRequestPayloadAction(
-        title = "Welsh title",
-        message = "Welsh message",
-        action = "VIEW",
-        path = "/welsh",
-        links = None
+    ),
+    "welshAction" -> Json.obj(
+      "title"   -> "Welsh title",
+      "message" -> "Welsh message",
+      "action"  -> "VIEW",
+      "path"    -> "/welsh",
+      "links" -> Json.arr(
+        Json.obj(
+          "linkTitle" -> "View welsh details",
+          "linkUrl"   -> "/welshDetails"
+        )
       )
+    )
+  )
 
-      val payload = IFRequestPayload(
-        messageId = "message-id-123",
-        englishAction = englishAction,
-        welshAction = welshAction
-      )
+  "IFRequestPayload" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[IFRequestPayload] shouldBe model
+      }
+    }
 
-      val json = Json.toJson(payload: IFRequestPayload)
-      json.as[IFRequestPayload] shouldBe payload
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[IFRequestPayload] shouldBe a[JsError]
+      }
+    }
+
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(model) shouldBe json
+      }
     }
   }
 

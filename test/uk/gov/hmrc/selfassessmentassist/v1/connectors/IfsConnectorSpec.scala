@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,92 +16,80 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.*
-import org.scalatest.BeforeAndAfterAll
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.MimeTypes
-import play.api.test.Injecting
-import uk.gov.hmrc.http.client.HttpClientV2
+import play.api.http.{HeaderNames, MimeTypes}
+import play.api.libs.json.JsValue
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import uk.gov.hmrc.http.{HttpException, HttpResponse, StringContextOps}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.MockHttpClient
 import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.IfsTestData
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.IfsTestData.{correctJson, correctModel}
 
-class IfsConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
+import java.net.URL
+import scala.concurrent.Future
 
-  val httpClient: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
+class IfsConnectorSpec extends ConnectorSpec with MockAppConfig with MockHttpClient {
 
-  val reportId      = "12345"
-  val ifsTokenValue = "ABCD1234"
-  val ifsEnv        = "local"
+  private val ifsBaseUrl: String = s"$baseUrl/interaction-data/store-interactions"
+  private val ifsUrl: URL        = url"$ifsBaseUrl"
 
-  val ifsEnvironmentHeaders: Option[Seq[String]] = Some(
-    Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id"))
+  private val ifsToken: String = "ABCD1234"
+  private val ifsEnv: String   = "local"
 
-  val url                                     = "/interaction-data/store-interactions"
-  private val ifsRequest: IFRequest           = IfsTestData.correctModel
-  private val ifsSubmissionJsonString: String = IfsTestData.correctJsonString
+  private val ifsEnvironmentHeaders: Option[Seq[String]] = Some(
+    Seq("Accept", "Content-Type", "Location", "X-Request-Timestamp", "X-Session-Id", "X-Request-Id")
+  )
 
-  def port: Int = wireMockServer.port()
+  private val expectedHeaders: Seq[(String, String)] = Seq(
+    "Environment"            -> ifsEnv,
+    "CorrelationId"          -> correlationId,
+    HeaderNames.CONTENT_TYPE -> s"${MimeTypes.JSON};charset=UTF-8",
+    "accept"                 -> "*/*",
+    "Authorization"          -> s"Bearer $ifsToken"
+  )
 
-  override def beforeAll(): Unit = wireMockServer.start()
+  private val ifsRequest: IFRequest = correctModel
+  private val ifsJson: JsValue      = correctJson
 
-  override def afterAll(): Unit = wireMockServer.stop()
-
-  class Test() {
-    MockedAppConfig.ifsBaseUrl returns s"""http://localhost:$port/interaction-data/store-interactions"""
-    MockedAppConfig.ifsToken returns ifsTokenValue
+  private trait Test {
+    MockedAppConfig.ifsBaseUrl returns ifsBaseUrl
+    MockedAppConfig.ifsToken returns ifsToken
     MockedAppConfig.ifsEnv returns ifsEnv
     MockedAppConfig.ifsEnvironmentHeaders returns ifsEnvironmentHeaders
 
-    val connector = new IfsConnector(httpClient, mockAppConfig)
+    val connector: IfsConnector = new IfsConnector(mockHttpClient, mockAppConfig)
+
+    def mockIfsCall(response: Future[HttpResponse]): Unit =
+      MockedHttpClient
+        .post(ifsUrl, ifsJson, expectedHeaders)
+        .returns(response)
 
   }
 
-  "IFSConnector" when {
-    "successful" must {
-      "return the response" in new Test() {
-        wireMockServer.stubFor(
-          post(urlPathEqualTo(url))
-            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
-            .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
-            .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
-            .willReturn(aResponse()
-              .withStatus(NO_CONTENT)))
+  "IfsConnector" when {
+    ".submit" should {
+      "return a successful response" when {
+        "IFS call is successful" in new Test {
+          mockIfsCall(Future.successful(HttpResponse(NO_CONTENT)))
+          await(connector.submit(ifsRequest)) shouldBe Right(IfsResponse())
+        }
+      }
 
-        await(connector.submit(ifsRequest)) shouldBe Right(IfsResponse())
+      "return an error response" when {
+        "IFS call returns an unexpected status" in new Test {
+          mockIfsCall(Future.successful(HttpResponse(SERVICE_UNAVAILABLE)))
+          await(connector.submit(ifsRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
+        }
+
+        "IFS call returns HttpException" in new Test {
+          mockIfsCall(Future.failed(new HttpException("test", INTERNAL_SERVER_ERROR)))
+          await(connector.submit(ifsRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
+        }
       }
     }
-
-    "service unavailable" must {
-      "return downstream error" in new Test() {
-        wireMockServer.stubFor(
-          post(urlPathEqualTo(url))
-            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
-            .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
-            .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
-            .willReturn(aResponse()
-              .withStatus(SERVICE_UNAVAILABLE)))
-
-        await(connector.submit(ifsRequest)) shouldBe Left(ErrorWrapper("f2fb30e5-4ab6-4a29-b3c1-c00000011111", InternalError))
-      }
-    }
-
-    "bad request" must {
-      "return downstream error" in new Test() {
-        wireMockServer.stubFor(
-          post(urlPathEqualTo(url))
-            .withRequestBody(equalToJson(ifsSubmissionJsonString, true, false))
-            .withHeader("Content-Type", equalTo(s"${MimeTypes.JSON};charset=UTF-8"))
-            .withHeader("Authorization", equalTo(s"Bearer $ifsTokenValue"))
-            .willReturn(aResponse()
-              .withStatus(BAD_REQUEST)))
-
-        await(connector.submit(ifsRequest)) shouldBe Left(ErrorWrapper("f2fb30e5-4ab6-4a29-b3c1-c00000011111", InternalError))
-      }
-    }
-
   }
 
 }

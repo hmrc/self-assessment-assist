@@ -27,6 +27,8 @@
 
     <logger name="application" level="DEBUG"/>
 
+    <logger name="uk.gov.hmrc.selfassessmentassist" level="DEBUG"/>
+
     <logger name="connector" level="TRACE">
         <appender-ref ref="STDOUT"/>
     </logger>

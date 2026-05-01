@@ -16,46 +16,36 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.models.auth
 
-import play.api.libs.json.Json
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class AuthCredentialSpec extends AnyWordSpec with Matchers {
+class AuthCredentialSpec extends UnitSpec {
 
-  "AuthCredential JSON format" should {
+  private val model: AuthCredential = AuthCredential("client-id", "client-secret", "client_credentials")
 
-    "read from JSON" in {
-      val json = Json.parse(
-        """{
-          |  "client_id": "client-id",
-          |  "client_secret": "client-secret",
-          |  "grant_type": "client_credentials"
-          |}""".stripMargin
-      )
+  private val json: JsObject = Json.obj(
+    "client_id"     -> "client-id",
+    "client_secret" -> "client-secret",
+    "grant_type"    -> "client_credentials"
+  )
 
-      json.as[AuthCredential] shouldBe
-        AuthCredential(
-          client_id = "client-id",
-          client_secret = "client-secret",
-          grant_type = "client_credentials"
-        )
+  "AuthCredential" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[AuthCredential] shouldBe model
+      }
     }
 
-    "write to JSON" in {
-      val credential = AuthCredential(
-        client_id = "client-id",
-        client_secret = "client-secret",
-        grant_type = "client_credentials"
-      )
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[AuthCredential] shouldBe a[JsError]
+      }
+    }
 
-      Json.toJson(credential: AuthCredential) shouldBe
-        Json.parse(
-          """{
-            |  "client_id": "client-id",
-            |  "client_secret": "client-secret",
-            |  "grant_type": "client_credentials"
-            |}""".stripMargin
-        )
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(model) shouldBe json
+      }
     }
   }
 

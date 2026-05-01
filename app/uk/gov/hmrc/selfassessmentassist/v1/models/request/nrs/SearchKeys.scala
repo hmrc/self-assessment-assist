@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,9 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
-import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
-
-import java.time.LocalDate
 
 case class SearchKeys(reportId: String)
 
 object SearchKeys {
-  implicit val dateReads: Reads[LocalDate]   = DateUtils.dateReads
-  implicit val dateWrites: Writes[LocalDate] = DateUtils.dateWrites
-  implicit val format: OFormat[SearchKeys]   = Json.format[SearchKeys]
+  implicit val format: OFormat[SearchKeys] = Json.format[SearchKeys]
 }

@@ -18,58 +18,68 @@ package definitions
 
 import uk.gov.hmrc.selfassessmentassist.definitions.APIStatus.ALPHA
 import uk.gov.hmrc.selfassessmentassist.definitions.*
-import play.api.libs.json.Json
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.support.*
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions.VERSION_1
 
 class ApiDefinitionSpec extends UnitSpec {
 
-  val apiVersion: APIVersion       = APIVersion(VERSION_1, ALPHA, endpointsEnabled = false)
-  val apiDefinition: APIDefinition = APIDefinition("b", "c", "d", Seq("e"), Seq(apiVersion), Some(false))
+  private val apiVersion: APIVersion       = APIVersion(VERSION_1, ALPHA, endpointsEnabled = false)
+  private val apiDefinition: APIDefinition = APIDefinition("b", "c", "d", Seq("e"), Seq(apiVersion), Some(false))
 
-  private val apiVersionJson = Json.parse("""
-        {
-          "version": "1.0",
-          "status": "ALPHA",
-          "endpointsEnabled": false
-        }
-      """)
+  private val apiVersionJson: JsValue = Json.parse(
+    """
+      |{
+      |  "version": "1.0",
+      |  "status": "ALPHA",
+      |  "endpointsEnabled": false
+      |}
+    """.stripMargin
+  )
 
-  private val apiDefinitionJson = Json.parse("""
-        {
-          "name": "b",
-          "description": "c",
-          "context": "d",
-          "categories": ["e"],
-          "versions": [
-            {
-              "version": "1.0",
-              "status": "ALPHA",
-              "endpointsEnabled": false
-            }
-          ],
-          "requiresTrust": false
-        }
-      """)
+  private val apiDefinitionJson: JsValue = Json.parse(
+    """
+      |{
+      |  "name": "b",
+      |  "description": "c",
+      |  "context": "d",
+      |  "categories": [
+      |    "e"
+      |  ],
+      |  "versions": [
+      |    {
+      |      "version": "1.0",
+      |      "status": "ALPHA",
+      |      "endpointsEnabled": false
+      |    }
+      |  ],
+      |  "requiresTrust": false
+      |}
+    """.stripMargin
+  )
 
-  private val definitionJson = Json.parse("""
-        {
-          "api": {
-            "name": "b",
-            "description": "c",
-            "context": "d",
-            "categories": ["e"],
-            "versions": [
-              {
-                "version": "1.0",
-                "status": "ALPHA",
-                "endpointsEnabled": false
-              }
-            ],
-            "requiresTrust": false
-          }
-        }
-      """)
+  private val definitionJson = Json.parse(
+    """
+      |{
+      |  "api": {
+      |    "name": "b",
+      |    "description": "c",
+      |    "context": "d",
+      |    "categories": [
+      |      "e"
+      |    ],
+      |    "versions": [
+      |      {
+      |        "version": "1.0",
+      |        "status": "ALPHA",
+      |        "endpointsEnabled": false
+      |      }
+      |    ],
+      |    "requiresTrust": false
+      |  }
+      |}
+    """.stripMargin
+  )
 
   "APIDefinition" when {
     "the 'name' parameter is empty" should {
@@ -129,6 +139,10 @@ class ApiDefinitionSpec extends UnitSpec {
     "serialise to JSON" in {
       Json.toJson(apiVersion) shouldBe apiVersionJson
     }
+
+    "error when JSON is invalid" in {
+      JsObject.empty.validate[APIVersion] shouldBe a[JsError]
+    }
   }
 
   "APIDefinition" should {
@@ -138,6 +152,10 @@ class ApiDefinitionSpec extends UnitSpec {
 
     "serialise to JSON" in {
       Json.toJson(apiDefinition) shouldBe apiDefinitionJson
+    }
+
+    "error when JSON is invalid" in {
+      JsObject.empty.validate[APIDefinition] shouldBe a[JsError]
     }
   }
 
@@ -150,6 +168,10 @@ class ApiDefinitionSpec extends UnitSpec {
 
     "serialise to JSON" in {
       Json.toJson(definition) shouldBe definitionJson
+    }
+
+    "error when JSON is invalid" in {
+      JsObject.empty.validate[Definition] shouldBe a[JsError]
     }
   }
 

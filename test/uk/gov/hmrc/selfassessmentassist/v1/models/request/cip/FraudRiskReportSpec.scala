@@ -17,33 +17,33 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.cip
 
 import play.api.libs.json.*
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{simpleCIPCorrelationId, simpleFraudRiskReport}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class FraudRiskRequestSpec extends UnitSpec {
+class FraudRiskReportSpec extends UnitSpec {
 
-  private val simpleFraudRiskRequestJson: JsObject = Json.obj(
-    "nino"             -> simpleNino,
-    "taxYear"          -> simpleTaxYearFullString,
-    "fraudRiskHeaders" -> Json.obj()
+  private val simpleFraudRiskReportJson: JsObject = Json.obj(
+    "riskScore"         -> 0.00,
+    "riskCorrelationId" -> simpleCIPCorrelationId,
+    "reasons"           -> Json.arr()
   )
 
-  "FraudRiskRequest" when {
+  "FraudRiskReport" when {
     "read from valid JSON" should {
       "produce the expected model" in {
-        simpleFraudRiskRequestJson.as[FraudRiskRequest] shouldBe simpleFraudRiskRequest
+        simpleFraudRiskReportJson.as[FraudRiskReport] shouldBe simpleFraudRiskReport
       }
     }
 
     "read from invalid JSON" should {
       "produce a JsError" in {
-        JsObject.empty.validate[FraudRiskRequest] shouldBe a[JsError]
+        JsObject.empty.validate[FraudRiskReport] shouldBe a[JsError]
       }
     }
 
     "written to JSON" should {
       "produce the expected JsObject" in {
-        Json.toJson(simpleFraudRiskRequest) shouldBe simpleFraudRiskRequestJson
+        Json.toJson(simpleFraudRiskReport) shouldBe simpleFraudRiskReportJson
       }
     }
   }

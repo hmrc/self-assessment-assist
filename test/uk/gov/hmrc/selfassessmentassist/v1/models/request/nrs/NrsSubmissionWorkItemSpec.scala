@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.NrsTestData.{correctJson, correctModel}
 
@@ -27,19 +27,21 @@ class NrsSubmissionWorkItemSpec extends UnitSpec {
   private val json: JsValue = Json.obj("nrsSubmission" -> correctJson)
 
   "NrsSubmissionWorkItem" when {
-    "reads" should {
-      "return a valid model" when {
-        "passed valid JSON" in {
-          json.as[NrsSubmissionWorkItem] shouldBe model
-        }
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[NrsSubmissionWorkItem] shouldBe model
       }
     }
 
-    "writes" should {
-      "return valid JSON" when {
-        "passed valid model" in {
-          Json.toJson(model) shouldBe json
-        }
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[NrsSubmissionWorkItem] shouldBe a[JsError]
+      }
+    }
+
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(model) shouldBe json
       }
     }
   }
