@@ -115,7 +115,7 @@ class ApiDefinitionSpec extends UnitSpec {
     }
   }
 
-  "the 'versions' parameter is empty" should {
+  "the 'versions' parameter is not unique" should {
     "throw an 'IllegalArgumentException'" in {
       assertThrows[IllegalArgumentException](
         apiDefinition.copy(versions = Seq(apiVersion, apiVersion))
@@ -123,7 +123,7 @@ class ApiDefinitionSpec extends UnitSpec {
     }
   }
 
-  "the 'versions' parameter is not unique" should {
+  "the 'versions' parameter is empty" should {
     "throw an 'IllegalArgumentException'" in {
       assertThrows[IllegalArgumentException](
         apiDefinition.copy(versions = Seq())
