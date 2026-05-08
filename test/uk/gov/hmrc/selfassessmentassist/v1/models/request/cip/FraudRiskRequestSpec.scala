@@ -14,37 +14,36 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.api.models.auth
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.cip
 
 import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class AuthCredentialSpec extends UnitSpec {
+class FraudRiskRequestSpec extends UnitSpec {
 
-  private val model: AuthCredential = AuthCredential("client-id", "client-secret", "client_credentials")
-
-  private val json: JsObject = Json.obj(
-    "client_id"     -> "client-id",
-    "client_secret" -> "client-secret",
-    "grant_type"    -> "client_credentials"
+  private val simpleFraudRiskRequestJson: JsObject = Json.obj(
+    "nino"             -> simpleNino,
+    "taxYear"          -> simpleTaxYearFullString,
+    "fraudRiskHeaders" -> Json.obj()
   )
 
-  "AuthCredential" when {
+  "FraudRiskRequest" when {
     "read from valid JSON" should {
       "produce the expected model" in {
-        json.as[AuthCredential] shouldBe model
+        simpleFraudRiskRequestJson.as[FraudRiskRequest] shouldBe simpleFraudRiskRequest
       }
     }
 
     "read from invalid JSON" should {
       "produce a JsError" in {
-        JsObject.empty.validate[AuthCredential] shouldBe a[JsError]
+        JsObject.empty.validate[FraudRiskRequest] shouldBe a[JsError]
       }
     }
 
     "written to JSON" should {
       "produce the expected JsObject" in {
-        Json.toJson(model) shouldBe json
+        Json.toJson(simpleFraudRiskRequest) shouldBe simpleFraudRiskRequestJson
       }
     }
   }

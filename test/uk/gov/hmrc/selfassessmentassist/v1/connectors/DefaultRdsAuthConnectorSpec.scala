@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,95 +16,95 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import com.codahale.metrics.SharedMetricRegistries
-import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.scalatest.{BeforeAndAfterAll, EitherValues}
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
-import play.api.http.MimeTypes
-import play.api.inject.guice.GuiceApplicationBuilder
+import com.google.common.base.Charsets
+import play.api.http.Status.*
 import play.api.libs.json.Json
-import play.api.test.Injecting
-import uk.gov.hmrc.http.client.HttpClientV2
+import play.api.libs.ws.WSBodyWritables.writeableOf_urlEncodedForm
+import uk.gov.hmrc.http.{HttpException, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.selfassessmentassist.api.models.auth.{AuthCredential, RdsAuthCredentials}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.RdsAuthDownstreamError
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.MockHttpClient
 
-class DefaultRdsAuthConnectorSpec
-    extends ConnectorSpec
-    with BeforeAndAfterAll
-    with GuiceOneAppPerSuite
-    with Injecting
-    with MockAppConfig
-    with EitherValues {
-  val httpClient: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
+import java.net.URL
+import java.util.Base64
+import scala.concurrent.Future
 
-  def port: Int = wireMockServer.port()
+class DefaultRdsAuthConnectorSpec extends ConnectorSpec with MockAppConfig with MockHttpClient {
 
-  override def fakeApplication(): Application =
-    GuiceApplicationBuilder()
-      .configure("metrics.enabled" -> false, "auditing.enabled" -> false)
-      .build()
+  private val rdsSasBaseUrlForAuth: String = s"$baseUrl/SASLogon/oauth/token"
+  private val rdsSasUrlForAuth: URL        = url"$rdsSasBaseUrlForAuth"
 
-  override def beforeAll(): Unit = {
-    wireMockServer.start()
-    SharedMetricRegistries.clear()
-  }
+  private val rdsAuthCredentials: AuthCredential = AuthCredential("ac8cd8d0-f212-4706-85d1-82b7785ad0b1", "bearer", "grant_type")
 
-  override def afterAll(): Unit = {
-    wireMockServer.stop()
-  }
+  private val authToken: String = Base64.getEncoder.encodeToString(
+    s"${rdsAuthCredentials.client_id}:${rdsAuthCredentials.client_secret}".getBytes(Charsets.UTF_8)
+  )
 
-  class Test {
-    val submitBaseUrl: String  = s"http://localhost:$port/submit"
-    val acknowledgeUrl: String = s"http://localhost:$port/rds/assessments/self-assessment-assist/acknowledge"
-    val authToken              = "YWM4Y2Q4ZDAtZjIxMi00NzA2LTg1ZDEtODJiNzc4NWFkMGIxOmJlYXJlcg=="
+  private val expectedHeaders: Seq[(String, String)] = Seq(
+    "Content-Type"  -> "application/x-www-form-urlencoded",
+    "Accept"        -> "application/json",
+    "Authorization" -> s"Basic $authToken"
+  )
 
-    val rdsAuthCredentials: AuthCredential = AuthCredential("ac8cd8d0-f212-4706-85d1-82b7785ad0b1", "bearer", "grant_type")
+  private val requestBody: Map[String, Seq[String]] = Map("grant_type" -> Seq(rdsAuthCredentials.grant_type))
+  private val successResponse: RdsAuthCredentials   = RdsAuthCredentials("access_token", "bearer", 3600)
+  private val successResponseJson: String           = Json.toJson(successResponse).toString
 
-    val tempSasHost = "test-sas-host"
-
-    MockedAppConfig.rdsSasBaseUrlForAuth returns submitBaseUrl
+  private trait Test {
+    MockedAppConfig.rdsSasBaseUrlForAuth returns rdsSasBaseUrlForAuth
     MockedAppConfig.rdsAuthCredential returns rdsAuthCredentials
-    MockedAppConfig.rdsSasV2HostTemp returns tempSasHost
 
-    val connector = new DefaultRdsAuthConnector(httpClient)(mockAppConfig, ec)
+    val connector: DefaultRdsAuthConnector = new DefaultRdsAuthConnector(mockHttpClient)(mockAppConfig, ec)
 
-    def stubRdsAuthResponse(status: Int): StubMapping = {
-      wireMockServer.stubFor(
-        post(urlPathEqualTo("/submit"))
-          .withHeader("Content-Type", equalTo(MimeTypes.FORM))
-          .withHeader("Authorization", equalTo(s"Basic $authToken"))
-          .withRequestBody(equalTo(s"grant_type=${rdsAuthCredentials.grant_type}"))
-          .willReturn(
-            aResponse()
-              .withStatus(status)
-              .withBody(
-                Json.toJson(RdsAuthCredentials("access_token", "bearer", 20)).toString()
-              ))
-      )
-    }
+    def mockAuthCall(response: Future[HttpResponse]): Unit =
+      MockedHttpClient
+        .post(rdsSasUrlForAuth, requestBody, expectedHeaders, useProxy = true)
+        .returns(response)
 
   }
 
   "DefaultRdsAuthConnector" when {
-    "retrieveAuthorisedBearer method is called" must {
-      "OK" in new Test {
-        stubRdsAuthResponse(200)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Right(RdsAuthCredentials("access_token", "bearer", 20))
+    ".retrieveAuthorisedBearer" should {
+      "return credentials" when {
+        "auth call returns 200 OK" in new Test {
+          mockAuthCall(Future.successful(HttpResponse(OK, successResponseJson)))
+
+          await(connector.retrieveAuthorisedBearer().value) shouldBe Right(successResponse)
+        }
+
+        "auth call returns 202 ACCEPTED" in new Test {
+          mockAuthCall(Future.successful(HttpResponse(ACCEPTED, successResponseJson)))
+
+          await(connector.retrieveAuthorisedBearer().value) shouldBe Right(successResponse)
+        }
       }
 
-      "ACCEPTED" in new Test {
-        stubRdsAuthResponse(202)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Right(RdsAuthCredentials("access_token", "bearer", 20))
-      }
+      "return RdsAuthDownstreamError" when {
+        "auth call returns an unexpected status" in new Test {
+          mockAuthCall(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
 
-      "return rds error when no auth" in new Test {
-        stubRdsAuthResponse(403)
-        await(connector.retrieveAuthorisedBearer().value) shouldBe Left(RdsAuthDownstreamError)
-      }
+          await(connector.retrieveAuthorisedBearer().value) shouldBe Left(RdsAuthDownstreamError)
+        }
 
+        "auth call returns invalid JSON" in new Test {
+          mockAuthCall(Future.successful(HttpResponse(OK, """{ "not": "a-token" }""")))
+
+          await(connector.retrieveAuthorisedBearer().value) shouldBe Left(RdsAuthDownstreamError)
+        }
+
+        "auth call returns HttpException" in new Test {
+          mockAuthCall(Future.failed(new HttpException("test", INTERNAL_SERVER_ERROR)))
+
+          await(connector.retrieveAuthorisedBearer().value) shouldBe Left(RdsAuthDownstreamError)
+        }
+
+        "auth call returns UpstreamErrorResponse" in new Test {
+          mockAuthCall(Future.failed(UpstreamErrorResponse("test", SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE)))
+
+          await(connector.retrieveAuthorisedBearer().value) shouldBe Left(RdsAuthDownstreamError)
+        }
+      }
     }
   }
 

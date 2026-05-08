@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.TestSuite
 import org.scalatest.matchers.should.Matchers
+import play.api.libs.ws.BodyWritable
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
+import izumi.reflect.Tag
 
 import java.net.URL
 import scala.concurrent.{ExecutionContext, Future}
@@ -52,9 +54,34 @@ trait MockHttpClient extends TestSuite with MockFactory {
       (mockRequestBuilder.execute[T](using _: HttpReads[T], _: ExecutionContext)).expects(*, *)
     }
 
-    private def assertHeaders[T, I](actualHeaders: Seq[(String, String)],
-                                    requiredHeaders: Seq[(String, String)],
-                                    excludedHeaders: Seq[(String, String)]) = {
+    def post[B: BodyWritable: Tag, T](url: URL,
+                                      body: B,
+                                      expectedHeaders: Seq[(String, String)],
+                                      useProxy: Boolean = false): CallHandler[Future[T]] = {
+      (mockHttpClient
+        .post(_: URL)(_: HeaderCarrier))
+        .expects(url, *)
+        .returns(mockRequestBuilder)
+
+      ((headers: Seq[(String, String)]) => mockRequestBuilder.setHeader(headers*))
+        .expects(expectedHeaders)
+        .returns(mockRequestBuilder)
+
+      (mockRequestBuilder
+        .withBody(_: B)(using _: BodyWritable[B], _: Tag[B], _: ExecutionContext))
+        .expects(body, *, *, *)
+        .returns(mockRequestBuilder)
+
+      if (useProxy) {
+        (() => mockRequestBuilder.withProxy).expects().returns(mockRequestBuilder)
+      }
+
+      (mockRequestBuilder.execute[T](using _: HttpReads[T], _: ExecutionContext)).expects(*, *)
+    }
+
+    private def assertHeaders(actualHeaders: Seq[(String, String)],
+                              requiredHeaders: Seq[(String, String)],
+                              excludedHeaders: Seq[(String, String)]) = {
 
       actualHeaders should contain allElementsOf requiredHeaders
       actualHeaders should contain noElementsOf excludedHeaders

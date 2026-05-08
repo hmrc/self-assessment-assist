@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import play.api.libs.json.*
-import uk.gov.hmrc.selfassessmentassist.utils.DateUtils
-
-import java.time.OffsetDateTime
 
 case class Metadata(businessId: String,
                     notableEvent: String,
@@ -32,8 +29,5 @@ case class Metadata(businessId: String,
                     searchKeys: SearchKeys)
 
 object Metadata {
-  implicit val idformat: OFormat[IdentityData]    = IdentityData.format
-  implicit val dateReads: Reads[OffsetDateTime]   = DateUtils.isoInstantDateTimeReads
-  implicit val dateWrites: Writes[OffsetDateTime] = DateUtils.isoInstantDateTimeWrites
-  implicit val format: OFormat[Metadata]          = Json.format[Metadata]
+  implicit val format: OFormat[Metadata] = Json.format[Metadata]
 }

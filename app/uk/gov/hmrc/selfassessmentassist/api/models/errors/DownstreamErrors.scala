@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package uk.gov.hmrc.selfassessmentassist.api.models.errors
 
 import play.api.libs.json.{Json, Reads}
 
-case class DownstreamErrorCode(code: String) {
-  def toMtd(httpStatus: Int): MtdError = MtdError(code = code, message = "", httpStatus = httpStatus)
-}
+case class DownstreamErrorCode(code: String)
 
 object DownstreamErrorCode {
   implicit val reads: Reads[DownstreamErrorCode] = Json.reads[DownstreamErrorCode]

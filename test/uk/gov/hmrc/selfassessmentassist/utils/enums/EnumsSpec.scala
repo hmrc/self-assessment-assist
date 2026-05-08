@@ -137,6 +137,19 @@ class EnumsSpec extends UnitSpec with Inspectors {
         JsError(JsonValidationError("error.expected.int"))
     }
 
+    "read using default Show" in {
+      val enumReads: Reads[Enum] = Enums.reads(values)
+
+      enumReads.reads(JsString("enum-one")) shouldBe JsSuccess(Enum.`enum-one`)
+      enumReads.reads(JsString("unknown")) shouldBe a[JsError]
+    }
+
+    "write using default Show" in {
+      val enumWrites: Writes[Enum] = Enums.writes[Enum]
+
+      enumWrites.writes(Enum.`enum-two`) shouldBe JsString("enum-two")
+    }
+
   }
 
 }

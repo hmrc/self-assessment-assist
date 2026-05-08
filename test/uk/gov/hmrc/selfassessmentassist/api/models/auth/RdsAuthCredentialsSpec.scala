@@ -19,26 +19,26 @@ package uk.gov.hmrc.selfassessmentassist.api.models.auth
 import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class AuthCredentialSpec extends UnitSpec {
+class RdsAuthCredentialsSpec extends UnitSpec {
 
-  private val model: AuthCredential = AuthCredential("client-id", "client-secret", "client_credentials")
+  private val model: RdsAuthCredentials = RdsAuthCredentials("access_token", "bearer", 3600)
 
   private val json: JsObject = Json.obj(
-    "client_id"     -> "client-id",
-    "client_secret" -> "client-secret",
-    "grant_type"    -> "client_credentials"
+    "access_token" -> "access_token",
+    "token_type"   -> "bearer",
+    "expires_in"   -> 3600
   )
 
-  "AuthCredential" when {
+  "RdsAuthCredentials" when {
     "read from valid JSON" should {
       "produce the expected model" in {
-        json.as[AuthCredential] shouldBe model
+        json.as[RdsAuthCredentials] shouldBe model
       }
     }
 
     "read from invalid JSON" should {
       "produce a JsError" in {
-        JsObject.empty.validate[AuthCredential] shouldBe a[JsError]
+        JsObject.empty.validate[RdsAuthCredentials] shouldBe a[JsError]
       }
     }
 

@@ -17,9 +17,29 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{metaDataCorrectJson, metaDataCorrectModel}
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-case class NrsSubmission(payload: String, metadata: Metadata)
+class MetadataSpec extends UnitSpec {
 
-object NrsSubmission {
-  implicit val format: OFormat[NrsSubmission] = Json.format[NrsSubmission]
+  "Metadata" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        metaDataCorrectJson.as[Metadata] shouldBe metaDataCorrectModel
+      }
+    }
+
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[Metadata] shouldBe a[JsError]
+      }
+    }
+
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(metaDataCorrectModel) shouldBe metaDataCorrectJson
+      }
+    }
+  }
+
 }

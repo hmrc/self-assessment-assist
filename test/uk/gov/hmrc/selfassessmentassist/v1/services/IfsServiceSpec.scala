@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services
 
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleTaxYear
+import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.*
+import uk.gov.hmrc.selfassessmentassist.api.models.auth.UserDetails
 import uk.gov.hmrc.selfassessmentassist.api.models.domain.CustomerType
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.mocks.utils.MockCurrentDateTime
@@ -28,8 +29,9 @@ import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.*
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.ifs.IfsResponse
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
-import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{KeyValueWrapper, KeyValueWrapperInt, Output}
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.assessmentRequestForSelfAssessment
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.IFRequest
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.*
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -53,114 +55,97 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     rdsCorrelationId = "e43264c5-5301-4ece-b3d3-1e8a8dd93b4b"
   )
 
-  val calculationId: UUID          = UUID.randomUUID()
-  val correlationsId: String       = "some-correlationId"
-  val feedbackId: UUID             = UUID.randomUUID()
-  val responseCode: Int            = 211
-  val responseMessage: String      = "some-message"
-  val calculationTimeStamp: String = "2022-01-01T12:00:00.000Z"
-
-  val outputs: Seq[Output] = Seq(
-    KeyValueWrapper("calculationId", Some(calculationId.toString)),
-    KeyValueWrapper("correlationId", Some(correlationsId)),
-    KeyValueWrapper("feedbackId", Some(feedbackId.toString)),
-    KeyValueWrapperInt("responseCode", responseCode),
-    KeyValueWrapper("responseMessage", Some(responseMessage)),
-    KeyValueWrapper("calculationTimestamp", Some(calculationTimeStamp))
+  private def assessmentReportWrapper = AssessmentReportWrapper(
+    calculationTimestamp = mockCurrentDateTime.getDateTime.toLocalDateTime,
+    report = rdsReport,
+    rdsAssessmentReport = rdsNewSubmissionReport
   )
 
-  val rdsAssessmentReport: RdsAssessmentReport = rds.RdsAssessmentReport(
-    links = Seq("https://google.com"),
-    version = 2,
-    moduleId = "HMRC_ASSIST_ITSA_FINSUB_FEEDBACK_ACK",
-    stepId = "execute",
-    executionState = "completed",
-    outputs = outputs)
-
-  private def assessmentReportWrapper =
-    AssessmentReportWrapper(mockCurrentDateTime.getDateTime.toLocalDateTime, rdsReport, CommonTestData.rdsNewSubmissionReport)
-
   private def expectedReportGenerationPayload = IFRequest(
-    "self-assessment-assist",
-    "GenerateReport",
-    mockCurrentDateTime.getDateTime,
-    "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
-    List(
+    serviceRegime = "self-assessment-assist",
+    eventName = "GenerateReport",
+    eventTimestamp = mockCurrentDateTime.getDateTime,
+    feedbackId = "f2fb30e5-4ab6-4a29-b3c1-c00000011111",
+    metaData = List(
       Map("nino"                 -> "nino"),
       Map("taxYear"              -> "2021-22"),
       Map("calculationId"        -> "99d758f6-c4be-4339-804e-f79cf0610d4f"),
       Map("customerType"         -> "Individual"),
       Map("calculationTimestamp" -> "2022-01-01T12:00:00.000Z")
     ),
-    Some(
+    payload = Some(
       Messages(
         Some(
           List(
             IFRequestPayload(
-              "001",
-              IFRequestPayloadAction(
-                "Non-Business Income Source",
-                "You have declared family loan as a source of your income. There have been changes to the rules around non-business sources you may declare, please check the appropriate guidance to see how this impacts you.",
-                "Check guidance",
-                "general/non_business_income_sources/income_source",
-                Some(
+              messageId = "001",
+              englishAction = IFRequestPayloadAction(
+                title = "Non-Business Income Source",
+                message =
+                  "You have declared family loan as a source of your income. There have been changes to the rules around non-business sources you may declare, please check the appropriate guidance to see how this impacts you.",
+                action = "Check guidance",
+                path = "general/non_business_income_sources/income_source",
+                links = Some(
                   List(
                     IFRequestPayloadActionLinks(
-                      "ITSA Guidance",
-                      "www.itsa.gov.uk"
+                      linkTitle = "ITSA Guidance",
+                      linkUrl = "www.itsa.gov.uk"
                     ),
                     IFRequestPayloadActionLinks(
-                      "Income Source Guidance",
-                      "www.itsa/incomesources.gov.uk"
+                      linkTitle = "Income Source Guidance",
+                      linkUrl = "www.itsa/incomesources.gov.uk"
                     )
                   )
                 )
               ),
-              IFRequestPayloadAction(
-                "Ffynhonnell Incwm Di-Fusnes",
-                "Rydych wedi datgan benthyciad teulu fel ffynhonnell eich incwm. Bu newidiadau i'r rheolau ynghylch ffynonellau nad ydynt yn ymwneud â busnes y gallwch eu datgan, darllenwch y canllawiau priodol i weld sut mae hyn yn effeithio arnoch chi.",
-                "Gwirio Canllawiau",
-                "general/non_business_income_sources/income_source",
-                Some(
+              welshAction = IFRequestPayloadAction(
+                title = "Ffynhonnell Incwm Di-Fusnes",
+                message =
+                  "Rydych wedi datgan benthyciad teulu fel ffynhonnell eich incwm. Bu newidiadau i'r rheolau ynghylch ffynonellau nad ydynt yn ymwneud â busnes y gallwch eu datgan, darllenwch y canllawiau priodol i weld sut mae hyn yn effeithio arnoch chi.",
+                action = "Gwirio Canllawiau",
+                path = "general/non_business_income_sources/income_source",
+                links = Some(
                   List(
                     IFRequestPayloadActionLinks(
-                      "Canllawiau ITSA",
-                      "www.itsa/cym.gov.uk"
+                      linkTitle = "Canllawiau ITSA",
+                      linkUrl = "www.itsa/cym.gov.uk"
                     ),
                     IFRequestPayloadActionLinks(
-                      "Arweiniad i Ffynonellau Incwm",
-                      "www.itsa/incomesources.gov.uk"
+                      linkTitle = "Arweiniad i Ffynonellau Incwm",
+                      linkUrl = "www.itsa/incomesources.gov.uk"
                     )
                   )
                 )
               )
             ),
             IFRequestPayload(
-              "002",
-              IFRequestPayloadAction(
-                "Turnover",
-                "Your declared turnover of £80,000 appears to be lower than expected based on your income sources, please confirm all turnover is accounted for before submission.",
-                "Check turnover",
-                "general/total_declared_turnover",
-                Some(
+              messageId = "002",
+              englishAction = IFRequestPayloadAction(
+                title = "Turnover",
+                message =
+                  "Your declared turnover of £80,000 appears to be lower than expected based on your income sources, please confirm all turnover is accounted for before submission.",
+                action = "Check turnover",
+                path = "general/total_declared_turnover",
+                links = Some(
                   List(
                     IFRequestPayloadActionLinks(
-                      "Accounting for Income",
-                      "www.itsa/incomecompliance.gov.uk"
+                      linkTitle = "Accounting for Income",
+                      linkUrl = "www.itsa/incomecompliance.gov.uk"
                     )
                   )
                 )
               ),
-              IFRequestPayloadAction(
-                "Trosiant",
-                "Mae'n ymddangos bod eich trosiant datganedig o £80,000 yn is na'r disgwyl yn seiliedig ar eich ffynonellau incwm, cadarnhewch y cyfrifir am yr holl drosiant cyn cyflwyno.",
-                "Gwiriwch y trosiant",
-                "general/total_declared_turnover",
-                Some(
+              welshAction = IFRequestPayloadAction(
+                title = "Trosiant",
+                message =
+                  "Mae'n ymddangos bod eich trosiant datganedig o £80,000 yn is na'r disgwyl yn seiliedig ar eich ffynonellau incwm, cadarnhewch y cyfrifir am yr holl drosiant cyn cyflwyno.",
+                action = "Gwiriwch y trosiant",
+                path = "general/total_declared_turnover",
+                links = Some(
                   List(
                     IFRequestPayloadActionLinks(
-                      "Cyfrifo am Incwm",
-                      "www.itsa/incomecompliance.gov.uk"
+                      linkTitle = "Cyfrifo am Incwm",
+                      linkUrl = "www.itsa/incomecompliance.gov.uk"
                     )
                   )
                 )
@@ -172,76 +157,225 @@ class IfsServiceSpec extends ServiceSpec with MockCurrentDateTime {
     )
   )
 
-  private def expectedAcknowledgementPayload =
-    IFRequest(
-      serviceRegime = "self-assessment-assist",
-      eventName = "AcknowledgeReport",
-      eventTimestamp = mockCurrentDateTime.getDateTime,
-      feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
-      metaData = List(
-        Map("nino"         -> CommonTestData.simpleAcknowledgeReportRequest.nino),
-        Map("customerType" -> "Individual")
-      ),
-      payload = None
-    )
+  private def expectedAcknowledgementPayload = IFRequest(
+    serviceRegime = "self-assessment-assist",
+    eventName = "AcknowledgeReport",
+    eventTimestamp = mockCurrentDateTime.getDateTime,
+    feedbackId = simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
+    metaData = List(
+      Map("nino"         -> simpleAcknowledgeReportRequest.nino),
+      Map("customerType" -> "Individual")
+    ),
+    payload = None
+  )
 
-  class Test extends MockIfsConnector {
+  private trait Test extends MockIfsConnector {
     val service = new IfsService(mockIfsConnector, mockCurrentDateTime)
   }
 
-  "service using acknowledged generated" when {
+  "IfsService" when {
+    ".submitGenerateReportMessage" when {
+      "service call successful" should {
+        "return the expected result" when {
+          "Risk.links is not empty" in new Test {
+            MockCurrentDateTime.getDateTime
 
-    "submitGenerateReportMessage" must {
+            MockIfsConnector
+              .submit(expectedPayload = expectedReportGenerationPayload)
+              .returns(Future.successful(Right(IfsResponse())))
 
-      "return the expected result" in new Test {
+            await(
+              service.submitGenerateReportMessage(assessmentReportWrapper, assessmentRequestForSelfAssessment)
+            ) shouldBe Right(IfsResponse())
+          }
 
-        MockCurrentDateTime.getDateTime
-        MockIfsConnector
-          .submit(expectedPayload = expectedReportGenerationPayload)
-          .returns(Future.successful(Right(IfsResponse())))
+          "Risk.links is empty" in new Test {
+            MockCurrentDateTime.getDateTime
 
-        await(
-          service.submitGenerateReportMessage(assessmentReportWrapper, assessmentRequestForSelfAssessment)
-        ) shouldBe Right(IfsResponse())
+            private def removeLinksFromOutputs(outputs: Seq[Output]): Seq[Output] =
+              outputs.map {
+                case MainOutputWrapper(name @ ("EnglishActions" | "WelshActions"), Some(objectParts)) =>
+                  val updatedParts: Seq[ObjectPart] = objectParts.map {
+                    case DataWrapper(Some(riskFieldsRows)) =>
+                      DataWrapper(
+                        Some(
+                          riskFieldsRows.map { riskFields =>
+                            riskFields
+                              .updated(3, "[]")
+                              .updated(4, "[]")
+                          }
+                        )
+                      )
+
+                    case other => other
+                  }
+
+                  MainOutputWrapper(name, Some(updatedParts))
+
+                case other => other
+              }
+
+            val rdsAssessmentReportNoLinks: RdsAssessmentReport = rdsNewSubmissionReport.copy(
+              outputs = removeLinksFromOutputs(rdsNewSubmissionReport.outputs)
+            )
+
+            val wrapperWithNoLinks: AssessmentReportWrapper = assessmentReportWrapper.copy(
+              report = rdsReport.copy(risks = rdsReport.risks.map(_.copy(links = Seq.empty))),
+              rdsAssessmentReport = rdsAssessmentReportNoLinks
+            )
+
+            val expectedPayloadWithNoLinks: IFRequest = expectedReportGenerationPayload.copy(
+              payload = expectedReportGenerationPayload.payload.map { messages =>
+                messages.copy(
+                  messages = messages.messages.map(_.map { payload =>
+                    payload.copy(
+                      englishAction = payload.englishAction.copy(links = None),
+                      welshAction = payload.welshAction.copy(links = None)
+                    )
+                  })
+                )
+              }
+            )
+
+            MockIfsConnector
+              .submit(expectedPayload = expectedPayloadWithNoLinks)
+              .returns(Future.successful(Right(IfsResponse())))
+
+            await(
+              service.submitGenerateReportMessage(wrapperWithNoLinks, assessmentRequestForSelfAssessment)
+            ) shouldBe Right(IfsResponse())
+          }
+        }
+
+        "handle missing typeIds output value" in new Test {
+          MockCurrentDateTime.getDateTime
+
+          val reportNoTypeIdValue: RdsAssessmentReport = rdsNewSubmissionReport.copy(
+            outputs = Seq(MainOutputWrapper("typeId", None))
+          )
+
+          val wrapper: AssessmentReportWrapper = assessmentReportWrapper.copy(rdsAssessmentReport = reportNoTypeIdValue)
+
+          val expectedPayload: IFRequest = expectedReportGenerationPayload.copy(feedbackId = "", payload = Some(Messages(Some(Nil))))
+
+          MockIfsConnector
+            .submit(expectedPayload = expectedPayload)
+            .returns(Future.successful(Right(IfsResponse())))
+
+          await(service.submitGenerateReportMessage(wrapper, assessmentRequestForSelfAssessment)) shouldBe Right(IfsResponse())
+        }
+
+        "handle missing typeIds data value" in new Test {
+          MockCurrentDateTime.getDateTime
+
+          val reportTypeIdButNoData: RdsAssessmentReport = rdsNewSubmissionReport.copy(
+            outputs = Seq(
+              MainOutputWrapper(
+                "typeId",
+                Some(Seq(DataWrapper(None)))
+              )
+            )
+          )
+
+          val wrapper: AssessmentReportWrapper = assessmentReportWrapper.copy(rdsAssessmentReport = reportTypeIdButNoData)
+
+          val expectedPayload: IFRequest = expectedReportGenerationPayload.copy(feedbackId = "", payload = Some(Messages(Some(Nil))))
+
+          MockIfsConnector
+            .submit(expectedPayload = expectedPayload)
+            .returns(Future.successful(Right(IfsResponse())))
+
+          await(service.submitGenerateReportMessage(wrapper, assessmentRequestForSelfAssessment)) shouldBe Right(IfsResponse())
+        }
       }
 
-    }
+      "service call unsuccessful" should {
+        "return the expected result" in new Test {
+          MockCurrentDateTime.getDateTime
 
-    "service call unsuccessful" must {
+          MockIfsConnector
+            .submit(expectedPayload = expectedReportGenerationPayload)
+            .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))))
 
-      "return the expected result" in new Test {
-
-        MockCurrentDateTime.getDateTime
-        MockIfsConnector
-          .submit(expectedPayload = expectedReportGenerationPayload)
-          .returns(Future.successful(Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))))
-
-        await(
-          service.submitGenerateReportMessage(assessmentReportWrapper, assessmentRequestForSelfAssessment)
-        ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))
-      }
-
-    }
-
-    "submitAcknowledgementMessage" must {
-
-      "return the expected result" in new Test {
-
-        MockCurrentDateTime.getDateTime
-        MockIfsConnector
-          .submit(expectedPayload = expectedAcknowledgementPayload)
-          .returns(Future.successful(Right(IfsResponse())))
-
-        await(
-          service.submitAcknowledgementMessage(
-            CommonTestData.simpleAcknowledgeReportRequest,
-            CommonTestData.simpleAcknowledgeNewRdsAssessmentReport,
-            CommonTestData.simpleIndividualUserDetails)
-        ) shouldBe Right(IfsResponse())
+          await(
+            service.submitGenerateReportMessage(assessmentReportWrapper, assessmentRequestForSelfAssessment)
+          ) shouldBe Left(ErrorWrapper(rdsReport.rdsCorrelationId, InternalError))
+        }
       }
     }
 
-    "customerTypeString" should {
+    ".submitAcknowledgementMessage" when {
+      "service call successful" should {
+        "return the expected result" when {
+          "customerType is Individual" in new Test {
+            MockCurrentDateTime.getDateTime
+
+            MockIfsConnector
+              .submit(expectedPayload = expectedAcknowledgementPayload)
+              .returns(Future.successful(Right(IfsResponse())))
+
+            await(
+              service.submitAcknowledgementMessage(
+                simpleAcknowledgeReportRequest,
+                simpleAcknowledgeNewRdsAssessmentReport,
+                simpleIndividualUserDetails
+              )
+            ) shouldBe Right(IfsResponse())
+          }
+
+          "customerType is Agent and agentReferenceNumber is present" in new Test {
+            MockCurrentDateTime.getDateTime
+
+            val agentReferenceNumber = "JARN1234567"
+
+            val userDetailsWithAgent: UserDetails = simpleIndividualUserDetails.copy(
+              userType = AffinityGroup.Agent,
+              agentReferenceNumber = Some(agentReferenceNumber)
+            )
+
+            val expectedPayloadWithAgent: IFRequest = expectedAcknowledgementPayload.copy(
+              metaData = List(
+                Map("nino"                 -> simpleAcknowledgeReportRequest.nino),
+                Map("customerType"         -> "Agent"),
+                Map("agentReferenceNumber" -> agentReferenceNumber)
+              )
+            )
+
+            MockIfsConnector
+              .submit(expectedPayload = expectedPayloadWithAgent)
+              .returns(Future.successful(Right(IfsResponse())))
+
+            await(
+              service.submitAcknowledgementMessage(
+                simpleAcknowledgeReportRequest,
+                simpleAcknowledgeNewRdsAssessmentReport,
+                userDetailsWithAgent
+              )
+            ) shouldBe Right(IfsResponse())
+          }
+        }
+      }
+
+      "service call unsuccessful" should {
+        "return the expected result" in new Test {
+          MockCurrentDateTime.getDateTime
+
+          MockIfsConnector
+            .submit(expectedPayload = expectedAcknowledgementPayload)
+            .returns(Future.successful(Left(ErrorWrapper(simpleAcknowledgeReportRequest.rdsCorrelationId, InternalError))))
+
+          await(
+            service.submitAcknowledgementMessage(
+              simpleAcknowledgeReportRequest,
+              simpleAcknowledgeNewRdsAssessmentReport,
+              simpleIndividualUserDetails
+            )
+          ) shouldBe Left(ErrorWrapper(simpleAcknowledgeReportRequest.rdsCorrelationId, InternalError))
+        }
+      }
+    }
+
+    ".customerTypeString" should {
       "return the expected result" in new Test {
         service.customerTypeString(CustomerType.TaxPayer) shouldBe "Individual"
         service.customerTypeString(CustomerType.Agent) shouldBe "Agent"

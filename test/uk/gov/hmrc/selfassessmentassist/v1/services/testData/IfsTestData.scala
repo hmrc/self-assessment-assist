@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,14 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.services.testData
 
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.{IFRequest, Messages}
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs.*
 import uk.gov.hmrc.selfassessmentassist.v1.services.testData.RdsTestData.assessmentRequestForSelfAssessment
 
 import java.time.OffsetDateTime
 
 object IfsTestData {
-
-  val correctJson: JsObject = Json.obj(
-    "payload"  -> "XXX-base64checksum-XXX",
-    "metadata" -> CommonTestData.metaDataCorrectJson
-  )
 
   val correctModel: IFRequest =
     IFRequest(
@@ -38,14 +33,38 @@ object IfsTestData {
       feedbackId = CommonTestData.simpleAcknowledgeNewRdsAssessmentReport.feedbackId.get.toString,
       metaData = List(
         Map("nino"                 -> "nino"),
-        Map("taxYear"              -> "2023-2024"),
+        Map("taxYear"              -> "2023-24"),
         Map("calculationId"        -> "calculationId"),
         Map("customerType"         -> assessmentRequestForSelfAssessment.customerType.toString),
         Map("agentReferenceNumber" -> assessmentRequestForSelfAssessment.agentRef.getOrElse("")),
         Map("calculationTimestamp" -> "timestamp")
       ),
-      payload = Some(Messages(Some(Vector())))
+      payload = Some(
+        Messages(
+          messages = Some(
+            Seq(
+              IFRequestPayload(
+                messageId = "messageId",
+                englishAction = IFRequestPayloadAction(
+                  title = "English title",
+                  message = "English message",
+                  action = "VIEW",
+                  path = "/english",
+                  links = Some(Seq(IFRequestPayloadActionLinks("View english details", "/englishDetails")))
+                ),
+                welshAction = IFRequestPayloadAction(
+                  title = "Welsh title",
+                  message = "Welsh message",
+                  action = "VIEW",
+                  path = "/welsh",
+                  links = Some(Seq(IFRequestPayloadActionLinks("View welsh details", "/welshDetails")))
+                )
+              )
+            )
+          )
+        )
+      )
     )
 
-  val correctJsonString: String = IFRequest.formats.writes(correctModel).toString()
+  val correctJson: JsValue = Json.toJson(correctModel)
 }

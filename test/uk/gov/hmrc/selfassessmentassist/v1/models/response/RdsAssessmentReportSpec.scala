@@ -19,7 +19,13 @@ package uk.gov.hmrc.selfassessmentassist.v1.models.response
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport
-import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{KeyValueWrapper, KeyValueWrapperInt, Output}
+import uk.gov.hmrc.selfassessmentassist.v1.models.response.rds.RdsAssessmentReport.{
+  KeyValueWrapper,
+  KeyValueWrapperInt,
+  Output,
+  IdentifiersWrapper,
+  Identifier
+}
 
 import java.util.UUID
 
@@ -73,6 +79,79 @@ class RdsAssessmentReportSpec extends UnitSpec {
       "return calculationTimeStamp" in {
         rdsAssessmentReport.calculationTimestamp shouldBe Some(calculationTimeStamp)
       }
+
+      "read a valid RdsAssessmentReport from JSON" in {
+        json.as[RdsAssessmentReport] shouldBe rdsAssessmentReport
+      }
+
+      "fail when Output is not a JSON object" in {
+        val invalid = Json.parse("""["not-an-object"]""").head
+
+        intercept[IllegalThreadStateException] {
+          invalid.as[Output]
+        }
+      }
+
+      "read MainOutputWrapper for unknown output shape" in {
+        val json = Json.parse(
+          """
+            {
+              "name": "some-unknown",
+              "value": [{ "data": [] }]
+            }
+          """
+        )
+
+        json.as[Output] shouldBe a[RdsAssessmentReport.MainOutputWrapper]
+      }
+
+      "read MetadataWrapper object part" in {
+        val json = Json.parse(
+          """
+            { "metadata": [ { "key": "value" } ] }
+          """
+        )
+
+        json.as[RdsAssessmentReport.ObjectPart] shouldBe a[RdsAssessmentReport.MetadataWrapper]
+      }
+
+      "read DataWrapper object part" in {
+        val json = Json.parse(
+          """
+            { "data": [["a", "b"]] }
+          """
+        )
+
+        json.as[RdsAssessmentReport.ObjectPart] shouldBe a[RdsAssessmentReport.DataWrapper]
+      }
+
+      "fail when ObjectPart has an unexpected key" in {
+        val json = Json.parse("""{ "unknown": 123 }""")
+
+        intercept[IllegalThreadStateException] {
+          json.as[RdsAssessmentReport.ObjectPart]
+        }
+      }
+
+      "fail when ObjectPart is not a JSON object" in {
+        val json = Json.parse(""" "not-an-object" """)
+
+        intercept[IllegalThreadStateException] {
+          json.as[RdsAssessmentReport.ObjectPart]
+        }
+      }
+
+    }
+  }
+
+  "Output.writes" should {
+    "write IdentifiersWrapper" in {
+      val output: Output =
+        IdentifiersWrapper(Seq(Identifier("id", "123")))
+
+      val json = Json.toJson(output)
+
+      (json \ "identifiers")(0).\("name").as[String] shouldBe "id"
     }
   }
 

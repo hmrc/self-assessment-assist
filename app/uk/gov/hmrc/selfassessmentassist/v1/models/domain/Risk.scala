@@ -66,14 +66,18 @@ object Risk {
   }
 
   private def linksFromRdsFields(riskParts: Seq[String]): Seq[Link] = {
-    def asSeq(value: String) =
-      value.stripPrefix("[").stripSuffix("]").split(",").map(_.trim).toSeq
+    def asSeq(value: String): Seq[String] = Option(value).toSeq.flatMap { rawValue =>
+      rawValue.stripPrefix("[").stripSuffix("]").split(",").map(_.trim).filter(_.nonEmpty)
+    }
 
     import RdsFieldIndexes._
+
     val titles = asSeq(riskParts(linkTitles))
     val urls   = asSeq(riskParts(linkUrls))
 
-    (titles zip urls).map { case (title, url) => Link(title, url) }
+    (titles zip urls).collect {
+      case (title, url) if title.nonEmpty && url.nonEmpty => Link(title, url)
+    }
   }
 
 }

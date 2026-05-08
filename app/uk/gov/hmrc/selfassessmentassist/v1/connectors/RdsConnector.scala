@@ -38,6 +38,26 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig)(implicit val ec: ExecutionContext) extends Logging {
 
+  private def unexpectedDownstreamResponse(correlationId: String): ServiceOutcome[RdsAssessmentReport] =
+    Left(
+      ErrorWrapper(
+        correlationId,
+        InternalError,
+        Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))
+      )
+    )
+
+  private[connectors] def mapUpstreamError(
+      correlationId: String,
+      statusCode: Int
+  ): ServiceOutcome[Nothing] =
+    statusCode match {
+      case UNAUTHORIZED | FORBIDDEN =>
+        Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
+      case _ =>
+        Left(ErrorWrapper(correlationId, InternalError))
+    }
+
   def submit(request: RdsRequest, rdsAuthCredentials: Option[RdsAuthCredentials] = None)(implicit
       hc: HeaderCarrier,
       ec: ExecutionContext,
@@ -53,7 +73,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
       .withProxy
       .execute[HttpResponse]
       .map { response =>
-        logger.info(s"$correlationId::[RdsConnector:submit]RDS http response status is ${response.status}")
+        logger.info(s"$correlationId::[RdsConnector:submit] RDS http response status is ${response.status}")
         response.status match {
           case CREATED =>
             response.json
@@ -63,11 +83,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
                   logger.error(s"$correlationId::[RdsConnector][submit] validation failed while transforming the response $e")
                   logger.error(s"$correlationId::[RdsConnector][submit] ${Json.prettyPrint(response.json)}")
 
-                  Left(
-                    ErrorWrapper(
-                      correlationId,
-                      InternalError,
-                      Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))))
+                  unexpectedDownstreamResponse(correlationId)
                 },
                 assessmentReport =>
                   assessmentReport.responseCode match {
@@ -85,11 +101,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
                     case Some(_) | None =>
                       logger.error(
                         s"$correlationId::[RdsService][submit] RDS unexpected response, body status code is ${assessmentReport.responseCode}")
-                      Left(
-                        ErrorWrapper(
-                          correlationId,
-                          InternalError,
-                          Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))))
+                      unexpectedDownstreamResponse(correlationId)
                   }
               )
 
@@ -121,12 +133,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
 
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationId::[RdsConnector:submit] RDS UpstreamErrorResponse $ex")
-          ex.statusCode match {
-            case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, InternalError))
-            case UNAUTHORIZED    => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case FORBIDDEN       => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case _               => Left(ErrorWrapper(correlationId, InternalError))
-          }
+          mapUpstreamError(correlationId, ex.statusCode)
 
         case ex: HttpException =>
           logger.error(s"$correlationId::[RdsConnector:submit] RDS HttpException $ex")
@@ -162,11 +169,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
                 e => {
                   logger.error(s"$correlationId::[RdsConnector][acknowledgeRds] validation failed while transforming the response $e")
                   logger.error(s"$correlationId::[RdsConnector][submit] ${Json.prettyPrint(response.json)}")
-                  Left(
-                    ErrorWrapper(
-                      correlationId,
-                      InternalError,
-                      Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))))
+                  unexpectedDownstreamResponse(correlationId)
                 },
                 assessmentReport =>
                   assessmentReport.responseCode match {
@@ -180,12 +183,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
                     case Some(_) | None =>
                       logger.error(
                         s"$correlationId::[RdsConnector:acknowledgeRds] unexpected response WITH body status code is ${assessmentReport.responseCode} and message {${assessmentReport.responseMessage}}")
-                      Left(
-                        ErrorWrapper(
-                          correlationId,
-                          InternalError,
-                          Some(Seq(MtdError(InternalError.code, "unexpected response from downstream", INTERNAL_SERVER_ERROR)))))
-
+                      unexpectedDownstreamResponse(correlationId)
                   }
               )
           case BAD_REQUEST =>
@@ -212,13 +210,7 @@ class RdsConnector @Inject() (val httpClient: HttpClientV2, appConfig: AppConfig
           Left(ErrorWrapper(correlationId, InternalError))
         case ex: UpstreamErrorResponse =>
           logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS UpstreamErrorResponse $ex")
-          ex.statusCode match {
-            case REQUEST_TIMEOUT => Left(ErrorWrapper(correlationId, InternalError))
-            case UNAUTHORIZED    => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case FORBIDDEN       => Left(ErrorWrapper(correlationId, ForbiddenDownstreamError))
-            case NOT_FOUND       => Left(ErrorWrapper(correlationId, InternalError))
-            case _               => Left(ErrorWrapper(correlationId, InternalError))
-          }
+          mapUpstreamError(correlationId, ex.statusCode)
         case ex @ _ =>
           logger.error(s"$correlationId::[RdsConnector:acknowledgeRds] RDS Unknown exception $ex")
           Left(ErrorWrapper(correlationId, InternalError))

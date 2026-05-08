@@ -14,37 +14,30 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.api.models.auth
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.ifs
 
 import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
+import uk.gov.hmrc.selfassessmentassist.v1.services.testData.IfsTestData.{correctJson, correctModel}
 
-class AuthCredentialSpec extends UnitSpec {
+class IFRequestSpec extends UnitSpec {
 
-  private val model: AuthCredential = AuthCredential("client-id", "client-secret", "client_credentials")
-
-  private val json: JsObject = Json.obj(
-    "client_id"     -> "client-id",
-    "client_secret" -> "client-secret",
-    "grant_type"    -> "client_credentials"
-  )
-
-  "AuthCredential" when {
+  "IFRequest" when {
     "read from valid JSON" should {
       "produce the expected model" in {
-        json.as[AuthCredential] shouldBe model
+        correctJson.as[IFRequest] shouldBe correctModel
       }
     }
 
     "read from invalid JSON" should {
       "produce a JsError" in {
-        JsObject.empty.validate[AuthCredential] shouldBe a[JsError]
+        JsObject.empty.validate[IFRequest] shouldBe a[JsError]
       }
     }
 
     "written to JSON" should {
       "produce the expected JsObject" in {
-        Json.toJson(model) shouldBe json
+        Json.toJson(correctModel) shouldBe correctJson
       }
     }
   }

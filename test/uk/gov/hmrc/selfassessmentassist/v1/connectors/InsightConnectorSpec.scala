@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,125 +16,80 @@
 
 package uk.gov.hmrc.selfassessmentassist.v1.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.scalatest.BeforeAndAfterAll
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Injecting
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.simpleFraudRiskRequest
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import uk.gov.hmrc.http.{HttpException, HttpResponse, StringContextOps}
+import uk.gov.hmrc.selfassessmentassist.api.TestData.CommonTestData.{simpleFraudRiskReport, simpleFraudRiskRequest}
 import uk.gov.hmrc.selfassessmentassist.api.models.errors.{ErrorWrapper, InternalError}
 import uk.gov.hmrc.selfassessmentassist.api.models.outcomes.ResponseWrapper
 import uk.gov.hmrc.selfassessmentassist.support.{ConnectorSpec, MockAppConfig}
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.FraudRiskReport
+import uk.gov.hmrc.selfassessmentassist.v1.mocks.MockHttpClient
+import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.{FraudRiskReport, FraudRiskRequest}
 
+import java.net.URL
 import java.util.Base64
-import scala.collection.Seq
+import scala.concurrent.Future
 
-class InsightConnectorSpec extends ConnectorSpec with BeforeAndAfterAll with GuiceOneAppPerSuite with Injecting with MockAppConfig {
+class InsightConnectorSpec extends ConnectorSpec with MockAppConfig with MockHttpClient {
 
-  def port: Int = wireMockServer.port()
+  private val insightBaseUrl: String = s"$baseUrl/fraud"
+  private val insightUrl: URL        = url"$insightBaseUrl"
 
-  val httpClient: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
+  private val username: String    = "some-user-name"
+  private val token: String       = "some-token"
+  private val credentials: String = Base64.getEncoder.encodeToString(s"$username:$token".getBytes)
 
-  val url = "/fraud"
+  private val expectedHeaders: Seq[(String, String)] = Seq("Authorization" -> s"Basic $credentials")
 
-  private val successResponseJson: JsValue =
-    Json.parse("""{"riskCorrelationId":"8d844f4a-0630-4568-99ef-d4606ae45d17",
-        |"riskScore":50.00,
-        |"reasons":["No NINO has path to something risky."]}""".stripMargin)
+  private val insightRequest: FraudRiskRequest = simpleFraudRiskRequest
+  private val insightRequestJson: JsValue      = Json.toJson(insightRequest)
+  private val successResponse: FraudRiskReport = simpleFraudRiskReport
+  private val successResponseJson: String      = Json.toJson(successResponse).toString
 
-  private val malformedSuccessResponseJson: JsValue =
-    Json.parse("""{"invalid":"8d844f4a-0630-4568-99ef-d4606ae45d17",
-        |"invalid2":50.00,
-        |"invalid3":["No NINO has path to something risky."]}""".stripMargin)
-
-  private val fraudRiskRequestJsonString: String = Json.toJson(simpleFraudRiskRequest).toString()
-  private val fraudRiskResponse                  = successResponseJson.validate[FraudRiskReport].get
-
-  class Test {
-    val username: String = "some-user-name"
-    val token: String    = "some-token"
-    MockedAppConfig.cipFraudServiceBaseUrl returns s"http://localhost:$port/fraud"
+  private trait Test {
+    MockedAppConfig.cipFraudServiceBaseUrl returns insightBaseUrl
     MockedAppConfig.cipFraudUsername returns username
     MockedAppConfig.cipFraudToken returns token
-    val connector = new InsightConnector(httpClient, mockAppConfig)
 
-    def stubCIPResponse(body: Option[String] = None, status: Int): StubMapping = {
-      body match {
-        case Some(data) =>
-          wireMockServer.stubFor(
-            post(urlPathEqualTo(url))
-              .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-              .withRequestBody(equalToJson(fraudRiskRequestJsonString, true, false))
-              .willReturn(aResponse()
-                .withBody(data)
-                .withStatus(status)))
+    val connector: InsightConnector = new InsightConnector(mockHttpClient, mockAppConfig)
 
-        case None =>
-          wireMockServer.stubFor(
-            post(urlPathEqualTo(url))
-              .withHeader("Content-Type", equalTo(MimeTypes.JSON))
-              .withRequestBody(equalToJson(fraudRiskRequestJsonString, true, false))
-              .willReturn(aResponse()
-                .withStatus(status)))
-      }
-    }
+    def mockInsightCall(response: Future[HttpResponse]): Unit =
+      MockedHttpClient
+        .post(insightUrl, insightRequestJson, expectedHeaders)
+        .returns(response)
 
   }
 
-  override def beforeAll(): Unit = wireMockServer.start()
-
-  override def afterAll(): Unit = wireMockServer.stop()
-
-  "Give InsightConnector" when {
-
-    "fraudTestHeaders " must {
-      "return correct headers " in new Test {
-        val credentials = Base64.getEncoder.encodeToString(s"$username:$token".getBytes)
-        connector.fraudRiskHeaders() should be(Seq("Authorization" -> s"Basic $credentials"))
+  "InsightConnector" when {
+    ".fraudRiskHeaders" should {
+      "return correct headers" in new Test {
+        connector.fraudRiskHeaders() shouldBe expectedHeaders
       }
     }
 
-    "is immediately successful then" must {
-      "return the response" in new Test {
-        stubCIPResponse(Some(successResponseJson.toString), OK)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Right(ResponseWrapper(correlationId, fraudRiskResponse))
+    ".assess" should {
+      "return a successful response" when {
+        "insight call is successful" in new Test {
+          mockInsightCall(Future.successful(HttpResponse(OK, successResponseJson)))
+          await(connector.assess(insightRequest)) shouldBe Right(ResponseWrapper(correlationId, successResponse))
+        }
       }
 
-      "return invalid response" in new Test {
-        stubCIPResponse(Some(malformedSuccessResponseJson.toString), OK)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
-      }
-    }
+      "return an error response" when {
+        "insight call returns an invalid JSON" in new Test {
+          mockInsightCall(Future.successful(HttpResponse(OK, """{ "an": "invalid-json" }""")))
+          await(connector.assess(insightRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
+        }
 
-    "fails with 400 status" must {
-      "fail the request" in new Test {
-        stubCIPResponse(None, BAD_REQUEST)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
-      }
-    }
+        "insight call returns an unexpected status" in new Test {
+          mockInsightCall(Future.successful(HttpResponse(SERVICE_UNAVAILABLE)))
+          await(connector.assess(insightRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
+        }
 
-    "fails with 404(not found) status" must {
-      "fail the request" in new Test {
-        stubCIPResponse(None, NOT_FOUND)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
-      }
-    }
-
-    "fails with 408(REQUEST_TIMEOUT) status" must {
-      "fail the request" in new Test {
-        stubCIPResponse(None, REQUEST_TIMEOUT)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
-      }
-    }
-
-    "fails with 500(INTERNAL SERVER ERROR) status" must {
-      "fail the request" in new Test {
-        stubCIPResponse(None, INTERNAL_SERVER_ERROR)
-        await(connector.assess(simpleFraudRiskRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
+        "insight call returns an exception" in new Test {
+          mockInsightCall(Future.failed(new HttpException("test", INTERNAL_SERVER_ERROR)))
+          await(connector.assess(insightRequest)) shouldBe Left(ErrorWrapper(correlationId, InternalError))
+        }
       }
     }
 

@@ -17,9 +17,32 @@
 package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-case class NrsSubmission(payload: String, metadata: Metadata)
+class SearchKeysSpec extends UnitSpec {
 
-object NrsSubmission {
-  implicit val format: OFormat[NrsSubmission] = Json.format[NrsSubmission]
+  private val model: SearchKeys = SearchKeys("abc-123")
+
+  private val json: JsObject = Json.obj("reportId" -> "abc-123")
+
+  "SearchKeys" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[SearchKeys] shouldBe model
+      }
+    }
+
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[SearchKeys] shouldBe a[JsError]
+      }
+    }
+
+    "written to JSON" should {
+      "produce the expected JsObject" in {
+        Json.toJson(model) shouldBe json
+      }
+    }
+  }
+
 }

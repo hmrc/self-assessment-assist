@@ -14,37 +14,39 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.api.models.auth
+package uk.gov.hmrc.selfassessmentassist.v1.models.request.nrs
 
 import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
 
-class AuthCredentialSpec extends UnitSpec {
+class AcknowledgeReportIdSpec extends UnitSpec {
 
-  private val model: AuthCredential = AuthCredential("client-id", "client-secret", "client_credentials")
+  private val model: AcknowledgeReportId = AcknowledgeReportId("abc-123")
 
-  private val json: JsObject = Json.obj(
-    "client_id"     -> "client-id",
-    "client_secret" -> "client-secret",
-    "grant_type"    -> "client_credentials"
-  )
+  private val json: JsObject = Json.obj("reportId" -> "abc-123")
 
-  "AuthCredential" when {
+  "AcknowledgeReportId" when {
     "read from valid JSON" should {
       "produce the expected model" in {
-        json.as[AuthCredential] shouldBe model
+        json.as[AcknowledgeReportId] shouldBe model
       }
     }
 
     "read from invalid JSON" should {
       "produce a JsError" in {
-        JsObject.empty.validate[AuthCredential] shouldBe a[JsError]
+        JsObject.empty.validate[AcknowledgeReportId] shouldBe a[JsError]
       }
     }
 
     "written to JSON" should {
       "produce the expected JsObject" in {
         Json.toJson(model) shouldBe json
+      }
+    }
+
+    ".stringify" should {
+      "return the JSON string representation" in {
+        model.stringify shouldBe json.toString
       }
     }
   }

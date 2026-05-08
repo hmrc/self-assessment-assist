@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,32 @@ class GenerateReportControllerSpec
   private val timestamp: OffsetDateTime = OffsetDateTime.parse("2018-04-07T12:13:25.156Z")
   private val formattedDate: String     = timestamp.format(DateUtils.isoInstantDateTimePattern)
 
-  trait Test {
+  private val expectedReportPayload: NrsSubmission =
+    NrsSubmission(
+      payload =
+        "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIwMjIiLCJjYWxjdWxhdGlvbklkIjoiOTlkNzU4ZjYtYzRiZS00MzM5LTgwNGUtZjc5Y2YwNjEwZDRmIiwiY29ycmVsYXRpb25JZCI6ImU0MzI2NGM1LTUzMDEtNGVjZS1iM2QzLTFlOGE4ZGQ5M2I0YiJ9",
+      metadata = nrs.Metadata(
+        businessId = "saa",
+        notableEvent = "saa-report-generated",
+        payloadContentType = "application/json",
+        payloadSha256Checksum = "acdf5c0add9e434375e81797ad21fd409bc55f6d4f264d7aa302ca1ef4a01058",
+        userSubmissionTimestamp = formattedDate,
+        identityData = Some(CommonTestData.identityCorrectModel),
+        userAuthToken = "Bearer aaaa",
+        headerData = Json.toJson(
+          Map(
+            "Host"          -> "localhost",
+            "dummyHeader1"  -> "dummyValue1",
+            "dummyHeader2"  -> "dummyValue2",
+            "Authorization" -> "Bearer aaaa"
+          )),
+        searchKeys = SearchKeys(
+          reportId = "db741dff-4054-478e-88d2-5993e925c7ab"
+        )
+      )
+    )
+
+  private trait Test {
 
     val controller: TestController = new TestController()
 
@@ -101,7 +126,6 @@ class GenerateReportControllerSpec
         MockInsightService.assess(simpleFraudRiskRequest)
         MockRdsService.submit(simpleAssessmentRequestForSelfAssessment, simpleFraudRiskReport, simpleInternalOrigin, simpleAssessmentReportWrapper)
         MockCurrentDateTime.getDateTime
-        // MockNrsService.stubAssessmentReport(simpleNRSResponseReportSubmission)
         MockNrsService.stubBuildNrsSubmission(expectedReportPayload)
         MockNrsService.stubNrsSubmit(simpleNRSResponseReportSubmission)
         MockIfsService.stubGenerateReportSubmit(simpleAssessmentReportWrapper, simpleAssessmentRequestForSelfAssessment)
@@ -246,7 +270,7 @@ class GenerateReportControllerSpec
           (ClientOrAgentNotAuthorisedError, FORBIDDEN, ClientOrAgentNotAuthorisedError.asJson)
         )
 
-      errorInErrorOut.foreach(args => (runTest).tupled(args))
+      errorInErrorOut.foreach(args => runTest.tupled(args))
     }
 
     "a request fails due to a failed InsightService.assess " should {
@@ -277,7 +301,7 @@ class GenerateReportControllerSpec
           (ServiceUnavailableError, INTERNAL_SERVER_ERROR, ServiceUnavailableError.asJson)
         )
 
-      errorInErrorOut.foreach(args => (runTest).tupled(args))
+      errorInErrorOut.foreach(args => runTest.tupled(args))
     }
 
     "a request fails due to a failed RDSService.submit" should {
@@ -325,7 +349,7 @@ class GenerateReportControllerSpec
           (InvalidJson, INTERNAL_SERVER_ERROR, Some(MatchingResourcesNotFoundError.asJson))
         )
 
-      errorInErrorOut.foreach(args => (runTest).tupled(args))
+      errorInErrorOut.foreach(args => runTest.tupled(args))
     }
 
     "a request fails due to being unable to construct NRS event" should {
@@ -379,31 +403,64 @@ class GenerateReportControllerSpec
 
       runTest(ServerError, INTERNAL_SERVER_ERROR, InternalError.asJson)
     }
-  }
 
-  private val expectedReportPayload: NrsSubmission =
-    NrsSubmission(
-      payload =
-        "eyJyZXBvcnRJZCI6ImRiNzQxZGZmLTQwNTQtNDc4ZS04OGQyLTU5OTNlOTI1YzdhYiIsIm1lc3NhZ2VzIjpbeyJ0aXRsZSI6IlR1cm5vdmVyIGFuZCBjb3N0IG9mIHNhbGVzIiwiYm9keSI6IllvdXIgY29zdCBvZiBzYWxlcyBpcyBncmVhdGVyIHRoYW4gaW5jb21lIiwiYWN0aW9uIjoiUGxlYXNlIHJlYWQgb3VyIGd1aWRhbmNlIiwibGlua3MiOlt7InRpdGxlIjoiT3VyIGd1aWRhbmNlIiwidXJsIjoiaHR0cHM6Ly93d3cuZ292LnVrL2V4cGVuc2VzLWlmLXlvdXJlLXNlbGYtZW1wbG95ZWQifV0sInBhdGgiOiJnZW5lcmFsL3RvdGFsX2RlY2xhcmVkX3R1cm5vdmVyIn1dLCJuaW5vIjoibmlubyIsInRheFllYXIiOiIyMDIxLTIwMjIiLCJjYWxjdWxhdGlvbklkIjoiOTlkNzU4ZjYtYzRiZS00MzM5LTgwNGUtZjc5Y2YwNjEwZDRmIiwiY29ycmVsYXRpb25JZCI6ImU0MzI2NGM1LTUzMDEtNGVjZS1iM2QzLTFlOGE4ZGQ5M2I0YiJ9",
-      metadata = nrs.Metadata(
-        businessId = "saa",
-        notableEvent = "saa-report-generated",
-        payloadContentType = "application/json",
-        payloadSha256Checksum = "acdf5c0add9e434375e81797ad21fd409bc55f6d4f264d7aa302ca1ef4a01058",
-        userSubmissionTimestamp = formattedDate,
-        identityData = Some(CommonTestData.identityCorrectModel),
-        userAuthToken = "Bearer aaaa",
-        headerData = Json.toJson(
-          Map(
-            "Host"          -> "localhost",
-            "dummyHeader1"  -> "dummyValue1",
-            "dummyHeader2"  -> "dummyValue2",
-            "Authorization" -> "Bearer aaaa"
-          )),
-        searchKeys = SearchKeys(
-          reportId = "db741dff-4054-478e-88d2-5993e925c7ab"
+    "a request fails with BadRequestError and multiple errors" should {
+      "return 400 BAD_REQUEST with the errors" in new Test {
+        val errors: Seq[MtdError] = Seq(NinoFormatError, CalculationIdFormatError)
+        MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
+        MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
+        MockInsightService.assess(simpleFraudRiskRequest)
+        MockRdsService.submitFail(
+          simpleAssessmentRequestForSelfAssessment,
+          simpleFraudRiskReport,
+          simpleInternalOrigin,
+          BadRequestError,
+          Some(errors)
         )
-      )
-    )
+        MockIfsService.submitGenerateReportNeverCalled()
+        MockNrsService.submitNeverCalled()
+        MockCurrentDateTime.getDateTime
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+
+        status(result) shouldBe BAD_REQUEST
+        contentAsJson(result) shouldBe Json.toJson(errors)
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+      }
+    }
+
+    "a request fails with a general error and multiple errors" should {
+      "return 500 INTERNAL_SERVER_ERROR with the errors" in new Test {
+        val errors: Seq[MtdError] = Seq(MatchingCalculationIDNotFoundError, MatchingResourcesNotFoundError)
+        MockEnrolmentsAuthService.authoriseUser()
+        MockLookupConnector.mockMtdIdLookupConnector("1234567890")
+        MockGenerateReportRequestParser.parseRequest(simpleGenerateReportRawData)
+        MockInsightService.assess(simpleFraudRiskRequest)
+        MockRdsService.submitFail(
+          simpleAssessmentRequestForSelfAssessment,
+          simpleFraudRiskReport,
+          simpleInternalOrigin,
+          ResourceNotFoundError,
+          Some(errors)
+        )
+        MockIfsService.submitGenerateReportNeverCalled()
+        MockNrsService.submitNeverCalled()
+        MockCurrentDateTime.getDateTime
+        MockProvideRandomCorrelationId.IdGenerator
+
+        val result: Future[Result] =
+          controller.generateReportInternal(simpleNino, simpleCalculationId.toString, simpleTaxYearFullString)(fakePostRequest)
+
+        status(result) shouldBe INTERNAL_SERVER_ERROR
+        contentAsJson(result) shouldBe Json.toJson(errors)
+        contentType(result) shouldBe Some("application/json")
+        header("X-CorrelationId", result) shouldBe Some(correlationId)
+      }
+    }
+  }
 
 }

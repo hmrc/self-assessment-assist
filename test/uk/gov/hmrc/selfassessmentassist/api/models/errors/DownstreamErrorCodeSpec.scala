@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.selfassessmentassist.v1.models.requests.cip
+package uk.gov.hmrc.selfassessmentassist.api.models.errors
 
-import play.api.libs.json.Json
+import play.api.libs.json.*
 import uk.gov.hmrc.selfassessmentassist.support.UnitSpec
-import uk.gov.hmrc.selfassessmentassist.v1.models.request.cip.UserId
 
-class UserIdSpec extends UnitSpec {
+class DownstreamErrorCodeSpec extends UnitSpec {
 
-  "UserId JSON format" should {
+  private val model: DownstreamErrorCode = DownstreamErrorCode("CODE")
 
-    "read from JSON" in {
-      val json = Json.parse("""{ "value": "user-123" }""")
+  private val json: JsObject = Json.obj("code" -> "CODE", "reason" -> "ignored")
 
-      json.as[UserId] shouldBe UserId("user-123")
+  "DownstreamErrorCode" when {
+    "read from valid JSON" should {
+      "produce the expected model" in {
+        json.as[DownstreamErrorCode] shouldBe model
+      }
     }
 
-    "write to JSON" in {
-      val userId = UserId("user-123")
-
-      Json.toJson(userId) shouldBe Json.parse("""{ "value": "user-123" }""")
+    "read from invalid JSON" should {
+      "produce a JsError" in {
+        JsObject.empty.validate[DownstreamErrorCode] shouldBe a[JsError]
+      }
     }
   }
 
