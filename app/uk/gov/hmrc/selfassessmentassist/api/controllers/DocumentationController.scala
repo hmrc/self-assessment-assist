@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,23 @@
 package uk.gov.hmrc.selfassessmentassist.api.controllers
 
 import controllers.Assets
+import org.apache.pekko.stream.Materializer
+import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.filters.cors.CORSActionBuilder
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
-class DocumentationController @Inject() (apiDefinition: ApiDefinitionFactory, assets: Assets, cc: ControllerComponents)
+class DocumentationController @Inject() (
+    apiDefinition: ApiDefinitionFactory,
+    assets: Assets,
+    configuration: Configuration,
+    cc: ControllerComponents
+)(implicit ec: ExecutionContext, materializer: Materializer)
     extends BackendController(cc) {
 
   def definition(): Action[AnyContent] = Action {
@@ -32,7 +41,9 @@ class DocumentationController @Inject() (apiDefinition: ApiDefinitionFactory, as
   }
 
   def specification(version: String, file: String): Action[AnyContent] = {
-    assets.at(s"/public/api/conf/$version", file)
+    CORSActionBuilder(configuration).async { implicit request =>
+      assets.at(s"/public/api/conf/$version", file)(request)
+    }
   }
 
 }

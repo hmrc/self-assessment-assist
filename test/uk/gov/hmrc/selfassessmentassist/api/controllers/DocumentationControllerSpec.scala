@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
 
 package uk.gov.hmrc.selfassessmentassist.api.controllers
 
+import com.typesafe.config.ConfigFactory
 import controllers.Assets
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.testkit.NoMaterializer
 import play.api.mvc.Result
+import play.api.Configuration
 import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DocumentationControllerSpec extends ControllerBaseSpec with GuiceOneAppPerSuite {
@@ -49,10 +54,14 @@ class DocumentationControllerSpec extends ControllerBaseSpec with GuiceOneAppPer
     protected def requestAsset(filename: String, accept: String = "text/yaml"): Future[Result] =
       controller.specification("1.0", filename)(fakePostRequest)
 
+    implicit val materializer: Materializer = NoMaterializer
+
+    private val config = new Configuration(ConfigFactory.load())
+
     private val apiFactory = app.injector.instanceOf[ApiDefinitionFactory]
 
     private val assets       = app.injector.instanceOf[Assets]
-    protected val controller = new DocumentationController(apiFactory, assets, cc)
+    protected val controller = new DocumentationController(apiFactory, assets, config, cc)
   }
 
 }
