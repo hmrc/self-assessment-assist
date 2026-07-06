@@ -1,4 +1,4 @@
-self-assessment-assist-api
+Self Assessment Assist API
 ========================
 
 [![Apache-2.0 license](http://img.shields.io/badge/license-Apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
@@ -29,10 +29,6 @@ Run unit tests: `sbt test`
 
 Run integration tests: `sbt it/test`
 
-## Local Dev and QA Test Instructions
-The QA test instruction documentation for local, QA and dev journeys (individual and agent) can be seen [here](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?spaceKey=TR&title=QA).
-
-
 ## View OpenAPI Specification (OAS) documentation
 
 To view the OpenAPI documentation locally, ensure the API is running.
@@ -58,10 +54,6 @@ http://localhost:8342/api/conf/1.0/application.yaml
 ## Changelog
 You can see our changelog [here](https://github.com/hmrc/income-tax-mtd-changelog)
 
-## Runbook
-
-You can access the ITSA/HMRC Assist Runbook [here](https://confluence.tools.tax.service.gov.uk/display/TR/HMRC+Assist+Runbook).
-
 ## Support and Reporting Issues
 
 You can create a GitHub issue [here](https://github.com/hmrc/income-tax-mtd-changelog/issues)
@@ -70,4 +62,4 @@ You can create a GitHub issue [here](https://github.com/hmrc/income-tax-mtd-chan
 Available on the [HMRC Developer Hub](https://developer.qa.tax.service.gov.uk/api-documentation/docs/api/service/self-assessment-assist)
 
 ## License
-This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html")
+This code is open source software licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0.html)
