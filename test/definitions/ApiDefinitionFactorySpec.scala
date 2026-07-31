@@ -17,7 +17,7 @@
 package definitions
 
 import uk.gov.hmrc.selfassessmentassist.definitions.APIStatus.{ALPHA, BETA}
-import uk.gov.hmrc.selfassessmentassist.definitions.ApiDefinitionFactory
+import uk.gov.hmrc.selfassessmentassist.definitions.{APIAccessType, ApiDefinitionFactory}
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions.VERSION_1
 import uk.gov.hmrc.selfassessmentassist.support.*
 
@@ -40,6 +40,32 @@ class ApiDefinitionFactorySpec extends UnitSpec with MockAppConfig {
       "default to alpha" in new Test {
         MockedAppConfig.apiStatus(anyVersion) returns "ALPHO"
         factory.buildAPIStatus(version = anyVersion) shouldBe ALPHA
+      }
+    }
+  }
+
+  "set the access level" when {
+    "the controlled access flag is enabled" should {
+      "to be CONTROLLED" in new Test {
+        MockedAppConfig.endpointsEnabled(version = "1")
+        MockedAppConfig.apiGatewayContext returns "api.gateway.context"
+        MockedAppConfig.apiStatus(VERSION_1) returns "BETA"
+
+        MockedAppConfig.controlledAccessEnabled returns true
+
+        factory.definition.api.versions.head.access shouldBe APIAccessType.CONTROLLED
+      }
+    }
+
+    "the controlled access flag is disabled" should {
+      "return PUBLIC" in new Test {
+        MockedAppConfig.endpointsEnabled(version = "1")
+        MockedAppConfig.apiGatewayContext returns "api.gateway.context"
+        MockedAppConfig.apiStatus(VERSION_1) returns "BETA"
+
+        MockedAppConfig.controlledAccessEnabled returns false
+
+        factory.definition.api.versions.head.access shouldBe APIAccessType.PUBLIC
       }
     }
   }

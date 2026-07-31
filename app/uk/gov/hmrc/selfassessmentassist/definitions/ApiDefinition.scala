@@ -30,7 +30,15 @@ object APIStatus {
   val parser: PartialFunction[String, APIStatus] = Enums.parser(values)
 }
 
-case class APIVersion(version: String, status: APIStatus, endpointsEnabled: Boolean) {
+enum APIAccessType {
+  case CONTROLLED, PUBLIC
+}
+
+object APIAccessType {
+  given Format[APIAccessType] = Enums.format(values)
+}
+
+case class APIVersion(version: String, status: APIStatus, access: APIAccessType, endpointsEnabled: Boolean) {
 
   require(version.nonEmpty, "version is required")
 }

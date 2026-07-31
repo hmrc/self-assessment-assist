@@ -19,12 +19,13 @@ package definitions
 import uk.gov.hmrc.selfassessmentassist.definitions.APIStatus.ALPHA
 import uk.gov.hmrc.selfassessmentassist.definitions.*
 import play.api.libs.json.*
+import uk.gov.hmrc.selfassessmentassist.definitions.APIAccessType.PUBLIC
 import uk.gov.hmrc.selfassessmentassist.support.*
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions.VERSION_1
 
 class ApiDefinitionSpec extends UnitSpec {
 
-  private val apiVersion: APIVersion       = APIVersion(VERSION_1, ALPHA, endpointsEnabled = false)
+  private val apiVersion: APIVersion       = APIVersion(VERSION_1, ALPHA, PUBLIC, endpointsEnabled = false)
   private val apiDefinition: APIDefinition = APIDefinition("b", "c", "d", Seq("e"), Seq(apiVersion), Some(false))
 
   private val apiVersionJson: JsValue = Json.parse(
@@ -32,6 +33,7 @@ class ApiDefinitionSpec extends UnitSpec {
       |{
       |  "version": "1.0",
       |  "status": "ALPHA",
+      |  "access": "PUBLIC",
       |  "endpointsEnabled": false
       |}
     """.stripMargin
@@ -50,6 +52,7 @@ class ApiDefinitionSpec extends UnitSpec {
       |    {
       |      "version": "1.0",
       |      "status": "ALPHA",
+      |      "access": "PUBLIC",
       |      "endpointsEnabled": false
       |    }
       |  ],
@@ -72,6 +75,7 @@ class ApiDefinitionSpec extends UnitSpec {
       |      {
       |        "version": "1.0",
       |        "status": "ALPHA",
+      |        "access": "PUBLIC",
       |        "endpointsEnabled": false
       |      }
       |    ],

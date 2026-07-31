@@ -17,6 +17,7 @@
 package uk.gov.hmrc.selfassessmentassist.definitions
 
 import uk.gov.hmrc.selfassessmentassist.config.AppConfig
+import uk.gov.hmrc.selfassessmentassist.definitions.APIAccessType.{CONTROLLED, PUBLIC}
 import uk.gov.hmrc.selfassessmentassist.definitions.Versions.*
 import uk.gov.hmrc.selfassessmentassist.utils.Logging
 
@@ -36,6 +37,7 @@ class ApiDefinitionFactory @Inject() (appConfig: AppConfig) extends Logging {
           APIVersion(
             version = VERSION_1,
             status = buildAPIStatus(VERSION_1),
+            access = if (appConfig.controlledAccessEnabled) CONTROLLED else PUBLIC,
             endpointsEnabled = appConfig.endpointsEnabled(version = "1")
           )
         ),

@@ -42,6 +42,7 @@ trait AppConfig {
   def apiStatus(version: String): String
   def endpointsEnabled(version: String): Boolean
   def featureSwitch: Option[Configuration]
+  def controlledAccessEnabled: Boolean
 
   // SAS
   def rdsSasBaseUrlForAuth: String
@@ -83,6 +84,7 @@ class AppConfigImpl @Inject() (config: ServicesConfig, val configuration: Config
   val confidenceLevelConfig: ConfidenceLevelConfig = configuration.get[ConfidenceLevelConfig](s"api.confidence-level-check")
   def apiStatus(version: String): String           = config.getString(s"api.$version.status")
   def endpointsEnabled(version: String): Boolean   = config.getBoolean(s"feature-switch.version-$version.enabled")
+  val controlledAccessEnabled: Boolean             = config.getBoolean("api.controlled-access.enabled")
 
   // NRS config items
   private val nrsConfig                        = configuration.get[Configuration]("microservice.services.non-repudiation")
