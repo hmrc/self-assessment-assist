@@ -1,3 +1,5 @@
+> HMRC is no longer accepting production credential access requests for new 2026–27 quarterly update products, as the market window for these products has now closed.
+
 Use the Self Assessment Assist API to integrate your software with HMRC Assist, a digital service that provides tailored feedback to customers to help them with their tax returns.
 
 This API is related to the following customer journeys:
